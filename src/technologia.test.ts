@@ -36,6 +36,21 @@ function wModule(c: Czesc, o: Operacja): number[] {
   return [0, 1, 2].map((i) => Math.round((p0[i] + lok[0] * x[i] + lok[1] * y[i] + lok[2] * n[i]) * 10) / 10);
 }
 
+test("Zasada zakładu: każdy moduł z korpusem = 2 boki + 2 wieńce (dolny i górny)", async () => {
+  const { KATALOG_MODULOW } = await import("./core/catalog/modules.js");
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Wieńce", sciany: [{ dlugoscMM: 100000 }] });
+  for (const k of KATALOG_MODULOW) s.dodajModul(p.id, { katalogId: k.id });
+  for (const z of s.analiza(p.id).zbudowane) {
+    if (z.modul.konstrukcja === "dishwasherFront") continue; // panel frontu AGD — bez korpusu
+    const ile = (rola: string) => z.elementy.filter((e) => e.rola === rola).length;
+    assert.equal(ile("side"), 2, `${z.modul.katalogId}: boki`);
+    assert.equal(ile("bottom"), 1, `${z.modul.katalogId}: wieniec dolny`);
+    assert.equal(ile("top"), 1, `${z.modul.katalogId}: wieniec górny`);
+    assert.equal(ile("reinforcement"), 0, `${z.modul.katalogId}: listwy zamiast wieńca`);
+  }
+});
+
 test("T01: dno między bokami — 800 mm, boki 18 → 19 mm daje 764 → 762 mm", () => {
   const s = nowa();
   const { p } = projektZModulem(s, { katalogId: "base-shelves-800" });

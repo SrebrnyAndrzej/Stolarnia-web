@@ -6,7 +6,6 @@ import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaT
 // (BaseCabinetBuilder / WallCabinetBuilder + CabinetComponentFactory), rozszerzony o
 // fronty wielodrzwiowe, szuflady (SzufladyModuluEngine) i blat.
 
-const GLEBOKOSC_WZMOCNIENIA_MM = 100;
 const COFNIECIE_POLKI_MM = 20;
 const LUZ_PROWADNIC_MM = 13; // na stronę — skrzynka = światło korpusu − 26 mm (GTV/Blum)
 
@@ -44,7 +43,6 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   const innerW = W - 2 * t;
   const innerH = H - 2 * t;
   const bezKorpusu = m.konstrukcja === "dishwasherFront";
-  const dolny = cfg.blat || m.kategoria === "base";
   const rezerwaPlecow = cfg.plecy ? k.odsunieciePlecMM + k.gruboscPlecHDFMM : 0;
 
   if (!bezKorpusu) {
@@ -53,13 +51,9 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
     el.push(p("BOK-P", "side", W - t, 0, 0, t, H, D, "korpus"));
     el.push(p("WIENIEC-D", "bottom", t, 0, 0, innerW, t, D, "korpus"));
 
-    // Góra: szafki dolne pod blat → wzmocnienia (frontAndRearRails), pozostałe → pełny wieniec.
-    if (dolny) {
-      el.push(p("WZM-G-P", "reinforcement", t, H - t, 0, innerW, t, GLEBOKOSC_WZMOCNIENIA_MM, "korpus"));
-      el.push(p("WZM-G-T", "reinforcement", t, H - t, D - GLEBOKOSC_WZMOCNIENIA_MM - rezerwaPlecow, innerW, t, GLEBOKOSC_WZMOCNIENIA_MM, "korpus"));
-    } else {
-      el.push(p("WIENIEC-G", "top", t, H - t, 0, innerW, t, D, "korpus"));
-    }
+    // Zasada zakładu: każdy moduł z korpusem = dwa boki i dwa pełne wieńce (dolny i górny),
+    // także szafki dolne pod blat (bez listew wzmacniających zamiast wieńca górnego).
+    el.push(p("WIENIEC-G", "top", t, H - t, 0, innerW, t, D, "korpus"));
 
     // Półki — równomierne rozmieszczenie światła (CabinetComponentFactory.shelfComponents)
     if (cfg.liczbaPolek > 0) {
@@ -76,12 +70,11 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
       }
     }
 
-    // Plecy HDF wsuwane w rowek (boki, wieniec dolny, wieniec górny jeśli jest).
-    // Wpust w rowek = głębokość rowka − luz; bez wieńca górnego plecy kończą się 2 mm pod górą boku.
+    // Plecy HDF wsuwane w rowek w bokach i obu wieńcach. Wpust w rowek = głębokość rowka − luz.
     if (cfg.plecy) {
       const wpust = tech.rowekGlebokoscMM - tech.rowekLuzMM;
       const dol = t - wpust;
-      const gora = dolny ? H - 2 : H - t + wpust;
+      const gora = H - t + wpust;
       el.push(p("PLECY", "back", t - wpust, dol, D - k.odsunieciePlecMM - k.gruboscPlecHDFMM, innerW + 2 * wpust, gora - dol, k.gruboscPlecHDFMM, "plecy"));
     }
   }
