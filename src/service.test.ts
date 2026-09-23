@@ -89,3 +89,38 @@ test("kolizja modułów jest wykrywana", () => {
   s.dodajModul(p.id, { katalogId: "base-shelves-600", pozycjaXMM: 300 });
   assert.ok(s.analiza(p.id).walidacja.some((u) => u.komunikat.startsWith("Kolizja")));
 });
+
+test("szafka narożna ślepa z LeMans: drzwi po lewej, komplet w wycenie, oferta PDF", async () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Narożnik", sciany: [{ dlugoscMM: 2400 }] });
+  const sc = p.pomieszczenia[0].sciany[0].id;
+  const m = s.dodajModul(p.id, {
+    scianaId: sc,
+    pozycjaXMM: 1200,
+    nazwa: "Narożnik ślepy 120",
+    kategoria: "corner",
+    konstrukcja: "blindCorner",
+    szerokoscMM: 1200,
+    wysokoscMM: 720,
+    glebokoscMM: 560,
+    konfiguracja: { liczbaPolek: 0, liczbaDrzwi: 1, typFrontu: "drzwi", stronaDrzwiNaroznika: "lewa", systemNarozny: "lemans" },
+  });
+  const a = s.analiza(p.id);
+  const z = a.zbudowane.find((q) => q.modul.id === m.id)!;
+  assert.deepEqual(z.ostrzezenia, []);
+  const drzwi = z.elementy.find((e) => e.kod === "FRONT-D01")!;
+  const zaslepka = z.elementy.find((e) => e.kod === "ZASLEPKA")!;
+  assert.equal(drzwi.x, 2);
+  assert.equal(drzwi.szer, 450);
+  assert.ok(zaslepka.x > drzwi.x + drzwi.szer, "zaślepka po stronie narożnika (prawej)");
+  assert.equal(z.okucia.find((o) => o.profilID === "kessebohmer.lemans2")?.ilosc, 1);
+  assert.equal(a.projektWyceny.liczbaSystemowNaroznych, 1);
+  for (const w of a.warianty) assert.ok(w.pozycje.some((q) => /LeMans/.test(q.nazwa) && q.ilosc === 1 && q.kosztNetto > 1000), w.wariant);
+
+  // Za wąska szafka → ostrzeżenie z instrukcji LeMans
+  s.zmienModul(p.id, m.id, { szerokoscMM: 700 });
+  assert.ok(s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!.ostrzezenia.some((o) => /800/.test(o)));
+
+  const pdf = await s.ofertaPdf(p.id, { wariant: "premium" });
+  assert.equal(pdf.subarray(0, 4).toString(), "%PDF");
+});

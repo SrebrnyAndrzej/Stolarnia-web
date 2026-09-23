@@ -44,6 +44,7 @@ export function zbudujProjektWyceny(
   let zawiasy = 0;
   let cargo = 0;
   let podnosniki = 0;
+  let narozne = 0;
   let liczbaNog = 0;
   let dolne = 0;
   let wiszace = 0;
@@ -90,6 +91,7 @@ export function zbudujProjektWyceny(
       if (o.typ === "cargo") cargo += o.ilosc;
       if (o.typ === "podnosnik") podnosniki += o.ilosc;
       if (o.typ === "noga") liczbaNog += o.ilosc;
+      if (o.profilID === "kessebohmer.lemans2") narozne += o.ilosc;
     }
 
     if (m.konfiguracja.nogi) {
@@ -101,7 +103,7 @@ export function zbudujProjektWyceny(
 
   const liczba = moduly.length;
   // Normy czasowe z ProjektWycenyBuilder.swift
-  const godzinyProdukcji = liczba === 0 ? 0 : Math.max(4, liczba * 2.8 + pPlyt * 0.45 + szuflady * 0.7 + cargo * 1.8);
+  const godzinyProdukcji = liczba === 0 ? 0 : Math.max(4, liczba * 2.8 + pPlyt * 0.45 + szuflady * 0.7 + cargo * 1.8 + narozne * 1.5);
   const godzinyMontazu = liczba === 0 ? 0 : Math.max(3, liczba * 0.85 + mbZabudowy * 0.6);
 
   return {
@@ -115,6 +117,7 @@ export function zbudujProjektWyceny(
     liczbaZawiasow: zawiasy,
     liczbaCargo: cargo,
     liczbaPodnosnikow: podnosniki,
+    liczbaSystemowNaroznych: narozne,
     liczbaGodzinProdukcji: r2(godzinyProdukcji),
     liczbaGodzinMontazu: r2(godzinyMontazu),
     liczbaTransportow: liczba === 0 ? 0 : liczba > 14 ? 2 : 1,
@@ -298,6 +301,7 @@ function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[
   }
   zTypu("cargo", p.liczbaCargo, { eco: 650, standard: 950, premium: 1450, vip: 2100 }[wariant], "Systemy cargo", "kpl.", "Jeden komplet na moduł cargo.");
   zProfilu("blum.aventos.hf", "podnosnik", p.liczbaPodnosnikow, 337.63, "Podnośniki frontów", "kpl.", "Jeden podnośnik na front uchylny.");
+  zProfilu("kessebohmer.lemans2", "inne", p.liczbaSystemowNaroznych ?? 0, 1334.93, "System narożny LeMans II", "kpl.", "Komplet: 2 półki obrotowo-wysuwne (nerki) do szafki narożnej ślepej.");
   zTypu("noga", p.liczbaModulowDolnych > 0 ? nogi(p) : 0, 1.5, "Nogi meblowe", "szt.", "Nogi regulowane pod moduły stojące.");
   zProfilu("listwa.montazowa.szafek", "zawieszka", p.liczbaModulowWiszacych > 0 ? Math.max(Math.ceil(p.liczbaModulowWiszacych * 0.65), 1) : 0, 9.76, "Listwa montażowa", "mb", "Listwa montażowa szafek wiszących — ~0,65 mb na moduł.");
   zProfilu("cabinet.hanger.generic", "zawieszka", p.liczbaModulowWiszacych, 7.61, "Zawieszki szafek", "para", "Para zawieszek na szafkę wiszącą.");

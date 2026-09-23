@@ -240,6 +240,10 @@ export interface KonfiguracjaModulu {
   nogi: boolean;
   /** Szuflady w systemie (Tandembox/Legrabox) zamiast skrzynek z płyty. */
   szufladySystemowe: boolean;
+  /** Szafka narożna ślepa: strona drzwi (domyślnie prawa, część ślepa po przeciwnej stronie). */
+  stronaDrzwiNaroznika?: "lewa" | "prawa";
+  /** System narożny w szafce ślepej — Kesseböhmer LeMans II (komplet 2 półek „nerek”). */
+  systemNarozny?: "lemans";
 }
 
 export interface Modul {
@@ -345,6 +349,8 @@ export interface OkucieModulu {
   typ: TypOkucia;
   ilosc: number;
   opis: string;
+  /** Konkretny profil z cennika okuć (gdy moduł wymaga określonego systemu). */
+  profilID?: string;
 }
 
 export interface ZbudowanyModul {
@@ -573,6 +579,8 @@ export interface ProjektWyceny {
   liczbaZawiasow: number;
   liczbaCargo: number;
   liczbaPodnosnikow: number;
+  /** Systemy narożne LeMans (komplety). */
+  liczbaSystemowNaroznych: number;
   liczbaGodzinProdukcji: number;
   liczbaGodzinMontazu: number;
   liczbaTransportow: number;

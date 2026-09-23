@@ -2,21 +2,24 @@ import { useCallback, useEffect, useState } from "react";
 import { api, idz, type Analiza } from "./api";
 import { Designer } from "./views/Designer";
 import { Materials } from "./views/Materials";
+import { Oferta } from "./views/Oferta";
 import { Production } from "./views/Production";
 import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
 
+type Zakladka = "projekt" | "wycena" | "oferta" | "produkcja";
+
 type Trasa =
   | { widok: "projekty" }
-  | { widok: "projekt"; id: string; zakladka: "projekt" | "wycena" | "produkcja" }
+  | { widok: "projekt"; id: string; zakladka: Zakladka }
   | { widok: "materialy" }
   | { widok: "ustawienia" };
 
 function czytajTrase(): Trasa {
   const cz = location.hash.replace(/^#\/?/, "").split("/");
   if (cz[0] === "p" && cz[1]) {
-    const z = cz[2] === "wycena" || cz[2] === "produkcja" ? cz[2] : "projekt";
+    const z = cz[2] === "wycena" || cz[2] === "oferta" || cz[2] === "produkcja" ? cz[2] : "projekt";
     return { widok: "projekt", id: cz[1], zakladka: z };
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
@@ -54,7 +57,7 @@ export function App() {
   );
 }
 
-function ProjektWidok({ id, zakladka }: { id: string; zakladka: "projekt" | "wycena" | "produkcja" }) {
+function ProjektWidok({ id, zakladka }: { id: string; zakladka: Zakladka }) {
   const [analiza, setAnaliza] = useState<Analiza | null>(null);
   const [blad, setBlad] = useState<string | null>(null);
 
@@ -102,10 +105,12 @@ function ProjektWidok({ id, zakladka }: { id: string; zakladka: "projekt" | "wyc
       <nav className="nav" style={{ marginLeft: 0 }}>
         <button className={zakladka === "projekt" ? "on" : ""} onClick={() => idz(`#/p/${id}`)}>Projekt</button>
         <button className={zakladka === "wycena" ? "on" : ""} onClick={() => idz(`#/p/${id}/wycena`)}>Wycena</button>
+        <button className={zakladka === "oferta" ? "on" : ""} onClick={() => idz(`#/p/${id}/oferta`)}>Oferta</button>
         <button className={zakladka === "produkcja" ? "on" : ""} onClick={() => idz(`#/p/${id}/produkcja`)}>Produkcja</button>
       </nav>
       {zakladka === "projekt" && <Designer analiza={analiza} odswiez={odswiez} />}
       {zakladka === "wycena" && <Quote analiza={analiza} odswiez={odswiez} />}
+      {zakladka === "oferta" && <Oferta analiza={analiza} />}
       {zakladka === "produkcja" && <Production analiza={analiza} />}
     </div>
   );

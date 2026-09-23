@@ -1,6 +1,6 @@
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import express, { type NextFunction, type Request, type Response } from "express";
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { KATALOG_MODULOW } from "../core/catalog/modules.js";
@@ -137,6 +137,23 @@ app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
       const rew = s.projekt(p(req, "id")).rewizja;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `inline; filename="dokumentacja-${p(req, "id")}-rew${rew}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
+});
+app.post("/api/projekty/:id/oferta.pdf", (req, res, next) => {
+  s.ofertaPdf(p(req, "id"), req.body ?? {})
+    .then((pdf) => {
+      // Lokalnie kopia oferty trafia do katalogu danych (data/oferty); na Vercelu nie ma trwałego dysku.
+      if (!process.env.VERCEL) {
+        const katalog = join(process.env.STOLARNIA_DATA ?? join(process.cwd(), "data"), "oferty");
+        mkdirSync(katalog, { recursive: true });
+        const plik = join(katalog, `oferta-${p(req, "id")}-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.pdf`);
+        writeFileSync(plik, pdf);
+        res.setHeader("X-Oferta-Plik", encodeURIComponent(plik));
+      }
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="oferta-${p(req, "id")}.pdf"`);
       res.send(pdf);
     })
     .catch(next);

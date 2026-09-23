@@ -136,6 +136,14 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   if (szuflady.length) okucia.push({ typ: cfg.szufladySystemowe ? "systemSzuflad" : "prowadnica", ilosc: szuflady.length, opis: "Komplet na każdą szufladę." });
   if (cfg.liczbaCargo > 0) okucia.push({ typ: "cargo", ilosc: cfg.liczbaCargo, opis: "Komplet cargo." });
   if (cfg.typFrontu === "uchylny") okucia.push({ typ: "podnosnik", ilosc: 1, opis: "Podnośnik frontu uchylnego." });
+  if (cfg.systemNarozny === "lemans") {
+    if (m.konstrukcja !== "blindCorner") ostrzezenia.push("LeMans montuje się tylko w szafce narożnej ślepej.");
+    // Instrukcja LeMans II (MA 402118): front 450 → szerokość korpusu min. 800, głębokość min. 500.
+    if (W < 800) ostrzezenia.push(`LeMans 45 wymaga szafki min. 800 mm (jest ${W} mm).`);
+    if (D < 500) ostrzezenia.push(`LeMans wymaga głębokości min. 500 mm (jest ${D} mm).`);
+    if (cfg.liczbaPolek > 0) ostrzezenia.push("Półki stałe kolidują z LeMans — ustaw 0 półek.");
+    okucia.push({ typ: "inne", ilosc: 1, profilID: "kessebohmer.lemans2", opis: "Kesseböhmer LeMans II — komplet 2 półek (nerek), front 450." });
+  }
   if (cfg.nogi && !bezKorpusu) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
 
   return { modul: m, elementy: el, okucia, ostrzezenia };
@@ -200,9 +208,10 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
 
   if (m.konstrukcja === "blindCorner") {
     const drzwiW = Math.min(450, W - 2 * gap);
-    wynik.push(p("FRONT-D01", "front", W - drzwiW - gap, gap, z, drzwiW, H - 2 * gap, tf, "front"));
     const zaslepkaW = W - drzwiW - 3 * gap;
-    if (zaslepkaW > 0) wynik.push(p("ZASLEPKA", "filler", gap, gap, z, zaslepkaW, H - 2 * gap, tf, "front"));
+    const lewe = cfg.stronaDrzwiNaroznika === "lewa";
+    wynik.push(p("FRONT-D01", "front", lewe ? gap : W - drzwiW - gap, gap, z, drzwiW, H - 2 * gap, tf, "front"));
+    if (zaslepkaW > 0) wynik.push(p("ZASLEPKA", "filler", lewe ? drzwiW + 2 * gap : gap, gap, z, zaslepkaW, H - 2 * gap, tf, "front"));
     return wynik;
   }
 

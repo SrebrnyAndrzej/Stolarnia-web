@@ -22,6 +22,7 @@ import type {
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
+import { ofertaPdf } from "./export/oferta.js";
 import { dokumentacjaPdf } from "./export/pdf.js";
 import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
@@ -540,6 +541,36 @@ export class Stolarnia {
     const a = this.analiza(projektId);
     const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
     return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony });
+  }
+
+  /** Oferta dla klienta z wizualizacjami (JPEG renderowane w przeglądarce). */
+  async ofertaPdf(
+    projektId: string,
+    o: { wariant?: WariantWyceny; numer?: string; waznoscDni?: number; terminRealizacji?: string; uwagi?: string[]; wizualizacje?: { tytul: string; jpegBase64: string }[] },
+  ): Promise<Buffer> {
+    const a = this.analiza(projektId);
+    const b = this.magazyn.odczytaj();
+    const teraz = new Date();
+    const wizualizacje = (o.wizualizacje ?? []).slice(0, 8).map((v) => {
+      const jpeg = Buffer.from(String(v.jpegBase64).replace(/^data:image\/\w+;base64,/, ""), "base64");
+      if (jpeg[0] !== 0xff || jpeg[1] !== 0xd8) throw new BladUslugi("Wizualizacja musi być obrazem JPEG.");
+      return { tytul: String(v.tytul ?? "").slice(0, 120), jpeg };
+    });
+    return ofertaPdf({
+      projekt: a.projekt,
+      zbudowane: a.zbudowane,
+      ilosci: a.projektWyceny,
+      warianty: a.warianty,
+      wariant: o.wariant ?? "standard",
+      firma: a.ustawienia.daneFirmy,
+      materialy: new Map(b.materialy.map((m) => [m.id, m])),
+      wizualizacje,
+      numer: o.numer || `OF/${teraz.getFullYear()}/${String(teraz.getMonth() + 1).padStart(2, "0")}/${projektId.slice(0, 4).toUpperCase()}`,
+      data: teraz,
+      waznoscDni: o.waznoscDni && o.waznoscDni > 0 ? o.waznoscDni : 14,
+      terminRealizacji: o.terminRealizacji || "do uzgodnienia po akceptacji projektu",
+      uwagi: (o.uwagi ?? []).map(String).filter(Boolean).slice(0, 8),
+    });
   }
 
   wycena(projektId: string, wariant?: WariantWyceny) {

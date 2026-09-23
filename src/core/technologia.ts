@@ -291,7 +291,7 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     // --- Zawiasy: puszki we frontach i prowadniki w bokach ---
     const drzwi = zm.elementy.filter((e) => e.kod.startsWith("FRONT-D"));
     drzwi.forEach((d, i) => {
-      const lewy = m.konstrukcja === "blindCorner" ? false : drzwi.length === 1 ? true : i % 2 === 0;
+      const lewy = m.konstrukcja === "blindCorner" ? m.konfiguracja.stronaDrzwiNaroznika === "lewa" : drzwi.length === 1 ? true : i % 2 === 0;
       const bok = lewy ? bokL : bokP;
       const n = zawiasyDlaWysokosci(d.wys);
       const pozycje = n === 1 ? [d.wys / 2] : Array.from({ length: n }, (_, k) => t.zawiasOdKoncaFrontuMM + ((d.wys - 2 * t.zawiasOdKoncaFrontuMM) * k) / (n - 1));
@@ -332,6 +332,8 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
 
     // --- Pozostałe okucia bez danych montażowych ---
     if (m.konfiguracja.typFrontu === "uchylny") brak("PODNOSNIK", ["BOK-L", "BOK-P", "FRONT-U01"], "podnośnik frontu: brak SKU i danych montażowych (siła, otwory w bokach i froncie).");
+    if (m.konfiguracja.systemNarozny === "lemans")
+      brak("LEMANS", ["BOK-L", "BOK-P", "WIENIEC-D", "WIENIEC-G"], "LeMans II: pozycje otworów mocowania kolumny i prowadnic wg szablonu producenta (instrukcja MA 402118) — nieprzeniesione do reguł.", "Wpisz operacje z szablonu montażowego LeMans albo montuj z szablonem na budowie.");
     if (m.konfiguracja.liczbaCargo > 0) brak("CARGO", ["BOK-L", "BOK-P", "WIENIEC-D"], "cargo: brak SKU i danych montażowych.");
     if (m.pozycjaYMM >= 1000 && boki.length) brak("ZAWIESZKI", boki.map((b) => b.kod), "zawieszki szafki wiszącej: brak SKU — otwory/wycięcia w bokach nieustalone.");
     const zUchwytem = zm.elementy.filter((e) => e.rola === "front" && e.kod !== "FRONT-AGD").map((e) => e.kod);

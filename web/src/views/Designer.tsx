@@ -697,6 +697,18 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <label className="check"><input type="checkbox" checked={k.szufladySystemowe} onChange={(e) => konf({ szufladySystemowe: e.target.checked })} /> Szuflady systemowe</label>
         </div>
         <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
+        {m.konstrukcja === "blindCorner" && (
+          <div className="grid2">
+            <div className="field">
+              <label>Drzwi narożnika</label>
+              <select className="input" value={k.stronaDrzwiNaroznika ?? "prawa"} onChange={(e) => konf({ stronaDrzwiNaroznika: e.target.value as "lewa" | "prawa" })}>
+                <option value="lewa">Po lewej</option>
+                <option value="prawa">Po prawej</option>
+              </select>
+            </div>
+            <label className="check"><input type="checkbox" checked={k.systemNarozny === "lemans"} onChange={(e) => konf({ systemNarozny: e.target.checked ? "lemans" : undefined, ...(e.target.checked ? { liczbaPolek: 0 } : {}) })} /> LeMans II (2 nerki)</label>
+          </div>
+        )}
 
         <h3>Materiały (nadpisanie)</h3>
         <WyborMaterialu label="Korpus" value={m.materialKorpusuId ?? ""} lista={plyty} pusty="jak w pomieszczeniu" onChange={(v) => onZmien({ materialKorpusuId: v })} />

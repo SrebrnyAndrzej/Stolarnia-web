@@ -28,6 +28,8 @@ const konfiguracja = z
     blat: z.boolean().optional(),
     nogi: z.boolean().optional(),
     szufladySystemowe: z.boolean().optional().describe("true = system (Tandembox/Legrabox), false = skrzynki z płyty"),
+    stronaDrzwiNaroznika: z.enum(["lewa", "prawa"]).optional().describe("Szafka narożna ślepa: strona drzwi (część ślepa po przeciwnej)"),
+    systemNarozny: z.enum(["lemans"]).optional().describe("System narożny w szafce ślepej: LeMans II (2 nerki)"),
   })
   .optional();
 

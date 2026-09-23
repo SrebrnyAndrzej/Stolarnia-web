@@ -106,6 +106,12 @@ Domyślny **Pełny pakiet PDF** obejmuje karty szafek i osobne rysunki części 
 
 Aktualny zakres zmian, sprawdzenia i kolejny krok opisuje [stan prac](docs/STAN_PRAC.md).
 
+## Oferta z wizualizacją
+
+Zakładka **Oferta** w projekcie renderuje w przeglądarce 3–4 ujęcia fotorealistyczne (three.js: tekstury dekorów w skali 1:1, światło dzienne przez okno, cienie, okluzja otoczenia, supersampling). Obejmują widok ogólny, detal narożnika z wysuniętym LeMans, zabudowę wysoką i makietę z góry. **Pobierz ofertę PDF** (`POST /api/projekty/:id/oferta.pdf`) składa ofertę A4: okładkę, wizualizacje, materiały i okucia, zestawienie szafek oraz ceny wariantów. Lokalnie kopia ląduje w `data/oferty/`.
+
+Szafka narożna ślepa ma w konfiguracji stronę drzwi (`stronaDrzwiNaroznika`) i system narożny (`systemNarozny: "lemans"`). Przy tym systemie wycena dolicza komplet Kesseböhmer LeMans II (2 nerki), a builder sprawdza minima z instrukcji: szafkę ≥ 800 mm, głębokość ≥ 500 mm i brak półek. Wiercenia pod mechanizm pozostają `brakDanych`, bo trzeba je przenieść z szablonu producenta.
+
 ## Wdrożenie online (Vercel + Supabase)
 
 - Projekt Vercel `stolarnia-web` jest połączony z repozytorium — każdy push na `main` wdraża produkcję. Wymagane potwierdzenie Deployment Protection także na domenie produkcyjnej — API nie ma własnego logowania.
