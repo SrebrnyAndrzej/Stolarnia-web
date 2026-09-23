@@ -62,7 +62,9 @@ function ProjektWidok({ id, zakladka }: { id: string; zakladka: "projekt" | "wyc
     try {
       const a = await api.analiza(id);
       // Unikamy przerysowania, gdy nic się nie zmieniło (odpytywanie zmian z MCP).
-      setAnaliza((stara) => (stara && stara.projekt.rewizja === a.projekt.rewizja && stara.projekt.zmieniono === a.projekt.zmieniono ? stara : a));
+      // Ceny i ustawienia zmieniają wycenę bez zmiany rewizji projektu — porównujemy też wynik wyceny.
+      const cena = (x: Analiza) => x.warianty.map((w) => w.cenaNetto).join("|");
+      setAnaliza((stara) => (stara && stara.projekt.rewizja === a.projekt.rewizja && stara.projekt.zmieniono === a.projekt.zmieniono && cena(stara) === cena(a) ? stara : a));
       setBlad(null);
     } catch (e) {
       setBlad((e as Error).message);
@@ -103,7 +105,7 @@ function ProjektWidok({ id, zakladka }: { id: string; zakladka: "projekt" | "wyc
         <button className={zakladka === "produkcja" ? "on" : ""} onClick={() => idz(`#/p/${id}/produkcja`)}>Produkcja</button>
       </nav>
       {zakladka === "projekt" && <Designer analiza={analiza} odswiez={odswiez} />}
-      {zakladka === "wycena" && <Quote analiza={analiza} />}
+      {zakladka === "wycena" && <Quote analiza={analiza} odswiez={odswiez} />}
       {zakladka === "produkcja" && <Production analiza={analiza} />}
     </div>
   );

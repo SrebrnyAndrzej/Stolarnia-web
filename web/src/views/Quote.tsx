@@ -1,5 +1,153 @@
-import { useState } from "react";
-import { mm, zl, type Analiza } from "../api";
+import { useEffect, useState } from "react";
+import { api, mm, zl, type Analiza, type Material } from "../api";
+
+const ROLE: Record<string, string> = { korpus: "korpus", front: "fronty", plecy: "plecy / dna", blat: "blat" };
+
+/** Cena netto za m² po rabacie — ta sama reguła co w silniku wyceny (cenaZaM2Netto). */
+function zaM2(m: Material): number | null {
+  const po = m.cenaNetto * (1 - Math.min(Math.max(m.rabatProcent, 0), 100) / 100);
+  if (m.jednostka === "sztuka") {
+    const pow = (m.szerokoscArkuszaMM * m.wysokoscArkuszaMM) / 1e6;
+    return pow > 0 ? po / pow : null;
+  }
+  return m.jednostka === "metrKwadratowy" ? po : null;
+}
+
+/**
+ * Ceny konkretnych płyt użytych w projekcie. Zmiana zapisuje cenę materiału (cena dostawcy obowiązuje
+ * we wszystkich projektach) i od razu przelicza wycenę.
+ */
+function CenyPlyt({ analiza, odswiez }: { analiza: Analiza; odswiez: () => Promise<void> }) {
+  const [materialy, setMaterialy] = useState<Material[]>([]);
+  const [blad, setBlad] = useState<string | null>(null);
+  useEffect(() => {
+    api.materialy().then(setMaterialy).catch((e) => setBlad(e.message));
+  }, [analiza.projekt.rewizja]);
+
+  const pw = analiza.projektWyceny;
+  const uzycia = new Map<string, { role: Set<string>; m2: number; mb: number }>();
+  for (const u of pw.uzyciaMaterialow) {
+    const x = uzycia.get(u.materialId) ?? { role: new Set<string>(), m2: 0, mb: 0 };
+    x.role.add(u.rola);
+    x.m2 += u.iloscM2;
+    uzycia.set(u.materialId, x);
+  }
+  if (pw.blatMaterialId && pw.metryBiezaceBlatu > 0) {
+    const x = uzycia.get(pw.blatMaterialId) ?? { role: new Set<string>(), m2: 0, mb: 0 };
+    x.role.add("blat");
+    x.mb += pw.metryBiezaceBlatu;
+    uzycia.set(pw.blatMaterialId, x);
+  }
+  const arkusze = new Map<string, number>();
+  for (const p of analiza.rozkroj.podsumowanie) arkusze.set(p.materialId, (arkusze.get(p.materialId) ?? 0) + p.liczbaArkuszy);
+
+  const zapisz = async (m: Material, zmiana: Partial<Material>) => {
+    try {
+      setBlad(null);
+      const nowy = await api.zapiszMaterial({ id: m.id, ...zmiana });
+      setMaterialy((l) => l.map((x) => (x.id === m.id ? nowy : x)));
+      await odswiez();
+    } catch (e) {
+      setBlad((e as Error).message);
+    }
+  };
+
+  const wiersze = [...uzycia.entries()].map(([id, u]) => ({ m: materialy.find((x) => x.id === id), u, id }));
+  const bezCeny = wiersze.filter((w) => w.m && !(w.m.cenaNetto > 0)).length;
+
+  return (
+    <div className="card">
+      <div className="card-h" style={{ flexWrap: "wrap" }}>
+        <h2 style={{ flex: 1 }}>Płyty w projekcie — ceny</h2>
+        {bezCeny > 0 && <span className="badge danger">{bezCeny} bez ceny</span>}
+      </div>
+      <div className="card-b muted" style={{ fontSize: 12, paddingBottom: 0 }}>
+        Wpisz cenę zakupu netto konkretnej płyty — za arkusz albo za m². Cena zapisuje się w bazie materiałów (obowiązuje we wszystkich projektach) i od razu przelicza wycenę.
+      </div>
+      {blad && <div className="alert blad" style={{ margin: 12 }}>{blad}</div>}
+      <div className="t-wrap">
+        <table className="t">
+          <thead>
+            <tr>
+              <th>Płyta</th>
+              <th>Zastosowanie</th>
+              <th className="r">Zużycie</th>
+              <th>Cena za</th>
+              <th className="r">Cena netto</th>
+              <th className="r">Rabat %</th>
+              <th className="r">Netto / m²</th>
+              <th className="r">Koszt netto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {wiersze.map(({ m, u, id }) => {
+              if (!m) return (
+                <tr key={id}><td colSpan={8} className="muted">Materiał {id} nie istnieje w bazie — wybierz inny w projektancie.</td></tr>
+              );
+              const cm2 = zaM2(m);
+              const koszt = u.mb > 0 && m.jednostka === "metrBiezacy" ? u.mb * m.cenaNetto * (1 - m.rabatProcent / 100) : cm2 ? u.m2 * cm2 : 0;
+              const arkusz = m.szerokoscArkuszaMM > 0 && m.wysokoscArkuszaMM > 0;
+              const brak = !(m.cenaNetto > 0);
+              return (
+                <tr key={id} style={brak ? { background: "var(--danger-soft)" } : undefined}>
+                  <td>
+                    <div className="row" style={{ gap: 8, flexWrap: "nowrap" }}>
+                      {m.zdjecieURL ? <img src={m.zdjecieURL} alt="" width={34} height={34} style={{ objectFit: "cover", borderRadius: 4 }} /> : <span className="swatch" style={{ background: m.kolorHEX, width: 34, height: 34 }} />}
+                      <div>
+                        <b>{m.producent} {m.nazwa}</b>
+                        <div className="muted" style={{ fontSize: 11 }}>{m.kod}{arkusz ? ` · ark. ${m.wysokoscArkuszaMM}×${m.szerokoscArkuszaMM}` : ""}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{[...u.role].map((r) => ROLE[r] ?? r).join(", ")}</td>
+                  <td className="r num">
+                    {u.m2 > 0 && <div>{mm(u.m2)} m²</div>}
+                    {u.mb > 0 && <div>{mm(u.mb)} mb</div>}
+                    {arkusze.get(id) ? <div className="muted">{arkusze.get(id)} ark.</div> : null}
+                  </td>
+                  <td>
+                    {m.jednostka === "metrBiezacy" ? (
+                      "mb"
+                    ) : (
+                      <select className="input" style={{ width: 100 }} value={m.jednostka} onChange={(e) => zapisz(m, { jednostka: e.target.value as Material["jednostka"] })}>
+                        <option value="sztuka" disabled={!arkusz}>arkusz</option>
+                        <option value="metrKwadratowy">m²</option>
+                      </select>
+                    )}
+                  </td>
+                  <td className="r"><PoleCeny value={m.cenaNetto} onSave={(v) => zapisz(m, { cenaNetto: v })} /></td>
+                  <td className="r"><PoleCeny value={m.rabatProcent} onSave={(v) => zapisz(m, { rabatProcent: Math.min(v, 100) })} /></td>
+                  <td className="r num">{cm2 ? zl(cm2) : "—"}</td>
+                  <td className="r num">{brak ? <b style={{ color: "var(--danger)" }}>brak ceny</b> : zl(koszt)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function PoleCeny({ value, onSave }: { value: number; onSave: (v: number) => void }) {
+  const [v, setV] = useState(String(value));
+  useEffect(() => setV(String(value)), [value]);
+  return (
+    <input
+      className="input num"
+      style={{ width: 90, textAlign: "right" }}
+      inputMode="decimal"
+      value={v}
+      onChange={(e) => setV(e.target.value)}
+      onBlur={() => {
+        const n = Number(v.replace(",", "."));
+        if (Number.isFinite(n) && n >= 0 && n !== value) onSave(n);
+        else setV(String(value));
+      }}
+      onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+    />
+  );
+}
 
 const KATEGORIE: Record<string, string> = {
   plyty: "Płyty",
@@ -13,7 +161,7 @@ const KATEGORIE: Record<string, string> = {
   pozostale: "Pozostałe",
 };
 
-export function Quote({ analiza }: { analiza: Analiza }) {
+export function Quote({ analiza, odswiez }: { analiza: Analiza; odswiez: () => Promise<void> }) {
   const [wariant, setWariant] = useState("standard");
   const w = analiza.warianty.find((x) => x.wariant === wariant) ?? analiza.warianty[0];
   const pw = analiza.projektWyceny;
@@ -35,6 +183,8 @@ export function Quote({ analiza }: { analiza: Analiza }) {
           </div>
         ))}
       </div>
+
+      <CenyPlyt analiza={analiza} odswiez={odswiez} />
 
       {bledy.length > 0 && (
         <div className="alert blad">
