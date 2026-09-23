@@ -2,7 +2,7 @@
 // Dopisuje brakujące projekty, materiały i okucia (po id) — niczego nie nadpisuje, można uruchamiać wielokrotnie.
 //
 // Użycie (klucz wklejasz sam, tylko w swoim terminalu):
-//   $env:SUPABASE_URL="https://ybzriunkihgbriytinij.supabase.co"; $env:SUPABASE_SECRET_KEY="<klucz secret>"; npx tsx scripts/migracja-do-chmury.ts
+//   $env:SUPABASE_URL="https://YOUR_PROJECT_REF.supabase.co"; $env:SUPABASE_SECRET_KEY="<klucz secret>"; npx tsx scripts/migracja-do-chmury.ts
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { konfiguracjaChmury, Magazyn, type BazaDanych } from "../src/store/store.js";

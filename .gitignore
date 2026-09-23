@@ -9,3 +9,9 @@ _ref/
 # Python caches from documentation collection
 __pycache__/
 *.pyc
+
+# Sekrety lokalnych środowisk
+.env
+.env.*
+!.env.example
+.vercel/

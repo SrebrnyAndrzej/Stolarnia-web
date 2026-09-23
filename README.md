@@ -108,9 +108,9 @@ Aktualny zakres zmian, sprawdzenia i kolejny krok opisuje [stan prac](docs/STAN_
 
 ## Wdrożenie online (Vercel + Supabase)
 
-- Projekt Vercel `stolarnia-web` jest połączony z repozytorium — każdy push na `main` wdraża produkcję. Dostęp chroniony logowaniem Vercel (Deployment Protection).
+- Projekt Vercel `stolarnia-web` jest połączony z repozytorium — każdy push na `main` wdraża produkcję. Wymagane potwierdzenie Deployment Protection także na domenie produkcyjnej — API nie ma własnego logowania.
 - Frontend: `dist/web` (CDN), zdjęcia dekorów kopiowane do `dist/web/api/dekory/obrazy`. API i MCP: funkcja `api/index.js` (Express z `dist/server/app.js`), region `fra1`. Konfiguracja: `vercel.json`.
-- Baza: Supabase `stolarnia-web` (eu-central-1), tabela `stolarnia_baza` z jednym dokumentem JSON. RLS bez polityk — dostęp wyłącznie z serwera kluczem secret. Każde żądanie wczytuje bazę i zapisuje zmiany przed odpowiedzią z kontrolą wersji (równoległa zmiana → 409 zamiast nadpisania).
-- Zmienne środowiskowe Vercel: `SUPABASE_URL` (ustawiona) i `SUPABASE_SECRET_KEY` — klucz secret z Supabase → Project Settings → API Keys, wkleja właściciel. Bez klucza API odpowiada 503 z instrukcją.
+- Baza: Supabase, tabela `stolarnia_baza` z jednym dokumentem JSON. Nowy projekt: [instrukcja konfiguracji](docs/SUPABASE-NOWY-PROJEKT.md); użytkownik polecił nie korzystać z wcześniej wskazanego projektu. RLS bez polityk — dostęp wyłącznie z serwera kluczem secret. Każde żądanie wczytuje bazę i zapisuje zmiany przed odpowiedzią z kontrolą wersji (równoległa zmiana → 409 zamiast nadpisania).
+- Zmienne środowiskowe Vercel: `SUPABASE_URL` i `SUPABASE_SECRET_KEY` **nowego projektu** — klucz secret z Supabase → Project Settings → API Keys, wkleja właściciel. Bez klucza API odpowiada 503 z instrukcją.
 - Migracja lokalnych danych: `scripts/migracja-do-chmury.ts` (dopisuje brakujące projekty/materiały, niczego nie nadpisuje).
 - Lokalnie bez zmiennych Supabase aplikacja nadal używa pliku `data/stolarnia.json`. Konwersja DWG nie działa na Vercelu (brak programu konwertera) — DXF działa.

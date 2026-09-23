@@ -46,3 +46,12 @@ Pozostało: pełna macierz Kronospan, rozdzielenie nośników specjalnych (np. k
 ### Wdrożenie do lokalnej aplikacji użytkownika
 
 Zaktualizowano także C:/Users/Komp/Stolarnia App. Zachowano zastane niezacommitowane filtry producenta/kolekcji/grupy/grubości oraz filtrowanie API; te zmiany włączono również do repozytorium roboczego, aby wersje nie rozjechały się. Kopie trzech wcześniejszych plików są w katalogu roboczym Codex work/original-app-before-catalog. Baza data/ nie była kopiowana ani modyfikowana przez wdrożenie. Skompilowano backend i frontend lokalnej aplikacji; istniejący serwer localhost:3210 zwraca 644 dekory. W przeglądarce potwierdzono galerię 644 także pod właściwym adresem localhost:3210/#/materialy. Testowe dodanie materiału wykonano wyłącznie w odrębnej bazie podglądu localhost:3211.
+
+
+## Supabase — nowy projekt (23.09.2026)
+
+Pobrano nowe zmiany main do bbbec58 zawierające adapter Supabase i konfigurację Vercel. Użytkownik odmówił użycia wskazanego wcześniej projektu i polecił przygotować konfigurację nowego. Nie otwarto ani nie zmieniono starego projektu. Przygotowano migrację SQL public.stolarnia_baza, RLS i uprawnienia tylko backendu, .env.example bez sekretów, wykluczenie plików .env i .vercel z Git oraz odczytowy skrypt scripts/sprawdz-supabase.mjs. Instrukcja: docs/SUPABASE-NOWY-PROJEKT.md. Usunięto stary identyfikator projektu z przykładu importu.
+
+NIE WYKONANO: utworzenie nowego projektu na koncie użytkownika, uruchomienie SQL w nim, wprowadzenie nowych zmiennych Vercel, migracja danych i potwierdzenie działania online. Nie raportować konfiguracji jako uruchomionej. Wymagane potwierdzenie ochrony domeny produkcyjnej/API/MCP, ponieważ obecny serwer nie implementuje własnej autoryzacji.
+
+Kolejny zakres użytkownika pozostaje otwarty: katalog szuflad Amix/GTV/Blum, zawiasów, akcesoriów kuchennych i systemów przesuwnych. Przeprowadzono przegląd istniejących źródeł; nie wdrożono jeszcze nowej galerii okuć. Nie mylić istniejących 48 rekordów cennika z pełnym katalogiem.
