@@ -113,9 +113,22 @@ export function regulaObrzeza(rola: RolaElementu): Formatka["obrzeza"] {
   }
 }
 
+const GRUBOSC_OBRZEZA: Record<RodzajObrzeza, number> = { brak: 0, abs08: 0.8, abs20: 2 };
+
+/**
+ * Wymiar do cięcia. Kompensacja obrzeża wg profilu zakładu jest stosowana tylko tutaj (dokładnie raz):
+ * długość − obrzeża KA+KB, szerokość − obrzeża DA+DB.
+ */
+export function wymiarCiecia(dl: number, sz: number, obrzeza: Formatka["obrzeza"], odejmuj: boolean): { dl: number; sz: number } {
+  if (!odejmuj) return { dl, sz };
+  const [da, db, ka, kb] = obrzeza.map((o) => GRUBOSC_OBRZEZA[o]);
+  return { dl: r1(dl - ka - kb), sz: r1(sz - da - db) };
+}
+
 export function listaFormatek(
   zbudowane: { zm: ZbudowanyModul; materialy: MaterialyModulu }[],
   materialy: Map<string, Material>,
+  opcje: { odejmujGruboscObrzeza?: boolean } = {},
 ): Formatka[] {
   const wynik: Formatka[] = [];
   zbudowane.forEach(({ zm, materialy: mm }, idx) => {
@@ -133,6 +146,8 @@ export function listaFormatek(
         e.rola === "back" || e.rola === "reinforcement" || e.rola === "rail" || e.rola === "drawerBottom" || !mat?.kierunekDekoru
           ? "dowolny"
           : "wzdluzDlugosci";
+      const obrzeza = regulaObrzeza(e.rola);
+      const ciecie = wymiarCiecia(dl, sz, obrzeza, !!opcje.odejmujGruboscObrzeza);
       wynik.push({
         id: `${zm.modul.id}|${e.kod}`,
         etykieta: `${pad(indeksModulu)}-${pad(i + 1)}-${SKROTY[e.rola]}`,
@@ -149,8 +164,10 @@ export function listaFormatek(
         szerokoscMM: sz,
         // Skrzynki szuflad z płyty 16 mm; grubość z geometrii elementu.
         gruboscMM: gr,
+        dlugoscCieciaMM: ciecie.dl,
+        szerokoscCieciaMM: ciecie.sz,
         kierunekDekoru: kierunek,
-        obrzeza: regulaObrzeza(e.rola),
+        obrzeza,
       });
     });
   });
@@ -233,19 +250,22 @@ export function rozkroj(formatki: Formatka[], u: UstawieniaRozkroju, materialy: 
     const rzaz = u.rzazPilyMM;
 
     const posortowane = [...lista].sort((a, b) => {
-      const la = Math.max(a.dlugoscMM, a.szerokoscMM);
-      const lb = Math.max(b.dlugoscMM, b.szerokoscMM);
+      const la = Math.max(a.dlugoscCieciaMM, a.szerokoscCieciaMM);
+      const lb = Math.max(b.dlugoscCieciaMM, b.szerokoscCieciaMM);
       if (la !== lb) return lb - la;
-      const pa = a.dlugoscMM * a.szerokoscMM;
-      const pb = b.dlugoscMM * b.szerokoscMM;
+      const pa = a.dlugoscCieciaMM * a.szerokoscCieciaMM;
+      const pb = b.dlugoscCieciaMM * b.szerokoscCieciaMM;
       return pb - pa || a.etykieta.localeCompare(b.etykieta);
     });
 
     const robocze: Polka[][] = [];
     for (const f of posortowane) {
+      // Rozkrój na wymiarach półfabrykatu (po kompensacji obrzeża).
+      const fdl = f.dlugoscCieciaMM;
+      const fsz = f.szerokoscCieciaMM;
       const obrot = !u.uwzgledniajKierunekDekoru || f.kierunekDekoru === "dowolny";
-      const orient: Orientacja[] = [{ szer: f.szerokoscMM, dl: f.dlugoscMM, obrocona: false }];
-      if (obrot && Math.abs(f.dlugoscMM - f.szerokoscMM) > 0.001) orient.push({ szer: f.dlugoscMM, dl: f.szerokoscMM, obrocona: true });
+      const orient: Orientacja[] = [{ szer: fsz, dl: fdl, obrocona: false }];
+      if (obrot && Math.abs(fdl - fsz) > 0.001) orient.push({ szer: fdl, dl: fsz, obrocona: true });
       const pasujace = orient.filter((o) => o.szer <= uzSz && o.dl <= uzDl);
       if (!pasujace.length) {
         nierozmieszczone.push({ formatkaId: f.id, etykieta: f.etykieta, powod: `Formatka przekracza użyteczny format arkusza ${uzDl} × ${uzSz} mm.` });
@@ -340,8 +360,9 @@ export function rozkroj(formatki: Formatka[], u: UstawieniaRozkroju, materialy: 
 // ---------- Eksport CSV (ListaFormatekCSVV070 / RozkrojPlytCSVV071) ----------
 
 export function formatkiCSV(formatki: Formatka[]): string {
-  const naglowek = ["Etykieta", "Moduł", "Element", "Kategoria", "Materiał", "Długość [mm]", "Szerokość [mm]", "Grubość [mm]", "Ilość", "Kierunek dekoru", "Obrzeże DA", "Obrzeże DB", "Obrzeże KA", "Obrzeże KB"];
+  const naglowek = ["ID części", "Etykieta", "Moduł", "Element", "Kategoria", "Materiał", "Długość gotowa [mm]", "Szerokość gotowa [mm]", "Długość cięcia [mm]", "Szerokość cięcia [mm]", "Grubość [mm]", "Ilość", "Kierunek dekoru", "Obrzeże DA", "Obrzeże DB", "Obrzeże KA", "Obrzeże KB"];
   const wiersze = formatki.map((f) => [
+    f.id,
     f.etykieta,
     f.nazwaModulu,
     f.kodElementu,
@@ -349,6 +370,8 @@ export function formatkiCSV(formatki: Formatka[]): string {
     f.materialOpis,
     liczba(f.dlugoscMM),
     liczba(f.szerokoscMM),
+    liczba(f.dlugoscCieciaMM),
+    liczba(f.szerokoscCieciaMM),
     liczba(f.gruboscMM),
     "1",
     f.kierunekDekoru === "dowolny" ? "dowolny" : "wzdłuż długości",
@@ -363,6 +386,10 @@ function csv(v: string): string {
 
 function liczba(v: number): string {
   return String(Math.round(v * 10) / 10).replace(".", ",");
+}
+
+function r1(v: number): number {
+  return Math.round(v * 10) / 10;
 }
 
 function r2(v: number): number {

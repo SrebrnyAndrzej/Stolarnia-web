@@ -1,0 +1,148 @@
+[
+  {
+    "id": "AMIX-Elite-Box-standardowe",
+    "source_url": "https://amix.pl/en/index.php?controller=attachment&id_attachment=2514",
+    "retrieved_at": "2026-09-23T13:56:21.105956+00:00",
+    "status": "downloaded",
+    "final_url": "https://amix.pl/en/index.php?controller=attachment&id_attachment=2514",
+    "path": "pdf/AMIX-Elite-Box-standardowe.pdf",
+    "bytes": 357313,
+    "sha256": "7ef6cd84fbb21cf0c5e8fccbb7765a782968fe32b000e3356f023afa43e3609d",
+    "pages": 2
+  },
+  {
+    "id": "AMIX-Elite-Box-wewnetrzne",
+    "source_url": "https://amix.pl/en/index.php?controller=attachment&id_attachment=2498",
+    "retrieved_at": "2026-09-23T13:56:21.106962+00:00",
+    "status": "downloaded",
+    "final_url": "https://amix.pl/en/index.php?controller=attachment&id_attachment=2498",
+    "path": "pdf/AMIX-Elite-Box-wewnetrzne.pdf",
+    "bytes": 6105026,
+    "sha256": "2f45a550286fcfaaaa730c0966deb6b862aa444334f572cdb7694eefac91baee",
+    "pages": 3
+  },
+  {
+    "id": "GTV-Modern-Box-Pro-instrukcja",
+    "source_url": "https://api2.gtv.com.pl/pimcore/assets/attachments/karta_techniczna/Modern_Box_PRO__instrukcja_fina%C5%82.pdf",
+    "retrieved_at": "2026-09-23T13:56:21.106962+00:00",
+    "status": "downloaded",
+    "final_url": "https://api2.gtv.com.pl/pimcore/assets/attachments/karta_techniczna/Modern_Box_PRO__instrukcja_fina%C5%82.pdf",
+    "path": "pdf/GTV-Modern-Box-Pro-instrukcja.pdf",
+    "bytes": 3230667,
+    "sha256": "00054734048dc3df47373ce52e4ee50d0813a6aff80e16bf816cc2d7170f0827",
+    "pages": 10
+  },
+  {
+    "id": "GTV-Axis-Pro-karta",
+    "source_url": "https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_3.pdf",
+    "retrieved_at": "2026-09-23T13:56:23.533014+00:00",
+    "status": "downloaded",
+    "final_url": "https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_3.pdf",
+    "path": "pdf/GTV-Axis-Pro-karta.pdf",
+    "bytes": 5797475,
+    "sha256": "fe6850956d9e1c6fbb6c865a1f2946fdc15caa5f8a4ffc91b7e949bdd225839c",
+    "pages": 12
+  },
+  {
+    "id": "BLUM-Merivobox-montaz",
+    "source_url": "https://www.blum.com/file/me4806299_md_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:56:34.795898+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/me4806299_md_dok_bau_$sml_$aof_$v5.pdf",
+    "path": "pdf/BLUM-Merivobox-montaz.pdf",
+    "bytes": 4689078,
+    "sha256": "40695399fcc5d5523e88a0ab7012e7ca5f8287d7152244866f2bcc3853c7fbfb",
+    "pages": 12
+  },
+  {
+    "id": "BLUM-Merivobox-planowanie",
+    "source_url": "https://www.blum.com/file/me25532842_ep_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:56:43.609706+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/me25532842_ep_dok_bau_$spl-pl_$aof_$v5.pdf",
+    "path": "pdf/BLUM-Merivobox-planowanie.pdf",
+    "bytes": 19498602,
+    "sha256": "3361fffd4689454b5f21fe6740dd1ea106ea610bcd15697864dba61eb3a4ece7",
+    "pages": 80
+  },
+  {
+    "id": "BLUM-Legrabox-pure-montaz",
+    "source_url": "https://www.blum.com/file/lbx0001-md-013_md_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:56:47.498432+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/lbx0001-md-013_md_dok_bau_$sall_$aof_$v5.pdf",
+    "path": "pdf/BLUM-Legrabox-pure-montaz.pdf",
+    "bytes": 6374943,
+    "sha256": "b133f531b78f9bd180e9a325b8b949daf305bfdcd0c77d55ff4f82ca5bafc92b",
+    "pages": 12
+  },
+  {
+    "id": "BLUM-Legrabox-planowanie",
+    "source_url": "https://www.blum.com/file/lbx0264-ep-390_ep_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:57:10.642207+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/lbx0264-ep-390_ep_dok_bau_$spl-pl_$aof_$v5.pdf",
+    "path": "pdf/BLUM-Legrabox-planowanie.pdf",
+    "bytes": 27733471,
+    "sha256": "7537f2530257e4e56a08de0398dd825465c4262e54a63ee5b16cd596f779421a",
+    "pages": 100
+  },
+  {
+    "id": "BLUM-Tandembox-montaz",
+    "source_url": "https://www.blum.com/file/me145106_ma_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:57:26.105058+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/me145106_ma_dok_bau_$sml_$aof_$v3.pdf",
+    "path": "pdf/BLUM-Tandembox-montaz.pdf",
+    "bytes": 2531458,
+    "sha256": "2d213389a7fefc4ef6c526dd89fa721783a8ebb5991fc525f274c28c5c2c30f5",
+    "pages": 4
+  },
+  {
+    "id": "BLUM-Tandembox-antaro-planowanie",
+    "source_url": "https://www.blum.com/file/cme108331_ep_dok_bau?country=pl&language=pl",
+    "retrieved_at": "2026-09-23T13:57:37.644504+00:00",
+    "status": "downloaded",
+    "final_url": "https://d2.blum.com/services/BEC003/cme108331_ep_dok_bau_$spl-pl_$aof_$v1.pdf",
+    "path": "pdf/BLUM-Tandembox-antaro-planowanie.pdf",
+    "bytes": 11508269,
+    "sha256": "c59a7c22f74f557b5f91d39ff173db04663311dc1eadf0607392a7db69a6f671",
+    "pages": 48
+  },
+  {
+    "id": "GTV-Axis-Pro-P2O-instrukcja",
+    "source_url": "https://assets.gtv.com.pl/assets/attachments/instrukcja/Axis_PRO_P2O__%20instrukcja_A4_PL_EN_RU__skrocona__2022r.pdf",
+    "final_url": "https://assets.gtv.com.pl/assets/attachments/instrukcja/Axis_PRO_P2O__%20instrukcja_A4_PL_EN_RU__skrocona__2022r.pdf",
+    "discovered_on": "https://gtv.com.pl/produkt/PB-AXISPRO-P2O-KPL350A/",
+    "path": "pdf/GTV-Axis-Pro-P2O-instrukcja.pdf",
+    "status": "downloaded",
+    "retrieved_at": "2026-09-23T14:01:15.007792+00:00",
+    "bytes": 2537666,
+    "sha256": "fb66cac201da7c287d007affdf3e6c28d5b78e6d4630bbb9b8242e3b900f44e6",
+    "pages": 4
+  },
+  {
+    "id": "GTV-Axis-Pro-karta-4",
+    "source_url": "https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_4.pdf",
+    "final_url": "https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_4.pdf",
+    "discovered_on": "https://gtv.com.pl/produkt/PB-AXISPRO-P2O-KPL350A/",
+    "path": "pdf/GTV-Axis-Pro-karta-4.pdf",
+    "status": "downloaded",
+    "retrieved_at": "2026-09-23T14:01:16.012674+00:00",
+    "bytes": 5797475,
+    "sha256": "fe6850956d9e1c6fbb6c865a1f2946fdc15caa5f8a4ffc91b7e949bdd225839c",
+    "pages": 12,
+    "identical_content_to": "GTV-Axis-Pro-karta"
+  },
+  {
+    "id": "GTV-PB-AXISPRO-P2O-KPL350A",
+    "source_url": "https://assets.gtv.com.pl/assets/3D_solids/bryla_3d_stp/PB-AXISPRO-P2O-KPL350A_1.stp",
+    "final_url": "https://assets.gtv.com.pl/assets/3D_solids/bryla_3d_stp/PB-AXISPRO-P2O-KPL350A_1.stp",
+    "discovered_on": "https://gtv.com.pl/produkt/PB-AXISPRO-P2O-KPL350A/",
+    "path": "cad/GTV-PB-AXISPRO-P2O-KPL350A.stp",
+    "status": "downloaded",
+    "retrieved_at": "2026-09-23T14:01:16.738243+00:00",
+    "bytes": 2403521,
+    "sha256": "9a4e8ca0a65bb98b302889d034a4b17d76db00ac1cbcdbbbd0ac03d793662a4a"
+  }
+]

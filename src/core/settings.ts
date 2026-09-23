@@ -46,6 +46,35 @@ export const USTAWIENIA_DOMYSLNE: UstawieniaStolarni = {
   okleinowanie: {
     naddatekNaKrawedzMM: 20,
     zapasProcent: 10,
+    odejmujGruboscObrzeza: false,
+  },
+  // Wartości robocze typowe dla konfirmatu 7×50, systemu 32 i zawiasu puszkowego Ø35 —
+  // wymagają zatwierdzenia przez zakład / weryfikacji w katalogu producenta.
+  technologia: {
+    konfirmatSrednicaLicaMM: 7,
+    konfirmatSrednicaKrawedziMM: 5,
+    konfirmatGlebokoscKrawedziMM: 35,
+    konfirmatOdKrawedziMM: 50,
+    konfirmatMaxRozstawMM: 250,
+    polaczeniaZatwierdzone: false,
+    podporkaSrednicaMM: 5,
+    podporkaGlebokoscMM: 12,
+    podporkaOdKrawedziMM: 37,
+    rastrMM: 32,
+    podporkiZatwierdzone: false,
+    rowekGlebokoscMM: 8,
+    rowekLuzMM: 1,
+    rowekZatwierdzony: false,
+    zawiasPuszkaSrednicaMM: 35,
+    zawiasPuszkaGlebokoscMM: 13,
+    zawiasPuszkaOdKrawedziMM: 22.5,
+    zawiasOdKoncaFrontuMM: 100,
+    prowadnikOdFrontuMM: 37,
+    prowadnikRozstawMM: 32,
+    prowadnikSrednicaMM: 5,
+    prowadnikGlebokoscMM: 13,
+    zawiasyZatwierdzone: false,
+    profilSzuflad: "blum-tandembox-antaro-m-wood",
   },
 };
 

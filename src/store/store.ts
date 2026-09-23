@@ -43,7 +43,11 @@ export class Magazyn {
     for (const m of MATERIALY_STARTOWE) if (!idM.has(m.id)) baza.materialy.push(structuredClone(m));
     const idO = new Set(baza.okucia.map((o) => o.id));
     for (const o of OKUCIA_STARTOWE) if (!idO.has(o.id)) baza.okucia.push(structuredClone(o));
-    baza.ustawienia = { ...structuredClone(USTAWIENIA_DOMYSLNE), ...baza.ustawienia };
+    // Nowe sekcje i pola ustawień dostają wartości domyślne (bazy zapisane starszą wersją).
+    const dom = structuredClone(USTAWIENIA_DOMYSLNE) as unknown as Record<string, Record<string, unknown>>;
+    const zap = (baza.ustawienia ?? {}) as unknown as Record<string, Record<string, unknown>>;
+    for (const k of Object.keys(dom)) dom[k] = { ...dom[k], ...(zap[k] ?? {}) };
+    baza.ustawienia = dom as unknown as UstawieniaStolarni;
     return baza;
   }
 

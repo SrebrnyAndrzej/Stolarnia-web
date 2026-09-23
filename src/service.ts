@@ -21,6 +21,7 @@ import type {
   WariantWyceny,
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
+import { dokumentacjaProjektu } from "./core/technologia.js";
 import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
 import { jednostkaZNaglowka, odcinkiDxf, scianyZDxf, warstwyDxf, type DxfDane, type JednostkaDxf } from "./core/dxf.js";
@@ -507,17 +508,23 @@ export class Stolarnia {
         plecy: DOMYSLNE_PLECY,
         blat: r?.materialBlatuId,
       };
-      return { zm: zbudujModul(m, b.ustawienia.konstrukcja), materialy };
+      return { zm: zbudujModul(m, b.ustawienia.konstrukcja, b.ustawienia.technologia), materialy };
     });
 
-    const formatki = listaFormatek(zbudowane, mapa);
+    const formatki = listaFormatek(zbudowane, mapa, { odejmujGruboscObrzeza: b.ustawienia.okleinowanie.odejmujGruboscObrzeza });
     const obrzeza = zapotrzebowanieObrzeza(formatki, b.ustawienia.okleinowanie);
     const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
     const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza);
     const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia);
     const walidacja = walidujProjekt(p);
 
-    return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja };
+    return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja, ustawienia: b.ustawienia };
+  }
+
+  /** Dokumentacja produkcyjna: części z układem lokalnym, operacje, diagnostyka i status gotowości — z jednej rewizji. */
+  dokumentacja(projektId: string) {
+    const a = this.analiza(projektId);
+    return dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
   }
 
   wycena(projektId: string, wariant?: WariantWyceny) {

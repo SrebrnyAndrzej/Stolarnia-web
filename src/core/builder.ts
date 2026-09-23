@@ -1,4 +1,6 @@
-import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, ZbudowanyModul } from "./types.js";
+import { dobierzNL, profilSzuflady, wymiarySzuflady } from "./catalog/drawers.js";
+import { USTAWIENIA_DOMYSLNE } from "./settings.js";
+import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "./types.js";
 
 // Budowa korpusu i frontów modułu — port DomainCore/CabinetBuilders.swift
 // (BaseCabinetBuilder / WallCabinetBuilder + CabinetComponentFactory), rozszerzony o
@@ -16,7 +18,7 @@ export function zawiasyDlaWysokosci(h: number): number {
   return 5;
 }
 
-export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne): ZbudowanyModul {
+export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: UstawieniaTechnologii = USTAWIENIA_DOMYSLNE.technologia): ZbudowanyModul {
   const el: Element[] = [];
   const okucia: OkucieModulu[] = [];
   const ostrzezenia: string[] = [];
@@ -74,9 +76,13 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne): ZbudowanyModu
       }
     }
 
-    // Plecy HDF wpuszczane
+    // Plecy HDF wsuwane w rowek (boki, wieniec dolny, wieniec górny jeśli jest).
+    // Wpust w rowek = głębokość rowka − luz; bez wieńca górnego plecy kończą się 2 mm pod górą boku.
     if (cfg.plecy) {
-      el.push(p("PLECY", "back", t, t, D - k.odsunieciePlecMM - k.gruboscPlecHDFMM, innerW, innerH, k.gruboscPlecHDFMM, "plecy"));
+      const wpust = tech.rowekGlebokoscMM - tech.rowekLuzMM;
+      const dol = t - wpust;
+      const gora = dolny ? H - 2 : H - t + wpust;
+      el.push(p("PLECY", "back", t - wpust, dol, D - k.odsunieciePlecMM - k.gruboscPlecHDFMM, innerW + 2 * wpust, gora - dol, k.gruboscPlecHDFMM, "plecy"));
     }
   }
 
@@ -87,24 +93,41 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne): ZbudowanyModu
   // --- Szuflady (skrzynki) ---
   const szuflady = fronty.filter((f) => f.kod.startsWith("FRONT-SZ"));
   if (szuflady.length && !bezKorpusu) {
-    const L = Math.max(250, Math.min(550, Math.floor((D - rezerwaPlecow - 10) / 50) * 50));
-    const ts = k.gruboscPlytySzufladMM;
-    const szerSkrzynki = innerW - 2 * LUZ_PROWADNIC_MM;
-    szuflady.forEach((f, i) => {
-      const n = pad(i + 1);
-      const h = Math.max(80, Math.min(250, f.wys - 40));
-      if (cfg.szufladySystemowe) {
-        // Tandembox/Legrabox: tylko dno i ścianka tylna z płyty 16 mm
-        el.push(p(`SZ${n}-DNO`, "drawerBottom", t + LUZ_PROWADNIC_MM, 0, 0, szerSkrzynki - 49, ts, L - 24, "szuflada"));
-        el.push(p(`SZ${n}-TYL`, "drawerFrontBack", t + LUZ_PROWADNIC_MM, 0, L - 24, szerSkrzynki - 61, Math.min(h, 167), ts, "szuflada"));
+    const LW = innerW; // rzeczywiste światło korpusu w miejscu montażu prowadnic
+    const uzytkowa = D - rezerwaPlecow;
+    const profil = profilSzuflady(tech.profilSzuflad);
+    if (cfg.szufladySystemowe && profil) {
+      // Wymiary dna i pleców wyłącznie z profilu producenta (reguly-szuflad.json).
+      const NL = dobierzNL(uzytkowa);
+      if (!NL) {
+        ostrzezenia.push(`Głębokość użytkowa ${uzytkowa} mm za mała dla prowadnic ${profil.family} (min. NL 270 + 3 mm).`);
       } else {
-        el.push(p(`SZ${n}-BOK-L`, "drawerSide", t + LUZ_PROWADNIC_MM, 0, 0, ts, h, L, "szuflada"));
-        el.push(p(`SZ${n}-BOK-P`, "drawerSide", W - t - LUZ_PROWADNIC_MM - ts, 0, 0, ts, h, L, "szuflada"));
-        el.push(p(`SZ${n}-CZOLO`, "drawerFrontBack", t + LUZ_PROWADNIC_MM + ts, 0, 0, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
-        el.push(p(`SZ${n}-TYL`, "drawerFrontBack", t + LUZ_PROWADNIC_MM + ts, 0, L - ts, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
-        el.push(p(`SZ${n}-DNO`, "drawerBottom", t + LUZ_PROWADNIC_MM, 0, 0, szerSkrzynki, k.gruboscPlecHDFMM, L, "plecy"));
+        szuflady.forEach((f, i) => {
+          const n = pad(i + 1);
+          const w = wymiarySzuflady(profil, LW, NL, f.wys);
+          const x0 = t + (LW - w.dnoSzer) / 2;
+          el.push(p(`SZ${n}-DNO`, "drawerBottom", x0, f.y + 20, 0, w.dnoSzer, w.grubosc, w.dnoGl, "szuflada"));
+          el.push(p(`SZ${n}-TYL`, "drawerFrontBack", t + (LW - w.plecySzer) / 2, f.y + 20 + w.grubosc, w.dnoGl - w.grubosc, w.plecySzer, w.plecyWys, w.grubosc, "szuflada"));
+        });
       }
-    });
+    } else if (cfg.szufladySystemowe) {
+      ostrzezenia.push(`Nieznany profil systemu szuflad "${tech.profilSzuflad}" — brak wymiarów dna i pleców.`);
+    } else {
+      // Skrzynka z płyty na prowadnicach bocznych — reguła robocza (luz 13 mm/stronę), bez profilu producenta.
+      const L = Math.max(250, Math.min(550, Math.floor((uzytkowa - 10) / 50) * 50));
+      const ts = k.gruboscPlytySzufladMM;
+      const szerSkrzynki = LW - 2 * LUZ_PROWADNIC_MM;
+      szuflady.forEach((f, i) => {
+        const n = pad(i + 1);
+        const h = Math.max(80, Math.min(250, f.wys - 40));
+        const y = f.y + 20;
+        el.push(p(`SZ${n}-BOK-L`, "drawerSide", t + LUZ_PROWADNIC_MM, y, 0, ts, h, L, "szuflada"));
+        el.push(p(`SZ${n}-BOK-P`, "drawerSide", W - t - LUZ_PROWADNIC_MM - ts, y, 0, ts, h, L, "szuflada"));
+        el.push(p(`SZ${n}-CZOLO`, "drawerFrontBack", t + LUZ_PROWADNIC_MM + ts, y, 0, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
+        el.push(p(`SZ${n}-TYL`, "drawerFrontBack", t + LUZ_PROWADNIC_MM + ts, y, L - ts, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
+        el.push(p(`SZ${n}-DNO`, "drawerBottom", t + LUZ_PROWADNIC_MM, y - k.gruboscPlecHDFMM, 0, szerSkrzynki, k.gruboscPlecHDFMM, L, "plecy"));
+      });
+    }
     if (innerW < 150) ostrzezenia.push("Światło korpusu poniżej 150 mm — szuflada może się nie zmieścić.");
   }
 

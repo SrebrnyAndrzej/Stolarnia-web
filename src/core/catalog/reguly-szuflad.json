@@ -1,0 +1,289 @@
+{
+  "schema_version": "0.1",
+  "status": "research_candidates_not_production_release",
+  "definitions": {
+    "LW": "Rzeczywista szerokość wewnętrzna korpusu w miejscu montażu",
+    "NL": "Nominalna długość wybranej prowadnicy; nie głębokość korpusu"
+  },
+  "profiles": [
+    {
+      "id": "amix-elite-standard",
+      "manufacturer": "AMIX",
+      "family": "Elite Box",
+      "scope": "Standardowe; dno i plecy z płyty 18 mm",
+      "units": "mm",
+      "board_thickness_mm": 18,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 75
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 26
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 87
+        },
+        "height_by_variant_mm": {
+          "84": 84,
+          "116": 116,
+          "167": 167,
+          "199": 199
+        }
+      },
+      "source_id": "AMIX-Elite-Box-standardowe",
+      "pdf_page_1based": 1,
+      "source_sha256": "7ef6cd84fbb21cf0c5e8fccbb7765a782968fe32b000e3356f023afa43e3609d",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Nie przenosić wierceń z wersji wewnętrznej. L1 w instrukcji standardowej 100, w wewnętrznej 95 dla wskazanych długości; wymaga rozdzielenia profili."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 489,
+        "bottom_depth": 474,
+        "back_width": 477
+      }
+    },
+    {
+      "id": "gtv-axis-pro-option1",
+      "manufacturer": "GTV",
+      "family": "Axis Pro",
+      "scope": "Opcja 1 z karty; płyta 16 mm; nie rozszerzać na Glass ani inne warianty",
+      "units": "mm",
+      "board_thickness_mm": 16,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 75
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 24
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 87
+        },
+        "height_by_variant_mm": {
+          "low": 84,
+          "medium": 116,
+          "high": 167,
+          "very_high": 199
+        }
+      },
+      "source_id": "GTV-Axis-Pro-karta",
+      "pdf_page_1based": 8,
+      "source_sha256": "fe6850956d9e1c6fbb6c865a1f2946fdc15caa5f8a4ffc91b7e949bdd225839c",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Wysokość pleców nie jest wysokością boku metalowego. Karty _3 i _4 mają identyczny SHA256."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 489,
+        "bottom_depth": 476,
+        "back_width": 477
+      }
+    },
+    {
+      "id": "gtv-modern-box-pro",
+      "manufacturer": "GTV",
+      "family": "Modern Box PRO",
+      "scope": "Warianty A/B/C/D z instrukcji; płyta 16 mm",
+      "units": "mm",
+      "board_thickness_mm": 16,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 75
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 24
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 87
+        },
+        "height_by_variant_mm": {
+          "A": 84,
+          "B": 135,
+          "C": 199,
+          "D": 167
+        }
+      },
+      "source_id": "GTV-Modern-Box-Pro-instrukcja",
+      "pdf_page_1based": 7,
+      "source_sha256": "00054734048dc3df47373ce52e4ee50d0813a6aff80e16bf816cc2d7170f0827",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Nie mylić z Modern Box bez PRO. C jest wyższe od D."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 489,
+        "bottom_depth": 476,
+        "back_width": 477
+      }
+    },
+    {
+      "id": "blum-merivobox-m-wood",
+      "manufacturer": "BLUM",
+      "family": "MERIVOBOX",
+      "scope": "Standard M, drewniana ścianka tylna",
+      "units": "mm",
+      "board_thickness_mm": 16,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 51
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 26
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 51
+        },
+        "height_by_variant_mm": {
+          "M": 83
+        }
+      },
+      "source_id": "BLUM-Merivobox-planowanie",
+      "pdf_page_1based": 15,
+      "source_sha256": "3361fffd4689454b5f21fe6740dd1ea106ea610bcd15697864dba61eb3a4ece7",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Nie rozszerzać na pozostałe wysokości ani inne konfiguracje tylnej ścianki."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 513,
+        "bottom_depth": 474,
+        "back_width": 513
+      }
+    },
+    {
+      "id": "blum-legrabox-m-wood",
+      "manufacturer": "BLUM",
+      "family": "LEGRABOX",
+      "scope": "Standard M, drewniana ścianka tylna",
+      "units": "mm",
+      "board_thickness_mm": 16,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 35
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 10
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 38
+        },
+        "height_by_variant_mm": {
+          "M": 63
+        }
+      },
+      "source_id": "BLUM-Legrabox-planowanie",
+      "pdf_page_1based": 15,
+      "source_sha256": "7537f2530257e4e56a08de0398dd825465c4262e54a63ee5b16cd596f779421a",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Dno wymaga obróbki zgodnej z rysunkiem producenta; sam prostokąt nie opisuje gotowej części. Profil frezowania nie został znormalizowany."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 529,
+        "bottom_depth": 490,
+        "back_width": 526
+      }
+    },
+    {
+      "id": "blum-tandembox-antaro-m-wood",
+      "manufacturer": "BLUM",
+      "family": "TANDEMBOX antaro",
+      "scope": "Standard M, drewniana ścianka tylna",
+      "units": "mm",
+      "board_thickness_mm": 16,
+      "bottom": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 75
+        },
+        "depth": {
+          "variable": "NL",
+          "subtract_mm": 24
+        }
+      },
+      "back": {
+        "width": {
+          "variable": "LW",
+          "subtract_mm": 87
+        },
+        "height_by_variant_mm": {
+          "M": 84
+        }
+      },
+      "source_id": "BLUM-Tandembox-antaro-planowanie",
+      "pdf_page_1based": 7,
+      "source_sha256": "c59a7c22f74f557b5f91d39ff173db04663311dc1eadf0607392a7db69a6f671",
+      "verification": "cut_dimensions_visually_checked",
+      "production_approved": false,
+      "sku_mapping_complete": false,
+      "drilling_status": "not_normalized",
+      "allowed_nominal_lengths_status": "not_normalized",
+      "notes": [
+        "Nie stosować wymiaru długości dla stalowej ścianki tylnej do tego profilu."
+      ],
+      "example": {
+        "LW": 564,
+        "NL": 500,
+        "bottom_width": 489,
+        "bottom_depth": 476,
+        "back_width": 477
+      }
+    }
+  ]
+}

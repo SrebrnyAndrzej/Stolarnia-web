@@ -54,6 +54,40 @@ export interface UstawieniaRozkroju {
 export interface UstawieniaOkleinowania {
   naddatekNaKrawedzMM: number;
   zapasProcent: number;
+  /** Profil zakładu: czy wymiar do cięcia pomniejszać o grubość obrzeża (stosowane dokładnie raz). */
+  odejmujGruboscObrzeza: boolean;
+}
+
+/**
+ * Profil technologiczny zakładu — parametry połączeń i wierceń. Wartości domyślne są robocze:
+ * dopóki zakład ich nie zatwierdzi (flagi `...Zatwierdzone`), operacje mają status „robocza”.
+ */
+export interface UstawieniaTechnologii {
+  konfirmatSrednicaLicaMM: number;
+  konfirmatSrednicaKrawedziMM: number;
+  konfirmatGlebokoscKrawedziMM: number;
+  konfirmatOdKrawedziMM: number;
+  konfirmatMaxRozstawMM: number;
+  polaczeniaZatwierdzone: boolean;
+  podporkaSrednicaMM: number;
+  podporkaGlebokoscMM: number;
+  podporkaOdKrawedziMM: number;
+  rastrMM: number;
+  podporkiZatwierdzone: boolean;
+  rowekGlebokoscMM: number;
+  rowekLuzMM: number;
+  rowekZatwierdzony: boolean;
+  zawiasPuszkaSrednicaMM: number;
+  zawiasPuszkaGlebokoscMM: number;
+  zawiasPuszkaOdKrawedziMM: number;
+  zawiasOdKoncaFrontuMM: number;
+  prowadnikOdFrontuMM: number;
+  prowadnikRozstawMM: number;
+  prowadnikSrednicaMM: number;
+  prowadnikGlebokoscMM: number;
+  zawiasyZatwierdzone: boolean;
+  /** Profil systemu szuflad z docs/okucia/reguly-szuflad.json. */
+  profilSzuflad: string;
 }
 
 export interface UstawieniaStolarni {
@@ -62,6 +96,7 @@ export interface UstawieniaStolarni {
   konstrukcja: UstawieniaKonstrukcyjne;
   rozkroj: UstawieniaRozkroju;
   okleinowanie: UstawieniaOkleinowania;
+  technologia: UstawieniaTechnologii;
 }
 
 // ---------- Materiały (BazaMaterialowModels.swift) ----------
@@ -333,9 +368,103 @@ export interface Formatka {
   dlugoscMM: number;
   szerokoscMM: number;
   gruboscMM: number;
+  /** Wymiar półfabrykatu do cięcia (po kompensacji obrzeża wg profilu zakładu — stosowanej raz). */
+  dlugoscCieciaMM: number;
+  szerokoscCieciaMM: number;
   kierunekDekoru: KierunekDekoru;
   /** Obrzeże kolejno: długa A, długa B, krótka A, krótka B. */
   obrzeza: [RodzajObrzeza, RodzajObrzeza, RodzajObrzeza, RodzajObrzeza];
+}
+
+// ---------- Dokumentacja produkcyjna: części, operacje, diagnostyka ----------
+
+/** Stopień weryfikacji reguły, z której powstała operacja. */
+export type StatusReguly = "zatwierdzona" | "katalogowa" | "robocza" | "brakDanych";
+
+/**
+ * Powierzchnie części w jej lokalnym układzie: A — lico od strony wnętrza mebla (dla frontów: od korpusu),
+ * B — lico przeciwne, DA/DB — krawędzie długie (y=0 / y=szerokość), KA/KB — krawędzie krótkie (x=0 / x=długość).
+ */
+export type Powierzchnia = "A" | "B" | "DA" | "DB" | "KA" | "KB";
+
+export interface ZrodloReguly {
+  id: string;
+  opis: string;
+  status: StatusReguly;
+  zrodlo?: string;
+}
+
+export interface Operacja {
+  id: string;
+  czescId: string;
+  typ: "otwor" | "rowek";
+  powierzchnia: Powierzchnia;
+  /**
+   * Lico A/B: x wzdłuż długości od krawędzi KA, y wzdłuż szerokości od krawędzi DA.
+   * Krawędź DA/DB: x wzdłuż krawędzi od KA, y od lica B w grubości. Krawędź KA/KB: x od DA, y od lica B.
+   */
+  x: number;
+  y: number;
+  srednica?: number;
+  glebokosc?: number;
+  przelotowy?: boolean;
+  /** Rowek: długość wzdłuż osi i szerokość. */
+  dlugosc?: number;
+  szerokosc?: number;
+  osRowka?: "x" | "y";
+  przeznaczenie: string;
+  polaczenie?: string;
+  regula: ZrodloReguly;
+}
+
+export type StatusCzesci = "gotowa" | "robocza" | "brakDanych";
+
+export interface Diagnostyka {
+  kod: string;
+  poziom: "blad" | "brakDanych" | "niesprawdzone" | "ostrzezenie" | "info";
+  obiekty: string[];
+  opis: string;
+  poprawa?: string;
+}
+
+export interface Czesc {
+  id: string;
+  etykieta: string;
+  modulId: string;
+  nazwaModulu: string;
+  kodElementu: string;
+  rola: RolaElementu;
+  materialId: string;
+  materialOpis: string;
+  dlugoscMM: number;
+  szerokoscMM: number;
+  gruboscMM: number;
+  dlugoscCieciaMM: number;
+  szerokoscCieciaMM: number;
+  obrzeza: [RodzajObrzeza, RodzajObrzeza, RodzajObrzeza, RodzajObrzeza];
+  kierunekDekoru: KierunekDekoru;
+  /** Lokalny układ części w układzie modułu: początek (lico B, róg KA/DA) i osie x, y, n(A). */
+  uklad: { o: [number, number, number]; x: [number, number, number]; y: [number, number, number]; n: [number, number, number] };
+  operacje: Operacja[];
+  bezWiercen: boolean;
+  kupowana: boolean;
+  status: StatusCzesci;
+  uwagi: string[];
+  /** Podpis produkcyjny: identyczne podpisy = ta sama pozycja produkcyjna. */
+  podpis: string;
+}
+
+export interface DokumentacjaProjektu {
+  projektId: string;
+  nazwaProjektu: string;
+  rewizja: number;
+  wygenerowano: string;
+  wersjaGeneratora: string;
+  czesci: Czesc[];
+  diagnostyka: Diagnostyka[];
+  pozycjeProdukcyjne: { podpis: string; ilosc: number; czesci: string[] }[];
+  gotowaDoProdukcji: boolean;
+  podsumowanie: Record<StatusCzesci, number> & { operacje: number; bezWiercen: number };
 }
 
 export interface PolozenieFormatki {
