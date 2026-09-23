@@ -8,7 +8,7 @@
     "api/index.js": {
       "maxDuration": 60,
       "memory": 1024,
-      "includeFiles": "{dist/**/*.js,dist/**/*.json,docs/materialy/katalog-dekorow-PL.json,docs/materialy/egger-warianty-program-dostaw-PL.json,node_modules/dejavu-fonts-ttf/package.json,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans.ttf,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf,node_modules/dejavu-fonts-ttf/ttf/DejaVuSansMono.ttf}"
+      "includeFiles": "{dist/*.js,dist/{core,export,mcp,server,store}/**,docs/materialy/*-PL.json,node_modules/dejavu-fonts-ttf/package.json,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans*.ttf}"
     }
   },
   "rewrites": [
