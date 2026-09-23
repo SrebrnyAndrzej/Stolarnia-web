@@ -1,0 +1,585 @@
+{
+  "title": "CAD/CAM Article Configurator: Vauth-Sagel",
+  "requested_url": "https://vauth-sagel.com/it/en/service/product-configurator",
+  "final_url": "https://vauth-sagel.com/it/en/service/product-configurator",
+  "retrieved_at": "2026-09-23T14:19:45.029293+00:00",
+  "sha256": "301c80dba6741349e4c59ec82a14a983034d05b15b954ee505c0867deea2f7b5",
+  "content_type": "text/html; charset=utf-8",
+  "attachments": [
+    {
+      "url": "https://vauth-sagel.com/it/en/service/downloads",
+      "label": "Download"
+    },
+    {
+      "url": "http://2149.netshop.imos3d.com/app/",
+      "label": "Go to Article Configurator"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://salesviewer.org/W6c7r1P2N0c1.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/it.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/at.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/by.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/be.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ba.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cy.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/dk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ee.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/fi.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/fr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/de.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/gr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hu.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/is.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ie.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/il.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/it.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/me.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/nl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/no.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pt.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ro.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ru.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/rs.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/si.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/es.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/se.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ch.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ua.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/gb.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ca.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/us.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/bh.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/in.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/id.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/iq.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/jp.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/kw.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/lb.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/my.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/om.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/qa.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ru.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sa.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sg.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/kr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/tw.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/th.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/tr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ae.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/uz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/vn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/eg.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/za.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/au.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/nz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/br.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/co.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mx.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/it.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/at.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/by.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/be.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ba.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cy.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/dk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ee.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/fi.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/fr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/de.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/gr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hu.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/is.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ie.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/il.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/it.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/me.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/nl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/no.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pt.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ro.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ru.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/rs.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/si.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/es.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/se.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ch.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ua.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/gb.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ca.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/us.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/bh.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/hk.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/in.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/id.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/iq.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/jp.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/kw.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/lb.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/my.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/om.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/qa.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ru.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sa.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/sg.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/kr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/tw.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/th.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/tr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/ae.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/uz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/vn.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/eg.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/za.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/au.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/nz.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/br.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/cl.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/co.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/mx.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/1ee1d3e909b58d32e30dcea666dd3224/Icons/Flags/pr.webp?1788979037",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/70ce0e4550960ab6ba0d3d095b0be3e7/Images/Socialmedia/sm-wechat.svg?1788979026",
+      "alt": ""
+    },
+    {
+      "url": "https://vauth-sagel.com/_assets/70ce0e4550960ab6ba0d3d095b0be3e7/Images/QR_Code__Vauth-Sagel.jpg?1788979023",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

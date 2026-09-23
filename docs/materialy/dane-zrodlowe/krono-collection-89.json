@@ -1,0 +1,62 @@
+[
+  {
+    "decor_id": 608,
+    "decor_title": "Brushed Aluminium",
+    "decor_number": "AL01",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL01_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL01",
+    "decor_weight": 1,
+    "collection_id": 89,
+    "textures": []
+  },
+  {
+    "decor_id": 610,
+    "decor_title": "Brushed Inox",
+    "decor_number": "AL03",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL03_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL03",
+    "decor_weight": 2,
+    "collection_id": 89,
+    "textures": []
+  },
+  {
+    "decor_id": 761,
+    "decor_title": "Brushed Titan",
+    "decor_number": "AL08",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL08_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL08",
+    "decor_weight": 3,
+    "collection_id": 89,
+    "textures": []
+  },
+  {
+    "decor_id": 611,
+    "decor_title": "Brushed Gold",
+    "decor_number": "AL04",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL04_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL04",
+    "decor_weight": 4,
+    "collection_id": 89,
+    "textures": []
+  },
+  {
+    "decor_id": 612,
+    "decor_title": "Brushed Copper",
+    "decor_number": "AL05",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL05_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL05",
+    "decor_weight": 5,
+    "collection_id": 89,
+    "textures": []
+  },
+  {
+    "decor_id": 613,
+    "decor_title": "Brushed Bronze",
+    "decor_number": "AL06",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/AL/AL06_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/AL06",
+    "decor_weight": 6,
+    "collection_id": 89,
+    "textures": []
+  }
+]

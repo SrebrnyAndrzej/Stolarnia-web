@@ -1,0 +1,152 @@
+[
+  {
+    "decor_id": 26,
+    "decor_title": "Slate Grey",
+    "decor_number": "K171",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K171_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K171",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG/BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  },
+  {
+    "decor_id": 31,
+    "decor_title": "Satin",
+    "decor_number": "K7045",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7045_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7045",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG/BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 503,
+    "decor_title": "Cashmere",
+    "decor_number": "K5981",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K5981_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K5981",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  },
+  {
+    "decor_id": 633,
+    "decor_title": "Cobalt Grey",
+    "decor_number": "K6299",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K6299_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K6299",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG/BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 15,
+    "decor_title": "Almond",
+    "decor_number": "K564",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K564_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K564",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  },
+  {
+    "decor_id": 21,
+    "decor_title": "Stone Grey",
+    "decor_number": "K112",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K112_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K112",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG/BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 28,
+    "decor_title": "Anthracite",
+    "decor_number": "K164",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K164_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K164",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  },
+  {
+    "decor_id": 33,
+    "decor_title": "Latté",
+    "decor_number": "K7166",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7166_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7166",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  },
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": null,
+    "collection_id": 117,
+    "textures": [
+      {
+        "decor_texture_id": 18,
+        "decor_texture_abbr": "HG"
+      }
+    ]
+  }
+]

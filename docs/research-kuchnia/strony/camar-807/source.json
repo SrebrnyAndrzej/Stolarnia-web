@@ -1,0 +1,88 @@
+{
+  "title": "Camar S.p.A. - 807",
+  "requested_url": "https://www.camar.it/prodotti_sistemi_807.php",
+  "final_url": "https://www.camar.it/prodotti_sistemi_807.php",
+  "retrieved_at": "2026-09-23T14:19:46.306986+00:00",
+  "sha256": "aa7327058fdb530bb4b6d809ae954a4c0894544d61ae1c4f07660c41853ec4ba",
+  "content_type": "text/html; charset=UTF-8",
+  "attachments": [],
+  "images": [
+    {
+      "url": "https://www.camar.it/images/header/camar-logo-2021.png",
+      "alt": "Camar S.p.A."
+    },
+    {
+      "url": "https://www.camar.it/images/lang-it.png",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/lang-en.png",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/prodotti/prodotti_separatore.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/icona_info.gif",
+      "alt": "Click here to get more information"
+    },
+    {
+      "url": "https://www.camar.it/images/prodotti/foto/807/807_dettaglio_sicurezza_attiva.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/prodotti/foto/807/coperchietti.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/prodotti/foto/807/video_807_ico.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/prodotti/foto/807/807_adv_small.png",
+      "alt": ""
+    },
+    {
+      "url": "https://www.camar.it/images/blank.gif",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

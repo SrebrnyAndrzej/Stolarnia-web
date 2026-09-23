@@ -5,3 +5,7 @@ _ref/
 *.log
 .claude/
 *.tmp
+
+# Python caches from documentation collection
+__pycache__/
+*.pyc

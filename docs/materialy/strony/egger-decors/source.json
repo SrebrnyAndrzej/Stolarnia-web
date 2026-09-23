@@ -1,0 +1,33 @@
+{
+  "title": "Dekory do mebli i aranżacji wnętrz | EGGER",
+  "requested_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/?country=PL",
+  "final_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/?country=PL",
+  "retrieved_at": "2026-09-23T14:36:41.307430+00:00",
+  "sha256": "1c8c200f86811c67a6b149df256290513394205e8201f38dc808e05c443f7814",
+  "content_type": "text/html; charset=utf-8",
+  "attachments": [
+    {
+      "url": "https://www.egger.com/pl/pomoc/materialy-do-pobrania",
+      "label": "Materiały do pobrania"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/a6b3c90f-a0ba-4379-abab-9215f9071955/ORIGINAL/gen_egger_logo_en.svg",
+      "alt": "EGGER - More from wood"
+    },
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/95c5d191-ec63-43bf-99bc-cb03503a888e/FALLBACK/edp_edc24_scan_function_app.jpg?cachekey=148562",
+      "alt": "Aplikacja Kolekcja materiałów dekoracyjnych"
+    },
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/4b6ed22e-4941-44fe-abe9-1d7db6ace762/ORIGINAL/apple_app_store_.svg",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/6884bdc4-6562-4df8-bbfa-f521d2214b70/ORIGINAL/google_play_store_.svg",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

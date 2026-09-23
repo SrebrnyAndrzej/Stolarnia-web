@@ -1,0 +1,242 @@
+[
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": 1,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 503,
+    "decor_title": "Cashmere",
+    "decor_number": "K5981",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K5981_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K5981",
+    "decor_weight": 2,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 1062,
+    "decor_title": "Reed Green",
+    "decor_number": "K2223",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/k2223_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2223",
+    "decor_weight": 3,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 1007,
+    "decor_title": "Silk Primavera Oak",
+    "decor_number": "K694",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K694_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K694",
+    "decor_weight": 4,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 1008,
+    "decor_title": "Straw Primavera Oak",
+    "decor_number": "K695",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K695_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K695",
+    "decor_weight": 5,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 1009,
+    "decor_title": "Umber Primavera Oak",
+    "decor_number": "K696",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K696_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K696",
+    "decor_weight": 6,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 1010,
+    "decor_title": "Cocoa Primavera Oak",
+    "decor_number": "K697",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K697_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K697",
+    "decor_weight": 7,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 779,
+    "decor_title": "Biscotti Hudson Oak",
+    "decor_number": "K527",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K527_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K527",
+    "decor_weight": 8,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 780,
+    "decor_title": "Cashmere Hudson Oak",
+    "decor_number": "K528",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K528_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K528",
+    "decor_weight": 9,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 781,
+    "decor_title": "Gold Hudson Oak",
+    "decor_number": "K529",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K529_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K529",
+    "decor_weight": 10,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 782,
+    "decor_title": "Amaretto Hudson Oak",
+    "decor_number": "K530",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K530_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K530",
+    "decor_weight": 11,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 801,
+    "decor_title": "Chocolate Hudson Oak",
+    "decor_number": "K554",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K554_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K554",
+    "decor_weight": 12,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 783,
+    "decor_title": "Stone Arvadonna Chestnut",
+    "decor_number": "K531",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K531_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K531",
+    "decor_weight": 13,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 61,
+        "decor_texture_abbr": "AD"
+      }
+    ]
+  },
+  {
+    "decor_id": 784,
+    "decor_title": "Flamed Arvadonna Chestnut",
+    "decor_number": "K532",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K532_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K532",
+    "decor_weight": 14,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 61,
+        "decor_texture_abbr": "AD"
+      }
+    ]
+  },
+  {
+    "decor_id": 785,
+    "decor_title": "Mink Arvadonna Chestnut",
+    "decor_number": "K533",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K533_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K533",
+    "decor_weight": 15,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 61,
+        "decor_texture_abbr": "AD"
+      }
+    ]
+  },
+  {
+    "decor_id": 786,
+    "decor_title": "Charcoal Arvadonna Chestnut",
+    "decor_number": "K534",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K534_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K534",
+    "decor_weight": 16,
+    "collection_id": 122,
+    "textures": [
+      {
+        "decor_texture_id": 61,
+        "decor_texture_abbr": "AD"
+      }
+    ]
+  }
+]

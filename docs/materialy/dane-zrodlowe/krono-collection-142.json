@@ -1,0 +1,55 @@
+[
+  {
+    "decor_id": 995,
+    "decor_title": "Torro Cremona Oak",
+    "decor_number": "K2738",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2738_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2738",
+    "decor_weight": null,
+    "collection_id": 142,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      },
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      },
+      {
+        "decor_texture_id": 15,
+        "decor_texture_abbr": "FP"
+      }
+    ]
+  },
+  {
+    "decor_id": 996,
+    "decor_title": "Cannolo Cremona Oak",
+    "decor_number": "K2739",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2739_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2739",
+    "decor_weight": null,
+    "collection_id": 142,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  },
+  {
+    "decor_id": 994,
+    "decor_title": "Cotta Cremona Oak",
+    "decor_number": "K2737",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2737_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2737",
+    "decor_weight": null,
+    "collection_id": 142,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  }
+]

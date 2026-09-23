@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-23",
+  "market": "PL",
+  "egger_search_expected": 408,
+  "egger_decor_records": 408,
+  "egger_delivery_program_articles": 9214,
+  "egger_article_groups": {
+    "PG_EDGING": 1789,
+    "PG_LAMINATES": 1017,
+    "PG_SPLASHBACK": 82,
+    "PG_WORKTOPACESSORIES": 62,
+    "PG_WORKTOPS": 199,
+    "PG_COMPACTLAMINATE": 978,
+    "PG_MELAMINFACEDBOARDS": 4631,
+    "PG_PERFECTSENSE": 456
+  },
+  "kronospan_collections": 26,
+  "kronospan_unique_decors": 236,
+  "images_downloaded": 644,
+  "images_failed": 0,
+  "complete_PL_product_offer_verified": false,
+  "gaps": [
+    "Kronosfera regional Home/SKIN/FOCUS and other local lines not yet reconciled against global Kronodesign grid.",
+    "Kronospan decor-product-thickness-format matrix not yet normalized.",
+    "Raw substrates not yet enumerated as articles.",
+    "Thumbnail physical scale and PBR maps not established."
+  ]
+}

@@ -1,0 +1,452 @@
+[
+  {
+    "decor_id": 716,
+    "decor_title": "Concrete Flow",
+    "decor_number": "K350",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K350_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K350",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 52,
+        "decor_texture_abbr": "RT"
+      }
+    ]
+  },
+  {
+    "decor_id": 719,
+    "decor_title": "Charcoal Flow",
+    "decor_number": "K353",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K353_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K353",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 52,
+        "decor_texture_abbr": "RT"
+      }
+    ]
+  },
+  {
+    "decor_id": 781,
+    "decor_title": "Gold Hudson Oak",
+    "decor_number": "K529",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K529_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K529",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 788,
+    "decor_title": "Amber Baroque Oak",
+    "decor_number": "K536",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K536_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K536",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 59,
+        "decor_texture_abbr": "RW"
+      }
+    ]
+  },
+  {
+    "decor_id": 1008,
+    "decor_title": "Straw Primavera Oak",
+    "decor_number": "K695",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K695_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K695",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 782,
+    "decor_title": "Amaretto Hudson Oak",
+    "decor_number": "K530",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K530_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K530",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 62,
+        "decor_texture_abbr": "HU"
+      }
+    ]
+  },
+  {
+    "decor_id": 789,
+    "decor_title": "Ristretto Baroque Oak",
+    "decor_number": "K537",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K537_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K537",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 59,
+        "decor_texture_abbr": "RW"
+      }
+    ]
+  },
+  {
+    "decor_id": 1009,
+    "decor_title": "Umber Primavera Oak",
+    "decor_number": "K696",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K696_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K696",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 93,
+        "decor_texture_abbr": "PV"
+      }
+    ]
+  },
+  {
+    "decor_id": 715,
+    "decor_title": "Silk Flow",
+    "decor_number": "K349",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K349_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K349",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 52,
+        "decor_texture_abbr": "RT"
+      }
+    ]
+  },
+  {
+    "decor_id": 718,
+    "decor_title": "Iron Flow",
+    "decor_number": "K352",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K352_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K352",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 52,
+        "decor_texture_abbr": "RT"
+      }
+    ]
+  },
+  {
+    "decor_id": 787,
+    "decor_title": "Gold Baroque Oak",
+    "decor_number": "K535",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K535_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K535",
+    "decor_weight": null,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 59,
+        "decor_texture_abbr": "RW"
+      }
+    ]
+  },
+  {
+    "decor_id": 663,
+    "decor_title": "Elegance Endgrain Oak",
+    "decor_number": "K107",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K107_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K107",
+    "decor_weight": 1,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 15,
+        "decor_texture_abbr": "FP"
+      }
+    ]
+  },
+  {
+    "decor_id": 662,
+    "decor_title": "Raw Endgrain Oak",
+    "decor_number": "K105",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K105_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K105",
+    "decor_weight": 2,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 15,
+        "decor_texture_abbr": "FP"
+      }
+    ]
+  },
+  {
+    "decor_id": 796,
+    "decor_title": "Hazel Silverjack Oak",
+    "decor_number": "K544",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K544_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K544",
+    "decor_weight": 3,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 59,
+        "decor_texture_abbr": "RW"
+      }
+    ]
+  },
+  {
+    "decor_id": 797,
+    "decor_title": "Vintage Silverjack Oak",
+    "decor_number": "K545",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K545_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K545",
+    "decor_weight": 6,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 59,
+        "decor_texture_abbr": "RW"
+      }
+    ]
+  },
+  {
+    "decor_id": 790,
+    "decor_title": "Dovetail Arosa",
+    "decor_number": "K538",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K538_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K538",
+    "decor_weight": 10,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 60,
+        "decor_texture_abbr": "PN"
+      }
+    ]
+  },
+  {
+    "decor_id": 792,
+    "decor_title": "Grey Albus",
+    "decor_number": "K540",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K540_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K540",
+    "decor_weight": 11,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 60,
+        "decor_texture_abbr": "PN"
+      }
+    ]
+  },
+  {
+    "decor_id": 717,
+    "decor_title": "Rusty Flow",
+    "decor_number": "K351",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K351_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K351",
+    "decor_weight": 12,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 52,
+        "decor_texture_abbr": "RT"
+      }
+    ]
+  },
+  {
+    "decor_id": 791,
+    "decor_title": "Fossil Arosa",
+    "decor_number": "K539",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K539_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K539",
+    "decor_weight": 14,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 60,
+        "decor_texture_abbr": "PN"
+      }
+    ]
+  },
+  {
+    "decor_id": 681,
+    "decor_title": "White Andromeda",
+    "decor_number": "K217",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K217_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K217",
+    "decor_weight": 16,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 55,
+        "decor_texture_abbr": "GM"
+      }
+    ]
+  },
+  {
+    "decor_id": 682,
+    "decor_title": "Black Andromeda",
+    "decor_number": "K218",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K218_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K218",
+    "decor_weight": 17,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 55,
+        "decor_texture_abbr": "GM"
+      }
+    ]
+  },
+  {
+    "decor_id": 775,
+    "decor_title": "Platinium Disk",
+    "decor_number": "K523",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K523_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K523",
+    "decor_weight": 18,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 731,
+    "decor_title": "Coast Evoke Oak",
+    "decor_number": "K365",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K365_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K365",
+    "decor_weight": 19,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 15,
+        "decor_texture_abbr": "FP"
+      }
+    ]
+  },
+  {
+    "decor_id": 802,
+    "decor_title": "Calacatta Olympus",
+    "decor_number": "K551",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K551_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K551",
+    "decor_weight": 20,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 651,
+    "decor_title": "Grey Emperador Marble",
+    "decor_number": "K093",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K093_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K093",
+    "decor_weight": 21,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 50,
+        "decor_texture_abbr": "SL"
+      }
+    ]
+  },
+  {
+    "decor_id": 665,
+    "decor_title": "Light Grey Concrete",
+    "decor_number": "K200",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K200_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K200",
+    "decor_weight": 22,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 32,
+        "decor_texture_abbr": "RS"
+      }
+    ]
+  },
+  {
+    "decor_id": 803,
+    "decor_title": "Sand Venera",
+    "decor_number": "K549",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K549_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K549",
+    "decor_weight": 23,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 50,
+        "decor_texture_abbr": "SL"
+      }
+    ]
+  },
+  {
+    "decor_id": 804,
+    "decor_title": "White Iceberg Marble",
+    "decor_number": "K552",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K552_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K552",
+    "decor_weight": 24,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 805,
+    "decor_title": "Dove Venera",
+    "decor_number": "K550",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K550_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K550",
+    "decor_weight": 25,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 50,
+        "decor_texture_abbr": "SL"
+      }
+    ]
+  },
+  {
+    "decor_id": 806,
+    "decor_title": "Galaxus",
+    "decor_number": "K553",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K553_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K553",
+    "decor_weight": 26,
+    "collection_id": 98,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  }
+]

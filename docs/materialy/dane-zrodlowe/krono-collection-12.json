@@ -1,0 +1,92 @@
+[
+  {
+    "decor_id": 26,
+    "decor_title": "Slate Grey",
+    "decor_number": "K171",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K171_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K171",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  },
+  {
+    "decor_id": 503,
+    "decor_title": "Cashmere",
+    "decor_number": "K5981",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K5981_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K5981",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  },
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  },
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  },
+  {
+    "decor_id": 20,
+    "decor_title": "Cool Grey",
+    "decor_number": "K191",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K191_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K191",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  },
+  {
+    "decor_id": 31,
+    "decor_title": "Satin",
+    "decor_number": "K7045",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7045_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7045",
+    "decor_weight": null,
+    "collection_id": 12,
+    "textures": [
+      {
+        "decor_texture_id": 21,
+        "decor_texture_abbr": "MG"
+      }
+    ]
+  }
+]

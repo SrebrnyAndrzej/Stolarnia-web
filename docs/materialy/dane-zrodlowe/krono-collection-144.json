@@ -1,0 +1,122 @@
+[
+  {
+    "decor_id": 749,
+    "decor_title": "Black Pietra Marble",
+    "decor_number": "K409",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K409_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K409",
+    "decor_weight": null,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 995,
+    "decor_title": "Torro Cremona Oak",
+    "decor_number": "K2738",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2738_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2738",
+    "decor_weight": null,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 996,
+    "decor_title": "Cannolo Cremona Oak",
+    "decor_number": "K2739",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2739_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2739",
+    "decor_weight": null,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 614,
+    "decor_title": "Venato",
+    "decor_number": "K023",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K023_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K023",
+    "decor_weight": 1,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 715,
+    "decor_title": "Silk Flow",
+    "decor_number": "K349",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K349_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K349",
+    "decor_weight": 2,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 716,
+    "decor_title": "Concrete Flow",
+    "decor_number": "K350",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K350_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K350",
+    "decor_weight": 3,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 718,
+    "decor_title": "Iron Flow",
+    "decor_number": "K352",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K352_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K352",
+    "decor_weight": 4,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 719,
+    "decor_title": "Charcoal Flow",
+    "decor_number": "K353",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K353_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K353",
+    "decor_weight": 6,
+    "collection_id": 144,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  }
+]

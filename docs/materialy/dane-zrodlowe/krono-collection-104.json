@@ -1,0 +1,82 @@
+[
+  {
+    "decor_id": 622,
+    "decor_title": "Beech Fine",
+    "decor_number": "SW01",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW01-beech-fine_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW01",
+    "decor_weight": 1,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 623,
+    "decor_title": "Beech Country",
+    "decor_number": "SW02",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW02-beech-country_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW02",
+    "decor_weight": 2,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 745,
+    "decor_title": "Beech Country Art",
+    "decor_number": "SW07",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW07-beech-country-art_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW07",
+    "decor_weight": 3,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 624,
+    "decor_title": "Oak Exclusive",
+    "decor_number": "SW03",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW03-oak-exclusive_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW03",
+    "decor_weight": 4,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 625,
+    "decor_title": "Oak Rustic",
+    "decor_number": "SW04",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW04-oak-rustic_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW04",
+    "decor_weight": 5,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 746,
+    "decor_title": "Oak Rustic Art",
+    "decor_number": "SW08",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW08-oak-rustic-art_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW08",
+    "decor_weight": 6,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 747,
+    "decor_title": "Beech Continuous Lamellas",
+    "decor_number": "SW09",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW09-beech-continuous-lamellas_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW09",
+    "decor_weight": 7,
+    "collection_id": 104,
+    "textures": []
+  },
+  {
+    "decor_id": 748,
+    "decor_title": "Oak Continuous Lamellas",
+    "decor_number": "SW10",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/SW/SW10-oak-continuous-lamellas_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/SW10",
+    "decor_weight": 8,
+    "collection_id": 104,
+    "textures": []
+  }
+]

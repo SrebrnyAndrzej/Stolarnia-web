@@ -1,0 +1,231 @@
+[
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": null,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 54,
+        "decor_texture_abbr": "AF"
+      },
+      {
+        "decor_texture_id": 50,
+        "decor_texture_abbr": "SL"
+      }
+    ]
+  },
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": null,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 614,
+    "decor_title": "Venato",
+    "decor_number": "K023",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K023_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K023",
+    "decor_weight": null,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 814,
+    "decor_title": "Pietra Belvedere",
+    "decor_number": "K595",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K595_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K595",
+    "decor_weight": null,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 802,
+    "decor_title": "Calacatta Olympus",
+    "decor_number": "K551",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K551_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K551",
+    "decor_weight": 2,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 804,
+    "decor_title": "White Iceberg Marble",
+    "decor_number": "K552",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K552_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K552",
+    "decor_weight": 4,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 813,
+    "decor_title": "Breccia Vivaldo",
+    "decor_number": "K594",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K594_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K594",
+    "decor_weight": 5,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 1020,
+    "decor_title": "Agra Travertine",
+    "decor_number": "K750",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K750_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K750",
+    "decor_weight": 6,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 94,
+        "decor_texture_abbr": "LV"
+      }
+    ]
+  },
+  {
+    "decor_id": 733,
+    "decor_title": "Cream Navona",
+    "decor_number": "K367",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K367_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K367",
+    "decor_weight": 7,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 53,
+        "decor_texture_abbr": "PH"
+      }
+    ]
+  },
+  {
+    "decor_id": 1019,
+    "decor_title": "Babylon Slate",
+    "decor_number": "K749",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K749_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K749",
+    "decor_weight": 8,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 94,
+        "decor_texture_abbr": "LV"
+      }
+    ]
+  },
+  {
+    "decor_id": 619,
+    "decor_title": "Portland",
+    "decor_number": "K028",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K028_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K028",
+    "decor_weight": 9,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 734,
+    "decor_title": "Grey Atlantic Marble",
+    "decor_number": "K368",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K368_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K368",
+    "decor_weight": 10,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 53,
+        "decor_texture_abbr": "PH"
+      }
+    ]
+  },
+  {
+    "decor_id": 790,
+    "decor_title": "Dovetail Arosa",
+    "decor_number": "K538",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K538_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K538",
+    "decor_weight": 11,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 53,
+        "decor_texture_abbr": "PH"
+      }
+    ]
+  },
+  {
+    "decor_id": 791,
+    "decor_title": "Fossil Arosa",
+    "decor_number": "K539",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K539_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K539",
+    "decor_weight": 13,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 53,
+        "decor_texture_abbr": "PH"
+      }
+    ]
+  },
+  {
+    "decor_id": 806,
+    "decor_title": "Galaxus",
+    "decor_number": "K553",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K553_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K553",
+    "decor_weight": 14,
+    "collection_id": 99,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  }
+]

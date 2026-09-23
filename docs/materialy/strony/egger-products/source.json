@@ -1,0 +1,77 @@
+{
+  "title": "Meble i aranżacja wnętrz| EGGER",
+  "requested_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/asortyment/?country=PL",
+  "final_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/asortyment/?country=PL",
+  "retrieved_at": "2026-09-23T14:36:41.288203+00:00",
+  "sha256": "77868369e635f61f7cae06afcf5ec3278b3e8911122e36f11375cf12ebd660c9",
+  "content_type": "text/html; charset=utf-8",
+  "attachments": [
+    {
+      "url": "https://www.egger.com/pl/pomoc/materialy-do-pobrania",
+      "label": "Materiały do pobrania"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/a6b3c90f-a0ba-4379-abab-9215f9071955/ORIGINAL/gen_egger_logo_en.svg",
+      "alt": "EGGER - More from wood"
+    },
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/0c3fe8e4-afe1-4169-8bbc-6772ed623112/FALLBACK/edp_edc24_product_variety_with_hands_overall.jpg?cachekey=263659",
+      "alt": "Róźnordoność produktów "
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8862098915358/8862098948126/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8861537435678/8861537468446/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8861571383326/8861571416094/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8860543385630/8860543582238/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854299148318/8861537501214/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8861571252254/8861574004766/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8862292246558/8862292279326/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854298886174/8854298918942/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8860545777694/8860545810462/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8861570531358/8861570564126/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854298296350/8854501654558/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854584786974/8859711995934/AR_4_3.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8861571317790/8861571350558/AR_4_3.png",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

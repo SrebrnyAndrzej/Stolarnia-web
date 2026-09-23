@@ -1,0 +1,57 @@
+{
+  "title": "H1384 ST40 Dąb Casella biały",
+  "requested_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/dekory/H1384_40?country=PL",
+  "final_url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/dekory/H1384_40?country=PL",
+  "retrieved_at": "2026-09-23T14:42:48.853558+00:00",
+  "sha256": "477dd629de3b1217dcf1ea3233aa822178c44322bdb543756aee1f9af93a092b",
+  "content_type": "text/html; charset=utf-8",
+  "attachments": [
+    {
+      "url": "https://www.egger.com/pl/meble-i-aranzacja-wnetrz/dekory/H1384_40?country=PL#openDecorDownloadsLayer",
+      "label": "Pobierz grafiki dekorów"
+    },
+    {
+      "url": "https://www.egger.com/pl/pomoc/materialy-do-pobrania",
+      "label": "Materiały do pobrania"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/a6b3c90f-a0ba-4379-abab-9215f9071955/ORIGINAL/gen_egger_logo_en.svg",
+      "alt": "EGGER - More from wood"
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854530031646/8854530064414/original.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854529900574/8854529933342/original.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8855094296606/8855108419614/original.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/cms/ff58d5b2-cb11-41dc-ba72-5cec737f1c8a/b875b5fd-2ad6-45fb-9cfb-31adc47961e3/FALLBACK/efp_efc25_store_classic_wv4_el2151_room_interior_match.jpg?cachekey=187580",
+      "alt": "Flooring Collection 25+ Interior Match"
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854529900574/8854529933342/original.png",
+      "alt": ""
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854336471070/8854515023902/original.png",
+      "alt": "Kubanit szczotkowany F434 ST20"
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854517415966/8854517448734/original.png",
+      "alt": "Płótno antracytowe F635 ST76"
+    },
+    {
+      "url": "https://cdn.egger.com/img/pim/8854430351390/8855430397982/original.png",
+      "alt": "Morela U232 ST9"
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

@@ -90,3 +90,12 @@ Widoki projektanta: **Elewacja** (edycja ściany), **Rzut** (widok z góry, wyb�
 ## Dalej
 
 Plan rozwoju (MCP, skille, biblioteki, formaty maszynowe) opisuje [docs/RESEARCH_MCP_SKILLE.md](docs/RESEARCH_MCP_SKILLE.md). Wytyczne produktu trafiają do `docs/WYTYCZNE.md`.
+
+## Dokumentacja i katalogi — aktualizacja 23.09.2026
+
+- [Wytyczne dla Claude i Codex v0.5](docs/WYTYCZNE.md)
+- [Automatyczny dobór okuć](docs/SPECYFIKACJA-autodobor-okuc.md) i [research systemów kuchennych](docs/RESEARCH-okucia-kuchenne-autodobor.md)
+- [Materiały Egger / Kronospan PL](docs/materialy/README.md): 644 lokalne zdjęcia, 408 pozycji Egger, 236 dekorów Kronospan oraz 9214 artykułów programu dostaw Egger.
+- [Przeglądarka dekorów](docs/materialy/katalog.html) — otwórz lokalnie po pobraniu repozytorium.
+
+Dane są biblioteką źródłową do wdrożenia. Pełne uzgodnienie regionalnej oferty Kronospan, macierzy wariantów płyt i profili obróbki pozostaje opisane w dokumentach jako nieukończone. Aktualizacja nie zmienia działania aplikacji.

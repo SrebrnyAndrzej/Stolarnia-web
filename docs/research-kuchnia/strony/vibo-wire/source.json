@@ -1,0 +1,57 @@
+{
+  "title": "Categories |  Partner  | Vibo",
+  "requested_url": "https://www.viboitaly.com/en/categories/kitchen/partner",
+  "final_url": "https://www.viboitaly.com/en/categories/kitchen/partner",
+  "retrieved_at": "2026-09-23T14:16:23.203064+00:00",
+  "sha256": "e5a9a721653503608f7996200a13db15ae8032403e302699f3c7aa4cccd57d34",
+  "content_type": "text/html; charset=UTF-8",
+  "attachments": [
+    {
+      "url": "https://www.viboitaly.com/en/download",
+      "label": "Downloads"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://www.viboitaly.com/images/elqhmp152sxpeb_1769698572.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/egphm30p2b_1769532337.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/ccphm240b_1769532443.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/egphm30b2bc_1769698649.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/k1cm660m2_1769532661.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/kcm660_1769532472.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/kce120stm3cc45b_1769685890.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/kce160stm4cc45b_1769685919.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/kce190stm5cc45-c_1769532812.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/necf224547011_1769532693.jpg",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

@@ -1,0 +1,36 @@
+{
+  "title": "System comparison | eShop Hettich - Your leading manufacturer of furniture fittings",
+  "requested_url": "https://shop.hettich.com/us_EN/system-comparison/compare/group12100825821033",
+  "final_url": "https://shop.hettich.com/us_EN/system-comparison/compare/group12100825821033",
+  "retrieved_at": "2026-09-23T14:16:28.265589+00:00",
+  "sha256": "0aabcf68a11b24503b310818e36243e15542b6d93bc83c7abde6f63d24b6fe03",
+  "content_type": "text/html;charset=UTF-8",
+  "attachments": [],
+  "images": [
+    {
+      "url": "https://shop.hettich.com/medias/Hettich-logo-sw.svg?context=bWFzdGVyfGltYWdlc3w0Mjg5fGltYWdlL3N2Zyt4bWx8YURabUwyZzROeTg1T0RJMk56YzVPRGc1TmprMEwwaGxkSFJwWTJoZmJHOW5iMTl6ZHk1emRtY3w3YzkzYWE3MzI4ODRhMDA4ZTQ5OGEzNDk5ZDM3MmFiMDlkYmUyY2QwZjRiNjkxYTc5MTI0NzU5M2QzZWYyMWQx",
+      "alt": "Hettich"
+    },
+    {
+      "url": "https://shop.hettich.com/medias/1200Wx1200H-550508-AvTYOU-187-Illumination-finder.tif?context=bWFzdGVyfDRhbGxwb3J0YWx8OTI1MDd8aW1hZ2UvanBlZ3xhRFppTDJobU1DOHhNVEF3TmpJek5EUXlOelF5TWk4eE1qQXdWM2d4TWpBd1NGODFOVEExTURoZlFYWlVXVTlWWHpFNE4xOUpiR3gxYldsdVlYUnBiMjVmWm1sdVpHVnlMblJwWmd8MWQ2OWY1NWQ3NGZjNWE4MjNjMzM0NWM0MGMxMGIyZDZlZDk0Y2EwOTM1NzU1ZDQyOTU3NWZmZjFlMmFhZmNjOQ",
+      "alt": ""
+    },
+    {
+      "url": "https://shop.hettich.com/medias/1200Wx1200H-550100-ArciTech-01-finder.jpg?context=bWFzdGVyfDRhbGxwb3J0YWx8NDYxODI3fGltYWdlL2pwZWd8YURJNUwyZ3hNeTh4TURrNE1Ea3pNRFl4TnpNM05DOHhNakF3VjNneE1qQXdTRjgxTlRBeE1EQmZRWEpqYVZSbFkyaGZNREZmWm1sdVpHVnlMbXB3Wnd8NWI5ODA1NzU0YWJmZTc3YWExYjQ1NWQwNGQ2NTEyZTZmOWExMjM3NTQwYTY2ODgwZDI0MzQ3MjNmNGI1MmMxYQ",
+      "alt": ""
+    },
+    {
+      "url": "https://shop.hettich.com/medias/1200Wx1200H-550200-InnoTech-Atira-01-finder.jpg?context=bWFzdGVyfDRhbGxwb3J0YWx8NDUxOTkzfGltYWdlL2pwZWd8YURJeEwyZzVNeTh4TURrNE1EazRNVGcyTmpVeU5pOHhNakF3VjNneE1qQXdTRjgxTlRBeU1EQmZTVzV1YjFSbFkyaGZRWFJwY21GZk1ERmZabWx1WkdWeUxtcHdad3w2OWQwYWEzMjc1MGFhYjIzZDZiZjIzNWZhYTJjMWNjMWU1NTIyOWUwMTAwNTExOTg3YTJkMWE1ZDZjN2RiNjM0",
+      "alt": ""
+    },
+    {
+      "url": "https://shop.hettich.com/medias/1200Wx1200H-ta-MT-118-TA-wss-finder.jpg?context=bWFzdGVyfDRhbGxwb3J0YWx8NTQ0MjE1fGltYWdlL2pwZWd8YURVeUwyaGhNQzh4TURrNE1EazNOVFV3T1RVek5DOHhNakF3VjNneE1qQXdTRjkwWVY5TlZGOHhNVGhmVkVGZmQzTnpYMlpwYm1SbGNpNXFjR2N8MjA3NjU4MDY0NzY2MGJmZjExOWZiMzY4OGJlZTdjODZkYjhlYjM5MTNmNWU5MTMxMjdjZWZiODQ2ZDUwYmU3ZA",
+      "alt": ""
+    },
+    {
+      "url": "https://shop.hettich.com/medias/1200Wx1200H-600210-SystemaTop2000-finder.jpg?context=bWFzdGVyfDRhbGxwb3J0YWx8NDUxNDUzfGltYWdlL2pwZWd8YURZeEwyZ3lPQzh4TURrNE1EazRPVFU1T1RjM05DOHhNakF3VjNneE1qQXdTRjgyTURBeU1UQmZVM2x6ZEdWdFlWUnZjREl3TURCZlptbHVaR1Z5TG1wd1p3fGMyOWRjMmUxZjMyMzQ5YzdkNWQxYjZjNzVhNTJkN2MyYjA0ZmUxYWExNTg4NTA5YTg5NjYzNTk2YjFkYzM0ZDg",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

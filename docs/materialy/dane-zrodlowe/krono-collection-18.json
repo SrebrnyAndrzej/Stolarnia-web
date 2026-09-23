@@ -1,0 +1,272 @@
+[
+  {
+    "decor_id": 788,
+    "decor_title": "Amber Baroque Oak",
+    "decor_number": "K536",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K536_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K536",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 19,
+    "decor_title": "Beige",
+    "decor_number": "0522",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0522_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0522",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 789,
+    "decor_title": "Ristretto Baroque Oak",
+    "decor_number": "K537",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K537_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K537",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 21,
+    "decor_title": "Stone Grey",
+    "decor_number": "K112",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K112_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K112",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 787,
+    "decor_title": "Gold Baroque Oak",
+    "decor_number": "K535",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K535_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K535",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 995,
+    "decor_title": "Torro Cremona Oak",
+    "decor_number": "K2738",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2738_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2738",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 11,
+    "decor_title": "Front White",
+    "decor_number": "K101",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K101_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K101",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 28,
+    "decor_title": "Anthracite",
+    "decor_number": "K164",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K164_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K164",
+    "decor_weight": null,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 61,
+    "decor_title": "Aluminium",
+    "decor_number": "0881",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0881_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0881",
+    "decor_weight": 4,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 219,
+    "decor_title": "Light Vintage Oak",
+    "decor_number": "3025",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/3/3025_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/3025",
+    "decor_weight": 7,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 116,
+    "decor_title": "Platinum Vintage Oak",
+    "decor_number": "8197",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/8/8197_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/8197",
+    "decor_weight": 9,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 118,
+    "decor_title": "Maple",
+    "decor_number": "0375",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0375_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0375",
+    "decor_weight": 13,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 120,
+    "decor_title": "Classic Beech",
+    "decor_number": "0381",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0381_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0381",
+    "decor_weight": 14,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 119,
+    "decor_title": "Mountain Oak",
+    "decor_number": "0740",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0740_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0740",
+    "decor_weight": 15,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 122,
+    "decor_title": "Cherry",
+    "decor_number": "0344",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0344_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0344",
+    "decor_weight": 16,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 127,
+    "decor_title": "Walnut",
+    "decor_number": "0729",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0729_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0729",
+    "decor_weight": 17,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 128,
+    "decor_title": "Wenge",
+    "decor_number": "0854",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/0/0854_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/0854",
+    "decor_weight": 18,
+    "collection_id": 18,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  }
+]

@@ -1,0 +1,317 @@
+[
+  {
+    "id": "amix-cargo",
+    "url": "https://amix.pl/pl/25-kosze-cargo-magic-cornery",
+    "status": "downloaded",
+    "path": "strony/amix-cargo",
+    "sha256": "413936bc731b7c68088a0ce7337b51b41a1c99374caa315b240f248407257b47",
+    "retrieved_at": "2026-09-23T14:16:19.857381+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "amix-cargo-page2",
+    "url": "https://amix.pl/pl/25-kosze-cargo-magic-cornery?page=2",
+    "status": "downloaded",
+    "path": "strony/amix-cargo-page2",
+    "sha256": "bb28dcfc602a40767f8703b0e95e9ad4889e8aabe7db4ec459a728f6cb5581db",
+    "retrieved_at": "2026-09-23T14:19:50.153208+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "amix-cargo-page3",
+    "url": "https://amix.pl/pl/25-kosze-cargo-magic-cornery?page=3",
+    "status": "downloaded",
+    "path": "strony/amix-cargo-page3",
+    "sha256": "bdfd1ba662161f90aa9264401704a20d9f53cbab0aa1b70caa62b7e25458a5a9",
+    "retrieved_at": "2026-09-23T14:19:49.939339+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "amix-deluxe-mini",
+    "url": "https://amix.pl/pl/kosze-cargo-grupa-i/2221-deluxe-cargo-mini",
+    "status": "downloaded",
+    "path": "strony/amix-deluxe-mini",
+    "sha256": "7182fffa3df7b3ea7d1975b21df0b8ca29fc4a96bb3213cd5ef2cd3c62ae606c",
+    "retrieved_at": "2026-09-23T14:19:48.201103+00:00",
+    "attachments": 6
+  },
+  {
+    "id": "amix-magic",
+    "url": "https://amix.pl/pl/kosze-cargo-grupa-i/1161-PTJ017J",
+    "status": "downloaded",
+    "path": "strony/amix-magic",
+    "sha256": "dab4a7e81fa838a4e25cc03710db4b3400d5bc96e06702a5b9ce642cca932b20",
+    "retrieved_at": "2026-09-23T14:22:29.902635+00:00",
+    "attachments": 6
+  },
+  {
+    "id": "amix-magic-sliding",
+    "url": "https://amix.pl/pl/kosze-cargo-grupa-i/1994-MPTJ017E",
+    "status": "downloaded",
+    "path": "strony/amix-magic-sliding",
+    "sha256": "15b0cec86bb589bf96c9dd2593f3852fac8724e6ec4e8531bd04171724da427a",
+    "retrieved_at": "2026-09-23T14:22:29.756684+00:00",
+    "attachments": 6
+  },
+  {
+    "id": "amix-sige-maxi",
+    "url": "https://amix.pl/pl/kosze-cargo-wloskie-sige/1577-cargo-wloskie-maxi",
+    "status": "downloaded",
+    "path": "strony/amix-sige-maxi",
+    "sha256": "2ee787932279e58e91e27bc3c06e46df4edea00168f32ed9762152aff107c88d",
+    "retrieved_at": "2026-09-23T14:19:49.127111+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "blum-hinges",
+    "url": "https://www.blum.com/pl/pl/products/news-specials/new-hinges/overview/",
+    "status": "downloaded",
+    "path": "strony/blum-hinges",
+    "sha256": "c9700e223389786bcb7b24b38a00e48e0952e9e7e9dd688bfc276c5d15457315",
+    "retrieved_at": "2026-09-23T14:19:45.896542+00:00",
+    "attachments": 5
+  },
+  {
+    "id": "blum-hk-downloads",
+    "url": "https://www.blum.com/pl/pl/products/liftsystems/aventos-hk-top/downloads-videos/",
+    "status": "downloaded",
+    "path": "strony/blum-hk-downloads",
+    "sha256": "fd014265bb4298fd42b6491769409286414946ae83888e9371d927a2b1774e0a",
+    "retrieved_at": "2026-09-23T14:22:29.079083+00:00",
+    "attachments": 22
+  },
+  {
+    "id": "blum-hk-top",
+    "url": "https://www.blum.com/pl/pl/products/liftsystems/aventos-hk-top/programme/",
+    "status": "downloaded",
+    "path": "strony/blum-hk-top",
+    "sha256": "b0cb3f81b84a3313759b9ac5aea3221bd7f96718a8a3d4326714c82bd0465cc0",
+    "retrieved_at": "2026-09-23T14:19:46.013346+00:00",
+    "attachments": 4
+  },
+  {
+    "id": "blum-products",
+    "url": "https://www.blum.com/pl/pl/products/",
+    "status": "downloaded",
+    "path": "strony/blum-products",
+    "sha256": "44a5e437b5d310e7f324c65f5e88dd30862caca951cf03ef60e2362dc5240a48",
+    "retrieved_at": "2026-09-23T14:16:25.081122+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "blum-space-tower",
+    "url": "https://www.blum.com/pl/pl/products/cabinet-applications/space-tower/overview/",
+    "status": "downloaded",
+    "path": "strony/blum-space-tower",
+    "sha256": "b9c328c37f3b43dc781a024bc4783c1bb08c1d286d0f4785ba6e8a430559707a",
+    "retrieved_at": "2026-09-23T14:19:45.627518+00:00",
+    "attachments": 5
+  },
+  {
+    "id": "camar-807",
+    "url": "https://www.camar.it/prodotti_sistemi_807.php",
+    "status": "downloaded",
+    "path": "strony/camar-807",
+    "sha256": "aa7327058fdb530bb4b6d809ae954a4c0894544d61ae1c4f07660c41853ec4ba",
+    "retrieved_at": "2026-09-23T14:19:46.306986+00:00",
+    "attachments": 0
+  },
+  {
+    "id": "gtv-corner",
+    "url": "https://gtv.com.pl/produkt/KO-WMC500-60/",
+    "status": "downloaded",
+    "path": "strony/gtv-corner",
+    "sha256": "06345a7c5d6cede1b51064c63d79a20fb68de6d53b392b84e28c1379dd8a6eab",
+    "retrieved_at": "2026-09-23T14:16:21.686662+00:00",
+    "attachments": 5
+  },
+  {
+    "id": "gtv-movix",
+    "url": "https://gtv.com.pl/kategoria-produktu/akcesoria-meblowe/wyposazenie-mebli-kuchennych/kosze-cargo/podblatowe/movix/",
+    "status": "downloaded",
+    "path": "strony/gtv-movix",
+    "sha256": "0fd7ed962616f0c4b53e85f1febf2d363588f897b7f43d9bcda604e96c0f7398",
+    "retrieved_at": "2026-09-23T14:16:22.263243+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "hailo-500",
+    "url": "https://www.hailo.de/de/p/hailo-as-cargo-synchro-500-181313d-3608531",
+    "status": "downloaded",
+    "path": "strony/hailo-500",
+    "sha256": "5ce9623e47c26800123f6c82744a46b4c38f5dc465f4ad75f5182268a53588d3",
+    "retrieved_at": "2026-09-23T14:16:23.899972+00:00",
+    "attachments": 14
+  },
+  {
+    "id": "hailo-waste",
+    "url": "https://www.hailo.de/en/built-in-technology/waste-separation-systems",
+    "status": "downloaded",
+    "path": "strony/hailo-waste",
+    "sha256": "a1994196e995c6f67a4641424ab84eb1a2866e58cd0c1440f18e58c72027f4f4",
+    "retrieved_at": "2026-09-23T14:16:23.600971+00:00",
+    "attachments": 4
+  },
+  {
+    "id": "hawa-folding",
+    "url": "https://the.hawa.com/products/hawa-folding-concepta-3",
+    "status": "failed",
+    "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'the.hawa.com'. (_ssl.c:1010)"
+  },
+  {
+    "id": "hettich-compare",
+    "url": "https://shop.hettich.com/us_EN/system-comparison/compare/group12100825821033",
+    "status": "downloaded",
+    "path": "strony/hettich-compare",
+    "sha256": "0aabcf68a11b24503b310818e36243e15542b6d93bc83c7abde6f63d24b6fe03",
+    "retrieved_at": "2026-09-23T14:16:28.265589+00:00",
+    "attachments": 0
+  },
+  {
+    "id": "kesse-dispensa",
+    "url": "https://www.kesseboehmer.com/stauraumloesungen/kueche/hochschraenke/dispensa",
+    "status": "downloaded",
+    "path": "strony/kesse-dispensa",
+    "sha256": "12ca0522dd576de92fd495483d440b54d367472d6db6f904dfaef75620dc3775",
+    "retrieved_at": "2026-09-23T14:16:21.559715+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "kesse-downloads",
+    "url": "https://www.kesseboehmer.com/stauraumloesungen/downloads",
+    "status": "failed",
+    "error": "Client error '404 Not Found' for url 'https://www.kesseboehmer.com/stauraumloesungen/downloads'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "id": "kesse-downloads-en",
+    "url": "https://www.kesseboehmer.com/en/storage-solutions/downloads",
+    "status": "failed",
+    "error": "Client error '404 Not Found' for url 'https://www.kesseboehmer.com/en/storage-solutions/downloads'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "id": "kesse-lemans",
+    "url": "https://www.kesseboehmer.com/en/storage-solutions/kitchen/corner-units/lemans",
+    "status": "downloaded",
+    "path": "strony/kesse-lemans",
+    "sha256": "323091b90813ba13b5fbd8b9b2fde77cedd15e4fb132f04241f52e4d1aea47bc",
+    "retrieved_at": "2026-09-23T14:19:44.919382+00:00",
+    "attachments": 6
+  },
+  {
+    "id": "kesse-revo",
+    "url": "https://www.kesseboehmer.com/en/storage-solutions/kitchen/corner-units/revo-90",
+    "status": "downloaded",
+    "path": "strony/kesse-revo",
+    "sha256": "da8110fb9ddb1f66808cb8216ac9c5fd7ecffb16e4231e46065ad466679f39b1",
+    "retrieved_at": "2026-09-23T14:16:20.538936+00:00",
+    "attachments": 4
+  },
+  {
+    "id": "kesse-tandem",
+    "url": "https://www.kesseboehmer.com/en/storage-solutions/kitchen/larder-units/tandem-family/tandem",
+    "status": "downloaded",
+    "path": "strony/kesse-tandem",
+    "sha256": "1d652064c7b9d69ebc2a9f6a18142c70a12ec90fe7406c70c08edd372d79a340",
+    "retrieved_at": "2026-09-23T14:16:21.067574+00:00",
+    "attachments": 4
+  },
+  {
+    "id": "ninka-downloads",
+    "url": "https://www.ninka.com/en/downloads.html",
+    "status": "downloaded",
+    "path": "strony/ninka-downloads",
+    "sha256": "98596af31ec736564a88c78ce34eb15701adec4de45f6b58671fc5509071bdab",
+    "retrieved_at": "2026-09-23T14:16:24.729086+00:00",
+    "attachments": 43
+  },
+  {
+    "id": "ninka-qanto",
+    "url": "https://www.ninka.com/en/Qanto_Downloads.html",
+    "status": "downloaded",
+    "path": "strony/ninka-qanto",
+    "sha256": "0cd41352289f0e7f3b50af1ba3fc7400a4d0fa6508704c81ef7447cde108e549",
+    "retrieved_at": "2026-09-23T14:19:49.821377+00:00",
+    "attachments": 31
+  },
+  {
+    "id": "peka-3d",
+    "url": "https://peka.pl/modele-3d",
+    "status": "downloaded",
+    "path": "strony/peka-3d",
+    "sha256": "5bb35d9e8534f547621eb7980c3cbbfb9ca47377d6d06994d2928254730b6caf",
+    "retrieved_at": "2026-09-23T14:19:48.346138+00:00",
+    "attachments": 935
+  },
+  {
+    "id": "peka-lemans",
+    "url": "https://peka.pl/kategoria/le-mans-wysoki",
+    "status": "downloaded",
+    "path": "strony/peka-lemans",
+    "sha256": "cfd0f776e886af624fba670092daf0bea541540e335f5df73d19165ee331d045",
+    "retrieved_at": "2026-09-23T14:16:19.356856+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "peka-nerka",
+    "url": "https://peka.pl/kategoria/le-mans",
+    "status": "downloaded",
+    "path": "strony/peka-nerka",
+    "sha256": "c41cd2774e6b10684b2dceef14be964a2a4baa1952d8895c9f9bbd6df7ea0ea6",
+    "retrieved_at": "2026-09-23T14:19:47.089376+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "peka-support",
+    "url": "https://peka.pl/wsparcie-techniczne",
+    "status": "downloaded",
+    "path": "strony/peka-support",
+    "sha256": "f598036fbb6d42e15610d499e05fd458af9dd8fd824a40351079d6f978d0ddc8",
+    "retrieved_at": "2026-09-23T14:16:19.754067+00:00",
+    "attachments": 155
+  },
+  {
+    "id": "salice-lifts",
+    "url": "https://www.salice.com/us/en/products/lift-systems-and-flap-doors",
+    "status": "downloaded",
+    "path": "strony/salice-lifts",
+    "sha256": "9a6f17c4c1ff08fe2bfac37e93cbe5a88a9e244358e9c27e43321095e1b96f2e",
+    "retrieved_at": "2026-09-23T14:16:24.269748+00:00",
+    "attachments": 3
+  },
+  {
+    "id": "vibo-corner",
+    "url": "https://www.viboitaly.com/en/products/smart-corner-estraibile-cesti-lamina",
+    "status": "downloaded",
+    "path": "strony/vibo-corner",
+    "sha256": "11a3912e34f46ffd9255730a37fe1642d554b6030c13479af542869a4c8b4a78",
+    "retrieved_at": "2026-09-23T14:16:23.630342+00:00",
+    "attachments": 1
+  },
+  {
+    "id": "vibo-jino",
+    "url": "https://www.viboitaly.com/en/products/jino-epoxy-coated-green-jino60vvr",
+    "status": "downloaded",
+    "path": "strony/vibo-jino",
+    "sha256": "e9401cd3434812d28a4841d868424a590eb3d52766f85c533fc8eca98d3480ee",
+    "retrieved_at": "2026-09-23T14:16:23.256040+00:00",
+    "attachments": 4
+  },
+  {
+    "id": "vibo-wire",
+    "url": "https://www.viboitaly.com/en/categories/kitchen/partner",
+    "status": "downloaded",
+    "path": "strony/vibo-wire",
+    "sha256": "e5a9a721653503608f7996200a13db15ae8032403e302699f3c7aa4cccd57d34",
+    "retrieved_at": "2026-09-23T14:16:23.203064+00:00",
+    "attachments": 1
+  },
+  {
+    "id": "vs-configurator",
+    "url": "https://vauth-sagel.com/it/en/service/product-configurator",
+    "status": "downloaded",
+    "path": "strony/vs-configurator",
+    "sha256": "301c80dba6741349e4c59ec82a14a983034d05b15b954ee505c0867deea2f7b5",
+    "retrieved_at": "2026-09-23T14:19:45.029293+00:00",
+    "attachments": 2
+  }
+]

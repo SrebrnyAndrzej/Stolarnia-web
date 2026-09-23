@@ -1,6 +1,6 @@
 # Wytyczne dla Claude: internetowy kreator mebli
 
-Wersja 0.4 — 23.09.2026. Zastępuje wersje 0.1–0.3. Dodaje bibliotekę źródeł okuć, reguły wymiarowania szuflad i wspólny warsztat pozyskiwania dokumentacji. Uwzględnia dwa obowiązkowe wymagania użytkownika: pełną dokumentację produkcyjną każdego mebla po zaprojektowaniu całej kuchni oraz silnik wizualizacji 3D. Dokument jest gotowy do przekazania Claude jako specyfikacja robocza. Nie został jeszcze zastosowany do repozytorium aplikacji.
+Wersja 0.5 — 23.09.2026. Zastępuje wersje 0.1–0.4. Dodaje bibliotekę źródeł okuć, reguły wymiarowania szuflad i wspólny warsztat pozyskiwania dokumentacji. Uwzględnia dwa obowiązkowe wymagania użytkownika: pełną dokumentację produkcyjną każdego mebla po zaprojektowaniu całej kuchni oraz silnik wizualizacji 3D. Dokument jest gotowy do przekazania Claude jako specyfikacja robocza. Dokument dodano do repozytorium; opisuje wymagania, a nie potwierdzenie ich pełnego wdrożenia w aplikacji.
 
 ## Cel i priorytety
 
@@ -304,3 +304,20 @@ Niepełny profil może służyć do projektu roboczego, z jawnym komunikatem o o
 Sprawdź co najmniej: przykład z katalogu, skrajne dopuszczalne wymiary, zmianę grubości korpusu, wszystkie obsługiwane wysokości, wariant pleców, odbicie lewo/prawo i zmianę długości prowadnicy. Porównaj rysunek oraz listę operacji z dokumentacją producenta. Test arytmetyczny samej formuły nie dowodzi poprawności odczytu diagramu. Dopuszczenie do produkcji wymaga zweryfikowanego przypadku referencyjnego w przyjętej technologii zakładu.
 
 Claude i Codex korzystają z tej samej biblioteki plików i identyfikatorów źródeł. Kolejność: odkrycie źródła → pobranie oryginału → ekstrakcja → sprawdzenie diagramu → profil → test referencyjny → dopuszczenie. Aktualizacja źródła tworzy nową wersję profilu i nie zmienia bez ostrzeżenia historycznych projektów. Przy przekazaniu pracy podaj profile zmienione, źródła, wykonane sprawdzenia i nierozstrzygnięte dane.
+
+
+## Uzupełnienie 0.5: automatyczny dobór i materiały PL
+
+Dokumenty towarzyszące są częścią specyfikacji: `SPECYFIKACJA-autodobor-okuc.md`, `RESEARCH-okucia-kuchenne-autodobor.md` oraz `materialy/README.md` i `materialy/pokrycie.json`.
+
+Aplikacja automatycznie dobiera kompletne zestawy okuć na podstawie geometrii użytkowej, przeznaczenia, obciążenia, materiału, strony montażu i przestrzeni ruchu. Obejmuje szuflady systemowe i drewniane, kosze na prowadnicach, cargo dolne i wysokie, nerki, narożniki z koszami, karuzele, segregację odpadów, zawiasy, podnośniki i pozostałe jawnie obsługiwane rodziny. Najpierw sprawdź twarde ograniczenia, dopiero później uporządkuj zgodne warianty. Brak danych daje `unknown`, nigdy domyślne `pass`.
+
+Przechowuj rodzinę, SKU, wersję, stronę, komplet komponentów, źródło z numerem strony, regułę obróbki i zakres zatwierdzenia. Model 3D, obliczenia części, BOM i rysunki korzystają z jednej wersji konstrukcji. Sam model CAD lub zgodność gabarytu nie zatwierdza wierceń. Sprawdzaj całą trajektorię narożników i podnośników oraz przestrzeń wyjmowania pojemników.
+
+Nie przenoś wzorów między seriami. W najnowszej pozyskanej dokumentacji HK top współczynnik uwzględnia podwójną masę uchwytu; inne rodziny wymagają własnych reguł. Dla Amix PTJ017J zapisano konflikt nośności 25/30 kg: nie zatwierdzać go przez zgadywanie. Starsze instrukcje LeMans wymagają powiązania z aktualnym SKU.
+
+Katalog materiałów rozdziela dekor, strukturę, nośnik, produkt, artykuł, grubość, format, obrzeże, dostępność regionalną i zasób wizualny. Import Egger obejmuje 408 pozycji dekor–struktura i 9214 artykułów programu dostaw PL. Import Kronospan obejmuje 236 dekorów z 26 kolekcji; nie oznacza pełnego uzgodnienia lokalnych linii z katalogu Kronosfera. Nie oznaczaj brakującej oferty jako kompletnej.
+
+Konkretny artykuł materiału wyznacza grubość dla konstrukcji i doboru okuć. Nie generuj wariantów z iloczynu list grubości i formatów. Osie wymiarowe interpretuj zależnie od rodzaju produktu, szczególnie obrzeży. Zmiana materiału przelicza światło korpusu, wymiary dna i pleców szuflady, połączenia, wiercenia i kolizje.
+
+Tekstura do podglądu nie jest mapą PBR ani potwierdzeniem fizycznej skali wzoru. Zachowaj kierunek usłojenia, identyfikator dekoru i struktury; nie twórz fikcyjnych parametrów optycznych. Projekt zapisuje wersję katalogu. Aktualizacja katalogu nie może samoczynnie zmieniać zatwierdzonej kuchni.

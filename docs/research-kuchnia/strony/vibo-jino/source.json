@@ -1,0 +1,61 @@
+{
+  "title": "Jino | Vibo solutions for the kitchen",
+  "requested_url": "https://www.viboitaly.com/en/products/jino-epoxy-coated-green-jino60vvr",
+  "final_url": "https://www.viboitaly.com/en/products/jino-epoxy-coated-green-jino60vvr",
+  "retrieved_at": "2026-09-23T14:16:23.256040+00:00",
+  "sha256": "e9401cd3434812d28a4841d868424a590eb3d52766f85c533fc8eca98d3480ee",
+  "content_type": "text/html; charset=UTF-8",
+  "attachments": [
+    {
+      "url": "https://www.viboitaly.com/en/download",
+      "label": "Downloads"
+    },
+    {
+      "url": "https://www.viboitaly.com/en/products/jino-epoxy-coated-green-jino60vvr#form-5861",
+      "label": "Download the brochure"
+    },
+    {
+      "url": "https://www.viboitaly.com/docs/4004110407mkt_1762269732.pdf",
+      "label": "Assembling instructions"
+    },
+    {
+      "url": "https://www.viboitaly.com/docs/4004110407mkt-stj_1743516370.pdf",
+      "label": "Technical datasheet"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://www.viboitaly.com/images/jino60vvr-a_1734627407.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vvr-b_1734627407.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vvr-c_1734627407.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60_1772530479.png",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vgmns-b_1734626197.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vrs-b_1734626289.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vgmav-b_1734626223.jpg",
+      "alt": ""
+    },
+    {
+      "url": "https://www.viboitaly.com/images/jino60vvr-b_1734627407.jpg",
+      "alt": ""
+    }
+  ],
+  "status": "extracted_not_technically_validated"
+}

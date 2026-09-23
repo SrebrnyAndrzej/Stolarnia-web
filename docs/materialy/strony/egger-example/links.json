@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://edc-availability.egger.services/?country=pl&language=pl&decor=H1384_40&producttype=PG_EDGING",
+    "label": "Obrzeża"
+  },
+  {
+    "url": "https://edc-availability.egger.services/?country=pl&language=pl&decor=H1384_40&producttype=PG_LAMINATES",
+    "label": "Laminaty"
+  },
+  {
+    "url": "https://edc-availability.egger.services/?country=pl&language=pl&decor=H1384_40&producttype=PG_MELAMINFACEDBOARDS",
+    "label": "Płyty dekoracyjne"
+  },
+  {
+    "url": "#openDecorDownloadsLayer",
+    "label": "Pobierz grafiki dekorów"
+  },
+  {
+    "url": "/pl/meble-i-aranzacja-wnetrz/dekory/F434_20",
+    "label": "Kubanit szczotkowany F434 ST20"
+  },
+  {
+    "url": "/pl/meble-i-aranzacja-wnetrz/dekory/F635_76",
+    "label": "Płótno antracytowe F635 ST76"
+  },
+  {
+    "url": "/pl/meble-i-aranzacja-wnetrz/dekory/U232_9",
+    "label": "Morela U232 ST9"
+  }
+]

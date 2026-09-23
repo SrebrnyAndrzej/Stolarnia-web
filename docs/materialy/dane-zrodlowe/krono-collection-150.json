@@ -1,0 +1,427 @@
+[
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": 1,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 15,
+    "decor_title": "Almond",
+    "decor_number": "K564",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K564_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K564",
+    "decor_weight": 2,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 997,
+    "decor_title": "Stone Beige",
+    "decor_number": "K680",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K680_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K680",
+    "decor_weight": 3,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 31,
+    "decor_title": "Satin",
+    "decor_number": "K7045",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7045_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7045",
+    "decor_weight": 4,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 20,
+    "decor_title": "Cool Grey",
+    "decor_number": "K191",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K191_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K191",
+    "decor_weight": 5,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 56,
+    "decor_title": "Pastel Green",
+    "decor_number": "K7063",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7063_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7063",
+    "decor_weight": 6,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 21,
+    "decor_title": "Stone Grey",
+    "decor_number": "K112",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K112_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K112",
+    "decor_weight": 7,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 503,
+    "decor_title": "Cashmere",
+    "decor_number": "K5981",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K5981_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K5981",
+    "decor_weight": 8,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 654,
+    "decor_title": "Clay Grey",
+    "decor_number": "K096",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K096_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K096",
+    "decor_weight": 9,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 632,
+    "decor_title": "Cappuccino",
+    "decor_number": "K301",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K301_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K301",
+    "decor_weight": 10,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 33,
+    "decor_title": "Latté",
+    "decor_number": "K7166",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K7166_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K7166",
+    "decor_weight": 11,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 26,
+    "decor_title": "Slate Grey",
+    "decor_number": "K171",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K171_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K171",
+    "decor_weight": 12,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 28,
+    "decor_title": "Anthracite",
+    "decor_number": "K164",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K164_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K164",
+    "decor_weight": 13,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": 14,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 1060,
+    "decor_title": "Pearl Calacatta Ambrosio",
+    "decor_number": "K863",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/k863_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K863",
+    "decor_weight": 15,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 614,
+    "decor_title": "Venato",
+    "decor_number": "K023",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K023_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K023",
+    "decor_weight": 16,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 1061,
+    "decor_title": "Ivory Agra Travertine",
+    "decor_number": "K865",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/k865_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K865",
+    "decor_weight": 17,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 1059,
+    "decor_title": "Storm Onyx",
+    "decor_number": "2991",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/2/2991_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/2991",
+    "decor_weight": 18,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 749,
+    "decor_title": "Black Pietra Marble",
+    "decor_number": "K409",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K409_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K409",
+    "decor_weight": 19,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 1014,
+    "decor_title": "Nero Bronzo",
+    "decor_number": "K698",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K698_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K698",
+    "decor_weight": 20,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      },
+      {
+        "decor_texture_id": 98,
+        "decor_texture_abbr": "XM"
+      }
+    ]
+  },
+  {
+    "decor_id": 994,
+    "decor_title": "Cotta Cremona Oak",
+    "decor_number": "K2737",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2737_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2737",
+    "decor_weight": 21,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      }
+    ]
+  },
+  {
+    "decor_id": 725,
+    "decor_title": "Brandy Castello Oak",
+    "decor_number": "K359",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K359_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K359",
+    "decor_weight": 22,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      }
+    ]
+  },
+  {
+    "decor_id": 799,
+    "decor_title": "Tobacco Franklin Walnut",
+    "decor_number": "K547",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K547_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K547",
+    "decor_weight": 23,
+    "collection_id": 150,
+    "textures": [
+      {
+        "decor_texture_id": 99,
+        "decor_texture_abbr": "XG"
+      }
+    ]
+  }
+]

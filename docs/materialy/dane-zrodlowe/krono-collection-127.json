@@ -1,0 +1,152 @@
+[
+  {
+    "decor_id": 29,
+    "decor_title": "Black",
+    "decor_number": "K190",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K190_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K190",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 995,
+    "decor_title": "Torro Cremona Oak",
+    "decor_number": "K2738",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2738_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2738",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  },
+  {
+    "decor_id": 12,
+    "decor_title": "Snow White",
+    "decor_number": "K8685",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K8685_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K8685",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 771,
+    "decor_title": "Mouse Grey",
+    "decor_number": "K519",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K519_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K519",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 38,
+        "decor_texture_abbr": "SU"
+      }
+    ]
+  },
+  {
+    "decor_id": 996,
+    "decor_title": "Cannolo Cremona Oak",
+    "decor_number": "K2739",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2739_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2739",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  },
+  {
+    "decor_id": 28,
+    "decor_title": "Anthracite",
+    "decor_number": "K164",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K164_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K164",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 26,
+        "decor_texture_abbr": "PE"
+      }
+    ]
+  },
+  {
+    "decor_id": 503,
+    "decor_title": "Cashmere",
+    "decor_number": "K5981",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K5981_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K5981",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 6,
+        "decor_texture_abbr": "BS"
+      }
+    ]
+  },
+  {
+    "decor_id": 994,
+    "decor_title": "Cotta Cremona Oak",
+    "decor_number": "K2737",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K2737_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K2737",
+    "decor_weight": null,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  },
+  {
+    "decor_id": 731,
+    "decor_title": "Coast Evoke Oak",
+    "decor_number": "K365",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K365_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K365",
+    "decor_weight": 6,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  },
+  {
+    "decor_id": 447,
+    "decor_title": "Gold Craft Oak",
+    "decor_number": "K003",
+    "decor_image": "/public/thumbs/350x350/decors/kronodesign/K/K003_350x350_crop_478b24840a.jpg",
+    "decor_url": "/decors/view/kronodesign/K003",
+    "decor_weight": 7,
+    "collection_id": 127,
+    "textures": [
+      {
+        "decor_texture_id": 43,
+        "decor_texture_abbr": "PW"
+      }
+    ]
+  }
+]
