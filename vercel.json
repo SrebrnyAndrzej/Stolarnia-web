@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build && node scripts/kopiuj-zasoby-vercel.mjs",
+  "outputDirectory": "dist/web",
+  "regions": ["fra1"],
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "memory": 1024,
+      "includeFiles": "{dist/**/*.js,dist/**/*.json,docs/materialy/katalog-dekorow-PL.json,docs/materialy/egger-warianty-program-dostaw-PL.json,node_modules/dejavu-fonts-ttf/package.json,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans.ttf,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf,node_modules/dejavu-fonts-ttf/ttf/DejaVuSansMono.ttf}"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:sciezka*", "destination": "/api/index.js" },
+    { "source": "/mcp", "destination": "/api/index.js" }
+  ]
+}

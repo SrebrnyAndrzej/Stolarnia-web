@@ -34,6 +34,7 @@ export function zbudujProjektWyceny(
   nazwaProjektu: string,
   moduly: { zm: ZbudowanyModul; materialy: MaterialyModulu }[],
   obrzeza: ZapotrzebowanieObrzeza[],
+  liczbaArkuszy = 0,
 ): ProjektWyceny {
   let pPlyt = 0;
   let pFrontow = 0;
@@ -124,6 +125,8 @@ export function zbudujProjektWyceny(
     dlugoscCokoluM: r3(cokol),
     // Zamiast szacunku 3,5 mb/m² liczymy dokładne zapotrzebowanie z listy formatek (OkleinowanieEngineV072).
     metryKrawedziBanding: r2(obrzeza.reduce((s, o) => s + o.dlugoscZakupuM, 0)),
+    liczbaArkuszy,
+    metryOklejaniaM: r2(obrzeza.reduce((s, o) => s + o.dlugoscNettoM, 0)),
     liczbaFrontow: fronty,
     uzyciaMaterialow: [...uzycia.values()].map((u) => ({ ...u, iloscM2: r3(u.iloscM2) })),
     blatMaterialId,
@@ -159,6 +162,12 @@ export function wycenWariant(
     poz("Produkcja", "robocizna", projekt.liczbaGodzinProdukcji, "h", f.stawkaRoboczogodziny * mnoznik, ""),
     poz("Montaż", "montaz", projekt.liczbaGodzinMontazu, "h", f.kosztMontazuZaGodzine * mnoznik, ""),
     poz("Transport", "transport", Math.max(projekt.liczbaTransportow, 1), "kurs", f.kosztTransportuBazowy, ""),
+    ...(projekt.liczbaArkuszy > 0
+      ? [poz("Cięcie płyt", "uslugi", projekt.liczbaArkuszy, "ark.", f.cenaCieciaArkuszaNetto, "Cięcie każdego arkusza z rozkroju (płyty korpusu, frontów, HDF).")]
+      : []),
+    ...(projekt.metryOklejaniaM > 0
+      ? [poz("Oklejanie obrzeżem", "uslugi", projekt.metryOklejaniaM, "mb", f.cenaOklejaniaMbNetto, "Usługa oklejania — metry bieżące oklejonych krawędzi netto (materiał obrzeża liczony osobno w okuciach/akcesoriach).")]
+      : []),
     ...dobierzOkucia(projekt, wariant, okucia),
   ];
 
@@ -182,7 +191,7 @@ export function wycenWariant(
     cenaNetto: r2(cenaNetto),
     vatKwota: r2(vat),
     cenaBrutto: r2(cenaNetto + vat),
-    kosztMaterialowNetto: r2(suma(pozycje.filter((p) => !["robocizna", "montaz", "transport"].includes(p.kategoria)))),
+    kosztMaterialowNetto: r2(suma(pozycje.filter((p) => !["robocizna", "montaz", "transport", "uslugi"].includes(p.kategoria)))),
   };
 }
 

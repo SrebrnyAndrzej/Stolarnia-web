@@ -19,6 +19,8 @@ export const USTAWIENIA_DOMYSLNE: UstawieniaStolarni = {
     vatProcent: 23,
     minimalnaWartoscZlecenia: 1500,
     kosztTransportuBazowy: 250,
+    cenaCieciaArkuszaNetto: 70,
+    cenaOklejaniaMbNetto: 8,
     kosztMontazuZaGodzine: 140,
     zapasKosztowyProcent: 5,
   },

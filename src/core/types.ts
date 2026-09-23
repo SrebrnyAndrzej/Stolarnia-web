@@ -22,6 +22,10 @@ export interface UstawieniaFinansowe {
   vatProcent: number;
   minimalnaWartoscZlecenia: number;
   kosztTransportuBazowy: number;
+  /** Usługa cięcia: stawka netto za każdy arkusz z rozkroju. */
+  cenaCieciaArkuszaNetto: number;
+  /** Usługa oklejania: stawka netto za metr bieżący oklejonej krawędzi. */
+  cenaOklejaniaMbNetto: number;
   kosztMontazuZaGodzine: number;
   zapasKosztowyProcent: number;
 }
@@ -528,7 +532,8 @@ export type KategoriaKosztu =
   | "robocizna"
   | "montaz"
   | "transport"
-  | "pozostale";
+  | "pozostale"
+  | "uslugi";
 
 export interface PozycjaKosztowa {
   nazwa: string;
@@ -577,6 +582,10 @@ export interface ProjektWyceny {
   liczbaPolekWewnetrznych: number;
   dlugoscCokoluM: number;
   metryKrawedziBanding: number;
+  /** Liczba arkuszy z rozkroju (usługa cięcia). */
+  liczbaArkuszy: number;
+  /** Metry bieżące oklejonych krawędzi netto (usługa oklejania). */
+  metryOklejaniaM: number;
   liczbaFrontow: number;
   uzyciaMaterialow: { rola: "korpus" | "front" | "plecy"; materialId: string; iloscM2: number }[];
   blatMaterialId?: string;

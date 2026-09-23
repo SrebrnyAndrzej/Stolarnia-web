@@ -155,6 +155,7 @@ const KATEGORIE: Record<string, string> = {
   blaty: "Blaty",
   okucia: "Okucia",
   akcesoria: "Akcesoria",
+  uslugi: "Usługi (cięcie, oklejanie)",
   robocizna: "Robocizna",
   montaz: "Montaż",
   transport: "Transport",

@@ -522,7 +522,7 @@ export class Stolarnia {
     const formatki = listaFormatek(zbudowane, mapa, { odejmujGruboscObrzeza: b.ustawienia.okleinowanie.odejmujGruboscObrzeza });
     const obrzeza = zapotrzebowanieObrzeza(formatki, b.ustawienia.okleinowanie);
     const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
-    const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza);
+    const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza, raportRozkroju.arkusze.length);
     const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia);
     const walidacja = walidujProjekt(p);
 

@@ -11,6 +11,8 @@ const POLA: { sekcja: Sekcja; tytul: string; pola: [string, string][] }[] = [
       ["stawkaRoboczogodziny", "Stawka roboczogodziny [zł/h]"],
       ["kosztMontazuZaGodzine", "Montaż [zł/h]"],
       ["kosztTransportuBazowy", "Transport [zł/kurs]"],
+      ["cenaCieciaArkuszaNetto", "Cięcie [zł/arkusz]"],
+      ["cenaOklejaniaMbNetto", "Oklejanie [zł/mb]"],
       ["marzaProcent", "Marża [%]"],
       ["narzutProcent", "Narzut [%]"],
       ["zapasKosztowyProcent", "Zapas kosztowy [%]"],

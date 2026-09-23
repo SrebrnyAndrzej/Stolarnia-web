@@ -54,6 +54,27 @@ test("kuchnia 3,6 m: moduły, formatki, rozkrój i wycena 4 wariantów", () => {
   );
 });
 
+test("usługi w wycenie: 70 zł netto za cięcie każdego arkusza i 8 zł netto za mb oklejania", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Usługi", sciany: [{ dlugoscMM: 3000 }] });
+  s.wypelnijSciane(p.id, p.pomieszczenia[0].sciany[0].id, ["base-drawers-600", "base-shelves-800", "wall-shelves-600"]);
+  const a = s.analiza(p.id);
+  const arkusze = a.rozkroj.arkusze.length;
+  const mb = a.obrzeza.reduce((x, o) => x + o.dlugoscNettoM, 0);
+  for (const w of a.warianty) {
+    const ciecie = w.pozycje.find((x) => x.nazwa === "Cięcie płyt")!;
+    const okl = w.pozycje.find((x) => x.nazwa === "Oklejanie obrzeżem")!;
+    assert.equal(ciecie.ilosc, arkusze);
+    assert.equal(ciecie.kosztNetto, arkusze * 70);
+    assert.ok(Math.abs(okl.ilosc - mb) < 0.01);
+    assert.ok(Math.abs(okl.kosztNetto - mb * 8) < 0.05);
+    assert.equal(ciecie.kategoria, "uslugi");
+  }
+  // Stawki z ustawień
+  s.zmienUstawienia({ finanse: { cenaCieciaArkuszaNetto: 80 } });
+  assert.equal(s.analiza(p.id).warianty[0].pozycje.find((x) => x.nazwa === "Cięcie płyt")!.kosztNetto, arkusze * 80);
+});
+
 test("minimalna wartość zlecenia dla pustego projektu", () => {
   const s = nowa();
   const p = s.utworzProjekt({ nazwa: "Pusty" });
