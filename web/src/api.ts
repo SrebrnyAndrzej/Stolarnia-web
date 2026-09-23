@@ -55,7 +55,13 @@ async function zadanie<T>(metoda: string, url: string, body?: unknown): Promise<
 
 export const api = {
   katalog: () => zadanie<ModulKatalogowy[]>("GET", "/api/katalog"),
-  materialy: () => zadanie<Material[]>("GET", "/api/materialy"),
+  materialy: (filtr?: { typ?: string; szukaj?: string }) => {
+    const q = new URLSearchParams();
+    if (filtr?.typ) q.set("typ", filtr.typ);
+    if (filtr?.szukaj) q.set("szukaj", filtr.szukaj);
+    const suffix = q.toString() ? `?${q.toString()}` : "";
+    return zadanie<Material[]>("GET", `/api/materialy${suffix}`);
+  },
   zapiszMaterial: (m: Partial<Material>) => (m.id ? zadanie<Material>("PUT", `/api/materialy/${m.id}`, m) : zadanie<Material>("POST", "/api/materialy", m)),
   okucia: () => zadanie<Okucie[]>("GET", "/api/okucia"),
   zapiszOkucie: (o: Partial<Okucie> & { id: string }) => zadanie<Okucie>("PUT", `/api/okucia/${o.id}`, o),

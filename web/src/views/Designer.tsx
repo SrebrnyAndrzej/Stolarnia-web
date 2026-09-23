@@ -1,3 +1,4 @@
+import { DecorCatalog } from "./DecorCatalog";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, mm, type Analiza, type Material, type Modul, type ModulKatalogowy } from "../api";
 import { ImportDxf } from "./ImportDxf";
@@ -42,7 +43,10 @@ export function Designer({ analiza, odswiez }: Props) {
 
   useEffect(() => {
     api.katalog().then(setKatalog);
-    api.materialy().then(setMaterialy);
+    const reload = () => { api.materialy().then(setMaterialy).catch(e => setBlad(e.message)); };
+    reload();
+    window.addEventListener("materialy-zmienione", reload);
+    return () => window.removeEventListener("materialy-zmienione", reload);
   }, []);
 
   const sciany = p.pomieszczenia.flatMap((r) => r.sciany.map((s) => ({ ...s, pomieszczenie: r })));
@@ -713,20 +717,28 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
 }
 
 function WyborMaterialu({ label, value, lista, pusty, onChange }: { label: string; value: string; lista: Material[]; pusty?: string; onChange: (v: string) => void }) {
-  const m = lista.find((x) => x.id === value);
+  const [catalog, setCatalog] = useState(false);
+  const [added, setAdded] = useState<Material | null>(null);
+  const options = added && !lista.some(x => x.id === added.id) ? [...lista, added] : lista;
+  const m = options.find((x) => x.id === value);
   return (
     <div className="field">
       <label>
-        {label} {m && <span className="swatch" style={{ background: m.kolorHEX }} />}
+        {label} {m && <span className="swatch" style={{ background: m.kolorHEX, backgroundImage: m.zdjecieURL ? `url("${m.zdjecieURL}")` : undefined, backgroundSize: "cover" }} />}
       </label>
       <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
         {pusty !== undefined && <option value="">— {pusty} —</option>}
-        {lista.map((x) => (
+        {options.map((x) => (
           <option key={x.id} value={x.id}>
             {x.producent !== "Stolarnia" ? `${x.producent} ` : ""}{x.nazwa}
           </option>
         ))}
       </select>
+      {!label.toLowerCase().includes("blat") && <button className="btn" onClick={() => setCatalog(true)}>Wybierz z katalogu dekorów</button>}
+      {catalog && <div className="decor-overlay"><section className="decor-dialog" role="dialog" aria-modal="true" aria-label="Katalog dekorów">
+        <button autoFocus className="btn" onClick={() => setCatalog(false)}>Zamknij katalog</button>
+        <DecorCatalog onAdded={m => { setAdded(m); onChange(m.id); setCatalog(false); }} />
+      </section></div>}
     </div>
   );
 }

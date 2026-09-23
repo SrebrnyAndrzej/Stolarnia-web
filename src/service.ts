@@ -119,6 +119,9 @@ export class Stolarnia {
         grupaDekoru: dane.grupaDekoru,
         kolekcja: dane.kolekcja,
         struktura: dane.struktura,
+        zdjecieURL: dane.zdjecieURL,
+        zrodloKatalogu: dane.zrodloKatalogu,
+        artykulProducenta: dane.artykulProducenta,
       };
       b.materialy.push(nowy);
       return nowy;
@@ -509,7 +512,11 @@ export class Stolarnia {
         plecy: DOMYSLNE_PLECY,
         blat: r?.materialBlatuId,
       };
-      return { zm: zbudujModul(m, b.ustawienia.konstrukcja, b.ustawienia.technologia), materialy };
+      const konstrukcja = { ...b.ustawienia.konstrukcja };
+      const korpus = mapa.get(materialy.korpus), front = mapa.get(materialy.front);
+      if (korpus?.zrodloKatalogu) konstrukcja.gruboscPlytyKorpusuMM = korpus.gruboscMM;
+      if (front?.zrodloKatalogu) konstrukcja.gruboscFrontuMM = front.gruboscMM;
+      return { zm: zbudujModul(m, konstrukcja, b.ustawienia.technologia), materialy };
     });
 
     const formatki = listaFormatek(zbudowane, mapa, { odejmujGruboscObrzeza: b.ustawienia.okleinowanie.odejmujGruboscObrzeza });

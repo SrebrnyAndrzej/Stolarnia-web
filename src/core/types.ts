@@ -117,6 +117,9 @@ export type TypMaterialu =
 export type JednostkaCeny = "sztuka" | "metrKwadratowy" | "metrBiezacy";
 
 export interface Material {
+  zdjecieURL?: string;
+  zrodloKatalogu?: string;
+  artykulProducenta?: string;
   id: string;
   kod: string;
   nazwa: string;

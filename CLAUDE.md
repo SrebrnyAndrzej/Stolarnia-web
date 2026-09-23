@@ -8,6 +8,6 @@ Przed zmianą konstrukcji, produkcji, doboru okuć lub katalogu materiałów prz
 - [Katalog materiałów PL: zakres i braki](docs/materialy/README.md)
 - [Źródła i reguły szuflad](docs/okucia/README.md)
 
-Priorytet: pełna dokumentacja produkcyjna każdej części każdego mebla, ze wszystkimi operacjami, oraz wizualizacja 3D korzystająca z tej samej konstrukcji. Nie uznawaj samych gabarytów, miniatur dekorów ani niekompletnych profili okuć za zatwierdzone dane produkcyjne. Importowane katalogi są materiałem źródłowym; nie zostały automatycznie podłączone do katalogu aplikacji.
+Priorytet: pełna dokumentacja produkcyjna każdej części każdego mebla, ze wszystkimi operacjami, oraz wizualizacja 3D korzystająca z tej samej konstrukcji. Nie uznawaj samych gabarytów, miniatur dekorów ani niekompletnych profili okuć za zatwierdzone dane produkcyjne. Katalog 644 dekorów jest podłączony do aplikacji: galeria, zdjęcia, wyszukiwanie i aktywacja konkretnych materiałów. Grubości i formaty Egger pochodzą z artykułów; pozostałe wymagają jawnego wpisania przez użytkownika. Szczegóły i braki: docs/STAN_PRAC.md oraz docs/WORKFLOW.md.
 
 Zachowaj dotychczasowe ustalenia w pozostałych dokumentach docs/. Stan implementacji sprawdzaj w kodzie i testach — dokument wymagań nie jest raportem ukończenia.

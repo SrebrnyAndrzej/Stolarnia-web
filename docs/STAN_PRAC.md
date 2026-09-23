@@ -25,3 +25,24 @@ Wdrożono:
 To uzupełnienie eksportu istniejących operacji, nie zatwierdzenie całej technologii. Brakujące wiercenia prowadnic, uchwytów, zawieszek i konkretnych SKU nadal dają dokument roboczy. Nie wolno zmieniać tego statusu, aby ukryć braki danych.
 
 Następny etap: powiązać wybraną rodzinę szuflad (Amix Elite Box standard) z konkretnymi wariantami/SKU i zweryfikowanymi schematami montażowymi; dopiero potem wprowadzić pełne operacje, przypadki referencyjne i dobór kompatybilności. Nie przenosić schematów standard/wewnętrzna ani wymiarów między rodzinami. Równolegle plan katalogu płyt pozostaje w `materialy/pokrycie.json`: normalizacja regionalnej oferty Kronospan jest nieukończona.
+
+
+## Integracja katalogów w aplikacji — przejęcie przez Codex
+
+- Podłączono wszystkie 644 zebrane pozycje dekorów (408 Egger, 236 Kronospan) i ich lokalne zdjęcia. To komplet zebranej migawki, nie potwierdzenie pełnej oferty wszystkich produktów na rynku PL.
+- Nowa domyślna zakładka „Dekory producentów” w materiałach: galeria, filtr producenta, wyszukiwanie kodu/nazwy/struktury, link do źródła.
+- Projektant: przy korpusie i froncie można otworzyć tę samą galerię, dodać materiał i od razu zastosować go w projekcie.
+- REST: GET /api/dekory, GET /api/dekory/:key, POST /api/dekory/:key/material; obrazy /api/dekory/obrazy. Klucz dekoru URL-encode (producent:kod).
+- Egger: wybór istniejącego artykułu z grup płyt dekoracyjnych i PerfectSense; obrzeża, laminaty i blaty nie są konwertowane do płyt korpusu. Format z konkretnego artykułu, bez iloczynu grubości i formatów.
+- Przy braku artykułu: jawny format, grubość i struktura od użytkownika. Brak cen oznaczony w UI; obowiązuje istniejąca diagnostyka zastępczych kosztów. Istniejące materiały, ceny i projekty zachowane. Ponowne dodanie tego samego wariantu nie nadpisuje ceny.
+- Material zawiera zdjecieURL, zrodloKatalogu, artykulProducenta. Grubość nowego materiału katalogowego wpływa na konstrukcję korpusu/frontu. Starsze materiały zachowują dotychczasową semantykę ustawień zakładu.
+- 20 testów zaliczonych (4 nowe), kontrola typów frontend/backend zaliczona. W przeglądarce potwierdzono licznik 644, działające zdjęcie i wyszukiwanie H1384 ST40, wybór artykułu 1688144 oraz trwałe dodanie do materiałów.
+- Standardowy Vite nadal blokowany przez lokalne spawn EPERM. Udało się zbudować frontend bezpośrednim oficjalnym esbuild.exe z zainstalowanych zależności i uruchomić podgląd localhost:3211 na osobnej bazie testowej. Nie zmieniono produkcyjnej bazy użytkownika.
+- Start serwera wymaga katalogu roboczego repozytorium i docs/materialy (oba JSON oraz obrazy). Wdrożenie musi zawierać te zasoby.
+
+Pozostało: pełna macierz Kronospan, rozdzielenie nośników specjalnych (np. komórkowych) i ich dopuszczalnych technologii, kompletność regionalna, walidacja zgodności okuć z grubością, obsługa blatów/obrzeży jako osobnych produktów, narzędzia MCP katalogu. Miniatury są w galerii i selektorach; nie wdrożono mapowania tekstur PBR/skali na model 3D. Nie uznawać dodania dekoru za zatwierdzenie technologii produkcyjnej.
+
+
+### Wdrożenie do lokalnej aplikacji użytkownika
+
+Zaktualizowano także C:/Users/Komp/Stolarnia App. Zachowano zastane niezacommitowane filtry producenta/kolekcji/grupy/grubości oraz filtrowanie API; te zmiany włączono również do repozytorium roboczego, aby wersje nie rozjechały się. Kopie trzech wcześniejszych plików są w katalogu roboczym Codex work/original-app-before-catalog. Baza data/ nie była kopiowana ani modyfikowana przez wdrożenie. Skompilowano backend i frontend lokalnej aplikacji; istniejący serwer localhost:3210 zwraca 644 dekory. W przeglądarce potwierdzono galerię 644 także pod właściwym adresem localhost:3210/#/materialy. Testowe dodanie materiału wykonano wyłącznie w odrębnej bazie podglądu localhost:3211.

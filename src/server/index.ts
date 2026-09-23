@@ -1,3 +1,4 @@
+import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -27,8 +28,22 @@ const api = (fn: Handler) => (req: Request, res: Response, next: NextFunction) =
 const p = (req: Request, k: string) => String(req.params[k]);
 
 // Katalogi i ustawienia
+app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
+app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d) }))));
+app.get("/api/dekory/:key", api(r => {
+  const d = DEKORY.find(x => kluczDekoru(x) === p(r, "key"));
+  if (!d) throw new BladUslugi("Nieznany dekor.");
+  return { ...d, warianty: wariantyDekoru(d) };
+}));
+app.post("/api/dekory/:key/material", api(r => {
+  let m;
+  try { m = materialDekoru(p(r, "key"), r.body); }
+  catch (e) { throw new BladUslugi((e as Error).message); }
+  // Ponowne dodanie nie nadpisuje ceny ani zmian użytkownika.
+  return s.materialy().find(x => x.id === m.id) ?? s.zapiszMaterial(m);
+}));
 app.get("/api/katalog", api(() => KATALOG_MODULOW));
-app.get("/api/materialy", api((r) => s.materialy({ typ: r.query.typ as string | undefined, szukaj: r.query.szukaj as string | undefined })));
+app.get("/api/materialy", api((r) => s.materialy({ typ: r.query.typ as string | undefined, szukaj: r.query.szukaj as string | undefined, tylkoAktywne: r.query.tylkoAktywne === "true" })));
 app.post("/api/materialy", api((r) => s.zapiszMaterial(r.body)));
 app.put("/api/materialy/:id", api((r) => s.zapiszMaterial({ ...r.body, id: p(r, "id") })));
 app.get("/api/okucia", api(() => s.okucia()));
