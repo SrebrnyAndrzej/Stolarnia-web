@@ -43,7 +43,8 @@ export function walidujProjekt(p: Projekt): Uwaga[] {
   const sciany = new Map(p.pomieszczenia.flatMap((r) => r.sciany.map((s) => [s.id, s] as const)));
 
   for (const m of p.moduly) {
-    const n = norma(m);
+    // Normy kuchenne dotyczą modułów katalogowych; zabudowa na wymiar (szafy, garderoby) ich nie podlega.
+    const n = m.katalogId ? norma(m) : undefined;
     if (n) {
       if (m.glebokoscMM < n.glebokosc.min || m.glebokoscMM > n.glebokosc.max)
         uwagi.push({ poziom: "ostrzezenie", modulId: m.id, komunikat: `${m.nazwa}: głębokość ${m.glebokoscMM} mm poza normą "${n.nazwa}" (${n.glebokosc.min}–${n.glebokosc.max} mm).` });
