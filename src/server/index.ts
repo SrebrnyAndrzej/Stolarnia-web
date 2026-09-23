@@ -63,6 +63,18 @@ app.delete("/api/projekty/:id/moduly/:mid", api((r) => s.usunModul(p(r, "id"), p
 app.post("/api/projekty/:id/moduly/:mid/duplikuj", api((r) => s.duplikujModul(p(r, "id"), p(r, "mid"))));
 
 app.get("/api/projekty/:id/analiza", api((r) => s.analiza(p(r, "id"))));
+app.get("/api/projekty/:id/dokumentacja", api((r) => s.dokumentacja(p(r, "id"))));
+app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
+  const lista = (k: string) => (req.query[k] ? String(req.query[k]).split(",") : undefined);
+  s.dokumentacjaPdf(p(req, "id"), { czesci: lista("czesc"), moduly: lista("modul") })
+    .then((pdf) => {
+      const rew = s.projekt(p(req, "id")).rewizja;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="dokumentacja-${p(req, "id")}-rew${rew}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
+});
 app.get("/api/projekty/:id/formatki.csv", (req, res, next) => {
   try {
     const csv = s.formatkiCSV(p(req, "id"));

@@ -1,5 +1,5 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { BladUslugi, Stolarnia } from "../service.js";
 
@@ -507,6 +507,48 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
     bezpiecznie((a) => {
       const r = s.analiza(a.projektId).rozkroj;
       return a.szczegoly ? r : { podsumowanie: r.podsumowanie, nierozmieszczone: r.nierozmieszczone };
+    }),
+  );
+
+  server.registerTool(
+    "dokumentacja_produkcyjna",
+    {
+      title: "Dokumentacja produkcyjna",
+      description:
+        "Status gotowości produkcyjnej, diagnostyka (braki danych okuć, reguły niezatwierdzone, kolizje) i zestawienie części z liczbą operacji. " +
+        "czescId zwraca pełną listę operacji (wiercenia, rowki) jednej części w jej układzie lokalnym.",
+      inputSchema: { projektId: z.string(), czescId: z.string().optional() },
+      annotations: { readOnlyHint: true },
+    },
+    bezpiecznie((a) => {
+      const d = s.dokumentacja(a.projektId);
+      if (a.czescId) {
+        const c = d.czesci.find((x) => x.id === a.czescId || x.etykieta === a.czescId);
+        if (!c) throw new BladUslugi(`Nie ma części "${a.czescId}".`);
+        return c;
+      }
+      return {
+        rewizja: d.rewizja,
+        gotowaDoProdukcji: d.gotowaDoProdukcji,
+        podsumowanie: d.podsumowanie,
+        pozycjeProdukcyjne: d.pozycjeProdukcyjne.length,
+        diagnostyka: d.diagnostyka.map((x) => `[${x.poziom}] ${x.opis}`),
+        czesci: d.czesci.map((c) => ({ id: c.id, etykieta: c.etykieta, element: c.kodElementu, status: c.status, operacje: c.operacje.length, bezWiercen: c.bezWiercen })),
+      };
+    }),
+  );
+
+  server.registerTool(
+    "zapisz_dokumentacje_pdf",
+    {
+      title: "Zapisz pakiet PDF",
+      description: "Generuje pakiet PDF całej kuchni (rzut, elewacje, indeks, karta każdego mebla, rysunek i tabela wierceń każdej części) i zapisuje go pod wskazaną ścieżką na serwerze.",
+      inputSchema: { projektId: z.string(), sciezka: z.string().describe("Ścieżka pliku .pdf do zapisania") },
+    },
+    bezpiecznie(async (a) => {
+      const pdf = await s.dokumentacjaPdf(a.projektId);
+      writeFileSync(a.sciezka, pdf);
+      return `Zapisano ${Math.round(pdf.length / 1024)} KB: ${a.sciezka}`;
     }),
   );
 

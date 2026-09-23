@@ -22,6 +22,7 @@ import type {
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
+import { dokumentacjaPdf } from "./export/pdf.js";
 import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
 import { jednostkaZNaglowka, odcinkiDxf, scianyZDxf, warstwyDxf, type DxfDane, type JednostkaDxf } from "./core/dxf.js";
@@ -525,6 +526,13 @@ export class Stolarnia {
   dokumentacja(projektId: string) {
     const a = this.analiza(projektId);
     return dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
+  }
+
+  /** Pakiet PDF całej kuchni — ta sama rewizja co dokumentacja(). */
+  async dokumentacjaPdf(projektId: string, wybor: { czesci?: string[]; moduly?: string[] } = {}): Promise<Buffer> {
+    const a = this.analiza(projektId);
+    const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
+    return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly });
   }
 
   wycena(projektId: string, wariant?: WariantWyceny) {

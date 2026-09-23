@@ -327,6 +327,7 @@ export function Designer({ analiza, odswiez }: Props) {
           <Inspektor
             key={modul.id + p.rewizja}
             modul={modul}
+            projektId={p.id}
             materialy={materialy}
             sciany={sciany}
             ostrzezenia={analiza.zbudowane.find((z) => z.modul.id === modul.id)?.ostrzezenia ?? []}
@@ -620,6 +621,7 @@ function Wymiar({ x1, x2, y, tekst, gruby }: { x1: number; x2: number; y: number
 
 interface InspektorProps {
   modul: Modul;
+  projektId: string;
   materialy: Material[];
   sciany: { id: string; nazwa: string }[];
   ostrzezenia: string[];
@@ -629,7 +631,7 @@ interface InspektorProps {
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, materialy, sciany, ostrzezenia, onZmien, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
@@ -701,6 +703,9 @@ function Inspektor({ modul: m, materialy, sciany, ostrzezenia, onZmien, onUsun, 
         <div className="row">
           <button className="btn" onClick={onDuplikuj}>Duplikuj</button>
           <button className="btn danger" onClick={onUsun}>Usuń</button>
+          <a className="btn" href={`/api/projekty/${projektId}/dokumentacja.pdf?modul=${m.id}`} target="_blank" rel="noreferrer">
+            Dokumentacja szafki
+          </a>
         </div>
       </div>
     </>

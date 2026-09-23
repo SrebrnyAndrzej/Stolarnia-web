@@ -134,6 +134,22 @@ test("T07: szuflady — wymiary z profilu producenta, brak wierceń blokuje goto
   assert.equal(s.dokumentacja(p.id).gotowaDoProdukcji, false);
 });
 
+test("PDF: każda szafka mieści się na jednej stronie A4 (także słupek z wieloma półkami)", async () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "PDF", sciany: [{ dlugoscMM: 3000 }] });
+  const sc = p.pomieszczenia[0].sciany[0].id;
+  const moduly = s.wypelnijSciane(p.id, sc, ["tall-pantry-600", "base-drawers-600", "base-sink-800", "base-shelves-600"]);
+  const strony = (b: Buffer) => b.toString("latin1").match(/\/Type \/Page[^s]/g)?.length ?? 0;
+  const a4 = (b: Buffer) => (b.toString("latin1").match(/\/MediaBox \[0 0 841\.89 595\.28\]/g)?.length ?? 0) === strony(b);
+  for (const m of moduly) {
+    const pdf = await s.dokumentacjaPdf(p.id, { moduly: [m.id] });
+    assert.equal(strony(pdf), 1, m.nazwa);
+    assert.ok(a4(pdf), `${m.nazwa}: format A4 poziomo`);
+  }
+  const pakiet = await s.dokumentacjaPdf(p.id);
+  assert.ok(pakiet.subarray(0, 5).toString() === "%PDF-");
+});
+
 test("Części bez wierceń są jawnie oznaczone; każda część ma status", () => {
   const s = nowa();
   const { p } = projektZModulem(s, { katalogId: "wall-shelves-600" });

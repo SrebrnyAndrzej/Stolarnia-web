@@ -13,6 +13,19 @@ export function Production({ analiza }: { analiza: Analiza }) {
   return (
     <>
       <div className="card">
+        <div className="card-h" style={{ flexWrap: "wrap" }}>
+          <h2 style={{ flex: 1 }}>Dokumentacja produkcyjna</h2>
+          <a className="btn primary" href={`/api/projekty/${analiza.projekt.id}/dokumentacja.pdf`} target="_blank" rel="noreferrer">
+            Pakiet PDF (A4, 1 szafka = 1 strona)
+          </a>
+        </div>
+        <div className="card-b muted" style={{ fontSize: 13 }}>
+          Rzut, elewacje, indeks części i karta każdej szafki: wszystkie formatki z obrzeżami i wierceniami oraz tabela operacji — z rewizji {analiza.projekt.rewizja}.
+          Dopóki reguły technologii nie są zatwierdzone, a okucia (prowadnice, uchwyty, zawieszki) nie mają danych montażowych, pakiet ma status „dokument roboczy”.
+        </div>
+      </div>
+
+      <div className="card">
         <div className="card-h">
           <h2 style={{ flex: 1 }}>Rozkrój płyt</h2>
           <span className="muted">{r.arkusze.length} arkuszy</span>
