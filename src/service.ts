@@ -529,10 +529,10 @@ export class Stolarnia {
   }
 
   /** Pakiet PDF całej kuchni — ta sama rewizja co dokumentacja(). */
-  async dokumentacjaPdf(projektId: string, wybor: { czesci?: string[]; moduly?: string[] } = {}): Promise<Buffer> {
+  async dokumentacjaPdf(projektId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean } = {}): Promise<Buffer> {
     const a = this.analiza(projektId);
     const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
-    return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly });
+    return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony });
   }
 
   wycena(projektId: string, wariant?: WariantWyceny) {

@@ -99,3 +99,9 @@ Plan rozwoju (MCP, skille, biblioteki, formaty maszynowe) opisuje [docs/RESEARCH
 - [Przeglądarka dekorów](docs/materialy/katalog.html) — otwórz lokalnie po pobraniu repozytorium.
 
 Dane są biblioteką źródłową do wdrożenia. Pełne uzgodnienie regionalnej oferty Kronospan, macierzy wariantów płyt i profili obróbki pozostaje opisane w dokumentach jako nieukończone. Aktualizacja nie zmienia działania aplikacji.
+
+## Wydruk dokumentacji
+
+Domyślny **Pełny pakiet PDF** obejmuje karty szafek i osobne rysunki części z operacjami, widokami krawędzi, uwagami i źródłami reguł. **Karty zbiorcze szafek** to skrócony wydruk (`?skrocony=1`). Eksport pojedynczej szafki także domyślnie zawiera jej części. Braki danych montażowych pozostają oznaczone jako dokument roboczy.
+
+Aktualny zakres zmian, sprawdzenia i kolejny krok opisuje [stan prac](docs/STAN_PRAC.md).

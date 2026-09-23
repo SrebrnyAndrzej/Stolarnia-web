@@ -32,6 +32,8 @@ export interface WejsciePdf {
   tylkoCzesci?: string[];
   /** ID szafek — tylko ich strony (dokumentacja pojedynczej szafki). */
   tylkoModuly?: string[];
+  /** Skrócone karty szafek bez osobnych rysunków części. Domyślnie pełny pakiet. */
+  skrocony?: boolean;
 }
 
 export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
@@ -41,11 +43,17 @@ export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
   doc.registerFont("M", join(FONTY, "DejaVuSansMono.ttf"));
   const bufory: Buffer[] = [];
   doc.on("data", (b: Buffer) => bufory.push(b));
-  const koniec = new Promise<Buffer>((ok) => doc.on("end", () => ok(Buffer.concat(bufory))));
+  const koniec = new Promise<Buffer>((ok, blad) => {
+    doc.on("end", () => ok(Buffer.concat(bufory)));
+    doc.on("error", blad);
+  });
 
   const ctx = new Kontekst(doc, w);
   if (w.tylkoModuly?.length) {
-    for (const zm of w.zbudowane.filter((z) => w.tylkoModuly!.includes(z.modul.id))) ctx.szafka(zm);
+    for (const zm of w.zbudowane.filter((z) => w.tylkoModuly!.includes(z.modul.id))) {
+      ctx.szafka(zm);
+      if (!w.skrocony) for (const c of w.dokumentacja.czesci.filter((c) => c.modulId === zm.modul.id)) ctx.czesc(c);
+    }
     if (!doc.bufferedPageRange().count) ctx.brak("Nie znaleziono wskazanej szafki w tej rewizji projektu.");
   } else if (w.tylkoCzesci?.length) {
     // Rysunki wybranych części (np. z zaznaczenia w 3D) — ta sama rewizja i format co pełny pakiet.
@@ -55,8 +63,11 @@ export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
     ctx.stronaTytulowa();
     ctx.kuchnia();
     ctx.indeks();
-    // Jedna szafka = jedna strona A3: widoki, wszystkie formatki z wierceniami i wspólna tabela operacji.
-    for (const zm of w.zbudowane) ctx.szafka(zm);
+    // Karta zbiorcza oraz osobne rysunki wszystkich części tej samej rewizji.
+    for (const zm of w.zbudowane) {
+      ctx.szafka(zm);
+      if (!w.skrocony) for (const c of w.dokumentacja.czesci.filter((c) => c.modulId === zm.modul.id)) ctx.czesc(c);
+    }
   }
   ctx.stopki();
   doc.end();
@@ -122,8 +133,8 @@ class Kontekst {
     const p = this.w.projekt;
     this.nowaStrona("Dokumentacja produkcyjna", `Wygenerowano z rewizji ${this.d.rewizja} projektu — wszystkie rysunki i zestawienia pochodzą z tej samej rewizji.`);
     let y = m + 50;
-    doc.font("B").fontSize(20).text(p.nazwa, m, y);
-    y += 30;
+    doc.font("B").fontSize(20).text(p.nazwa, m, y, { width: 380 });
+    y = doc.y + 14;
     doc.font("R").fontSize(10);
     for (const [k, v] of [
       ["Klient", p.klient.nazwa || "—"],
@@ -262,7 +273,7 @@ class Kontekst {
       c.bezWiercen ? "bez" : String(c.operacje.length),
       NAZWA_STATUSU[c.status],
     ]);
-    this.tabela("Indeks części", "Każda wykonywana część ma własny rysunek w dalszej części pakietu.", kol, wiersze, (i) => KOLOR_STATUSU[this.d.czesci[i].status]);
+    this.tabela("Indeks części", this.w.skrocony ? "Wydruk skrócony: karty zbiorcze szafek, bez osobnych rysunków części." : "Każda wykonywana część ma własny rysunek w dalszej części pakietu.", kol, wiersze, (i) => KOLOR_STATUSU[this.d.czesci[i].status]);
   }
 
   private tabela(tytul: string, podtytul: string, kol: { t: string; w: number }[], wiersze: string[][], kolorOstatniej?: (i: number) => string, y0?: number) {
@@ -365,7 +376,7 @@ class Kontekst {
     doc.font("R").fontSize(7.5).text([...okucia, ...diag].join("\n") || "—", m, yy, { width: this.W - 2 * m });
   }
 
-  // ---------- Szafka na jednej stronie (A3) ----------
+  // ---------- Zbiorcza karta szafki (A4, tabela może mieć kontynuację) ----------
 
   szafka(zm: ZbudowanyModul) {
     const { doc, m } = this;
@@ -628,7 +639,7 @@ class Kontekst {
     const { doc, m } = this;
     this.nowaStrona(
       `${c.etykieta} — ${c.kodElementu} (${c.nazwaModulu})`,
-      `ID ${c.id} · ${c.materialOpis}, gr. ${f(c.gruboscMM)} · gotowy ${f(c.dlugoscMM)} × ${f(c.szerokoscMM)} · do cięcia ${c.kupowana ? "— (kupowana)" : `${f(c.dlugoscCieciaMM)} × ${f(c.szerokoscCieciaMM)}`} · usłojenie: ${c.kierunekDekoru === "dowolny" ? "dowolne" : "wzdłuż długości (X)"}`,
+      `Gotowy ${f(c.dlugoscMM)} × ${f(c.szerokoscMM)} × ${f(c.gruboscMM)} mm · do cięcia ${c.kupowana ? "— (kupowana)" : `${f(c.dlugoscCieciaMM)} × ${f(c.szerokoscCieciaMM)}`} · usłojenie: ${c.kierunekDekoru === "dowolny" ? "dowolne" : "wzdłuż X"}`,
     );
     // Obszar rysunku po lewej, tabela po prawej
     const obszar = { x: m + 30, y: m + 70, w: 430, h: 330 };
@@ -673,6 +684,12 @@ class Kontekst {
     wymiarPoziomy(this.doc, ox, ox + L, oy + 22, f(c.dlugoscMM));
     wymiarPionowy(this.doc, ox + L + 22, oy - S, oy, f(c.szerokoscMM));
 
+    // Etykiety bliskich otworów rozsuń, zachowując linię odniesienia do osi.
+    const etykiety: { x: number; y: number; w: number }[] = [
+      { x: ox + L / 2 - 35, y: oy + 5, w: 70 },
+      { x: ox + L / 2 - 35, y: oy - S - 15, w: 70 },
+      { x: ox - 12, y: oy - 5, w: 45 },
+    ];
     // Operacje na licach
     const numer = new Map(c.operacje.map((o, i) => [o.id, i + 1]));
     for (const o of c.operacje.filter((q) => q.powierzchnia === "A" || q.powierzchnia === "B")) {
@@ -690,30 +707,27 @@ class Kontekst {
         doc.moveTo(x - r - 1.5, y).lineTo(x + r + 1.5, y).moveTo(x, y - r - 1.5).lineTo(x, y + r + 1.5).lineWidth(0.3).stroke();
       }
       doc.undash();
-      doc.font("R").fontSize(5.5).fillColor(o.powierzchnia === "A" ? "#000" : "#555").text(String(numer.get(o.id)), x + 2.5, y - 8.5, { lineBreak: false });
-    }
-
-    // Widoki krawędzi z otworami (grubość powiększona, pozycje w skali)
-    const krawedzie = (["DA", "DB", "KA", "KB"] as const).filter((k) => c.operacje.some((o) => o.powierzchnia === k));
-    let ky = oy + 44;
-    for (const k of krawedzie) {
-      const dlK = (k === "DA" || k === "DB" ? c.dlugoscMM : c.szerokoscMM) * s;
-      const hK = 12;
-      if (ky + hK + 20 > this.H - 40) break;
-      doc.font("R").fontSize(6.5).fillColor("#000").text(`Krawędź ${k} (grubość powiększona, pozycje w skali; y od lica B)`, ox, ky);
-      ky += 9;
-      doc.lineWidth(0.6).strokeColor("#000").rect(ox, ky, dlK, hK).stroke();
-      for (const o of c.operacje.filter((q) => q.powierzchnia === k)) {
-        const x = ox + o.x * s;
-        const y = ky + hK - (o.y / c.gruboscMM) * hK;
-        doc.circle(x, y, 2).stroke();
-        doc.font("R").fontSize(5.5).text(String(numer.get(o.id)), x + 2.5, ky - 7, { lineBreak: false });
+      const tekst = String(numer.get(o.id));
+      doc.font("R").fontSize(6);
+      const w = doc.widthOfString(tekst) + 3;
+      let ex = x + 3, ey = y - 12;
+      szukaj: for (let poziom = 0; poziom < 30; poziom++) {
+        for (const cy of [y - 12 - poziom * 11, y + 8 + poziom * 11]) {
+          if (cy < m + 62 || cy + 8 > this.H - 80) continue;
+          const cx = Math.max(m + 4, Math.min(x + 3, 470 - w));
+          if (!etykiety.some((e) => cx < e.x + e.w + 2 && cx + w + 2 > e.x && cy < e.y + 10 && cy + 10 > e.y)) {
+            ex = cx; ey = cy; break szukaj;
+          }
+        }
       }
-      ky += hK + 10;
+      etykiety.push({ x: ex, y: ey, w });
+      doc.lineWidth(0.25).strokeColor("#777").moveTo(x, y).lineTo(ex, ey + 4).stroke();
+      doc.rect(ex - 1, ey - 1, w, 8).fillColor("#fff").fill();
+      doc.fillColor(o.powierzchnia === "A" ? "#000" : "#555").text(tekst, ex, ey, { lineBreak: false });
     }
 
     // Tabela operacji
-    const tx = 500;
+    const tx = 490;
     const kol = [
       { t: "#", w: 16 },
       { t: "Pow.", w: 24 },
@@ -721,8 +735,8 @@ class Kontekst {
       { t: "y", w: 30 },
       { t: "Ø / szer.", w: 36 },
       { t: "Głęb.", w: 32 },
-      { t: "Przeznaczenie / połączenie", w: 120 },
-      { t: "Reguła", w: 22 },
+      { t: "Przeznaczenie / połączenie", w: 103 },
+      { t: "Reguła", w: 28 },
     ];
     let y = m + 50;
     if (c.bezWiercen) {
@@ -736,7 +750,7 @@ class Kontekst {
           doc.text(k2.t, x, y, { width: k2.w - 2 });
           x += k2.w;
         }
-        y += 10;
+        y += Math.max(...kol.map((k2) => doc.heightOfString(k2.t, { width: k2.w - 2 }))) + 5;
       };
       naglowek();
       c.operacje.forEach((o, i) => {
@@ -750,7 +764,7 @@ class Kontekst {
           `${o.typ === "rowek" ? `Rowek dł. ${f(o.dlugosc ?? 0)} wzdłuż ${o.osRowka}. ` : ""}${o.przeznaczenie}${o.polaczenie ? " · " + o.polaczenie : ""}`,
           statusSkrot(o),
         ];
-        const h = doc.font("R").fontSize(6.5).heightOfString(wiersz[6], { width: kol[6].w - 2 }) + 2;
+        const h = Math.max(...wiersz.map((t, j) => doc.font("R").fontSize(6.5).heightOfString(t, { width: kol[j].w - 2 }))) + 4;
         if (y + h > this.H - 90) {
           this.nowaStrona(`${c.etykieta} — operacje (cd.)`);
           y = m + 50;
@@ -764,17 +778,73 @@ class Kontekst {
         y += h;
       });
     }
-    // Uwagi, status, legenda
-    y += 8;
-    doc.font("B").fontSize(8).fillColor(KOLOR_STATUSU[c.status]).text(`Status części: ${NAZWA_STATUSU[c.status]}`, tx, Math.min(y, this.H - 100));
-    const braki = this.d.diagnostyka.filter((dg) => dg.obiekty.includes(c.id)).map((dg) => `• ${dg.opis}`);
-    doc.font("R").fontSize(6.5).fillColor("#000").text([...c.uwagi.map((u) => `• ${u}`), ...braki].join("\n"), tx, doc.y + 2, { width: 310 });
-    doc.font("R").fontSize(6).fillColor("#555").text(
-      "Konwencja: lico A — od wnętrza mebla (front: od korpusu); na licach x od KA, y od DA; na krawędziach DA/DB: x od KA, y od lica B; na KA/KB: x od DA, y od lica B. Reguła: Z — zatwierdzona, K — katalogowa, R — robocza, ? — brak danych. Otwory lica B linią przerywaną.",
-      m,
-      this.H - 52,
-      { width: this.W - 2 * m },
-    );
+    // Uwagi i źródła nie mogą wypaść poza stronę ani zasłonić tabeli.
+    const braki = this.d.diagnostyka.filter((dg) => dg.obiekty.includes(c.id)).map((dg) => dg.opis);
+    const reguly = [...new Map(c.operacje.map((o) => [o.regula.id, o.regula])).values()];
+    const uwagi = [
+      `Status części: ${NAZWA_STATUSU[c.status]}`,
+      `ID części: ${c.id}`,
+      `Materiał: ${c.materialOpis}`,
+      ...c.uwagi, ...braki,
+      ...reguly.map((r) => `Reguła ${r.id}: ${r.opis}. Źródło: ${r.zrodlo}`),
+    ];
+    y += 12;
+    const szerUwagi = this.W - m - tx;
+    for (const uwaga of uwagi) {
+      // Dziel również pojedynczą długą uwagę; każda kontynuacja ma nagłówek i stopkę.
+      let wiersz = "";
+      const linie: string[] = [];
+      doc.font("R").fontSize(7);
+      for (const slowo of uwaga.split(/\s+/).flatMap((slowo) => {
+        const fragmenty: string[] = []; let fragment = "";
+        for (const znak of slowo) {
+          if (fragment && doc.widthOfString(fragment + znak) > szerUwagi) { fragmenty.push(fragment); fragment = ""; }
+          fragment += znak;
+        }
+        if (fragment) fragmenty.push(fragment);
+        return fragmenty;
+      })) {
+        const kandydat = wiersz ? `${wiersz} ${slowo}` : slowo;
+        if (wiersz && doc.widthOfString(kandydat) > szerUwagi) { linie.push(wiersz); wiersz = slowo; }
+        else wiersz = kandydat;
+      }
+      if (wiersz) linie.push(wiersz);
+      for (const linia of linie) {
+        if (y + 11 > this.H - 66) {
+          this.nowaStrona(`${c.etykieta} — uwagi i źródła (cd.)`);
+          y = m + 50;
+        }
+        doc.font("R").fontSize(7).fillColor("#000").text(linia, tx, y, { width: szerUwagi, lineBreak: false });
+        y += 10;
+      }
+      y += 5;
+    }
+    this.legenda(m, this.H - 50, this.W - 2 * m);
+
+    // Oddzielna strona krawędzi pozwala pokazać każdą powierzchnię, bez cichego pomijania.
+    const krawedzie = (["DA", "DB", "KA", "KB"] as const).filter((k) => c.operacje.some((o) => o.powierzchnia === k));
+    if (krawedzie.length) {
+      this.nowaStrona(`${c.etykieta} — rysunki krawędzi`, `${c.kodElementu} · ${c.nazwaModulu} · numeracja operacji jak na rysunku lica i w tabeli.`);
+      let ky = m + 60;
+      for (const k of krawedzie) {
+        const dl = k === "DA" || k === "DB" ? c.dlugoscMM : c.szerokoscMM;
+        const nk = skala(dl, 1, (this.W - 2 * m - 80) / MM, 100, SKALE);
+        const sk = MM / nk;
+        const x0 = m + 35, hk = 28;
+        doc.font("B").fontSize(9).fillColor("#000").text(`Krawędź ${k} · długość ${f(dl)} mm · grubość ${f(c.gruboscMM)} mm`, x0, ky);
+        doc.font("R").fontSize(7).text(`Pozycje x w skali 1:${nk}; grubość powiększona. y od lica B.`, x0, ky + 14);
+        ky += 40;
+        doc.lineWidth(0.7).strokeColor("#000").rect(x0, ky, dl * sk, hk).stroke();
+        for (const o of c.operacje.filter((q) => q.powierzchnia === k)) {
+          const x = x0 + o.x * sk, y0 = ky + hk - o.y / c.gruboscMM * hk;
+          doc.circle(x, y0, 2.5).stroke();
+          doc.font("R").fontSize(7).text(String(numer.get(o.id)), x + 3, ky - 12, { lineBreak: false });
+        }
+        wymiarPoziomy(doc, x0, x0 + dl * sk, ky + hk + 17, f(dl));
+        ky += hk + 39;
+      }
+      this.legenda(m, this.H - 50, this.W - 2 * m);
+    }
   }
 }
 

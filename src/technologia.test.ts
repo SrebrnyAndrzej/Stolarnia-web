@@ -134,7 +134,7 @@ test("T07: szuflady — wymiary z profilu producenta, brak wierceń blokuje goto
   assert.equal(s.dokumentacja(p.id).gotowaDoProdukcji, false);
 });
 
-test("PDF: każda szafka mieści się na jednej stronie A4 (także słupek z wieloma półkami)", async () => {
+test("PDF: skrócona karta szafki mieści się na jednej stronie A4", async () => {
   const s = nowa();
   const p = s.utworzProjekt({ nazwa: "PDF", sciany: [{ dlugoscMM: 3000 }] });
   const sc = p.pomieszczenia[0].sciany[0].id;
@@ -142,7 +142,7 @@ test("PDF: każda szafka mieści się na jednej stronie A4 (także słupek z wie
   const strony = (b: Buffer) => b.toString("latin1").match(/\/Type \/Page[^s]/g)?.length ?? 0;
   const a4 = (b: Buffer) => (b.toString("latin1").match(/\/MediaBox \[0 0 841\.89 595\.28\]/g)?.length ?? 0) === strony(b);
   for (const m of moduly) {
-    const pdf = await s.dokumentacjaPdf(p.id, { moduly: [m.id] });
+    const pdf = await s.dokumentacjaPdf(p.id, { moduly: [m.id], skrocony: true });
     assert.equal(strony(pdf), 1, m.nazwa);
     assert.ok(a4(pdf), `${m.nazwa}: format A4 poziomo`);
   }

@@ -13,6 +13,6 @@ const d = s.dokumentacja(id);
 const strony = (b: Buffer) => (b.toString("latin1").match(/\/Type \/Page[^s]/g) ?? []).length;
 console.log(`${plik}: ${Math.round(pdf.length / 1024)} KB, stron ${strony(pdf)}, części ${d.czesci.length}, operacji ${d.podsumowanie.operacje}`);
 for (const m of s.projekt(id).moduly) {
-  const n = strony(await s.dokumentacjaPdf(id, { moduly: [m.id] }));
+  const n = strony(await s.dokumentacjaPdf(id, { moduly: [m.id], skrocony: true }));
   console.log(`${n === 1 ? "  ok" : "  !!"} ${n} str. — ${m.nazwa}`);
 }

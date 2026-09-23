@@ -66,7 +66,7 @@ app.get("/api/projekty/:id/analiza", api((r) => s.analiza(p(r, "id"))));
 app.get("/api/projekty/:id/dokumentacja", api((r) => s.dokumentacja(p(r, "id"))));
 app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
   const lista = (k: string) => (req.query[k] ? String(req.query[k]).split(",") : undefined);
-  s.dokumentacjaPdf(p(req, "id"), { czesci: lista("czesc"), moduly: lista("modul") })
+  s.dokumentacjaPdf(p(req, "id"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1" })
     .then((pdf) => {
       const rew = s.projekt(p(req, "id")).rewizja;
       res.setHeader("Content-Type", "application/pdf");
