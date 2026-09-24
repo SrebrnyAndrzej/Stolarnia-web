@@ -696,7 +696,11 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <label className="check"><input type="checkbox" checked={k.nogi} onChange={(e) => konf({ nogi: e.target.checked })} /> Nogi + cokół</label>
           <label className="check"><input type="checkbox" checked={k.szufladySystemowe} onChange={(e) => konf({ szufladySystemowe: e.target.checked })} /> Szuflady systemowe</label>
         </div>
-        <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
+        <div className="grid2">
+          <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
+          <Liczba label="Podziałka szuflad [mm]" value={k.wysokoscSzufladyMM ?? 0} onSave={(v) => konf({ wysokoscSzufladyMM: v > 0 ? v : (null as unknown as undefined) })} />
+        </div>
+        {k.typFrontu === "drzwi" && k.liczbaSzuflad > 0 && <div className="muted" style={{ fontSize: 12 }}>Szuflady pod drzwiami: {k.liczbaSzuflad} × {k.wysokoscSzufladyMM ?? 360} mm, nad nimi półka stała i drzwi.</div>}
         {m.konstrukcja === "blindCorner" && (
           <div className="grid2">
             <div className="field">

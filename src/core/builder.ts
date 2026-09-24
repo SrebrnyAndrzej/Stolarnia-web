@@ -55,16 +55,25 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
     // także szafki dolne pod blat (bez listew wzmacniających zamiast wieńca górnego).
     el.push(p("WIENIEC-G", "top", t, H - t, 0, innerW, t, D, "korpus"));
 
+    // Układ mieszany (szuflady pod drzwiami): półka stała na górze strefy szuflad, półki nastawne tylko nad nią.
+    const strefaSzuflad = strefaSzufladPodDrzwiami(m);
+    let dolPolek = t;
+    if (strefaSzuflad > 0) {
+      if (strefaSzuflad > H - 2 * t - 200) ostrzezenia.push(`Strefa szuflad ${strefaSzuflad} mm nie zostawia miejsca na drzwi.`);
+      el.push(p("POLKA-STALA", "fixedShelf", t, strefaSzuflad - t, 0, innerW, t, D - rezerwaPlecow, "korpus"));
+      dolPolek = strefaSzuflad;
+    }
+
     // Półki — równomierne rozmieszczenie światła (CabinetComponentFactory.shelfComponents)
     if (cfg.liczbaPolek > 0) {
       const glPolki = D - rezerwaPlecow - COFNIECIE_POLKI_MM;
-      const swiatlo = innerH - t * cfg.liczbaPolek;
+      const swiatlo = H - t - dolPolek - t * cfg.liczbaPolek;
       if (swiatlo <= 0 || glPolki <= 0) {
         ostrzezenia.push("Wysokość/głębokość korpusu jest zbyt mała dla zadanej liczby półek.");
       } else {
         const odstep = swiatlo / (cfg.liczbaPolek + 1);
         for (let i = 1; i <= cfg.liczbaPolek; i++) {
-          const y = t + odstep * i + t * (i - 1);
+          const y = dolPolek + odstep * i + t * (i - 1);
           el.push(p(`POLKA-${pad(i)}`, "shelf", t, y, COFNIECIE_POLKI_MM, innerW, t, glPolki, "korpus"));
         }
       }
@@ -176,18 +185,20 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
   if (m.konstrukcja === "ovenMicrowaveTower") niszaH = 595 + 380;
 
   // Szuflady
-  const liczbaSzuflad = cfg.typFrontu === "szuflady" || m.konstrukcja === "ovenTower" ? cfg.liczbaSzuflad : 0;
+  const mieszany = strefaSzufladPodDrzwiami(m);
+  const liczbaSzuflad = cfg.typFrontu === "szuflady" || m.konstrukcja === "ovenTower" || mieszany > 0 ? cfg.liczbaSzuflad : 0;
   let yStart = 0;
   if (liczbaSzuflad > 0) {
-    const strefaH = m.konstrukcja === "oven" ? H - niszaH : m.konstrukcja === "ovenTower" ? Math.min(H * 0.3, 450) : H;
+    const strefaH = m.konstrukcja === "oven" ? H - niszaH : m.konstrukcja === "ovenTower" ? Math.min(H * 0.3, 450) : mieszany > 0 ? mieszany : H;
     if (strefaH < 100) {
       ostrzezenia.push("Za mało miejsca na front szuflady pod niszą AGD.");
     } else {
       const netto = strefaH - gap * (liczbaSzuflad + 1);
       // Górna szuflada niższa (≈20%), pozostałe równe — typowy układ 3-szufladowy.
+      // Z podaną podziałką (wysokoscSzufladyMM) albo pod drzwiami — wszystkie równe, linie frontów w sąsiednich słupkach się pokrywają.
       const wysokosci =
-        liczbaSzuflad === 1
-          ? [netto]
+        liczbaSzuflad === 1 || cfg.wysokoscSzufladyMM || mieszany > 0
+          ? Array(liczbaSzuflad).fill(netto / liczbaSzuflad)
           : (() => {
               const gorna = Math.max(120, Math.round(netto * 0.2));
               const reszta = (netto - gorna) / (liczbaSzuflad - 1);
@@ -240,6 +251,17 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
   }
   if (dw > 600) ostrzezenia.push(`Skrzydło drzwi ${Math.round(dw)} mm szersze niż 600 mm — rozważ 2 skrzydła.`);
   return wynik;
+}
+
+/**
+ * Wysokość strefy szuflad pod drzwiami [mm] albo 0. Dotyczy słupków/szafek z frontem „drzwi” i liczbaSzuflad > 0
+ * (bez nisz AGD): strefa = liczba szuflad × podziałka (domyślnie 360 mm).
+ */
+export function strefaSzufladPodDrzwiami(m: Modul): number {
+  const cfg = m.konfiguracja;
+  if (cfg.typFrontu !== "drzwi" || cfg.liczbaSzuflad <= 0 || cfg.liczbaDrzwi <= 0) return 0;
+  if (["oven", "ovenTower", "ovenMicrowaveTower", "blindCorner", "sink"].includes(m.konstrukcja)) return 0;
+  return cfg.liczbaSzuflad * (cfg.wysokoscSzufladyMM ?? 360);
 }
 
 function p(kod: string, rola: Element["rola"], x: number, y: number, z: number, szer: number, wys: number, gl: number, materialRola: Element["materialRola"]): Element {

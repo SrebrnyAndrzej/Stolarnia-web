@@ -124,3 +124,29 @@ test("szafka narożna ślepa z LeMans: drzwi po lewej, komplet w wycenie, oferta
   const pdf = await s.ofertaPdf(p.id, { wariant: "premium" });
   assert.equal(pdf.subarray(0, 4).toString(), "%PDF");
 });
+
+test("słupek: szuflady pod drzwiami z półką stałą, fronty w jednej linii z sąsiednim słupkiem", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Szafa", sciany: [{ dlugoscMM: 1200 }] });
+  const sc = p.pomieszczenia[0].sciany[0].id;
+  const baza = { scianaId: sc, kategoria: "tall" as const, konstrukcja: "shelves" as const, szerokoscMM: 600, wysokoscMM: 1800, glebokoscMM: 560, pozycjaYMM: 100 };
+  const mix = s.dodajModul(p.id, { ...baza, pozycjaXMM: 0, konfiguracja: { typFrontu: "drzwi", liczbaDrzwi: 1, liczbaSzuflad: 2, liczbaPolek: 2, wysokoscSzufladyMM: 360 } });
+  const sz = s.dodajModul(p.id, { ...baza, pozycjaXMM: 600, konfiguracja: { typFrontu: "szuflady", liczbaDrzwi: 0, liczbaSzuflad: 5, liczbaPolek: 0, wysokoscSzufladyMM: 360 } });
+  const a = s.analiza(p.id);
+  const m1 = a.zbudowane.find((z) => z.modul.id === mix.id)!;
+  const m2 = a.zbudowane.find((z) => z.modul.id === sz.id)!;
+  assert.deepEqual(m1.ostrzezenia, []);
+  assert.equal(m1.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).length, 2);
+  const drzwi = m1.elementy.find((e) => e.kod === "FRONT-D01")!;
+  assert.equal(drzwi.y, 722);
+  const stala = m1.elementy.find((e) => e.rola === "fixedShelf")!;
+  assert.equal(stala.y + stala.wys, 720);
+  for (const polka of m1.elementy.filter((e) => e.rola === "shelf")) assert.ok(polka.y > 720, "półki nastawne tylko nad szufladami");
+  // Podział frontów: druga szuflada kończy się na tej samej wysokości co w słupku z 5 szufladami (±2 mm)
+  const gora = (z: typeof m1, kod: string) => { const e = z.elementy.find((q) => q.kod === kod)!; return e.y + e.wys; };
+  assert.ok(Math.abs(gora(m1, "FRONT-SZ02") - gora(m2, "FRONT-SZ02")) <= 2);
+  // Półka stała łączona konfirmatami z bokami
+  const d = s.dokumentacja(p.id);
+  const c = d.czesci.find((q) => q.modulId === mix.id && q.kodElementu === "POLKA-STALA")!;
+  assert.ok(c.operacje.some((o) => /Konfirmat/.test(o.przeznaczenie)));
+});
