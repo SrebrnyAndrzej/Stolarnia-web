@@ -710,6 +710,7 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
                 <option value="prawa">Po prawej</option>
               </select>
             </div>
+            <Liczba label="Szer. drzwi [mm]" value={k.szerokoscDrzwiNaroznikaMM ?? 450} onSave={(v) => konf({ szerokoscDrzwiNaroznikaMM: v })} />
             <label className="check"><input type="checkbox" checked={k.systemNarozny === "lemans"} onChange={(e) => konf({ systemNarozny: e.target.checked ? "lemans" : undefined, ...(e.target.checked ? { liczbaPolek: 0 } : {}) })} /> LeMans II (2 nerki)</label>
           </div>
         )}

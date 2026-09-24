@@ -90,7 +90,11 @@ const opisStaly = (m: Modul) => {
   const t = `${m.nazwa} ${m.uwagi ?? ""}`;
   if (/zlew/i.test(t)) return "zlew";
   if (/indukc|płyt[aęy]/i.test(t)) return "płyta indukcyjna";
-  if (m.konfiguracja.systemNarozny === "lemans") return "narożnik LeMans (drzwi 45 lewe, reszta ślepa)";
+  const drzwiN = (m.konfiguracja.szerokoscDrzwiNaroznikaMM ?? 450) / 10;
+  const strona = m.konfiguracja.stronaDrzwiNaroznika === "lewa" ? "lewe" : "prawe";
+  if (m.konfiguracja.systemNarozny === "lemans") return `narożnik LeMans (drzwi ${drzwiN} ${strona}, reszta ślepa)`;
+  if (m.konstrukcja === "blindCorner") return `narożnik ślepy (drzwi ${drzwiN} ${strona}, reszta ślepa w głąb)`;
+  if (m.konstrukcja === "cargo") return "cargo";
   if (/zmywark/i.test(t) && !/do potwierdzenia/i.test(t)) return "zmywarka";
   return "";
 };
@@ -177,8 +181,8 @@ for (const s of sciany) {
     doc.font("B").fontSize(11).fillColor(JASNY).text(numer.get(m.id) ?? "", x0, yGora + 4, { width: x1 - x0, align: "center" });
     const staly = opisStaly(m);
     if (staly) doc.font("C").fontSize(6.5).fillColor(SZARY).text(staly, x0 + 3, yDol - 12, { width: x1 - x0 - 6, align: "center" });
-    if (m.konfiguracja.systemNarozny === "lemans") {
-      const drzwi = 450;
+    if (m.konstrukcja === "blindCorner") {
+      const drzwi = m.konfiguracja.szerokoscDrzwiNaroznikaMM ?? 450;
       const lewe = m.konfiguracja.stronaDrzwiNaroznika === "lewa";
       const xd = lewe ? X(m.pozycjaXMM + drzwi) : X(m.pozycjaXMM + m.szerokoscMM - drzwi);
       doc.moveTo(xd, yGora).lineTo(xd, yDol).lineWidth(0.5).dash(3, { space: 2 }).strokeColor(SZARY).stroke().undash();

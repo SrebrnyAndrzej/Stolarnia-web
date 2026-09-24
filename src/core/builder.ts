@@ -218,7 +218,7 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
   if (liczbaDrzwi <= 0) return wynik;
 
   if (m.konstrukcja === "blindCorner") {
-    const drzwiW = Math.min(450, W - 2 * gap);
+    const drzwiW = Math.min(cfg.szerokoscDrzwiNaroznikaMM ?? 450, W - 2 * gap);
     const zaslepkaW = W - drzwiW - 3 * gap;
     const lewe = cfg.stronaDrzwiNaroznika === "lewa";
     wynik.push(p("FRONT-D01", "front", lewe ? gap : W - drzwiW - gap, gap, z, drzwiW, H - 2 * gap, tf, "front"));

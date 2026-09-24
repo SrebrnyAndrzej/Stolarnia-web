@@ -247,6 +247,8 @@ export interface KonfiguracjaModulu {
   wysokoscSzufladyMM?: number;
   /** Szafka narożna ślepa: strona drzwi (domyślnie prawa, część ślepa po przeciwnej stronie). */
   stronaDrzwiNaroznika?: "lewa" | "prawa";
+  /** Szafka narożna ślepa: szerokość drzwi [mm] (domyślnie 450 — pod LeMans). */
+  szerokoscDrzwiNaroznikaMM?: number;
   /** System narożny w szafce ślepej — Kesseböhmer LeMans II (komplet 2 półek „nerek”). */
   systemNarozny?: "lemans";
 }
