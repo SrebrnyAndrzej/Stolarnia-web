@@ -87,9 +87,10 @@ const kreskowanie = (x: number, y: number, w: number, h: number, kolor = JASNY) 
   doc.rect(x, y, w, h).lineWidth(0.5).dash(3, { space: 2 }).strokeColor(SZARY).stroke().undash();
 };
 const opisStaly = (m: Modul) => {
-  const t = `${m.nazwa} ${m.uwagi ?? ""}`;
-  if (/zlew/i.test(t)) return "zlew";
-  if (/indukc|płyt[aęy]/i.test(t)) return "płyta indukcyjna";
+  // Najpierw typ konstrukcji; nazwę sprawdzamy tylko dla urządzeń (uwagi mogą wspominać sąsiednie szafki).
+  if (m.konstrukcja === "sink") return "zlew";
+  if (/indukc|płyt[aęy] grzew/i.test(m.nazwa)) return "płyta indukcyjna";
+  const t = m.nazwa;
   const drzwiN = (m.konfiguracja.szerokoscDrzwiNaroznikaMM ?? 450) / 10;
   const strona = m.konfiguracja.stronaDrzwiNaroznika === "lewa" ? "lewe" : "prawe";
   if (m.konfiguracja.systemNarozny === "lemans") return `narożnik LeMans (drzwi ${drzwiN} ${strona}, reszta ślepa)`;
