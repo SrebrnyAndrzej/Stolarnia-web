@@ -18,7 +18,7 @@ for (const p of katalog) {
       konflikty++;
     } else delete p.parametry["Konflikt danych"];
   }
-  if (!p.sku) {
+  if (!p.sku && p.rodzajSKU === "rodzina") {
     p.parametry["Zakres indeksu"] = "Producent nie publikuje indeksu na karcie produktu — wariant (kolor, długość) i indeks ustal u dostawcy.";
     bezSku++;
   }

@@ -54,3 +54,48 @@ Scrapowanie rozpoczął Codex, dokończył Claude. `produkty/katalog.json` zawie
 - **Konflikty GTV:** w 3 kartach symbol przeczy tabeli parametrów tej samej strony. PB-AXISPRO-KPL250A i KPL250A2 podają „250, 300”, a PB-AXISPRO-P2O-KPL450D2 podaje 400. Wartości producenta zostały bez zmian i mają parametr „Konflikt danych”, widoczny na karcie w galerii. Po każdym ponownym pobraniu uruchom `node scripts/oznacz-konflikty-okuc.mjs`.
 - **W aplikacji:** Materiały i okucia → Okucia → „Katalog systemów szuflad”. Do cennika można dodać tylko pozycję z konkretnym SKU, po wpisaniu ceny zakupu netto. Dodanie nie zmienia istniejących cen ani wycen projektów. Katalog nie jest profilem wierceń. Reguły produkcyjne nadal pochodzą z `reguly-szuflad.json`.
 - **Skrypty pobierania** (w katalogu roboczym Codexa, poza repozytorium): `collect_drawer_products.py` i `finalize_drawer_products.py`.
+
+## Rozszerzony katalog: zawiasy, prowadnice, systemy przesuwne, wkręty, kleje, chemia (24.09.2026)
+
+Kolektor `scripts/okucia/zbierz_katalog_okuc.py` dopisuje do `produkty/katalog.json` pozycje z kategoriami aplikacji: zawiasy, prowadnice, przesuwne, podnosniki, odbojniki, wkrety, laczniki, mocowania, nogi, kleje, chemia, wyposazenie i inne. Dotychczasowe szuflady zostają bez zmian. Liczby po ostatnim przebiegu są w `produkty/raport.json`, a błędy pobierania w `produkty/errors.json`.
+
+| Źródło | Rodzaj | Zakres | Indeks |
+|---|---|---|---|
+| gtv.com.pl | producent | wszystkie karty SKU z mapy strony poza oświetleniem; kategoria z okruszków karty | symbol GTV z adresu, sprawdzony w treści karty |
+| amix.pl | producent | zawiasy (także CLIP-ON), prowadnice, podnośniki, akcesoria do drzwi przesuwnych, elementy łączące, podpórki, odbojniki, nogi, kosze cargo, szuflady, segregatory, garderoba | `mpn`/`sku` z danych produktu; karta z wieloma wariantami ma status `rodzina` |
+| spraykon.pl | producent | kleje kontaktowe (aerozole, kanistry), kleje meblarskie CA, zmywacze (bez wielopaków) | „Indeks” producenta i EAN z karty |
+| mamutglue.pl | producent (Den Braven / Bostik) | Mamut Glue jako karta rodziny z kartą techniczną (TDS) i kartą charakterystyki (SDS) | brak indeksu na karcie; pojemność i kolor ustala się u dostawcy |
+| sklep.merkuryam.pl | **dystrybutor** | Blum (CLIP top, MOVENTO, TANDEM, AVENTOS, TIP-ON), Hettich, Häfele, Laguna, Sevroll, Titus, Matrix (CELO, MX PRO), Astra Trade (KONFI), Würth i inne. Wybór przez słowa kluczowe w adresie. Marki GTV, Amix i Spray-Kon pominięte, bo mają dane od producenta | symbol dystrybutora i EAN osobno; kod producenta tylko wtedy, gdy występuje w nazwie (np. Blum 71B7550D) |
+
+**Stan po przebiegu z 24–25.09.2026:** 2472 produkty. Od producenta pochodzi 1488 (GTV 835, Blum 145 z dokumentacji, Amix 474, Spray-Kon 33, Mamut 1), od dystrybutora 984. Wszystkie mają zdjęcie (2047 plików, ok. 59 MB), błędów pobierania: 0.
+
+| Kategoria | Produkty |
+|---|---:|
+| Systemy szuflad | 620 |
+| Zawiasy | 327 |
+| Prowadnice | 259 |
+| Wkręty i konfirmaty | 222 |
+| Systemy przesuwne | 174 |
+| Zawieszki i mocowania | 168 |
+| Podnośniki | 132 |
+| Odbojniki i push | 115 |
+| Wyposażenie mebli | 113 |
+| Nogi i kółka | 97 |
+| Uchwyty i gałki | 75 |
+| Kleje | 62 |
+| Łączniki i kołki | 58 |
+| Akcesoria (przepusty, kratki, zamki) | 27 |
+| Chemia meblowa | 22 |
+| Inne | 1 |
+
+- **Kod producenta u dystrybutora** jest przyjmowany tylko wtedy, gdy ostatni człon symbolu Merkury jest całym słowem w nazwie, zawiera litery i cyfry i nie jest wymiarem ani pojemnością. Spełnia to 190 pozycji Blum i 1 Camar. Pozostałe mają symbol dystrybutora i EAN.
+- **EAN** jest przyjmowany tylko z poprawną cyfrą kontrolną. W polu „EAN” Merkury bywają kody celne (np. „83024200.”); trafiają one do parametru „Kod z pola EAN (niepoprawny EAN)”.
+- **Marka nieustalona (296 pozycji):** karta dystrybutora nie podaje marki, a nazwa jej nie zawiera. Nie zgadujemy. Części chemii marka jest nadana z nazwy (np. Tytan, Absorfen, Pattex), z adnotacją w parametrze „Marka”.
+- **Amix:** nazwa składa się z kategorii i kodu, gdy karta ma za nazwę sam kod. Cena referencyjna to cena netto ze sklepu producenta za jednostkę sprzedaży podaną na karcie. Bywa nią opakowanie, np. kołki.
+- **Matrix:** strona producenta matrixpolska.pl jest zawieszona („Suspended Domain”, 24.09.2026). Wkręty Matrix, w tym linia MX PRO, pochodzą więc od dystrybutora.
+- **Astra Trade:** strona astra-trade.pl nie publikuje wymiarów ani indeksów w HTML, więc pozycje KONFI pochodzą z Merkury.
+- **Merkury, robots.txt:** `Crawl-delay: 1` jest przestrzegane (1 zapytanie na sekundę, także dla zdjęć).
+- **Cena referencyjna:** cena z karty sklepu dystrybutora (detaliczna brutto), zapisana z datą, tylko orientacyjnie. Nie jest ceną zakupu stolarni i nie trafia automatycznie do cennika.
+- **Zdjęcia dystrybutora:** mogą przedstawiać wariant poglądowy. Karta pokazuje wtedy uwagę.
+- **Kategorie** są przypisywane regułami słów kluczowych w kolektorze (`KATEGORIE`). Pomyłki trzeba poprawiać w regułach, a nie ręcznie w JSON.
+- **Ponowne pobranie:** `SCRAPER_DEPS=<ścieżka bibliotek> python scripts/okucia/zbierz_katalog_okuc.py --cache <katalog-cache>`, a potem `node scripts/oznacz-konflikty-okuc.mjs`. Cache HTML trzymaj poza repozytorium.

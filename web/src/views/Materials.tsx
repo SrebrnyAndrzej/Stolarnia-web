@@ -126,7 +126,7 @@ export function Materials() {
 
       {zakladka === "okucia" && <>
         <div className="row" style={{ margin: "16px 0" }}>
-          <button className={`btn ${widokOkuc === "katalog" ? "primary" : ""}`} onClick={() => setWidokOkuc("katalog")}>Katalog systemów szuflad</button>
+          <button className={`btn ${widokOkuc === "katalog" ? "primary" : ""}`} onClick={() => setWidokOkuc("katalog")}>Katalog okuć, wkrętów i chemii</button>
           <button className={`btn ${widokOkuc === "cennik" ? "primary" : ""}`} onClick={() => setWidokOkuc("cennik")}>Mój cennik okuć ({okucia.length})</button>
         </div>
         {widokOkuc === "katalog" && <HardwareCatalog szukaj={szukaj} dodane={okucia.map(o => o.id)} odswiez={wczytaj} />}

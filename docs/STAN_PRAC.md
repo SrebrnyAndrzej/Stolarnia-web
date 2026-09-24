@@ -65,3 +65,6 @@ Weryfikacja wdrożenia: zakładka Umowy i formularz działają na stolarnia-web.
 
 ## 2026-09-24 - Katalog systemów szuflad (Codex → Claude)
 Codex zebrał karty produktów Amix, GTV i Blum oraz podłączył galerię w Okuciach, ale skończyły mu się limity przed zamknięciem testów. Claude przeniósł zmiany z kopii roboczej Codexa do repozytorium. Oznaczył 3 konflikty danych GTV i 8 kart Amix bez indeksu (`scripts/oznacz-konflikty-okuc.mjs`), poprawił test katalogu i ustawił kolejność galerii: najpierw konkretne SKU. Szczegóły: docs/okucia/README.md. Testy: 32/32.
+
+## 2026-09-25 - Katalog okuć, wkrętów, klejów i chemii (Claude)
+Kolektor `scripts/okucia/zbierz_katalog_okuc.py` zbiera dane z GTV, Amix, Spray-Kon i Mamut (producenci) oraz z Merkury AM (dystrybutor: Blum, Hettich, Häfele, Laguna, Sevroll, Matrix, Astra Trade, Würth, chemia). Katalog ma 2472 pozycje w 16 kategoriach, wszystkie ze zdjęciem. Panel pokazuje go w Materiały i okucia → Okucia; filtrowanie i stronicowanie działa na serwerze (`/api/okucia-katalog?widok=strona`). Do cennika trafia tylko pozycja z indeksem producenta albo z symbolem dystrybutora. Szczegóły i ograniczenia: docs/okucia/README.md. Testy: 33/33.

@@ -82,7 +82,12 @@ const p = (req: Request, k: string) => String(req.params[k]);
 
 // Katalogi i ustawienia
 app.use("/api/okucia-katalog/obrazy", express.static(join(process.cwd(), "docs/okucia/produkty/obrazy")));
-app.get("/api/okucia-katalog", api(() => PRODUKTY_OKUC));
+app.get("/api/okucia-katalog", api((r) => {
+  const q = (k: string) => (typeof r.query[k] === "string" ? String(r.query[k]) : undefined);
+  // Bez parametrów — pełna lista (zgodność wsteczna, eksport); panel używa ?widok=strona
+  if (!q("widok")) return PRODUKTY_OKUC;
+  return s.katalogOkuc({ kategoria: q("kategoria"), producent: q("producent"), szukaj: q("szukaj"), rodzaj: q("rodzaj"), od: Number(q("od") ?? 0), ile: Number(q("ile") ?? 48) });
+}));
 app.post("/api/okucia-katalog/:id/dodaj", api(r => s.dodajProduktOkucia(p(r, "id"), r.body?.cenaNetto)));
 app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
 app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d) }))));

@@ -1,5 +1,6 @@
 import { schematUmowy, type Umowa } from "./core/contracts.js";
 import { PRODUKTY_OKUC } from "./core/catalog/hardware-products.js";
+import type { ProduktOkucia } from "./core/hardware-products.js";
 import { randomUUID } from "node:crypto";
 import { zbudujModul } from "./core/builder.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
@@ -142,20 +143,45 @@ export class Stolarnia {
       .okucia.filter((o) => (!filtr?.typ || o.typ === filtr.typ) && (!s || `${o.nazwa} ${o.producent} ${o.profilID}`.toLowerCase().includes(s)));
   }
 
+  /** Katalog okuć z filtrami i stronicowaniem (kilka tysięcy pozycji — nie wysyłamy całości do przeglądarki). */
+  katalogOkuc(f: { kategoria?: string; producent?: string; szukaj?: string; rodzaj?: string; od?: number; ile?: number } = {}) {
+    const s = f.szukaj?.trim().toLocaleLowerCase("pl");
+    const kat = (p: ProduktOkucia) => p.kategoria ?? "szuflady";
+    const wKategorii = PRODUKTY_OKUC.filter((p) => (!f.kategoria || kat(p) === f.kategoria) && (!f.rodzaj || p.rodzaj === f.rodzaj) &&
+      (!s || `${p.nazwa} ${p.sku} ${p.ean ?? ""} ${p.symbolDystrybutora ?? ""} ${p.producent} ${p.system}`.toLocaleLowerCase("pl").includes(s)));
+    const pasujace = wKategorii.filter((p) => !f.producent || p.producent === f.producent);
+    // Najpierw pozycje jednoznaczne do zamówienia (indeks producenta), potem dystrybutora, na końcu karty rodzin.
+    const waga = (p: ProduktOkucia) => ({ wariant: 0, dystrybutor: 1, bazowy: 2, rodzina: 3 })[p.rodzajSKU] ?? 4;
+    pasujace.sort((a, b) => waga(a) - waga(b) || a.producent.localeCompare(b.producent) || a.sku.localeCompare(b.sku, "pl", { numeric: true }) || a.nazwa.localeCompare(b.nazwa, "pl"));
+    const licz = (lista: ProduktOkucia[], k: (p: ProduktOkucia) => string) => lista.reduce<Record<string, number>>((m, p) => ((m[k(p)] = (m[k(p)] ?? 0) + 1), m), {});
+    const od = Math.max(0, Number(f.od) || 0);
+    const ile = Math.min(200, Math.max(1, Number(f.ile) || 48));
+    return {
+      razem: pasujace.length,
+      produkty: pasujace.slice(od, od + ile),
+      kategorie: licz(PRODUKTY_OKUC, kat),
+      producenci: licz(wKategorii, (p) => p.producent),
+    };
+  }
+
   dodajProduktOkucia(produktId: string, cenaNetto: number): Okucie {
     const produkt = PRODUKTY_OKUC.find(p => p.id === produktId);
     if (!produkt) throw new BladUslugi("Nie znaleziono produktu.");
-    if (produkt.rodzajSKU !== "wariant") throw new BladUslugi("Wybierz dokładny wariant u producenta; indeks rodziny nie określa kompletacji.");
+    // Do cennika trafia tylko pozycja jednoznaczna do zamówienia: indeks producenta albo symbol dystrybutora z EAN.
+    const jednoznaczny = produkt.rodzajSKU === "wariant" || (produkt.rodzajSKU === "dystrybutor" && !!produkt.symbolDystrybutora);
+    if (!jednoznaczny) throw new BladUslugi("Wybierz dokładny wariant u producenta; indeks rodziny nie określa kompletacji.");
     if (typeof cenaNetto !== "number" || !Number.isFinite(cenaNetto) || cenaNetto <= 0 || cenaNetto > 1000000 || Math.abs(cenaNetto * 100 - Math.round(cenaNetto * 100)) > 0.00001) throw new BladUslugi("Podaj poprawną cenę zakupu netto (do dwóch miejsc po przecinku).");
     return this.magazyn.zmien(b => {
       const id = `katalog.${produkt.id}`;
       const istnieje = b.okucia.find(o => o.id === id);
       if (istnieje) return istnieje;
+      const typ = TYP_Z_KATEGORII[produkt.kategoria ?? "szuflady"] ?? "inne";
+      const jednostka = produkt.kategoria === "wkrety" || produkt.kategoria === "kleje" || produkt.kategoria === "chemia" ? "op." : produkt.rodzaj === "zestaw" ? "kpl." : "szt.";
       const o: Okucie = { id, profilID: id, nazwa: produkt.nazwa, producent: produkt.producent, system: produkt.system,
-        typ: "systemSzuflad", jednostka: "kpl.", cenaNetto, rabatProcent: 0, vatProcent: 23,
-        poziomWyceny: produkt.producent === "Blum" ? "premium" : "standard", aktywne: true,
-        opis: "Produkt katalogowy. Nieprzypisany do reguł produkcyjnych; nie zmienia automatycznie okuć istniejących projektów.",
-        skuProducenta: produkt.sku, zdjecieURL: produkt.zdjecieURL, zrodloURL: produkt.zrodloURL };
+        typ, jednostka, cenaNetto, rabatProcent: 0, vatProcent: 23,
+        poziomWyceny: ["Blum", "Hettich", "Häfele"].includes(produkt.producent) ? "premium" : "standard", aktywne: true,
+        opis: `Produkt katalogowy${produkt.zrodloTyp === "dystrybutor" ? " (dane dystrybutora)" : ""}. Nieprzypisany do reguł produkcyjnych; nie zmienia automatycznie okuć istniejących projektów.`,
+        skuProducenta: produkt.sku || produkt.symbolDystrybutora || undefined, zdjecieURL: produkt.zdjecieURL, zrodloURL: produkt.zrodloURL };
       b.okucia.push(o); return o;
     });
   }
@@ -731,6 +757,11 @@ function nastepneX(p: Projekt, scianaId: string, wiszacy: boolean): number {
     .filter((m) => m.scianaId === scianaId && m.pozycjaYMM >= PROG_WISZACYCH_MM === wiszacy)
     .reduce((max, m) => Math.max(max, m.pozycjaXMM + m.szerokoscMM), 0);
 }
+
+const TYP_Z_KATEGORII: Partial<Record<NonNullable<ProduktOkucia["kategoria"]>, Okucie["typ"]>> = {
+  szuflady: "systemSzuflad", zawiasy: "zawias", prowadnice: "prowadnica", podnosniki: "podnosnik", wyposazenie: "cargo",
+  nogi: "noga", mocowania: "zawieszka", laczniki: "lacznik", wkrety: "wkret", kleje: "klej", uchwyty: "uchwyt",
+};
 
 const RODZAJE_AGD = ["piekarnik", "mikrofala", "plyta", "lodowka", "zmywarka", "okap", "inne"];
 
