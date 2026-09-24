@@ -1,0 +1,236 @@
+{
+  "tytul": "Rysunki montażowe — Natalia (dom ul. Główna 17, Kamień)",
+  "zrodla": [
+    "rozkroj-do-hurtowni-2026-09-08.xlsx, arkusz NATALIA — wymiary i liczba formatek (obowiązujące)",
+    "ARCH_KAMIEN_WN (MOOI Architekci, arch. Natalia Karoń), widoki 1:50 — układ na ścianach, strefy wnętrza",
+    "Projekty Garderoba / Sypialnia / Łazienka w aplikacji Stolarnia — długości ścian i kolejność"
+  ],
+  "materialy": {
+    "biala": { "nazwa": "biała uni 18 mm, obrzeże ABS-BIALY", "kolor": "#f3f2ee" },
+    "franklin": { "nazwa": "Franklin Tobacco 18 mm, obrzeże ABS-FRANKLIN", "kolor": "#8b5e3c" }
+  },
+  "sciany": [
+    {
+      "id": "GAR-F",
+      "pomieszczenie": "Garderoba",
+      "nazwa": "Ściana lewa (F) — zabudowa N-03",
+      "dlugosc": 4160,
+      "wysokosc": 2700,
+      "lewyKoniec": "okno",
+      "prawyKoniec": "narożnik ze ścianą górną (A)",
+      "uwagi": [
+        "Kolejność od okna wg projektu architekta: biurko 71, 60 półki, 60 wieszaki, 60 półki, 50 + 50 (półki / pralka i suszarka), narożnik 65 — suma 4160 mm = długość ściany.",
+        "Blat biurka 1310 mm przechodzi nad korpusami 710 i 600 (strefa szuflad 720 mm pod blatem) — sposób osadzenia blatu przy boku środkowym do potwierdzenia.",
+        "Wysokość blatu przy korpusach na cokole 100 mm wynosi 838 mm — sprawdzić z inwestorem (typowo 750)."
+      ],
+      "elementy": [
+        {
+          "kod": "N-03-710", "nazwa": "Biurko — szuflady + otwarte półki", "x": 0, "y": 100, "szer": 710, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [
+            { "kod": "N-03-FR-SZUF-01", "typ": "szuflada", "x": 2, "y": 2, "szer": 706, "wys": 358, "material": "franklin" },
+            { "kod": "N-03-FR-SZUF-01", "typ": "szuflada", "x": 2, "y": 362, "szer": 706, "wys": 358, "material": "franklin" }
+          ],
+          "wnetrze": [
+            { "typ": "blat", "y": 720, "x": 0, "szer": 1310, "opis": "N-03-BLAT-BIURKO 1310×600" },
+            { "typ": "polka", "y": 1050 }, { "typ": "polka", "y": 1360 }, { "typ": "polka", "y": 1670 }, { "typ": "polka", "y": 1980 }, { "typ": "polka", "y": 2290 }
+          ],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-674", "N-03-WG-674", "N-03-POL-710 ×5", "N-03-DNO-SB-674 ×2", "N-03-TYL-SB-674 ×2", "N-03-FR-SZUF-01 ×2", "N-03-BLAT-BIURKO (wspólny z N-03-600/1)"],
+          "uwagi": ["Półki 710 rozstawione równo nad blatem — rozstaw do potwierdzenia."]
+        },
+        {
+          "kod": "N-03-600/1", "nazwa": "Biurko cd. — szuflady + otwarte półki", "x": 710, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [
+            { "kod": "N-03-FR-SZUF-02", "typ": "szuflada", "x": 2, "y": 2, "szer": 596, "wys": 358, "material": "franklin" },
+            { "kod": "N-03-FR-SZUF-02", "typ": "szuflada", "x": 2, "y": 362, "szer": 596, "wys": 358, "material": "franklin" }
+          ],
+          "wnetrze": [
+            { "typ": "polka", "y": 1000 }, { "typ": "polka", "y": 1260 }, { "typ": "polka", "y": 1520 }, { "typ": "polka", "y": 1780 }, { "typ": "polka", "y": 2040 }, { "typ": "polka", "y": 2300 }
+          ],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-564", "N-03-WG-564", "N-03-POL-600 ×6 (rozdział do potw.)", "N-03-DNO-SB-564 ×2", "N-03-TYL-SB-564 ×2", "N-03-FR-SZUF-02 ×2"],
+          "uwagi": ["Architekt: strefy 43/32/32/36/38 — 36 i 38 = szuflady pod blatem. Liczba półek w tej kolumnie przyjęta z bilansu 12 szt. — do potwierdzenia."],
+          "pewnosc": "średnia"
+        },
+        {
+          "kod": "N-03-600/2", "nazwa": "Szafa 60 — wieszaki", "x": 1310, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-03-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [{ "typ": "polka", "y": 2030 }, { "typ": "reling", "y": 1960 }],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-564", "N-03-WG-564", "N-03-POL-600 ×1", "N-03-FR-DRZWI"],
+          "uwagi": ["Reling na wieszaki (architekt: 96) pod półką górną 57 — wysokość relingu do potwierdzenia."]
+        },
+        {
+          "kod": "N-03-600/3", "nazwa": "Szafa 60 — półki", "x": 1910, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-03-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [{ "typ": "polka", "y": 360 }, { "typ": "polka", "y": 800 }, { "typ": "polka", "y": 1240 }, { "typ": "polka", "y": 1660 }, { "typ": "polka", "y": 2030 }],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-564", "N-03-WG-564", "N-03-POL-600 ×5", "N-03-FR-DRZWI"],
+          "uwagi": ["Rozstaw półek wg architekta 47/47/42/44/44/46 (od góry) — półki nastawne."]
+        },
+        {
+          "kod": "N-03-500/1", "nazwa": "Szafa 50 — pralka / suszarka", "x": 2510, "y": 100, "szer": 500, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [],
+          "wnetrze": [{ "typ": "strefa", "y": 18, "wys": 850, "opis": "pralka" }, { "typ": "strefa", "y": 868, "wys": 850, "opis": "suszarka" }, { "typ": "polka", "y": 1718 }, { "typ": "polka", "y": 2150 }],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-464", "N-03-WG-464", "N-03-POL-500 ×2"],
+          "uwagi": ["UWAGA: arkusz nie zawiera frontów 50 cm (architekt: fronty 50+50) — fronty do zamówienia/wyjaśnienia. Pralka w korpusie 500 (światło 464 mm) — sprawdzić wymiar urządzenia."],
+          "pewnosc": "niska"
+        },
+        {
+          "kod": "N-03-500/2", "nazwa": "Szafa 50 — półki 40", "x": 3010, "y": 100, "szer": 500, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [],
+          "wnetrze": [{ "typ": "polka", "y": 500 }, { "typ": "polka", "y": 900 }, { "typ": "polka", "y": 1300 }],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-464", "N-03-WG-464", "N-03-POL-500 ×3"],
+          "uwagi": ["Półki co ~40 cm wg architekta. Fronty 50 — jak wyżej, brak w arkuszu."],
+          "pewnosc": "niska"
+        },
+        {
+          "kod": "N-03-650", "nazwa": "Narożnik 65", "x": 3510, "y": 100, "szer": 650, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-03-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [{ "typ": "reling", "y": 1960 }],
+          "formatki": ["N-03-BOK ×2", "N-03-WD-614", "N-03-WG-614", "N-03-FR-DRZWI"],
+          "uwagi": ["Drzwi 596 na korpusie 650 — pas 50 mm przy narożniku zasłonięty/ślepy. Wyposażenie narożnika do potwierdzenia."],
+          "pewnosc": "średnia"
+        }
+      ]
+    },
+    {
+      "id": "GAR-A",
+      "pomieszczenie": "Garderoba",
+      "nazwa": "Ściana górna (A) — zabudowa N-04",
+      "dlugosc": 3210,
+      "wysokosc": 2700,
+      "lewyKoniec": "narożnik ze ścianą lewą (F)",
+      "prawyKoniec": "ściana / drzwi",
+      "uwagi": [
+        "Zabudowa zaczyna się 700 mm od ściany lewej (korpus narożny F ma głębokość 600 — 100 mm luzu w narożniku).",
+        "Arkusz: korpus 710 zamiast wieszaków 68 + dystansu 3 z projektu — dystans na drzwi wchłonięty w korpus; potwierdzić otwieranie drzwi pokoju.",
+        "Strefy wnętrza z projektu (od podłogi): szuflady wewnętrzne 38 i 36, półki co 32/32/32/43, półka górna 57 — razem 270 cm."
+      ],
+      "elementy": [
+        {
+          "kod": "N-04-710", "nazwa": "Wieszaki 71", "x": 700, "y": 100, "szer": 710, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-04-FR-DRZWI", "typ": "drzwi", "x": 112, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [{ "typ": "reling", "y": 1960 }],
+          "formatki": ["N-04-BOK ×2", "N-04-WD-674", "N-04-WG-674", "N-04-FR-DRZWI"],
+          "uwagi": ["Drzwi 596 przy prawej krawędzi, pas ~110 mm od strony narożnika bez frontu — do potwierdzenia (ew. blenda)."],
+          "pewnosc": "średnia"
+        },
+        {
+          "kod": "N-04-600/1", "nazwa": "Półki + szuflady wewn. 60", "x": 1410, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-04-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [
+            { "typ": "szufladaWewn", "y": 30, "wys": 250 }, { "typ": "szufladaWewn", "y": 330, "wys": 250 },
+            { "typ": "polka", "y": 640 }, { "typ": "polka", "y": 960 }, { "typ": "polka", "y": 1280 }, { "typ": "polka", "y": 1600 }, { "typ": "polka", "y": 2030 }
+          ],
+          "formatki": ["N-04-BOK ×2", "N-04-WD-564", "N-04-WG-564", "N-04-POL ×5", "N-04-DNO-SB ×2", "N-04-TYL-SB ×2", "N-04-FR-DRZWI"]
+        },
+        {
+          "kod": "N-04-600/2", "nazwa": "Półki + szuflady wewn. 60", "x": 2010, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-04-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [
+            { "typ": "szufladaWewn", "y": 30, "wys": 250 }, { "typ": "szufladaWewn", "y": 330, "wys": 250 },
+            { "typ": "polka", "y": 640 }, { "typ": "polka", "y": 960 }, { "typ": "polka", "y": 1280 }, { "typ": "polka", "y": 1600 }, { "typ": "polka", "y": 2030 }
+          ],
+          "formatki": ["N-04-BOK ×2", "N-04-WD-564", "N-04-WG-564", "N-04-POL ×5", "N-04-DNO-SB ×2", "N-04-TYL-SB ×2", "N-04-FR-DRZWI"]
+        },
+        {
+          "kod": "N-04-600/3", "nazwa": "Półki + szuflady wewn. 60", "x": 2610, "y": 100, "szer": 600, "wys": 2600, "gl": 600, "material": "biala",
+          "fronty": [{ "kod": "N-04-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 2, "szer": 596, "wys": 1996, "material": "franklin" }],
+          "wnetrze": [
+            { "typ": "szufladaWewn", "y": 30, "wys": 250 }, { "typ": "szufladaWewn", "y": 330, "wys": 250 },
+            { "typ": "polka", "y": 640 }, { "typ": "polka", "y": 960 }, { "typ": "polka", "y": 1280 }, { "typ": "polka", "y": 1600 }, { "typ": "polka", "y": 2030 }
+          ],
+          "formatki": ["N-04-BOK ×2", "N-04-WD-564", "N-04-WG-564", "N-04-POL ×5", "N-04-DNO-SB ×2", "N-04-TYL-SB ×2", "N-04-FR-DRZWI"]
+        }
+      ]
+    },
+    {
+      "id": "SYP-B",
+      "pomieszczenie": "Sypialnia",
+      "nazwa": "Ściana zagłówka (B) — okładzina i maskownica N-06",
+      "dlugosc": 3560,
+      "wysokosc": 2700,
+      "lewyKoniec": "ściana wejścia (A)",
+      "prawyKoniec": "ściana okna (C)",
+      "uwagi": [
+        "Okładzina: 4 panele 890 × 1100 mm od podłogi, styki pionowe co 890 mm; pozioma listwa LED na górnej krawędzi (poza arkuszem).",
+        "Maskownica karnisza 200 mm z 2 połówek 1780 mm, łączonych na kołki/lamello (styk nieoklejony, od strony niewidocznej). Na rysunku architekta pokazana w przekroju przy tej ścianie — ścianę/kierunek montażu maskownicy potwierdzić na budowie.",
+        "Łóżko 180×200 kupowane — nie w zakresie stolarki."
+      ],
+      "elementy": [
+        { "kod": "N-06-OKLADZINA/1", "nazwa": "Panel okładziny", "typ": "panel", "x": 0, "y": 0, "szer": 890, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-06-OKLADZINA"] },
+        { "kod": "N-06-OKLADZINA/2", "nazwa": "Panel okładziny", "typ": "panel", "x": 890, "y": 0, "szer": 890, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-06-OKLADZINA"] },
+        { "kod": "N-06-OKLADZINA/3", "nazwa": "Panel okładziny", "typ": "panel", "x": 1780, "y": 0, "szer": 890, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-06-OKLADZINA"] },
+        { "kod": "N-06-OKLADZINA/4", "nazwa": "Panel okładziny", "typ": "panel", "x": 2670, "y": 0, "szer": 890, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-06-OKLADZINA"] },
+        { "kod": "N-06-MASK-KARNISZ-A", "nazwa": "Maskownica karnisza — połówka A", "typ": "panel", "x": 0, "y": 2500, "szer": 1780, "wys": 200, "gl": 200, "material": "biala", "formatki": ["N-06-MASK-KARNISZ-A"], "pewnosc": "niska" },
+        { "kod": "N-06-MASK-KARNISZ-B", "nazwa": "Maskownica karnisza — połówka B", "typ": "panel", "x": 1780, "y": 2500, "szer": 1780, "wys": 200, "gl": 200, "material": "biala", "formatki": ["N-06-MASK-KARNISZ-B"], "pewnosc": "niska" }
+      ]
+    },
+    {
+      "id": "LAZ-C",
+      "pomieszczenie": "Łazienka",
+      "nazwa": "Ściana C — zabudowa gł. 40, N-07",
+      "dlugosc": 3160,
+      "wysokosc": 2700,
+      "lewyKoniec": "ściana A (umywalki)",
+      "prawyKoniec": "ściana D (prysznic)",
+      "uwagi": [
+        "Projekt: zabudowa gł. 40 — 60 + 60 + WC 50 + 50. Arkusz: korpusy 600, 600, 500, 500 (wys. 900). Położenie na ścianie i sposób montażu (stojące / wiszące, stelaż WC) do potwierdzenia — brak widoku łazienki z wysokościami.",
+        "Blat (N-07-BLAT-UMYW) z kamienia/konglomeratu — poza stolarką; zostawić wymiar pod blat wg dostawcy."
+      ],
+      "elementy": [
+        {
+          "kod": "N-07-600/1", "nazwa": "Szafka 60 — drzwi", "x": 0, "y": 0, "szer": 600, "wys": 900, "gl": 400, "material": "biala",
+          "fronty": [{ "kod": "N-07-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 4, "szer": 596, "wys": 892, "material": "franklin" }],
+          "wnetrze": [{ "typ": "polka", "y": 300 }, { "typ": "polka", "y": 600 }],
+          "formatki": ["N-07-BOK ×2", "N-07-WD-564", "N-07-WG-564", "N-07-POL ×2", "N-07-FR-DRZWI"], "pewnosc": "średnia"
+        },
+        {
+          "kod": "N-07-600/2", "nazwa": "Szafka 60 — drzwi", "x": 600, "y": 0, "szer": 600, "wys": 900, "gl": 400, "material": "biala",
+          "fronty": [{ "kod": "N-07-FR-DRZWI", "typ": "drzwi", "x": 2, "y": 4, "szer": 596, "wys": 892, "material": "franklin" }],
+          "wnetrze": [{ "typ": "polka", "y": 300 }, { "typ": "polka", "y": 600 }],
+          "formatki": ["N-07-BOK ×2", "N-07-WD-564", "N-07-WG-564", "N-07-POL ×2", "N-07-FR-DRZWI"], "pewnosc": "średnia"
+        },
+        {
+          "kod": "N-07-500/1", "nazwa": "Szafka 50 — front wysuwany", "x": 1200, "y": 0, "szer": 500, "wys": 900, "gl": 400, "material": "biala",
+          "fronty": [{ "kod": "N-07-FR-SZUF", "typ": "szuflada", "x": 2, "y": 4, "szer": 496, "wys": 892, "material": "franklin" }],
+          "wnetrze": [{ "typ": "szufladaWewn", "y": 30, "wys": 200 }],
+          "formatki": ["N-07-BOK ×2", "N-07-WD-464", "N-07-WG-464", "N-07-DNO-SB", "N-07-TYL-SB", "N-07-FR-SZUF"], "pewnosc": "średnia"
+        },
+        {
+          "kod": "N-07-500/2", "nazwa": "Szafka 50 — front wysuwany", "x": 1700, "y": 0, "szer": 500, "wys": 900, "gl": 400, "material": "biala",
+          "fronty": [{ "kod": "N-07-FR-SZUF", "typ": "szuflada", "x": 2, "y": 4, "szer": 496, "wys": 892, "material": "franklin" }],
+          "wnetrze": [{ "typ": "szufladaWewn", "y": 30, "wys": 200 }],
+          "formatki": ["N-07-BOK ×2", "N-07-WD-464", "N-07-WG-464", "N-07-DNO-SB", "N-07-TYL-SB", "N-07-FR-SZUF"], "pewnosc": "średnia"
+        }
+      ]
+    },
+    {
+      "id": "BAL",
+      "pomieszczenie": "Piętro — balustrada",
+      "nazwa": "Balustrada z płyty meblowej N-08",
+      "dlugosc": 3000,
+      "wysokosc": 1100,
+      "lewyKoniec": "—",
+      "prawyKoniec": "—",
+      "uwagi": [
+        "4 panele 750 × 1100 mm (Franklin Tobacco) na podkonstrukcji stalowej (projekt architekta). Przyjęto panele pionowo (wys. 1100 = wysokość balustrady) — orientację i rozstaw potwierdzić z podkonstrukcją.",
+        "Mocowanie paneli do stali: wkręty od strony wewnętrznej / kątowniki — wg wykonawcy konstrukcji."
+      ],
+      "elementy": [
+        { "kod": "N-08-BALUSTRADA/1", "nazwa": "Panel", "typ": "panel", "x": 0, "y": 0, "szer": 750, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-08-BALUSTRADA"], "pewnosc": "niska" },
+        { "kod": "N-08-BALUSTRADA/2", "nazwa": "Panel", "typ": "panel", "x": 750, "y": 0, "szer": 750, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-08-BALUSTRADA"], "pewnosc": "niska" },
+        { "kod": "N-08-BALUSTRADA/3", "nazwa": "Panel", "typ": "panel", "x": 1500, "y": 0, "szer": 750, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-08-BALUSTRADA"], "pewnosc": "niska" },
+        { "kod": "N-08-BALUSTRADA/4", "nazwa": "Panel", "typ": "panel", "x": 2250, "y": 0, "szer": 750, "wys": 1100, "gl": 18, "material": "franklin", "formatki": ["N-08-BALUSTRADA"], "pewnosc": "niska" }
+      ]
+    }
+  ],
+  "doPotwierdzenia": [
+    "Cokół/nogi 100 mm pod korpusami garderoby — nie ma ich w arkuszu (przyjęto z sumy stref architekta = 270 cm).",
+    "Drzwi N-03: w arkuszu 5 szt. 1996×596, na rysunkach przypisane 3 (60 wieszaki, 60 półki, narożnik 65) — gdzie idą pozostałe 2?",
+    "Fronty 50+50 dla korpusów N-03-500 — brak w arkuszu.",
+    "Strona zawiasów wszystkich drzwi (uchwyt krawędziowy 50 cm po stronie otwierania) — brak w źródłach.",
+    "Rozdział 12 półek N-03-POL-600 między kolumny (przyjęto 6 / 1 / 5).",
+    "Wysokość blatu biurka (838 mm przy cokole 100) i sposób przejścia blatu 1310 przez bok między korpusami 710 i 600.",
+    "Maskownica karnisza w sypialni — ściana montażu; łazienka — położenie i sposób montażu szafek N-07; balustrada — orientacja paneli.",
+    "Formatki DODATEK (Franklin A–H, biała z obrzeżem Franklin A–D) — bez przypisania; np. FR-F 2600×600 ×2 mogą być bokami widocznymi zabudowy garderoby.",
+    "Plecy HDF, prowadnice szuflad, relingi, zawiasy, uchwyty, cokoły, LED — poza arkuszem rozkroju."
+  ]
+}

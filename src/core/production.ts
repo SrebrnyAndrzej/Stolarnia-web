@@ -30,6 +30,7 @@ const SKROTY: Record<RolaElementu, string> = {
   top: "GORA",
   bottom: "DOL",
   shelf: "POLKA",
+  fixedShelf: "POLKA-ST",
   divider: "DZIAL",
   back: "PLECY",
   front: "FRONT",
@@ -53,6 +54,7 @@ function wymiary(e: Element): { dl: number; sz: number; gr: number } {
     case "top":
     case "bottom":
     case "shelf":
+    case "fixedShelf":
     case "worktop":
     case "reinforcement":
     case "rail":
@@ -99,6 +101,7 @@ export function regulaObrzeza(rola: RolaElementu): Formatka["obrzeza"] {
     case "top":
     case "bottom":
     case "shelf":
+    case "fixedShelf":
     case "divider":
     case "reinforcement":
     case "rail":

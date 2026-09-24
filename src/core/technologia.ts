@@ -41,6 +41,7 @@ function osieRoli(rola: RolaElementu): { dl: number; sz: number; gr: number } {
     case "top":
     case "bottom":
     case "shelf":
+    case "fixedShelf":
     case "worktop":
     case "reinforcement":
     case "rail":
@@ -216,7 +217,7 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     const boki = [bokL, bokP].filter(Boolean) as Element[];
 
     // --- Konfirmaty: boki ↔ wieńce i wzmocnienia ---
-    for (const hz of zm.elementy.filter((e) => e.rola === "bottom" || e.rola === "top" || e.rola === "reinforcement")) {
+    for (const hz of zm.elementy.filter((e) => e.rola === "bottom" || e.rola === "top" || e.rola === "reinforcement" || e.rola === "fixedShelf")) {
       const yOs = hz.y + hz.wys / 2;
       for (const b of boki) {
         const lewy = b.kod === "BOK-L";
@@ -335,7 +336,9 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     if (m.konfiguracja.systemNarozny === "lemans")
       brak("LEMANS", ["BOK-L", "BOK-P", "WIENIEC-D", "WIENIEC-G"], "LeMans II: pozycje otworów mocowania kolumny i prowadnic wg szablonu producenta (instrukcja MA 402118) — nieprzeniesione do reguł.", "Wpisz operacje z szablonu montażowego LeMans albo montuj z szablonem na budowie.");
     if (m.konfiguracja.liczbaCargo > 0) brak("CARGO", ["BOK-L", "BOK-P", "WIENIEC-D"], "cargo: brak SKU i danych montażowych.");
-    if (m.pozycjaYMM >= 1000 && boki.length) brak("ZAWIESZKI", boki.map((b) => b.kod), "zawieszki szafki wiszącej: brak SKU — otwory/wycięcia w bokach nieustalone.");
+    // Nadstawka (kategoria tall nad podłogą) stoi na słupku — łączona wkrętami przez wieńce, bez zawieszek.
+    if (m.kategoria === "tall" && m.pozycjaYMM >= 1000) cz.get("WIENIEC-D")?.uwagi.push("Nadstawka skręcana z wieńcem górnym słupka wkrętami — bez wierceń.");
+    else if (m.pozycjaYMM >= 1000 && boki.length) brak("ZAWIESZKI", boki.map((b) => b.kod), "zawieszki szafki wiszącej: brak SKU — otwory/wycięcia w bokach nieustalone.");
     const zUchwytem = zm.elementy.filter((e) => e.rola === "front" && e.kod !== "FRONT-AGD").map((e) => e.kod);
     if (zUchwytem.length) brak("UCHWYT", zUchwytem, "uchwyty: brak SKU (rozstaw otworów i pozycja na froncie nieustalone).", "Wybierz uchwyt lub mechanizm bezuchwytowy.");
     if (m.konstrukcja === "sink" || m.konstrukcja === "oven") brak("BLAT_WYCIECIE", ["BLAT"], `wycięcie w blacie pod ${m.konstrukcja === "sink" ? "zlew" : "płytę grzewczą"} — wymaga modelu urządzenia.`);

@@ -240,8 +240,15 @@ export interface KonfiguracjaModulu {
   nogi: boolean;
   /** Szuflady w systemie (Tandembox/Legrabox) zamiast skrzynek z płyty. */
   szufladySystemowe: boolean;
+  /**
+   * Wysokość modułowa szuflady (podziałka frontów) [mm]. Podana → fronty szuflad równe.
+   * Przy typFrontu „drzwi” z liczbaSzuflad > 0 (słupek): szuflady na dole, półka stała, drzwi nad nimi (domyślnie 360).
+   */
+  wysokoscSzufladyMM?: number;
   /** Szafka narożna ślepa: strona drzwi (domyślnie prawa, część ślepa po przeciwnej stronie). */
   stronaDrzwiNaroznika?: "lewa" | "prawa";
+  /** Szafka narożna ślepa: szerokość drzwi [mm] (domyślnie 450 — pod LeMans). */
+  szerokoscDrzwiNaroznikaMM?: number;
   /** System narożny w szafce ślepej — Kesseböhmer LeMans II (komplet 2 półek „nerek”). */
   systemNarozny?: "lemans";
 }
@@ -321,6 +328,8 @@ export type RolaElementu =
   | "top"
   | "bottom"
   | "shelf"
+  /** Półka stała (konfirmaty), np. między strefą szuflad a drzwi w słupku. */
+  | "fixedShelf"
   | "divider"
   | "back"
   | "front"
