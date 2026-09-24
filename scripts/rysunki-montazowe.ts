@@ -39,8 +39,19 @@ function mieszaj(hex: string, fn: (v: number) => number): string {
 const rozjasnij = (hex: string, f: number) => mieszaj(hex, (v) => v + (255 - v) * f);
 const przyciemnij = (hex: string, f: number) => mieszaj(hex, (v) => v * (1 - f));
 
-export function rysunkiMontazowe(model: Model): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A3", layout: "landscape", margin: M, autoFirstPage: false, bufferPages: true, info: { Title: model.tytul } });
+export function rysunkiMontazowe(model: Model, format: "A3" | "A4" = "A3"): Promise<Buffer> {
+  const doc = new PDFDocument({ size: format, layout: "landscape", margin: M, autoFirstPage: false, bufferPages: true, info: { Title: model.tytul } });
+  // Wersja A4: ten sam układ A3 przeskalowany (A4 = A3 × 1/√2) — rysunki bez przycinania, do drukarek A4.
+  const skala = format === "A4" ? 595.28 / H : 1;
+  const strona = () => {
+    doc.addPage();
+    if (skala !== 1) {
+      // MediaBox zostaje A4 (zapisany przy tworzeniu strony); granice łamania tekstu pdfkit liczy w układzie A3.
+      doc.page.width = W;
+      doc.page.height = H;
+      doc.scale(skala);
+    }
+  };
   doc.registerFont("R", join(FONTY, "DejaVuSans.ttf"));
   doc.registerFont("B", join(FONTY, "DejaVuSans-Bold.ttf"));
   doc.registerFont("C", join(FONTY, "DejaVuSansCondensed.ttf"));
@@ -247,7 +258,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
   }
 
   // ---------- strona tytułowa ----------
-  doc.addPage();
+  strona();
   doc.rect(0, 0, W, 10).fill("#9a6b3f");
   doc.font("B").fontSize(30).fillColor(TEKST).text("Rysunki montażowe zabudowy", M, 60);
   doc.font("R").fontSize(15).fillColor(SZARY).text(model.tytul, M, 100);
@@ -306,7 +317,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
   // ---------- strony ścian ----------
   for (const s of model.sciany) {
     // 1) aksonometria + rzut + uwagi
-    doc.addPage();
+    strona();
     let y0 = naglowek(`${s.pomieszczenie} — ${s.nazwa}`, `Wizualizacja aksonometryczna (bez sufitu) · długość ściany ${s.dlugosc} mm, wysokość ${s.wysokosc} mm`);
     aksonometria(s, M, y0, 760, H - y0 - 60);
     let uy = y0;
@@ -326,7 +337,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
     rzut(s, ux - 10, Math.max(uy + 14, H - 250), W - M - ux + 10, 190);
 
     // 2) widoki frontów i wnętrza
-    doc.addPage();
+    strona();
     y0 = naglowek(`${s.pomieszczenie} — widoki z wymiarami`, `${s.nazwa} · wymiary w mm · widok od strony pomieszczenia`);
     const pw = (W - 2 * M - 20) / 2;
     doc.font("B").fontSize(10).fillColor(TEKST).text("WIDOK FRONTÓW", M, y0);
@@ -335,7 +346,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
     widok(s, "wnetrze", M + pw + 20, y0 + 16, pw, H - y0 - 70);
 
     // 3) karta montażu
-    doc.addPage();
+    strona();
     y0 = naglowek(`${s.pomieszczenie} — karta montażu`, `${s.nazwa} · kolejność montażu od lewej krawędzi ściany (${s.lewyKoniec})`);
     const kol = [M, M + 30, M + 150, M + 320, M + 450, M + 640, M + 820];
     const nagl = ["LP", "KOD", "NAZWA", "POŁOŻENIE [mm]", "WYMIARY sz×wys×gł", "FRONTY / WNĘTRZE", "FORMATKI DO SKOMPLETOWANIA · UWAGI"];
@@ -358,7 +369,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
       const wysokosci = kolumny.map((t, j) => doc.font(j === 1 ? "B" : "R").fontSize(8).heightOfString(t, { width: (kol[j + 1] ?? W - M) - kol[j] - 6 }));
       const hWiersza = Math.max(...wysokosci) + 8;
       if (ty + hWiersza > H - 40) {
-        doc.addPage();
+        strona();
         ty = naglowek(`${s.pomieszczenie} — karta montażu (cd.)`);
       }
       if (i % 2 === 0) doc.rect(M - 4, ty - 3, W - 2 * M + 8, hWiersza).fill("#f4f1ec");
@@ -371,7 +382,7 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
   }
 
   // ---------- do potwierdzenia ----------
-  doc.addPage();
+  strona();
   y = naglowek("Do potwierdzenia przed montażem", "Założenia przyjęte w rysunkach — źródła ich nie rozstrzygają.");
   model.doPotwierdzenia.forEach((t, i) => {
     doc.rect(M, y + 1, 9, 9).lineWidth(0.8).strokeColor(TEKST).stroke();
@@ -391,8 +402,8 @@ export function rysunkiMontazowe(model: Model): Promise<Buffer> {
 }
 
 if (process.argv[1]?.endsWith("rysunki-montazowe.ts")) {
-  const [wejscie, wyjscie] = process.argv.slice(2);
+  const [wejscie, wyjscie, format] = process.argv.slice(2);
   const model = JSON.parse(readFileSync(wejscie, "utf8")) as Model;
-  writeFileSync(wyjscie, await rysunkiMontazowe(model));
+  writeFileSync(wyjscie, await rysunkiMontazowe(model, format === "A4" ? "A4" : "A3"));
   console.log(`${model.sciany.length} ścian, ${model.sciany.reduce((s, w) => s + w.elementy.length, 0)} elementów → ${wyjscie}`);
 }
