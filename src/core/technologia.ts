@@ -247,19 +247,27 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     }
 
     // --- Rowek pod plecy ---
-    const plecy = el.get("PLECY");
+    // Plecy w jednym kawałku albo (słupek z niszą AGD) PLECY-D pod niszą i PLECY-G nad nią — rowki także w półkach stałych.
+    const kawalkiPlecow: [string, string, string][] = [
+      ["PLECY", "WIENIEC-D", "WIENIEC-G"],
+      ["PLECY-D", "WIENIEC-D", "POLKA-STALA"],
+      ["PLECY-G", "POLKA-STALA-G", "WIENIEC-G"],
+    ];
+    for (const [kodPlecow, kodDol, kodGora] of kawalkiPlecow) {
+    const plecy = el.get(kodPlecow);
     if (plecy) {
       const zRowka = plecy.z + plecy.gl / 2;
       const szerRowka = plecy.gl + 0.5;
       const rowki: { kod: string; od: V3; do: V3 }[] = [];
       for (const b of boki) {
         const lico = b.kod === "BOK-L" ? b.x + b.szer : b.x;
-        rowki.push({ kod: b.kod, od: [lico, b.y, zRowka], do: [lico, b.y + b.wys, zRowka] });
+        // Rowek w boku przelotowy na całej wysokości — przy dzielonych plecach frezowany raz (pomijany dla PLECY-G).
+        if (kodPlecow !== "PLECY-G") rowki.push({ kod: b.kod, od: [lico, b.y, zRowka], do: [lico, b.y + b.wys, zRowka] });
       }
-      for (const kod of ["WIENIEC-D", "WIENIEC-G"]) {
+      for (const kod of [kodDol, kodGora]) {
         const w = el.get(kod);
         if (!w) continue;
-        const yl = kod === "WIENIEC-D" ? w.y + w.wys : w.y;
+        const yl = kod === kodDol ? w.y + w.wys : w.y;
         rowki.push({ kod, od: [w.x, yl, zRowka], do: [w.x + w.szer, yl, zRowka] });
       }
       for (const r of rowki) {
@@ -281,12 +289,13 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
           glebokosc: t.rowekGlebokoscMM,
           osRowka: osX ? "x" : "y",
           przeznaczenie: "Rowek pod plecy HDF (przelotowy na długości)",
-          polaczenie: cz.get("PLECY")?.etykieta,
+          polaczenie: cz.get(kodPlecow)?.etykieta,
           regula: R.rowek,
         });
       }
-      const c = cz.get("PLECY");
-      if (c) c.uwagi.push("Plecy wsuwane w rowek — bez wierceń.");
+      const c = cz.get(kodPlecow);
+      if (c) c.uwagi.push(kodPlecow === "PLECY" ? "Plecy wsuwane w rowek — bez wierceń." : "Plecy wsuwane w rowek — bez wierceń. Za piekarnikiem brak pleców (wentylacja, głębokość niszy).");
+    }
     }
 
     // --- Zawiasy: puszki we frontach i prowadniki w bokach ---

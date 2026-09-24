@@ -150,3 +150,37 @@ test("słupek: szuflady pod drzwiami z półką stałą, fronty w jednej linii z
   const c = d.czesci.find((q) => q.modulId === mix.id && q.kodElementu === "POLKA-STALA")!;
   assert.ok(c.operacje.some((o) => /Konfirmat/.test(o.przeznaczenie)));
 });
+
+test("słupek z piekarnikiem: szuflady w linii dolnych, półki stałe przy niszy, bez pleców za piekarnikiem", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Słupek AGD", sciany: [{ dlugoscMM: 600 }] });
+  const sc = p.pomieszczenia[0].sciany[0].id;
+  const m = s.dodajModul(p.id, {
+    scianaId: sc, kategoria: "tall", konstrukcja: "ovenTower", szerokoscMM: 600, wysokoscMM: 2070, glebokoscMM: 560, pozycjaXMM: 0, pozycjaYMM: 100,
+    konfiguracja: { typFrontu: "drzwi", liczbaDrzwi: 1, liczbaSzuflad: 2, liczbaPolek: 2, wysokoscSzufladyMM: 360 },
+  });
+  const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  assert.deepEqual(z.ostrzezenia, []);
+  const el = (kod: string) => z.elementy.find((e) => e.kod === kod)!;
+  assert.equal(el("POLKA-STALA").y + el("POLKA-STALA").wys, 720);
+  assert.equal(el("POLKA-STALA-G").y - 720, 595, "światło niszy 595");
+  assert.equal(el("FRONT-D01").y, 720 + 595 + 2);
+  assert.equal(z.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).length, 2);
+  for (const polka of z.elementy.filter((e) => e.rola === "shelf")) assert.ok(polka.y > 720 + 595 + 18);
+  assert.ok(!el("PLECY"));
+  assert.ok(el("PLECY-D").y + el("PLECY-D").wys <= 720);
+  assert.ok(el("PLECY-G").y >= 720 + 595);
+  const d = s.dokumentacja(p.id);
+  const polkaG = d.czesci.find((q) => q.modulId === m.id && q.kodElementu === "POLKA-STALA-G")!;
+  assert.ok(polkaG.operacje.some((o) => o.typ === "rowek"));
+
+  // Wariant z mikrofalą nad piekarnikiem: półka stała między niszami, nisza mikrofali 362
+  s.zmienModul(p.id, m.id, { konstrukcja: "ovenMicrowaveTower" });
+  const z2 = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  assert.deepEqual(z2.ostrzezenia, []);
+  const e2 = (kod: string) => z2.elementy.find((e) => e.kod === kod)!;
+  assert.equal(e2("POLKA-STALA-M").y, 720 + 595);
+  assert.equal(e2("POLKA-STALA-G").y - (e2("POLKA-STALA-M").y + 18), 362);
+  assert.equal(e2("FRONT-D01").y, 720 + 595 + 18 + 362 + 2);
+  assert.equal(z2.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).length, 2);
+});

@@ -57,8 +57,18 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
 
     // Układ mieszany (szuflady pod drzwiami): półka stała na górze strefy szuflad, półki nastawne tylko nad nią.
     const strefaSzuflad = strefaSzufladPodDrzwiami(m);
+    const nisza = niszaSlupka(m);
     let dolPolek = t;
-    if (strefaSzuflad > 0) {
+    if (nisza) {
+      // Słupek z piekarnikiem: półka stała nośna pod urządzeniem i półka stała nad niszą; półki nastawne tylko powyżej.
+      if (nisza.dol > t) el.push(p("POLKA-STALA", "fixedShelf", t, nisza.dol - t, 0, innerW, t, D - rezerwaPlecow, "korpus"));
+      if (nisza.mikrofala) el.push(p("POLKA-STALA-M", "fixedShelf", t, nisza.dol + nisza.mikrofala.od - t, 0, innerW, t, D - rezerwaPlecow, "korpus"));
+      el.push(p("POLKA-STALA-G", "fixedShelf", t, nisza.dol + nisza.wys, 0, innerW, t, D - rezerwaPlecow, "korpus"));
+      dolPolek = nisza.dol + nisza.wys + t;
+      if (nisza.dol + nisza.wys + t > H - t - 100) ostrzezenia.push("Nisza AGD nie mieści się w wysokości słupka.");
+      if (innerW < 560) ostrzezenia.push(`Światło niszy ${innerW} mm — piekarniki do zabudowy wymagają min. 560 mm.`);
+      if (D < 550) ostrzezenia.push(`Głębokość słupka ${D} mm — nisza piekarnika wymaga min. 550 mm.`);
+    } else if (strefaSzuflad > 0) {
       if (strefaSzuflad > H - 2 * t - 200) ostrzezenia.push(`Strefa szuflad ${strefaSzuflad} mm nie zostawia miejsca na drzwi.`);
       el.push(p("POLKA-STALA", "fixedShelf", t, strefaSzuflad - t, 0, innerW, t, D - rezerwaPlecow, "korpus"));
       dolPolek = strefaSzuflad;
@@ -84,7 +94,15 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
       const wpust = tech.rowekGlebokoscMM - tech.rowekLuzMM;
       const dol = t - wpust;
       const gora = H - t + wpust;
-      el.push(p("PLECY", "back", t - wpust, dol, D - k.odsunieciePlecMM - k.gruboscPlecHDFMM, innerW + 2 * wpust, gora - dol, k.gruboscPlecHDFMM, "plecy"));
+      const zPlecow = D - k.odsunieciePlecMM - k.gruboscPlecHDFMM;
+      if (nisza) {
+        // Bez pleców za piekarnikiem (głębokość niszy i wentylacja): plecy pod niszą i nad nią, wpuszczone w rowek półek stałych.
+        if (nisza.dol > t) el.push(p("PLECY-D", "back", t - wpust, dol, zPlecow, innerW + 2 * wpust, nisza.dol - wpust - dol, k.gruboscPlecHDFMM, "plecy"));
+        const g0 = nisza.dol + nisza.wys + t - wpust;
+        el.push(p("PLECY-G", "back", t - wpust, g0, zPlecow, innerW + 2 * wpust, gora - g0, k.gruboscPlecHDFMM, "plecy"));
+      } else {
+        el.push(p("PLECY", "back", t - wpust, dol, zPlecow, innerW + 2 * wpust, gora - dol, k.gruboscPlecHDFMM, "plecy"));
+      }
     }
   }
 
@@ -181,15 +199,15 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
   // Strefa niszy AGD w słupkach i szafce pod piekarnik (front tylko poniżej/powyżej niszy)
   let niszaH = 0;
   if (m.konstrukcja === "oven") niszaH = 595;
-  if (m.konstrukcja === "ovenTower") niszaH = 595;
-  if (m.konstrukcja === "ovenMicrowaveTower") niszaH = 595 + 380;
+  const slupekAGD = niszaSlupka(m);
+  if (slupekAGD) niszaH = slupekAGD.wys;
 
   // Szuflady
   const mieszany = strefaSzufladPodDrzwiami(m);
-  const liczbaSzuflad = cfg.typFrontu === "szuflady" || m.konstrukcja === "ovenTower" || mieszany > 0 ? cfg.liczbaSzuflad : 0;
+  const liczbaSzuflad = cfg.typFrontu === "szuflady" || slupekAGD || mieszany > 0 ? cfg.liczbaSzuflad : 0;
   let yStart = 0;
   if (liczbaSzuflad > 0) {
-    const strefaH = m.konstrukcja === "oven" ? H - niszaH : m.konstrukcja === "ovenTower" ? Math.min(H * 0.3, 450) : mieszany > 0 ? mieszany : H;
+    const strefaH = m.konstrukcja === "oven" ? H - niszaH : niszaSlupka(m) ? niszaSlupka(m)!.dol : mieszany > 0 ? mieszany : H;
     if (strefaH < 100) {
       ostrzezenia.push("Za mało miejsca na front szuflady pod niszą AGD.");
     } else {
@@ -214,7 +232,7 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
   }
 
   // Drzwi
-  const liczbaDrzwi = cfg.typFrontu === "szuflady" && m.konstrukcja !== "ovenTower" ? 0 : cfg.liczbaDrzwi;
+  const liczbaDrzwi = cfg.typFrontu === "szuflady" && !slupekAGD ? 0 : cfg.liczbaDrzwi;
   if (liczbaDrzwi <= 0) return wynik;
 
   if (m.konstrukcja === "blindCorner") {
@@ -262,6 +280,25 @@ export function strefaSzufladPodDrzwiami(m: Modul): number {
   if (cfg.typFrontu !== "drzwi" || cfg.liczbaSzuflad <= 0 || cfg.liczbaDrzwi <= 0) return 0;
   if (["oven", "ovenTower", "ovenMicrowaveTower", "blindCorner", "sink"].includes(m.konstrukcja)) return 0;
   return cfg.liczbaSzuflad * (cfg.wysokoscSzufladyMM ?? 360);
+}
+
+/**
+ * Nisza AGD w słupku (ovenTower / ovenMicrowaveTower): dol = wysokość strefy pod niszą (górna krawędź półki nośnej),
+ * wys = światło niszy. Strefa szuflad = liczba × podziałka (wysokoscSzufladyMM), bez podziałki min(30% H, 450).
+ */
+export function niszaSlupka(m: Modul): { dol: number; wys: number; mikrofala?: { od: number; wys: number } } | null {
+  if (m.konstrukcja !== "ovenTower" && m.konstrukcja !== "ovenMicrowaveTower") return null;
+  const cfg = m.konfiguracja;
+  // Piekarnik 595 (min. 590); mikrofala nad nim: półka stała 18 + nisza 362 (Bosch BFL524: 362–365 × 560–568 × 300).
+  const mikrofala = m.konstrukcja === "ovenMicrowaveTower" ? { od: 595 + 18, wys: 362 } : undefined;
+  const wys = mikrofala ? mikrofala.od + mikrofala.wys : 595;
+  let dol = 0;
+  if (cfg.liczbaSzuflad > 0) {
+    dol = cfg.wysokoscSzufladyMM ? cfg.liczbaSzuflad * cfg.wysokoscSzufladyMM : Math.min(m.wysokoscMM * 0.3, 450);
+  } else if (m.szerokoscMM <= 600 && cfg.liczbaDrzwi >= 2) {
+    dol = Math.round((m.wysokoscMM - wys) * 0.45);
+  }
+  return { dol, wys, mikrofala };
 }
 
 function p(kod: string, rola: Element["rola"], x: number, y: number, z: number, szer: number, wys: number, gl: number, materialRola: Element["materialRola"]): Element {
