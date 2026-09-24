@@ -19,6 +19,7 @@ import type {
   Projekt,
   Sciana,
   StatusProjektu,
+  UrzadzenieAGD,
   UstawieniaStolarni,
   WariantWyceny,
 } from "./core/types.js";
@@ -27,6 +28,7 @@ import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
 import { ofertaPdf } from "./export/oferta.js";
 import { dokumentacjaPdf } from "./export/pdf.js";
+import { scianySzkicow, szkicePdf, type OpcjeSzkicow } from "./export/szkice.js";
 import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
 import { jednostkaZNaglowka, odcinkiDxf, scianyZDxf, warstwyDxf, type DxfDane, type JednostkaDxf } from "./core/dxf.js";
@@ -241,7 +243,8 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null }): Projekt {
+  zmienProjekt(projektId: string, dane: { nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; agd?: UrzadzenieAGD[] }): Projekt {
+    if (dane.agd !== undefined) dane = { ...dane, agd: sprawdzAGD(dane.agd) };
     if (dane.status !== undefined && !czyStatus(dane.status)) throw new BladUslugi(`Nieznany status "${dane.status}". Dozwolone: ${STATUSY_PROJEKTU.join(", ")}.`);
     if (dane.terminMontazu && !/^\d{4}-\d{2}-\d{2}$/.test(dane.terminMontazu)) throw new BladUslugi("Termin montażu w formacie RRRR-MM-DD.");
     // Dane tematu (CRM) nie zmieniają konstrukcji — bez podbijania rewizji projektu.
@@ -255,7 +258,23 @@ export class Stolarnia {
       }
       if (dane.notatki !== undefined) p.notatki = dane.notatki;
       if (dane.terminMontazu !== undefined) p.terminMontazu = dane.terminMontazu || undefined;
+      if (dane.agd !== undefined) p.agd = dane.agd.length ? dane.agd : undefined;
     });
+  }
+
+  // ---------- Szkice wstępne dla klienta ----------
+
+  scianySzkicow(projektId: string) {
+    return scianySzkicow(this.projekt(projektId));
+  }
+
+  async szkicePdf(projektId: string, opcje: OpcjeSzkicow = {}): Promise<Buffer> {
+    try {
+      return await szkicePdf(this.projekt(projektId), opcje);
+    } catch (e) {
+      if (e instanceof BladUslugi) throw e;
+      throw new BladUslugi((e as Error).message);
+    }
   }
 
   // ---------- Notatki robocze (mikro CRM) ----------
@@ -692,4 +711,35 @@ function nastepneX(p: Projekt, scianaId: string, wiszacy: boolean): number {
   return p.moduly
     .filter((m) => m.scianaId === scianaId && m.pozycjaYMM >= PROG_WISZACYCH_MM === wiszacy)
     .reduce((max, m) => Math.max(max, m.pozycjaXMM + m.szerokoscMM), 0);
+}
+
+const RODZAJE_AGD = ["piekarnik", "mikrofala", "plyta", "lodowka", "zmywarka", "okap", "inne"];
+
+/** Walidacja listy AGD z panelu / MCP: rodzaj z listy, model niepusty, wymiary dodatnie. */
+function sprawdzAGD(lista: unknown): UrzadzenieAGD[] {
+  if (!Array.isArray(lista)) throw new BladUslugi("agd musi być listą urządzeń.");
+  return lista.map((a, i) => {
+    const u = a as Record<string, unknown>;
+    if (!RODZAJE_AGD.includes(String(u.rodzaj))) throw new BladUslugi(`AGD ${i + 1}: nieznany rodzaj "${u.rodzaj}".`);
+    const model = String(u.model ?? "").trim();
+    if (!model) throw new BladUslugi(`AGD ${i + 1}: podaj model.`);
+    const liczba = (k: string) => {
+      const v = u[k];
+      if (v === undefined || v === null || v === "") return undefined;
+      const n = Number(v);
+      if (!Number.isFinite(n) || n < 0 || n > 5000) throw new BladUslugi(`AGD ${i + 1}: ${k} poza zakresem 0–5000 mm.`);
+      return Math.round(n);
+    };
+    const wynik: UrzadzenieAGD = { rodzaj: u.rodzaj as UrzadzenieAGD["rodzaj"], model };
+    for (const k of ["szerMM", "wysMM", "glMM", "odstepTylMM", "odstepBokMM", "odstepGoraMM", "glKorpusuMM", "glOtwarteMM"] as const) {
+      const n = liczba(k);
+      if (n !== undefined) wynik[k] = n;
+    }
+    if (typeof u.nisza === "string" && u.nisza.trim()) wynik.nisza = u.nisza.trim();
+    if (Array.isArray(u.uwagi)) {
+      const uw = u.uwagi.map((x) => String(x).trim()).filter(Boolean);
+      if (uw.length) wynik.uwagi = uw;
+    }
+    return wynik;
+  });
 }

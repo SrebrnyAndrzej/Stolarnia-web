@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NAZWY_STATUSOW, STATUSY_PROJEKTU } from "../../../src/core/statusy";
-import { api, type Analiza, type NotatkaProjektu, type StatusProjektu } from "../api";
+import type { RodzajAGD } from "../../../src/core/types";
+import { api, type Analiza, type NotatkaProjektu, type StatusProjektu, type UrzadzenieAGD } from "../api";
 
 // Mikro CRM tematu: etap realizacji, kontakt z klientem, termin montażu i notatki robocze (braki, ustalenia).
 export function Temat({ analiza, odswiez }: { analiza: Analiza; odswiez: () => Promise<void> }) {
@@ -101,6 +102,124 @@ export function Temat({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
             <Pole etykieta="Adres montażu" wartosc={p.klient.adres} zapisz={(v) => zmien({ klient: { adres: v } })} />
             <Pole etykieta="Termin montażu" typ="date" wartosc={p.terminMontazu ?? ""} zapisz={(v) => zmien({ terminMontazu: v || null })} />
           </div>
+        </div>
+      </div>
+
+      <RysunkiKlienta analiza={analiza} />
+      <UrzadzeniaAGD key={JSON.stringify(p.agd ?? [])} agd={p.agd ?? []} zapisz={(agd) => zmien({ agd })} />
+    </div>
+  );
+}
+
+// ---------- Wstępne rysunki szkieletowe dla klienta ----------
+
+function RysunkiKlienta({ analiza }: { analiza: Analiza }) {
+  const p = analiza.projekt;
+  const [sciany, setSciany] = useState<{ dolne: string[]; wysokie: string[] } | null>(null);
+  const liczbaModulow = p.moduly.length;
+  useEffect(() => {
+    api.scianySzkicow(p.id).then(setSciany).catch(() => setSciany({ dolne: [], wysokie: [] }));
+  }, [p.id, liczbaModulow, p.rewizja]);
+  const url = (rodzaj: string) => `/api/projekty/${p.id}/szkic.pdf?rodzaj=${rodzaj}`;
+  const brak = sciany && !sciany.dolne.length && !sciany.wysokie.length;
+  return (
+    <div className="card">
+      <div className="card-h"><h2>Rysunki dla klienta</h2></div>
+      <div className="card-b" style={{ display: "grid", gap: 10 }}>
+        <p className="muted" style={{ margin: 0 }}>
+          Szkice szkieletowe A4 do druku: puste obrysy szafek z wymiarami, do rysowania z klientem szuflad, drzwi i półek. Ciąg wysoki pokazuje nisze AGD i lodówkę według listy urządzeń poniżej.
+        </p>
+        {brak ? (
+          <p className="muted" style={{ margin: 0 }}>Projekt nie ma jeszcze szafek dolnych ani słupków — dodaj je w zakładce Projekt.</p>
+        ) : (
+          <div className="row">
+            <a className="btn primary" href={url("oba")} target="_blank" rel="noopener">Komplet PDF</a>
+            {!!sciany?.dolne.length && <a className="btn" href={url("dolny")} target="_blank" rel="noopener">Ciąg dolny ({sciany.dolne.join(", ")})</a>}
+            {!!sciany?.wysokie.length && <a className="btn" href={url("wysoki")} target="_blank" rel="noopener">Ciąg wysoki ({sciany.wysokie.join(", ")})</a>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Urządzenia AGD klienta ----------
+
+const RODZAJE: { v: RodzajAGD; n: string }[] = [
+  { v: "piekarnik", n: "Piekarnik" },
+  { v: "mikrofala", n: "Mikrofala" },
+  { v: "plyta", n: "Płyta grzewcza" },
+  { v: "lodowka", n: "Lodówka" },
+  { v: "zmywarka", n: "Zmywarka" },
+  { v: "okap", n: "Okap" },
+  { v: "inne", n: "Inne" },
+];
+
+type WierszAGD = Omit<UrzadzenieAGD, "uwagi"> & { uwagi: string };
+
+function UrzadzeniaAGD({ agd, zapisz }: { agd: UrzadzenieAGD[]; zapisz: (a: UrzadzenieAGD[]) => Promise<void> }) {
+  const [wiersze, setWiersze] = useState<WierszAGD[]>(() => agd.map((a) => ({ ...a, uwagi: (a.uwagi ?? []).join("\n") })));
+  const [zmienione, setZmienione] = useState(false);
+  const ustaw = (i: number, z: Partial<WierszAGD>) => {
+    setWiersze((w) => w.map((x, j) => (j === i ? { ...x, ...z } : x)));
+    setZmienione(true);
+  };
+  const liczba = (v: string) => (v.trim() === "" ? undefined : Number(v));
+  const pole = (i: number, k: keyof WierszAGD, etykieta: string) => (
+    <div className="field">
+      <label>{etykieta}</label>
+      <input className="input" inputMode="numeric" value={(wiersze[i][k] as number | undefined) ?? ""} onChange={(e) => ustaw(i, { [k]: liczba(e.target.value) })} />
+    </div>
+  );
+  return (
+    <div className="card">
+      <div className="card-h">
+        <h2>Urządzenia AGD</h2>
+        <span className="spacer" />
+        {zmienione && <button className="btn primary small" onClick={async () => { await zapisz(wiersze.filter((w) => w.model.trim()).map((w) => ({ ...w, uwagi: w.uwagi.split("\n").map((u) => u.trim()).filter(Boolean) }))); setZmienione(false); }}>Zapisz AGD</button>}
+      </div>
+      <div className="card-b agd-lista">
+        {wiersze.length === 0 && <p className="muted" style={{ margin: 0 }}>Brak urządzeń. Dodaj modele AGD klienta — wymiary i nisze z karty producenta trafią na rysunki.</p>}
+        {wiersze.map((w, i) => (
+          <div key={i} className="agd-wiersz">
+            <div className="agd-pola">
+              <div className="field">
+                <label>Rodzaj</label>
+                <select className="input" value={w.rodzaj} onChange={(e) => ustaw(i, { rodzaj: e.target.value as RodzajAGD })}>
+                  {RODZAJE.map((r) => <option key={r.v} value={r.v}>{r.n}</option>)}
+                </select>
+              </div>
+              <div className="field agd-model">
+                <label>Model</label>
+                <input className="input" value={w.model} placeholder="np. Electrolux EOF4P56X" onChange={(e) => ustaw(i, { model: e.target.value })} />
+              </div>
+              {pole(i, "szerMM", "Szer. [mm]")}
+              {pole(i, "wysMM", "Wys. [mm]")}
+              {pole(i, "glMM", "Gł. [mm]")}
+              <div className="field agd-nisza">
+                <label>Nisza / otwór (z karty)</label>
+                <input className="input" value={w.nisza ?? ""} placeholder="np. 590 × 560 × 550" onChange={(e) => ustaw(i, { nisza: e.target.value })} />
+              </div>
+              {w.rodzaj === "lodowka" && (
+                <>
+                  {pole(i, "odstepTylMM", "Odstęp tył")}
+                  {pole(i, "odstepBokMM", "Odstęp bok")}
+                  {pole(i, "odstepGoraMM", "Odstęp góra")}
+                  {pole(i, "glKorpusuMM", "Gł. korpusu")}
+                  {pole(i, "glOtwarteMM", "Gł. przy otwartych")}
+                </>
+              )}
+            </div>
+            <div className="field">
+              <label>Uwagi montażowe (każda w nowej linii)</label>
+              <textarea className="input" rows={2} value={w.uwagi} onChange={(e) => ustaw(i, { uwagi: e.target.value })} />
+            </div>
+            <button className="btn small danger" onClick={() => { setWiersze((x) => x.filter((_, j) => j !== i)); setZmienione(true); }}>Usuń urządzenie</button>
+          </div>
+        ))}
+        <div className="row">
+          <button className="btn small" onClick={() => { setWiersze((w) => [...w, { rodzaj: "piekarnik", model: "", uwagi: "" }]); setZmienione(true); }}>+ Dodaj urządzenie</button>
+          {zmienione && <span className="muted" style={{ fontSize: 12 }}>Niezapisane zmiany — urządzenia bez modelu zostaną pominięte.</span>}
         </div>
       </div>
     </div>

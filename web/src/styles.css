@@ -139,16 +139,35 @@ table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
 .project-tile { padding: 16px; cursor: pointer; display: grid; gap: 8px; }
 .project-tile:hover { border-color: var(--accent); }
 
-/* Mikro CRM: tablica etapów i zakładka Temat */
-.tablica { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
-.kolumna { display: grid; gap: 8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; min-height: 120px; }
-.kolumna-h { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; font-size: 13px; }
-.temat-karta { padding: 10px; display: grid; gap: 6px; cursor: pointer; font-size: 13px; }
-.temat-karta:hover { border-color: var(--accent); }
-.temat-karta a { color: var(--accent); }
+/* Mikro CRM: pasek etapów nad projektami (zawijany, bez przewijania w bok) */
+.e0 { --etap: #8a8177; } .e1 { --etap: #3f7cc4; } .e2 { --etap: #7a62c9; } .e3 { --etap: #c98a1a; }
+.e4 { --etap: #c4622d; } .e5 { --etap: #2f8f5b; } .e6 { --etap: #66706b; }
+.etapy-pasek { display: flex; flex-wrap: wrap; gap: 6px; }
+.etap-filtr { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 99px; padding: 6px 8px 6px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color .15s, background .15s; }
+.etap-filtr:hover { border-color: var(--etap, var(--accent)); }
+.etap-filtr.pusty { color: var(--muted); font-weight: 500; }
+.etap-filtr.on { background: color-mix(in srgb, var(--etap, var(--accent)) 16%, var(--panel)); border-color: var(--etap, var(--accent)); }
+.etap-kropka { width: 8px; height: 8px; border-radius: 50%; background: var(--etap); }
+.etap-licznik { min-width: 20px; padding: 1px 6px; border-radius: 99px; background: var(--panel-2); color: var(--muted); font-size: 11px; text-align: center; font-variant-numeric: tabular-nums; }
+.etap-filtr.on .etap-licznik { background: var(--etap, var(--accent)); color: #fff; }
+.szukaj-projektow { max-width: 260px; }
+.etap-badge { background: color-mix(in srgb, var(--etap) 16%, transparent); color: var(--etap); border-color: transparent; white-space: nowrap; }
+.tile-tytul { margin: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-klient { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile-klient a, .temat-karta a { color: var(--accent); }
+.postep { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.postep-seg { height: 8px; border: 0; border-radius: 4px; padding: 0; background: var(--panel-2); outline: 1px solid var(--line); cursor: pointer; }
+.postep-seg.zrobione { background: var(--accent); outline-color: transparent; opacity: .55; }
+.postep-seg.biezacy { opacity: 1; }
+.postep-seg:hover { outline: 2px solid var(--accent); }
+.tile-stopka { gap: 6px; flex-wrap: wrap; }
+.tile-menu { position: relative; }
+.tile-menu summary { list-style: none; cursor: pointer; padding: 2px 8px; border-radius: 6px; color: var(--muted); font-weight: 700; }
+.tile-menu summary::-webkit-details-marker { display: none; }
+.tile-menu[open] summary { background: var(--panel-2); }
+.tile-menu-lista { position: absolute; right: 0; bottom: 100%; margin-bottom: 4px; display: grid; gap: 4px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); z-index: 5; }
 .temat-notatka { font-size: 12px; color: var(--warn); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.temat-status { font-size: 12px; padding: 4px 6px; }
-.termin { font-size: 12px; }
+@media (max-width: 640px) { .szukaj-projektow { max-width: none; order: 3; flex-basis: 100%; } }.termin { font-size: 12px; }
 .termin.warn { color: var(--warn); font-weight: 600; }
 .termin.blad { color: var(--danger); font-weight: 600; }
 .temat { display: grid; gap: 16px; }
@@ -255,3 +274,10 @@ table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
 .decor-dialog select { width:100%; }
 .decor-dialog a { color:#94c9ff; }
 .decor-preview { width:100%; max-height:210px; object-fit:cover; }
+.agd-lista { display: grid; gap: 12px; }
+.agd-wiersz { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); justify-items: start; }
+.agd-wiersz > .field { width: 100%; }
+.agd-pola { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; width: 100%; }
+.agd-model, .agd-nisza { grid-column: span 2; }
+a.btn { text-decoration: none; color: inherit; }
+a.btn.primary { color: var(--accent-text); }

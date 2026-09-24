@@ -210,3 +210,21 @@ test("mikro CRM: etapy z historią, termin montażu i notatki robocze bez zmiany
   s.zmienProjekt(p.id, { terminMontazu: null });
   assert.equal(s.projekt(p.id).terminMontazu, undefined);
 });
+
+test("szkice dla klienta: ciąg dolny i wysoki z AGD projektu, kolejność ścian ciągu", async () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Szkic", sciany: [{ nazwa: "A", dlugoscMM: 3000 }, { nazwa: "B", dlugoscMM: 2400 }, { nazwa: "C", dlugoscMM: 3000 }, { nazwa: "D", dlugoscMM: 2400 }] });
+  const [a, b, c] = p.pomieszczenia[0].sciany.map((x) => x.id);
+  for (const sc of [a, b]) s.dodajModul(p.id, { scianaId: sc, kategoria: "base", konstrukcja: "drawers", szerokoscMM: 600, wysokoscMM: 720, glebokoscMM: 560, pozycjaXMM: 600, pozycjaYMM: 100 });
+  s.dodajModul(p.id, { scianaId: c, kategoria: "tall", konstrukcja: "ovenMicrowaveTower", szerokoscMM: 600, wysokoscMM: 2070, glebokoscMM: 560, pozycjaXMM: 1200, pozycjaYMM: 100, konfiguracja: { typFrontu: "drzwi", liczbaDrzwi: 1, liczbaSzuflad: 2, wysokoscSzufladyMM: 360 } });
+  assert.deepEqual(s.scianySzkicow(p.id), { dolne: ["A", "B"], wysokie: ["C"] });
+  const bez = await s.szkicePdf(p.id);
+  assert.equal(bez.subarray(0, 4).toString(), "%PDF");
+  s.zmienProjekt(p.id, { agd: [{ rodzaj: "lodowka", model: "Bosch KFN96VPEA", szerMM: 905, wysMM: 1830, glMM: 736, odstepGoraMM: 300 }, { rodzaj: "piekarnik", model: "Electrolux EOF4P56X", szerMM: 594, wysMM: 589 }] });
+  assert.equal(s.projekt(p.id).agd?.length, 2);
+  const strony = (b: Buffer) => (b.toString("latin1").match(/\/Type \/Page\b/g) ?? []).length;
+  assert.equal(strony(await s.szkicePdf(p.id, { wysoki: false })), 3, "rzut + 2 ściany");
+  assert.equal(strony(await s.szkicePdf(p.id, { dolny: false })), 2, "widok + rzut ściany C");
+  assert.throws(() => s.zmienProjekt(p.id, { agd: [{ rodzaj: "lodowka", model: "" }] }), /model/);
+  await assert.rejects(() => s.szkicePdf(p.id, { dolny: false, scianyWysokie: ["A"] }), /Brak szafek/);
+});

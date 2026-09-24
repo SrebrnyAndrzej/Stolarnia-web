@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { NAZWY_STATUSOW, STATUSY_PROJEKTU } from "../../../src/core/statusy";
-import { api, idz, type ProjektSkrot } from "../api";
+import { api, idz, type ProjektSkrot, type StatusProjektu } from "../api";
+
+type Filtr = StatusProjektu | "wszystkie";
 
 function Termin({ data, zakonczony }: { data: string; zakonczony: boolean }) {
   const dni = Math.round((new Date(`${data}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
@@ -13,6 +15,21 @@ function Termin({ data, zakonczony }: { data: string; zakonczony: boolean }) {
   );
 }
 
+const czytaj = (k: string) => {
+  try {
+    return localStorage.getItem(k);
+  } catch {
+    return null;
+  }
+};
+const zapisz = (k: string, v: string) => {
+  try {
+    localStorage.setItem(k, v);
+  } catch {
+    /* brak dostępu do pamięci przeglądarki */
+  }
+};
+
 export function Projects() {
   const [lista, setLista] = useState<ProjektSkrot[] | null>(null);
   const [nowy, setNowy] = useState(false);
@@ -20,30 +37,38 @@ export function Projects() {
   const [klient, setKlient] = useState("");
   const [sciany, setSciany] = useState("3600");
   const [blad, setBlad] = useState<string | null>(null);
-
-  const [widok, setWidok] = useState<"tablica" | "lista">(() => {
-    try {
-      return localStorage.getItem("stolarnia.widokProjektow") === "lista" ? "lista" : "tablica";
-    } catch {
-      return "tablica";
-    }
+  const [filtr, setFiltr] = useState<Filtr>(() => {
+    const f = czytaj("stolarnia.filtrEtapu");
+    return f && (f === "wszystkie" || (STATUSY_PROJEKTU as readonly string[]).includes(f)) ? (f as Filtr) : "wszystkie";
   });
-  const ustawWidok = (w: "tablica" | "lista") => {
-    setWidok(w);
-    try {
-      localStorage.setItem("stolarnia.widokProjektow", w);
-    } catch {
-      /* brak dostępu do pamięci przeglądarki */
-    }
+  const ustawFiltr = (f: Filtr) => {
+    setFiltr(f);
+    zapisz("stolarnia.filtrEtapu", f);
   };
   const [szukaj, setSzukaj] = useState("");
-  const fraza = szukaj.trim().toLowerCase();
-  const widoczne = lista?.filter((p) => !fraza || [p.nazwa, p.klient, p.telefon, p.ostatniaNotatka].some((t) => t?.toLowerCase().includes(fraza)));
 
   const wczytaj = () => api.projekty().then(setLista).catch((e) => setBlad(e.message));
   useEffect(() => {
     wczytaj();
   }, []);
+
+  const fraza = szukaj.trim().toLowerCase();
+  const pasujace = (lista ?? []).filter((p) => !fraza || [p.nazwa, p.klient, p.telefon, p.ostatniaNotatka].some((t) => t?.toLowerCase().includes(fraza)));
+  const ile = (s: StatusProjektu) => pasujace.filter((p) => p.status === s).length;
+  const widoczne = pasujace
+    .filter((p) => filtr === "wszystkie" || p.status === filtr)
+    .sort((a, b) => STATUSY_PROJEKTU.indexOf(a.status) - STATUSY_PROJEKTU.indexOf(b.status) || (a.terminMontazu ?? "9").localeCompare(b.terminMontazu ?? "9") || b.zmieniono.localeCompare(a.zmieniono));
+
+  const zmienEtap = async (p: ProjektSkrot, s: StatusProjektu) => {
+    if (s === p.status) return;
+    setLista((l) => l?.map((x) => (x.id === p.id ? { ...x, status: s } : x)) ?? l); // od razu na ekranie
+    try {
+      await api.zmienProjekt(p.id, { status: s });
+    } catch (e) {
+      setBlad((e as Error).message);
+    }
+    wczytaj();
+  };
 
   const utworz = async () => {
     try {
@@ -64,6 +89,7 @@ export function Projects() {
       <div className="row">
         <h1>Projekty</h1>
         <span className="spacer" />
+        <input className="input szukaj-projektow" value={szukaj} onChange={(e) => setSzukaj(e.target.value)} placeholder="Szukaj: projekt, klient, notatka…" aria-label="Szukaj tematów" />
         <button className="btn primary" onClick={() => setNowy(true)}>+ Nowy projekt</button>
       </div>
       {blad && <div className="alert blad">{blad}</div>}
@@ -101,91 +127,81 @@ export function Projects() {
       )}
 
       {lista && lista.length > 0 && (
-        <div className="row">
-          <div className="seg" role="tablist" aria-label="Widok tematów">
-            <button className={widok === "tablica" ? "on" : ""} onClick={() => ustawWidok("tablica")}>Tablica etapów</button>
-            <button className={widok === "lista" ? "on" : ""} onClick={() => ustawWidok("lista")}>Lista</button>
-          </div>
-          <input className="input" style={{ maxWidth: 280 }} value={szukaj} onChange={(e) => setSzukaj(e.target.value)} placeholder="Szukaj: projekt, klient, notatka…" aria-label="Szukaj tematów" />
-        </div>
+        <nav className="etapy-pasek" aria-label="Filtr etapu">
+          <button className={`etap-filtr ${filtr === "wszystkie" ? "on" : ""}`} aria-pressed={filtr === "wszystkie"} onClick={() => ustawFiltr("wszystkie")}>
+            Wszystkie <span className="etap-licznik">{pasujace.length}</span>
+          </button>
+          {STATUSY_PROJEKTU.map((s, i) => (
+            <button key={s} className={`etap-filtr e${i} ${filtr === s ? "on" : ""} ${ile(s) ? "" : "pusty"}`} aria-pressed={filtr === s} onClick={() => ustawFiltr(filtr === s ? "wszystkie" : s)}>
+              <span className="etap-kropka" aria-hidden />
+              {NAZWY_STATUSOW[s]} <span className="etap-licznik">{ile(s)}</span>
+            </button>
+          ))}
+        </nav>
       )}
 
-      {widok === "tablica" && widoczne && (
-        <div className="tablica">
-          {STATUSY_PROJEKTU.map((s) => {
-            const kol = widoczne.filter((p) => p.status === s);
-            return (
-              <section key={s} className="kolumna" aria-label={NAZWY_STATUSOW[s]}>
-                <header className="kolumna-h">
-                  <b>{NAZWY_STATUSOW[s]}</b>
-                  <span className="muted num">{kol.length}</span>
-                </header>
-                {kol.map((p) => (
-                  <div key={p.id} className="card temat-karta" onClick={() => idz(`#/p/${p.id}/temat`)}>
-                    <b>{p.nazwa}</b>
-                    <div className="muted">{p.klient || "—"}{p.telefon && <> · <a href={`tel:${p.telefon.replace(/\s/g, "")}`} onClick={(e) => e.stopPropagation()}>{p.telefon}</a></>}</div>
-                    {p.terminMontazu && <Termin data={p.terminMontazu} zakonczony={p.status === "zakonczony"} />}
-                    {p.otwarteNotatki > 0 && (
-                      <div className="temat-notatka" title={p.ostatniaNotatka}>
-                        <span className="badge warn">{p.otwarteNotatki}</span> {p.ostatniaNotatka}
-                      </div>
-                    )}
-                    <select
-                      className="input temat-status"
-                      value={p.status}
-                      aria-label={`Etap: ${p.nazwa}`}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={async (e) => {
-                        try {
-                          await api.zmienProjekt(p.id, { status: e.target.value });
-                          wczytaj();
-                        } catch (err) {
-                          setBlad((err as Error).message);
-                        }
-                      }}
-                    >
-                      {STATUSY_PROJEKTU.map((x) => <option key={x} value={x}>{NAZWY_STATUSOW[x]}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </section>
-            );
-          })}
+      {lista && lista.length > 0 && widoczne.length === 0 && (
+        <div className="card card-b muted">
+          {filtr === "wszystkie" ? "Nic nie pasuje do wyszukiwania." : `Brak tematów na etapie „${NAZWY_STATUSOW[filtr]}”.`}
         </div>
       )}
 
       <div className="projects">
-        {widok === "lista" && widoczne?.map((p) => (
-          <div key={p.id} className="card project-tile" onClick={() => idz(`#/p/${p.id}`)}>
-            <div className="row">
-              <h2>{p.nazwa}</h2>
-              <span className="spacer" />
-              {p.otwarteNotatki > 0 && <span className="badge warn" title={p.ostatniaNotatka}>{p.otwarteNotatki} notatek</span>}
-              <span className="badge accent">{NAZWY_STATUSOW[p.status] ?? p.status}</span>
+        {widoczne.map((p) => {
+          const idx = STATUSY_PROJEKTU.indexOf(p.status);
+          const nastepny = STATUSY_PROJEKTU[idx + 1];
+          return (
+            <div key={p.id} className="card project-tile" onClick={() => idz(`#/p/${p.id}/temat`)}>
+              <div className="row" style={{ alignItems: "flex-start" }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <h2 className="tile-tytul">{p.nazwa}</h2>
+                  <div className="muted tile-klient">
+                    {p.klient || "—"}
+                    {p.telefon && <> · <a href={`tel:${p.telefon.replace(/\s/g, "")}`} onClick={(e) => e.stopPropagation()}>{p.telefon}</a></>}
+                  </div>
+                </div>
+                <span className={`badge etap-badge e${idx}`}>{NAZWY_STATUSOW[p.status] ?? p.status}</span>
+              </div>
+
+              <div className="postep" onClick={(e) => e.stopPropagation()} role="group" aria-label={`Etap: ${p.nazwa}`}>
+                {STATUSY_PROJEKTU.map((s, i) => (
+                  <button key={s} className={`postep-seg ${i <= idx ? "zrobione" : ""} ${i === idx ? "biezacy" : ""}`} title={NAZWY_STATUSOW[s]} aria-label={`Ustaw etap: ${NAZWY_STATUSOW[s]}`} aria-current={i === idx ? "step" : undefined} onClick={() => zmienEtap(p, s)} />
+                ))}
+              </div>
+
+              {p.terminMontazu && <Termin data={p.terminMontazu} zakonczony={p.status === "zakonczony"} />}
+              {p.otwarteNotatki > 0 && (
+                <div className="temat-notatka" title={p.ostatniaNotatka}>
+                  <span className="badge warn">{p.otwarteNotatki}</span> {p.ostatniaNotatka}
+                </div>
+              )}
+
+              <div className="row tile-stopka" onClick={(e) => e.stopPropagation()}>
+                {nastepny && <button className="btn small primary" onClick={() => zmienEtap(p, nastepny)}>→ {NAZWY_STATUSOW[nastepny]}</button>}
+                <button className="btn small" onClick={() => idz(`#/p/${p.id}`)}>Projekt</button>
+                <span className="spacer" />
+                <span className="muted" style={{ fontSize: 11 }}>{p.liczbaModulow} mod. · {new Date(p.zmieniono).toLocaleDateString("pl-PL")}</span>
+                <details className="tile-menu">
+                  <summary aria-label="Więcej akcji">⋯</summary>
+                  <div className="tile-menu-lista">
+                    <button className="btn small" onClick={async () => { await api.duplikujProjekt(p.id); wczytaj(); }}>Duplikuj</button>
+                    <button
+                      className="btn small danger"
+                      onClick={async () => {
+                        if (confirm(`Usunąć projekt „${p.nazwa}”? Tej operacji nie można cofnąć.`)) {
+                          await api.usunProjekt(p.id);
+                          wczytaj();
+                        }
+                      }}
+                    >
+                      Usuń
+                    </button>
+                  </div>
+                </details>
+              </div>
             </div>
-            <div className="muted">{p.klient || "—"}</div>
-            {p.terminMontazu && <Termin data={p.terminMontazu} zakonczony={p.status === "zakonczony"} />}
-            <div className="row muted" style={{ fontSize: 12 }}>
-              <span>{p.liczbaModulow} modułów</span>
-              <span className="spacer" />
-              <span>{new Date(p.zmieniono).toLocaleString("pl-PL")}</span>
-            </div>
-            <div className="row" onClick={(e) => e.stopPropagation()}>
-              <button className="btn small" onClick={async () => { await api.duplikujProjekt(p.id); wczytaj(); }}>Duplikuj</button>
-              <button
-                className="btn small danger"
-                onClick={async () => {
-                  if (confirm(`Usunąć projekt „${p.nazwa}”? Tej operacji nie można cofnąć.`)) {
-                    await api.usunProjekt(p.id);
-                    wczytaj();
-                  }
-                }}
-              >
-                Usuń
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

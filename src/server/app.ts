@@ -160,6 +160,19 @@ app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
     })
     .catch(next);
 });
+// Szkice wstępne dla klienta: ?rodzaj=dolny|wysoki|oba, opcjonalnie &dolne=D,A,B&wysokie=C
+app.get("/api/projekty/:id/szkice", api((r) => s.scianySzkicow(p(r, "id"))));
+app.get("/api/projekty/:id/szkic.pdf", (req, res, next) => {
+  const rodzaj = String(req.query.rodzaj ?? "oba");
+  const lista = (k: string) => (req.query[k] ? String(req.query[k]).split(",") : undefined);
+  s.szkicePdf(p(req, "id"), { dolny: rodzaj !== "wysoki", wysoki: rodzaj !== "dolny", kolejnoscDolnych: lista("dolne"), scianyWysokie: lista("wysokie") })
+    .then((pdf) => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="szkic-${rodzaj}-${p(req, "id")}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
+});
 app.post("/api/projekty/:id/oferta.pdf", (req, res, next) => {
   s.ofertaPdf(p(req, "id"), req.body ?? {})
     .then((pdf) => {

@@ -9,6 +9,7 @@ import type {
   PodsumowanieWariantu,
   Projekt,
   StatusProjektu,
+  UrzadzenieAGD,
   ProjektWyceny,
   RaportRozkroju,
   UstawieniaStolarni,
@@ -16,7 +17,7 @@ import type {
   ZbudowanyModul,
 } from "../../src/core/types";
 
-export type { Arkusz, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UstawieniaStolarni };
+export type { Arkusz, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UrzadzenieAGD, UstawieniaStolarni };
 
 export interface Uwaga {
   poziom: "blad" | "ostrzezenie" | "info";
@@ -82,6 +83,7 @@ export const api = {
   usunProjekt: (id: string) => zadanie("DELETE", `/api/projekty/${id}`),
   duplikujProjekt: (id: string) => zadanie<Projekt>("POST", `/api/projekty/${id}/duplikuj`, {}),
   analiza: (id: string) => zadanie<Analiza>("GET", `/api/projekty/${id}/analiza`),
+  scianySzkicow: (id: string) => zadanie<{ dolne: string[]; wysokie: string[] }>("GET", `/api/projekty/${id}/szkice`),
   dodajNotatke: (id: string, tekst: string) => zadanie<NotatkaProjektu>("POST", `/api/projekty/${id}/notatki`, { tekst }),
   zmienNotatke: (id: string, nid: string, d: { tekst?: string; zalatwiona?: boolean }) => zadanie<NotatkaProjektu>("PATCH", `/api/projekty/${id}/notatki/${nid}`, d),
   usunNotatke: (id: string, nid: string) => zadanie("DELETE", `/api/projekty/${id}/notatki/${nid}`),

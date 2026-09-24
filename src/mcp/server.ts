@@ -252,9 +252,50 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
         status: z.enum(STATUSY_PROJEKTU).optional(),
         notatki: z.string().optional(),
         terminMontazu: z.string().nullable().optional().describe("RRRR-MM-DD, null usuwa termin"),
+        agd: z
+          .array(
+            z.object({
+              rodzaj: z.enum(["piekarnik", "mikrofala", "plyta", "lodowka", "zmywarka", "okap", "inne"]),
+              model: z.string(),
+              szerMM: z.number().optional(),
+              wysMM: z.number().optional(),
+              glMM: z.number().optional(),
+              nisza: z.string().optional().describe("Wymagana nisza / otwór z karty producenta"),
+              odstepTylMM: z.number().optional(),
+              odstepBokMM: z.number().optional(),
+              odstepGoraMM: z.number().optional(),
+              glKorpusuMM: z.number().optional(),
+              glOtwarteMM: z.number().optional(),
+              uwagi: z.array(z.string()).optional(),
+            }),
+          )
+          .optional()
+          .describe("Pełna lista urządzeń AGD klienta (zastępuje poprzednią) — do szkiców i dopasowania nisz"),
       },
     },
     bezpiecznie(({ projektId, ...d }) => s.zmienProjekt(projektId, d)),
+  );
+
+  server.registerTool(
+    "zapisz_szkic_pdf",
+    {
+      title: "Zapisz szkic wstępny dla klienta",
+      description:
+        "Rysunki szkieletowe do druku (A4 poziomo): ciąg dolny (rzut z numeracją + widok każdej ściany z pustymi korpusami) i/lub ciąg wysoki (słupki, nisze AGD, lodówka z odstępami, rzut z otwieraniem). AGD z pola projektu agd.",
+      inputSchema: {
+        projektId: z.string(),
+        sciezka: z.string().describe("Ścieżka pliku .pdf do zapisania"),
+        rodzaj: z.enum(["dolny", "wysoki", "oba"]).optional(),
+        kolejnoscDolnych: z.array(z.string()).optional().describe("Litery ścian ciągu dolnego w kolejności, np. [D, A, B]"),
+        scianyWysokie: z.array(z.string()).optional(),
+      },
+    },
+    bezpiecznie(async (a) => {
+      const rodzaj = a.rodzaj ?? "oba";
+      const pdf = await s.szkicePdf(a.projektId, { dolny: rodzaj !== "wysoki", wysoki: rodzaj !== "dolny", kolejnoscDolnych: a.kolejnoscDolnych, scianyWysokie: a.scianyWysokie });
+      writeFileSync(a.sciezka, pdf);
+      return `Zapisano ${Math.round(pdf.length / 1024)} KB: ${a.sciezka}`;
+    }),
   );
 
   server.registerTool(
