@@ -123,6 +123,10 @@ app.post("/api/projekty", api((r) => s.utworzProjekt(r.body)));
 app.get("/api/projekty/:id", api((r) => s.projekt(p(r, "id"))));
 app.patch("/api/projekty/:id", api((r) => s.zmienProjekt(p(r, "id"), r.body)));
 app.delete("/api/projekty/:id", api((r) => s.usunProjekt(p(r, "id"))));
+// Notatki robocze tematu (mikro CRM)
+app.post("/api/projekty/:id/notatki", api((r) => s.dodajNotatke(p(r, "id"), r.body?.tekst)));
+app.patch("/api/projekty/:id/notatki/:nid", api((r) => s.zmienNotatke(p(r, "id"), p(r, "nid"), r.body ?? {})));
+app.delete("/api/projekty/:id/notatki/:nid", api((r) => s.usunNotatke(p(r, "id"), p(r, "nid"))));
 app.post("/api/projekty/:id/duplikuj", api((r) => s.duplikujProjekt(p(r, "id"), r.body?.nazwa)));
 
 app.post("/api/projekty/:id/pomieszczenia", api((r) => s.dodajPomieszczenie(p(r, "id"), r.body)));

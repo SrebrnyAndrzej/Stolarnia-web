@@ -304,7 +304,17 @@ export interface Klient {
   adres: string;
 }
 
-export type StatusProjektu = "szkic" | "wycena" | "zaakceptowany" | "produkcja" | "zakonczony";
+export type { StatusProjektu } from "./statusy.js";
+import type { StatusProjektu } from "./statusy.js";
+
+/** Notatka robocza projektu (np. „brakuje wkrętów”) — do odhaczenia po załatwieniu. */
+export interface NotatkaProjektu {
+  id: string;
+  tekst: string;
+  utworzono: string;
+  zalatwiona: boolean;
+  zalatwiono?: string;
+}
 
 export interface Projekt {
   umovy?: import("./contracts.js").Umowa[];
@@ -319,6 +329,34 @@ export interface Projekt {
   zmieniono: string;
   rewizja: number;
   notatki: string;
+  /** Notatki robocze (braki, ustalenia z produkcji/montażu). */
+  notatkiRobocze?: NotatkaProjektu[];
+  /** Kolejne zmiany statusu z datą. */
+  historiaStatusow?: { status: StatusProjektu; data: string }[];
+  /** Planowany termin montażu (RRRR-MM-DD). */
+  terminMontazu?: string;
+  /** Urządzenia AGD klienta (modele i wymiary z kart producentów) — do szkiców i dopasowania nisz. */
+  agd?: UrzadzenieAGD[];
+}
+
+export type RodzajAGD = "piekarnik" | "mikrofala" | "plyta" | "lodowka" | "zmywarka" | "okap" | "inne";
+
+export interface UrzadzenieAGD {
+  rodzaj: RodzajAGD;
+  model: string;
+  /** Wymiary urządzenia [mm]. */
+  szerMM?: number;
+  wysMM?: number;
+  glMM?: number;
+  /** Wymagana nisza / otwór, opis z karty producenta, np. „590 × 560 × 550 (wys. × szer. × gł.)”. */
+  nisza?: string;
+  /** Lodówka wolnostojąca: odstępy i głębokości. */
+  odstepTylMM?: number;
+  odstepBokMM?: number;
+  odstepGoraMM?: number;
+  glKorpusuMM?: number;
+  glOtwarteMM?: number;
+  uwagi?: string[];
 }
 
 // ---------- Geometria elementów (DomainCore FurnitureComponent) ----------

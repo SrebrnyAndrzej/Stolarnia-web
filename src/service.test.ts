@@ -184,3 +184,29 @@ test("słupek z piekarnikiem: szuflady w linii dolnych, półki stałe przy nisz
   assert.equal(e2("FRONT-D01").y, 720 + 595 + 18 + 362 + 2);
   assert.equal(z2.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).length, 2);
 });
+
+test("mikro CRM: etapy z historią, termin montażu i notatki robocze bez zmiany rewizji konstrukcji", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Temat", sciany: [{ dlugoscMM: 2000 }] });
+  const rew = s.projekt(p.id).rewizja;
+  s.zmienProjekt(p.id, { status: "wZamowieniu", terminMontazu: "2026-10-15" });
+  s.zmienProjekt(p.id, { status: "produkcja" });
+  const n = s.dodajNotatke(p.id, "  brakuje wkrętów 4×16  ");
+  s.dodajNotatke(p.id, "zamówić zawiasy");
+  s.zmienNotatke(p.id, n.id, { zalatwiona: true });
+  const q = s.projekt(p.id);
+  assert.equal(q.rewizja, rew, "CRM nie podbija rewizji konstrukcji");
+  assert.deepEqual(q.historiaStatusow?.map((h) => h.status), ["wZamowieniu", "produkcja"]);
+  assert.equal(q.terminMontazu, "2026-10-15");
+  assert.equal(q.notatkiRobocze?.find((x) => x.id === n.id)?.tekst, "brakuje wkrętów 4×16");
+  assert.ok(q.notatkiRobocze?.find((x) => x.id === n.id)?.zalatwiono);
+  const skrot = s.projekty().find((x) => x.id === p.id)!;
+  assert.equal(skrot.otwarteNotatki, 1);
+  assert.equal(skrot.ostatniaNotatka, "zamówić zawiasy");
+  assert.throws(() => s.zmienProjekt(p.id, { status: "xyz" as never }), /Nieznany status/);
+  assert.throws(() => s.dodajNotatke(p.id, "  "), /pusta/);
+  s.usunNotatke(p.id, n.id);
+  assert.equal(s.projekt(p.id).notatkiRobocze?.length, 1);
+  s.zmienProjekt(p.id, { terminMontazu: null });
+  assert.equal(s.projekt(p.id).terminMontazu, undefined);
+});

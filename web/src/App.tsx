@@ -8,8 +8,9 @@ import { Production } from "./views/Production";
 import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
+import { nazwaStatusu, Temat } from "./views/Temat";
 
-type Zakladka = "projekt" | "wycena" | "oferta" | "produkcja" | "umowy";
+type Zakladka = "temat" | "projekt" | "wycena" | "oferta" | "produkcja" | "umowy";
 
 type Trasa =
   | { widok: "projekty" }
@@ -20,7 +21,7 @@ type Trasa =
 function czytajTrase(): Trasa {
   const cz = location.hash.replace(/^#\/?/, "").split("/");
   if (cz[0] === "p" && cz[1]) {
-    const z = cz[2] === "umowy" || cz[2] === "wycena" || cz[2] === "oferta" || cz[2] === "produkcja" ? cz[2] : "projekt";
+    const z = cz[2] === "temat" || cz[2] === "umowy" || cz[2] === "wycena" || cz[2] === "oferta" || cz[2] === "produkcja" ? cz[2] : "projekt";
     return { widok: "projekt", id: cz[1], zakladka: z };
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
@@ -99,17 +100,24 @@ function ProjektWidok({ id, zakladka }: { id: string; zakladka: Zakladka }) {
         <button className="btn small" onClick={() => idz("#/")}>← Projekty</button>
         <h1>{p.nazwa}</h1>
         {p.klient.nazwa && <span className="muted">· {p.klient.nazwa}</span>}
-        <span className="badge accent">{p.status}</span>
+        <button className="badge accent" style={{ border: 0, cursor: "pointer" }} onClick={() => idz(`#/p/${id}/temat`)} title="Etap tematu">{nazwaStatusu(p.status)}</button>
+        {(p.notatkiRobocze ?? []).some((n) => !n.zalatwiona) && (
+          <button className="badge warn" style={{ border: 0, cursor: "pointer" }} onClick={() => idz(`#/p/${id}/temat`)}>
+            {(p.notatkiRobocze ?? []).filter((n) => !n.zalatwiona).length} do załatwienia
+          </button>
+        )}
         <span className="spacer" />
         {std && <span className="muted num">Standard: <b>{std.cenaBrutto.toLocaleString("pl-PL", { style: "currency", currency: "PLN" })}</b> brutto</span>}
       </div>
       <nav className="nav" style={{ marginLeft: 0 }}>
+        <button className={zakladka === "temat" ? "on" : ""} onClick={() => idz(`#/p/${id}/temat`)}>Temat</button>
         <button className={zakladka === "projekt" ? "on" : ""} onClick={() => idz(`#/p/${id}`)}>Projekt</button>
         <button className={zakladka === "wycena" ? "on" : ""} onClick={() => idz(`#/p/${id}/wycena`)}>Wycena</button>
         <button className={zakladka === "oferta" ? "on" : ""} onClick={() => idz(`#/p/${id}/oferta`)}>Oferta</button>
         <button className={zakladka === "umowy" ? "on" : ""} onClick={() => idz(`#/p/${id}/umowy`)}>Umowy</button>
         <button className={zakladka === "produkcja" ? "on" : ""} onClick={() => idz(`#/p/${id}/produkcja`)}>Produkcja</button>
       </nav>
+      {zakladka === "temat" && <Temat analiza={analiza} odswiez={odswiez} />}
       {zakladka === "projekt" && <Designer analiza={analiza} odswiez={odswiez} />}
       {zakladka === "wycena" && <Quote analiza={analiza} odswiez={odswiez} />}
       {zakladka === "oferta" && <Oferta analiza={analiza} />}

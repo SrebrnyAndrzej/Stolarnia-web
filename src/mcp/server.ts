@@ -2,6 +2,7 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { BladUslugi, Stolarnia } from "../service.js";
+import { STATUSY_PROJEKTU } from "../core/statusy.js";
 
 const KATEGORIE = ["base", "wall", "tall", "corner", "appliance", "open"] as const;
 const KONSTRUKCJE = [
@@ -243,16 +244,40 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
     "zmien_projekt",
     {
       title: "Zmień projekt",
-      description: "Zmiana nazwy, danych klienta, statusu (szkic/wycena/zaakceptowany/produkcja/zakonczony) lub notatek.",
+      description: `Zmiana nazwy, danych klienta, statusu tematu (${STATUSY_PROJEKTU.join("/")}), terminu montażu lub notatek projektowych.`,
       inputSchema: {
         projektId: z.string(),
         nazwa: z.string().optional(),
         klient: z.object({ nazwa: z.string().optional(), telefon: z.string().optional(), email: z.string().optional(), adres: z.string().optional() }).optional(),
-        status: z.enum(["szkic", "wycena", "zaakceptowany", "produkcja", "zakonczony"]).optional(),
+        status: z.enum(STATUSY_PROJEKTU).optional(),
         notatki: z.string().optional(),
+        terminMontazu: z.string().nullable().optional().describe("RRRR-MM-DD, null usuwa termin"),
       },
     },
     bezpiecznie(({ projektId, ...d }) => s.zmienProjekt(projektId, d)),
+  );
+
+  server.registerTool(
+    "notatka_projektu",
+    {
+      title: "Notatka robocza projektu",
+      description: "Dodaj notatkę roboczą do tematu (np. „brakuje wkrętów”), odhacz ją jako załatwioną albo usuń.",
+      inputSchema: {
+        projektId: z.string(),
+        tekst: z.string().optional().describe("Treść nowej notatki albo nowa treść istniejącej"),
+        notatkaId: z.string().optional().describe("Id istniejącej notatki (zmiana / usunięcie)"),
+        zalatwiona: z.boolean().optional(),
+        usun: z.boolean().optional(),
+      },
+    },
+    bezpiecznie(({ projektId, tekst, notatkaId, zalatwiona, usun }) => {
+      if (!notatkaId) return s.dodajNotatke(projektId, tekst ?? "");
+      if (usun) {
+        s.usunNotatke(projektId, notatkaId);
+        return { usunieto: notatkaId };
+      }
+      return s.zmienNotatke(projektId, notatkaId, { tekst, zalatwiona });
+    }),
   );
 
   server.registerTool(

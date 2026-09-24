@@ -4,9 +4,11 @@ import type {
   Material,
   ModulKatalogowy,
   Modul,
+  NotatkaProjektu,
   Okucie,
   PodsumowanieWariantu,
   Projekt,
+  StatusProjektu,
   ProjektWyceny,
   RaportRozkroju,
   UstawieniaStolarni,
@@ -14,7 +16,7 @@ import type {
   ZbudowanyModul,
 } from "../../src/core/types";
 
-export type { Arkusz, Formatka, Material, Modul, ModulKatalogowy, Okucie, PodsumowanieWariantu, Projekt, UstawieniaStolarni };
+export type { Arkusz, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UstawieniaStolarni };
 
 export interface Uwaga {
   poziom: "blad" | "ostrzezenie" | "info";
@@ -37,9 +39,13 @@ export interface ProjektSkrot {
   id: string;
   nazwa: string;
   klient: string;
-  status: string;
+  telefon?: string;
+  status: StatusProjektu;
   liczbaModulow: number;
   zmieniono: string;
+  terminMontazu?: string;
+  otwarteNotatki: number;
+  ostatniaNotatka?: string;
 }
 
 async function zadanie<T>(metoda: string, url: string, body?: unknown): Promise<T> {
@@ -76,6 +82,9 @@ export const api = {
   usunProjekt: (id: string) => zadanie("DELETE", `/api/projekty/${id}`),
   duplikujProjekt: (id: string) => zadanie<Projekt>("POST", `/api/projekty/${id}/duplikuj`, {}),
   analiza: (id: string) => zadanie<Analiza>("GET", `/api/projekty/${id}/analiza`),
+  dodajNotatke: (id: string, tekst: string) => zadanie<NotatkaProjektu>("POST", `/api/projekty/${id}/notatki`, { tekst }),
+  zmienNotatke: (id: string, nid: string, d: { tekst?: string; zalatwiona?: boolean }) => zadanie<NotatkaProjektu>("PATCH", `/api/projekty/${id}/notatki/${nid}`, d),
+  usunNotatke: (id: string, nid: string) => zadanie("DELETE", `/api/projekty/${id}/notatki/${nid}`),
 
   zmienPomieszczenie: (id: string, pid: string, d: unknown) => zadanie("PATCH", `/api/projekty/${id}/pomieszczenia/${pid}`, d),
   dodajSciane: (id: string, pid: string, d: unknown) => zadanie("POST", `/api/projekty/${id}/pomieszczenia/${pid}/sciany`, d),

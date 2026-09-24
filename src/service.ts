@@ -13,6 +13,7 @@ import type {
   KonstrukcjaModulu,
   Material,
   Modul,
+  NotatkaProjektu,
   Okucie,
   Pomieszczenie,
   Projekt,
@@ -22,6 +23,7 @@ import type {
   WariantWyceny,
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
+import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
 import { ofertaPdf } from "./export/oferta.js";
 import { dokumentacjaPdf } from "./export/pdf.js";
@@ -167,8 +169,12 @@ export class Stolarnia {
       nazwa: p.nazwa,
       klient: p.klient.nazwa,
       status: p.status,
+      telefon: p.klient.telefon,
       liczbaModulow: p.moduly.length,
       zmieniono: p.zmieniono,
+      terminMontazu: p.terminMontazu,
+      otwarteNotatki: (p.notatkiRobocze ?? []).filter((n) => !n.zalatwiona).length,
+      ostatniaNotatka: (p.notatkiRobocze ?? []).find((n) => !n.zalatwiona)?.tekst,
     }));
   }
 
@@ -235,12 +241,58 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string }): Projekt {
-    return this.edytuj(projektId, (p) => {
+  zmienProjekt(projektId: string, dane: { nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null }): Projekt {
+    if (dane.status !== undefined && !czyStatus(dane.status)) throw new BladUslugi(`Nieznany status "${dane.status}". Dozwolone: ${STATUSY_PROJEKTU.join(", ")}.`);
+    if (dane.terminMontazu && !/^\d{4}-\d{2}-\d{2}$/.test(dane.terminMontazu)) throw new BladUslugi("Termin montażu w formacie RRRR-MM-DD.");
+    // Dane tematu (CRM) nie zmieniają konstrukcji — bez podbijania rewizji projektu.
+    const tylkoCRM = dane.nazwa === undefined && dane.notatki === undefined;
+    return (tylkoCRM ? this.edytujTemat.bind(this) : this.edytuj.bind(this))(projektId, (p) => {
       if (dane.nazwa) p.nazwa = dane.nazwa;
       if (dane.klient) p.klient = { ...p.klient, ...dane.klient };
-      if (dane.status) p.status = dane.status;
+      if (dane.status && dane.status !== p.status) {
+        p.status = dane.status;
+        (p.historiaStatusow ??= []).push({ status: dane.status, data: teraz() });
+      }
       if (dane.notatki !== undefined) p.notatki = dane.notatki;
+      if (dane.terminMontazu !== undefined) p.terminMontazu = dane.terminMontazu || undefined;
+    });
+  }
+
+  // ---------- Notatki robocze (mikro CRM) ----------
+
+  dodajNotatke(projektId: string, tekst: string): NotatkaProjektu {
+    const t = String(tekst ?? "").trim();
+    if (!t) throw new BladUslugi("Notatka nie może być pusta.");
+    const n: NotatkaProjektu = { id: id(), tekst: t, utworzono: teraz(), zalatwiona: false };
+    this.edytujTemat(projektId, (p) => {
+      (p.notatkiRobocze ??= []).unshift(n);
+    });
+    return n;
+  }
+
+  zmienNotatke(projektId: string, notatkaId: string, dane: { tekst?: string; zalatwiona?: boolean }): NotatkaProjektu {
+    let wynik!: NotatkaProjektu;
+    this.edytujTemat(projektId, (p) => {
+      const n = p.notatkiRobocze?.find((x) => x.id === notatkaId);
+      if (!n) throw new BladUslugi(`Nie ma notatki o id "${notatkaId}".`);
+      if (dane.tekst !== undefined) {
+        if (!dane.tekst.trim()) throw new BladUslugi("Notatka nie może być pusta.");
+        n.tekst = dane.tekst.trim();
+      }
+      if (dane.zalatwiona !== undefined && dane.zalatwiona !== n.zalatwiona) {
+        n.zalatwiona = dane.zalatwiona;
+        n.zalatwiono = dane.zalatwiona ? teraz() : undefined;
+      }
+      wynik = n;
+    });
+    return wynik;
+  }
+
+  usunNotatke(projektId: string, notatkaId: string): void {
+    this.edytujTemat(projektId, (p) => {
+      const i = p.notatkiRobocze?.findIndex((x) => x.id === notatkaId) ?? -1;
+      if (i < 0) throw new BladUslugi(`Nie ma notatki o id "${notatkaId}".`);
+      p.notatkiRobocze!.splice(i, 1);
     });
   }
 
@@ -498,6 +550,17 @@ export class Stolarnia {
       materialFrontuId: dane.materialFrontuId ? sprawdzMaterial(b, dane.materialFrontuId) : undefined,
       uwagi: dane.uwagi,
     };
+  }
+
+  /** Zmiana danych tematu (status, notatki robocze, termin) — bez podbijania rewizji konstrukcji. */
+  private edytujTemat(projektId: string, fn: (p: Projekt) => void): Projekt {
+    return this.magazyn.zmien((b) => {
+      const p = b.projekty.find((x) => x.id === projektId);
+      if (!p) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
+      fn(p);
+      p.zmieniono = teraz();
+      return p;
+    });
   }
 
   private edytuj(projektId: string, fn: (p: Projekt, b: BazaDanych) => void): Projekt {
