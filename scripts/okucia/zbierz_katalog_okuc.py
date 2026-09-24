@@ -391,7 +391,7 @@ def merkury(pb: Pobieracz, istniejace: set[str]) -> list[dict]:
         par = {}
         for r in s.select("tr"):
             c = [x.get_text(" ", strip=True) for x in r.select("td,th")]
-            if len(c) == 2 and c[0] and c[1] and not re.search(r"wysyłk|odbiór|kurier|paczkomat|opinie|dostępno|waga|cena", c[0], re.I):
+            if len(c) == 2 and c[0] and c[1] and not re.search(r"wysyłk|odbiór|kurier|paczkomat|opinie|dostępno|waga|cena|e-mail|newsletter|wyślij|koszyk", c[0] + " " + c[1], re.I):
                 par[c[0]] = c[1]
         opis = s.select_one("#box_description, .product-description, [itemprop=description]")
         if opis:
