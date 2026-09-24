@@ -300,6 +300,7 @@ export interface Klient {
 export type StatusProjektu = "szkic" | "wycena" | "zaakceptowany" | "produkcja" | "zakonczony";
 
 export interface Projekt {
+  umovy?: import("./contracts.js").Umowa[];
   id: string;
   nazwa: string;
   klient: Klient;

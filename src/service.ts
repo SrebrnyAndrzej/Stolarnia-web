@@ -1,3 +1,4 @@
+import { schematUmowy, type Umowa } from "./core/contracts.js";
 import { randomUUID } from "node:crypto";
 import { zbudujModul } from "./core/builder.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
@@ -171,6 +172,26 @@ export class Stolarnia {
     }));
   }
 
+  umowy(projektId: string): Umowa[] { return this.projekt(projektId).umovy ?? []; }
+
+  dodajUmowe(projektId: string, dane: unknown): Umowa {
+    const parsed = schematUmowy.safeParse(dane);
+    if (!parsed.success) throw new BladUslugi(parsed.error.issues.map(x => `${x.path.join(".")}: ${x.message}`).join("; "));
+    const umowa: Umowa = { ...parsed.data, id: randomUUID(), utworzono: teraz() };
+    this.edytuj(projektId, p => {
+      p.umovy ??= [];
+      if (p.umovy.some(u => u.numer === umowa.numer)) throw new BladUslugi("Umowa o tym numerze już istnieje w projekcie.");
+      p.umovy.push(umowa);
+    });
+    return umowa;
+  }
+
+  umowa(projektId: string, umowaId: string): Umowa {
+    const u = this.umowy(projektId).find(x => x.id === umowaId);
+    if (!u) throw new BladUslugi("Nie znaleziono umowy w tym projekcie.");
+    return u;
+  }
+
   projekt(projektId: string): Projekt {
     const p = this.magazyn.odczytaj().projekty.find((x) => x.id === projektId);
     if (!p) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
@@ -235,7 +256,7 @@ export class Stolarnia {
     return this.magazyn.zmien((b) => {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
-      const kopia: Projekt = { ...structuredClone(zrodlo), id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
       b.projekty.push(kopia);
       return kopia;
     });

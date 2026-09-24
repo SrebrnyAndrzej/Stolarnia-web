@@ -54,6 +54,8 @@ async function zadanie<T>(metoda: string, url: string, body?: unknown): Promise<
 }
 
 export const api = {
+  umowy: (id: string) => zadanie<import("../../src/core/contracts").Umowa[]>("GET", `/api/projekty/${id}/umowy`),
+  dodajUmowe: (id: string, dane: import("../../src/core/contracts").DaneUmowy) => zadanie<import("../../src/core/contracts").Umowa>("POST", `/api/projekty/${id}/umowy`, dane),
   katalog: () => zadanie<ModulKatalogowy[]>("GET", "/api/katalog"),
   materialy: (filtr?: { typ?: string; szukaj?: string }) => {
     const q = new URLSearchParams();

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, idz, type Analiza } from "./api";
+import { Contracts } from "./views/Contracts";
 import { Designer } from "./views/Designer";
 import { Materials } from "./views/Materials";
 import { Oferta } from "./views/Oferta";
@@ -8,7 +9,7 @@ import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
 
-type Zakladka = "projekt" | "wycena" | "oferta" | "produkcja";
+type Zakladka = "projekt" | "wycena" | "oferta" | "produkcja" | "umowy";
 
 type Trasa =
   | { widok: "projekty" }
@@ -19,7 +20,7 @@ type Trasa =
 function czytajTrase(): Trasa {
   const cz = location.hash.replace(/^#\/?/, "").split("/");
   if (cz[0] === "p" && cz[1]) {
-    const z = cz[2] === "wycena" || cz[2] === "oferta" || cz[2] === "produkcja" ? cz[2] : "projekt";
+    const z = cz[2] === "umowy" || cz[2] === "wycena" || cz[2] === "oferta" || cz[2] === "produkcja" ? cz[2] : "projekt";
     return { widok: "projekt", id: cz[1], zakladka: z };
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
@@ -106,11 +107,13 @@ function ProjektWidok({ id, zakladka }: { id: string; zakladka: Zakladka }) {
         <button className={zakladka === "projekt" ? "on" : ""} onClick={() => idz(`#/p/${id}`)}>Projekt</button>
         <button className={zakladka === "wycena" ? "on" : ""} onClick={() => idz(`#/p/${id}/wycena`)}>Wycena</button>
         <button className={zakladka === "oferta" ? "on" : ""} onClick={() => idz(`#/p/${id}/oferta`)}>Oferta</button>
+        <button className={zakladka === "umowy" ? "on" : ""} onClick={() => idz(`#/p/${id}/umowy`)}>Umowy</button>
         <button className={zakladka === "produkcja" ? "on" : ""} onClick={() => idz(`#/p/${id}/produkcja`)}>Produkcja</button>
       </nav>
       {zakladka === "projekt" && <Designer analiza={analiza} odswiez={odswiez} />}
       {zakladka === "wycena" && <Quote analiza={analiza} odswiez={odswiez} />}
       {zakladka === "oferta" && <Oferta analiza={analiza} />}
+      {zakladka === "umowy" && <Contracts key={id} analiza={analiza} />}
       {zakladka === "produkcja" && <Production analiza={analiza} />}
     </div>
   );

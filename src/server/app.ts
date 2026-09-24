@@ -1,4 +1,5 @@
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
+import { umowaPdf } from "../export/umowa.js";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -101,6 +102,20 @@ app.get("/api/okucia", api(() => s.okucia()));
 app.put("/api/okucia/:id", api((r) => s.zapiszOkucie({ ...r.body, id: p(r, "id") })));
 app.get("/api/ustawienia", api(() => s.ustawienia()));
 app.patch("/api/ustawienia", api((r) => s.zmienUstawienia(r.body)));
+
+// Umowy są zapisanymi kopiami danych, niezależnymi od przyszłych zmian projektu.
+app.get("/api/projekty/:id/umowy", api(r => s.umowy(p(r, "id"))));
+app.post("/api/projekty/:id/umowy", api(r => s.dodajUmowe(p(r, "id"), r.body)));
+app.get("/api/projekty/:id/umowy/:uid/pdf", async (req, res, next) => {
+  try {
+    const u = s.umowa(p(req, "id"), p(req, "uid"));
+    const pdf = await umowaPdf(u);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Content-Disposition", `attachment; filename="umowa-${u.id}.pdf"`);
+    res.send(pdf);
+  } catch (e) { next(e); }
+});
 
 // Projekty
 app.get("/api/projekty", api(() => s.projekty()));
