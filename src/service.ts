@@ -1,4 +1,5 @@
 import { schematUmowy, type Umowa } from "./core/contracts.js";
+import { PRODUKTY_OKUC } from "./core/catalog/hardware-products.js";
 import { randomUUID } from "node:crypto";
 import { zbudujModul } from "./core/builder.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
@@ -139,6 +140,24 @@ export class Stolarnia {
     return this.magazyn
       .odczytaj()
       .okucia.filter((o) => (!filtr?.typ || o.typ === filtr.typ) && (!s || `${o.nazwa} ${o.producent} ${o.profilID}`.toLowerCase().includes(s)));
+  }
+
+  dodajProduktOkucia(produktId: string, cenaNetto: number): Okucie {
+    const produkt = PRODUKTY_OKUC.find(p => p.id === produktId);
+    if (!produkt) throw new BladUslugi("Nie znaleziono produktu.");
+    if (produkt.rodzajSKU !== "wariant") throw new BladUslugi("Wybierz dokładny wariant u producenta; indeks rodziny nie określa kompletacji.");
+    if (typeof cenaNetto !== "number" || !Number.isFinite(cenaNetto) || cenaNetto <= 0 || cenaNetto > 1000000 || Math.abs(cenaNetto * 100 - Math.round(cenaNetto * 100)) > 0.00001) throw new BladUslugi("Podaj poprawną cenę zakupu netto (do dwóch miejsc po przecinku).");
+    return this.magazyn.zmien(b => {
+      const id = `katalog.${produkt.id}`;
+      const istnieje = b.okucia.find(o => o.id === id);
+      if (istnieje) return istnieje;
+      const o: Okucie = { id, profilID: id, nazwa: produkt.nazwa, producent: produkt.producent, system: produkt.system,
+        typ: "systemSzuflad", jednostka: "kpl.", cenaNetto, rabatProcent: 0, vatProcent: 23,
+        poziomWyceny: produkt.producent === "Blum" ? "premium" : "standard", aktywne: true,
+        opis: "Produkt katalogowy. Nieprzypisany do reguł produkcyjnych; nie zmienia automatycznie okuć istniejących projektów.",
+        skuProducenta: produkt.sku, zdjecieURL: produkt.zdjecieURL, zrodloURL: produkt.zrodloURL };
+      b.okucia.push(o); return o;
+    });
   }
 
   zapiszOkucie(dane: Partial<Okucie> & { id: string }): Okucie {

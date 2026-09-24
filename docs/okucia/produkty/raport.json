@@ -1,0 +1,20 @@
+{
+  "pobrano": "2026-09-24T20:58:12.006703+00:00",
+  "produkty": 351,
+  "producenci": {
+    "Amix": 19,
+    "Blum": 145,
+    "GTV": 187
+  },
+  "systemy": {
+    "Elite Box": 19,
+    "LEGRABOX": 79,
+    "MERIVOBOX": 31,
+    "TANDEMBOX antaro": 35,
+    "Axis Pro": 150,
+    "Modern Box PRO": 37
+  },
+  "zeZdjeciem": 351,
+  "unikalneZdjecia": 128,
+  "brakZdjecia": []
+}

@@ -1,5 +1,6 @@
 import { DecorCatalog } from "./DecorCatalog";
 import { useEffect, useState } from "react";
+import { HardwareCatalog } from "./HardwareCatalog";
 import { api, zl, type Material, type Okucie } from "../api";
 
 const TYPY: Record<string, string> = {
@@ -16,6 +17,7 @@ const JEDN: Record<string, string> = { sztuka: "ark.", metrKwadratowy: "m²", me
 export function Materials() {
   const [zakladka, setZakladka] = useState<"dekory" | "materialy" | "okucia">("dekory");
   const [materialy, setMaterialy] = useState<Material[]>([]);
+  const [widokOkuc, setWidokOkuc] = useState<"katalog" | "cennik">("katalog");
   const [okucia, setOkucia] = useState<Okucie[]>([]);
   const [szukaj, setSzukaj] = useState("");
   const [producent, setProducent] = useState("wszyscy");
@@ -122,7 +124,14 @@ export function Materials() {
         </>
       )}
 
-      {zakladka === "okucia" && (
+      {zakladka === "okucia" && <>
+        <div className="row" style={{ margin: "16px 0" }}>
+          <button className={`btn ${widokOkuc === "katalog" ? "primary" : ""}`} onClick={() => setWidokOkuc("katalog")}>Katalog systemów szuflad</button>
+          <button className={`btn ${widokOkuc === "cennik" ? "primary" : ""}`} onClick={() => setWidokOkuc("cennik")}>Mój cennik okuć ({okucia.length})</button>
+        </div>
+        {widokOkuc === "katalog" && <HardwareCatalog szukaj={szukaj} dodane={okucia.map(o => o.id)} odswiez={wczytaj} />}
+      </>}
+      {zakladka === "okucia" && widokOkuc === "cennik" && (
         <div className="card t-wrap" style={{ maxHeight: "calc(100vh - 230px)" }}>
           <table className="t">
             <thead>
@@ -130,10 +139,10 @@ export function Materials() {
             </thead>
             <tbody>
               {okucia
-                .filter((o) => !s || `${o.nazwa} ${o.producent} ${o.typ}`.toLowerCase().includes(s))
+                .filter((o) => !s || `${o.nazwa} ${o.producent} ${o.typ} ${o.skuProducenta ?? ""}`.toLowerCase().includes(s))
                 .map((o) => (
                   <tr key={o.id} style={{ opacity: o.aktywne ? 1 : 0.5 }}>
-                    <td><b>{o.nazwa}</b><div className="muted" style={{ fontSize: 11 }}>{o.profilID}</div></td>
+                    <td><b>{o.nazwa}</b><div className="muted" style={{ fontSize: 11 }}>{o.skuProducenta ?? o.profilID}</div>{o.zrodloURL && <a href={o.zrodloURL} target="_blank" rel="noreferrer">Karta producenta</a>}</td>
                     <td>{o.typ}</td>
                     <td>
                       <select className="input" value={o.poziomWyceny} onChange={(e) => zapiszO(o.id, { poziomWyceny: e.target.value as Okucie["poziomWyceny"] })} style={{ width: 110 }}>

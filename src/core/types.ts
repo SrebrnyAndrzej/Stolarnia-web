@@ -169,6 +169,9 @@ export type TypOkucia =
 export type PoziomWyceny = "eco" | "standard" | "premium" | "vip";
 
 export interface Okucie {
+  skuProducenta?: string;
+  zdjecieURL?: string;
+  zrodloURL?: string;
   id: string;
   profilID: string;
   nazwa: string;

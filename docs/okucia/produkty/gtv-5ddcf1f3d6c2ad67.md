@@ -1,0 +1,24 @@
+# Szuflada GTV MODERN BOX PRO, H=135 mm, L=400 mm, cichy domyk, pełny wysuw, biały
+
+Źródło: https://gtv.com.pl/produkt/PB-MBPRO-KPL400B1/
+
+Indeks producenta: PB-MBPRO-KPL400B1
+
+- Wysokość boku [mm]: 84
+- Wysokość boku z relingiem [mm]: 135
+- Funkcje: cichy domyk, Regulacja pion i poziom
+- Mocowanie frontu: na wkręty
+- Regulacja pochylenia frontu: tak
+- Trwałość: 60000 cykli
+- Zawartość zestawu: 2 szt. prowadnica (L + P), 2 szt. bok szuflady (L + P), 2 szt. złączka ściany tylnej (L + P), 2 szt. złączka frontu, 2 szt. zaślepka, 2 szt. reling
+- Wkręty w zestawie: tak
+- Rodzaj szuflady: uniwersalna
+- Deklaracja zgodności: tak
+- Indywidualne opakowanie: tak
+- Materiał: stal
+- Długość [mm]: 400
+- Obciążenie [kg]: 40
+- Wysuw: pełny
+- Pokrycie: lakier
+- Dodatkowe informacje: komplet szuflady średniej "B"
+- Kolor: biały

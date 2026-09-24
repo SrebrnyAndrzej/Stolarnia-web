@@ -1,5 +1,6 @@
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
+import { PRODUKTY_OKUC } from "../core/catalog/hardware-products.js";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -80,6 +81,9 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 const p = (req: Request, k: string) => String(req.params[k]);
 
 // Katalogi i ustawienia
+app.use("/api/okucia-katalog/obrazy", express.static(join(process.cwd(), "docs/okucia/produkty/obrazy")));
+app.get("/api/okucia-katalog", api(() => PRODUKTY_OKUC));
+app.post("/api/okucia-katalog/:id/dodaj", api(r => s.dodajProduktOkucia(p(r, "id"), r.body?.cenaNetto)));
 app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
 app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d) }))));
 app.get("/api/dekory/:key", api(r => {

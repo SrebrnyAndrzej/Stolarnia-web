@@ -8,7 +8,7 @@
     "api/index.js": {
       "maxDuration": 60,
       "memory": 1024,
-      "includeFiles": "{src/export/assets/**,dist/*.js,dist/{core,export,mcp,server,store}/**,docs/materialy/*-PL.json,node_modules/dejavu-fonts-ttf/package.json,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans*.ttf}"
+      "includeFiles": "{src/export/assets/**,dist/*.js,dist/{core,export,mcp,server,store}/**,docs/materialy/*-PL.json,docs/okucia/produkty/katalog.json,node_modules/dejavu-fonts-ttf/package.json,node_modules/dejavu-fonts-ttf/ttf/DejaVuSans*.ttf}"
     }
   },
   "rewrites": [

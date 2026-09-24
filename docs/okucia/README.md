@@ -44,3 +44,13 @@ Do renderowania w aplikacji konwertować zweryfikowane modele do glTF/GLB, zacho
 5. Wygenerować z jednego modelu konstrukcji widok 3D, zestawienie części, rysunki wszystkich części i mebli oraz pakiet całej kuchni.
 
 Pobranie dokumentacji jest zakończone dla tego zestawu źródeł. Pełna biblioteka wierceń i wdrożenie w aplikacji pozostają oddzielnym etapem.
+
+## Katalog produktów szuflad w aplikacji (24.09.2026)
+
+Scrapowanie rozpoczął Codex, dokończył Claude. `produkty/katalog.json` zawiera 351 produktów: Amix Elite Box (19), GTV Axis Pro (150) i Modern Box PRO (37), Blum LEGRABOX (79), MERIVOBOX (31) i TANDEMBOX antaro (35). Każdy ma lokalne zdjęcie (`produkty/obrazy`, 128 unikalnych plików), adres karty producenta, datę pobrania, SHA256 strony i `zatwierdzoneProdukcyjnie=false`. Wyciąg tekstowy każdej karty jest w `produkty/*.md`. W `produkty/errors.json` zapisano 20 indeksów GTV z listy, których karty zwracały 404; nie trafiły do katalogu.
+
+- **Rodzaj indeksu:** `wariant` to konkretne SKU zestawu (GTV). `bazowy` to numer elementu z dokumentacji Blum: bok, prowadnica albo mocowanie, a nie kompletna szuflada. `rodzina` to karta Amix, która nie wskazuje kombinacji koloru i długości.
+- **Amix:** 8 kart nie publikuje żadnego indeksu, ani w treści, ani w danych produktu. SKU nie zostało wymyślone; opis braku jest w parametrze „Zakres indeksu”.
+- **Konflikty GTV:** w 3 kartach symbol przeczy tabeli parametrów tej samej strony. PB-AXISPRO-KPL250A i KPL250A2 podają „250, 300”, a PB-AXISPRO-P2O-KPL450D2 podaje 400. Wartości producenta zostały bez zmian i mają parametr „Konflikt danych”, widoczny na karcie w galerii. Po każdym ponownym pobraniu uruchom `node scripts/oznacz-konflikty-okuc.mjs`.
+- **W aplikacji:** Materiały i okucia → Okucia → „Katalog systemów szuflad”. Do cennika można dodać tylko pozycję z konkretnym SKU, po wpisaniu ceny zakupu netto. Dodanie nie zmienia istniejących cen ani wycen projektów. Katalog nie jest profilem wierceń. Reguły produkcyjne nadal pochodzą z `reguly-szuflad.json`.
+- **Skrypty pobierania** (w katalogu roboczym Codexa, poza repozytorium): `collect_drawer_products.py` i `finalize_drawer_products.py`.
