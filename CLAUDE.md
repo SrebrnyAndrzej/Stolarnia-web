@@ -19,3 +19,6 @@ Przed rozbudową konstruktora przeczytaj docs/RESEARCH-silnik-mebli-i-konta.md. 
 Przed pracą nad edycją modułów (fronty, szuflady za drzwiami, szuflada z ukrytą szufladą) przeczytaj docs/RESEARCH-konstruktor-mebli-niestandardowych.md razem z planem Codexa. To plan, nie gotowa funkcja.
 ## Podział pracy — decyzja użytkownika 25.09.2026
 Claude implementuje silnik. Codex dostarcza wyłącznie research, dane techniczne i źródła; nie buduje logiki silnika. Rozpoczęty lokalnie prototyp Codexa odłożono poza repozytorium, nie został opublikowany. Obowiązuje cena uzgodniona projektu, niezależna od aktualizacji katalogów.
+
+## Wymagania kreatora premium
+Research funkcjonalny i kryteria odbioru: docs/RESEARCH-kreator-premium-dla-Claude.md. Zawiera oficjalne źródła, priorytety P0/P1/P2, wymagania danych i 12 scenariuszy odbioru. To brief, nie gotowa implementacja.
