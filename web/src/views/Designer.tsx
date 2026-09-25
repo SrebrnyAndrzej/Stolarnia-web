@@ -329,7 +329,7 @@ export function Designer({ analiza, odswiez }: Props) {
           </div>
         ) : modul ? (
           <Inspektor
-            key={modul.id + p.rewizja}
+            key={modul.id}
             modul={modul}
             projektId={p.id}
             materialy={materialy}
@@ -655,6 +655,7 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
+  useEffect(() => setNazwa(m.nazwa), [m.nazwa]);
   const [liczbaSzufladEdytor, setLiczbaSzufladEdytor] = useState(3);
   const [liczbaWewnetrznych, setLiczbaWewnetrznych] = useState(2);
   const [strefaWewnetrznej, setStrefaWewnetrznej] = useState(160);
