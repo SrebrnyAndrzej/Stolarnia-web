@@ -1,5 +1,5 @@
 import { zawiasyDlaWysokosci } from "../builder.js";
-import { dobierzNL, profilSzuflady, wymiarySzuflady } from "../catalog/drawers.js";
+import { dobierzNL, dobierzNLWewnetrznej, profilSzuflady, wariantWewnetrznej, wymiarySzuflady } from "../catalog/drawers.js";
 import { USTAWIENIA_DOMYSLNE } from "../settings.js";
 import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "../types.js";
 import type { Mebel, PoleFrontu, Rozmiar, StrefaWnetrza } from "./model.js";
@@ -161,7 +161,9 @@ export function zbudujMebel(
 
   // --- Wysuwy (skrzynki szuflad) ---
   const zFrontem = m.wysuwy.filter((w) => w.powiazanie === "zFrontem");
-  for (const w of m.wysuwy.filter((x) => x.powiazanie !== "zFrontem")) {
+  const zaDrzwiami = m.wysuwy.filter((w) => w.powiazanie === "zaDrzwiami");
+  const szufladyWewnetrzne: NonNullable<ZbudowanyModul["szufladyWewnetrzne"]> = [];
+  for (const w of m.wysuwy.filter((x) => x.powiazanie !== "zFrontem" && x.powiazanie !== "zaDrzwiami")) {
     ostrzezenia.push(`Wysuw ${w.kod} (${w.powiazanie}) — ten rodzaj szuflady nie jest jeszcze obsługiwany przez silnik (etap 1).`);
   }
   if (zFrontem.length && zKorpusem) {
@@ -201,6 +203,63 @@ export function zbudujMebel(
     }
   }
 
+  // --- Szuflady wewnętrzne za drzwiami: skrzynka w swojej strefie, cofnięta za front, front wewnętrzny z karty ---
+  if (zaDrzwiami.length && zKorpusem) {
+    const uzytkowa = D - rezerwaPlecow;
+    const idProfilu = m.profilSzuflad ?? tech.profilSzuflad;
+    const profil = m.szufladySystemowe ? profilSzuflady(idProfilu) : undefined;
+    const wew = profil?.inner_drawer;
+    if (m.szufladySystemowe && !profil) ostrzezenia.push(`Nieznany profil systemu szuflad "${idProfilu}" — brak wymiarów szuflad wewnętrznych.`);
+    if (profil && !wew) ostrzezenia.push(`${profil.manufacturer} ${profil.family}: profil nie ma danych szuflady wewnętrznej — wymiary jak dla szuflady z frontem, do potwierdzenia.`);
+    const NL = profil ? (wew ? dobierzNLWewnetrznej(profil, uzytkowa) : dobierzNL(uzytkowa)) : undefined;
+    if (profil && !NL) ostrzezenia.push(`Głębokość użytkowa ${uzytkowa} mm za mała dla szuflady wewnętrznej ${profil.family}${wew ? ` (NL + ${wew.depth_min.add_mm})` : ""}.`);
+    const panele = new Map<string, number>();
+    const ts = k.gruboscPlytySzufladMM;
+    for (const w of zaDrzwiami) {
+      const s = strefy.get(w.strefaId);
+      if (!s) {
+        ostrzezenia.push(`Wysuw ${w.kod}: brak strefy wnętrza.`);
+        continue;
+      }
+      const LW = s.w;
+      const cofniecie = wew?.runner_holes_offset_mm ?? 0;
+      if (profil && NL) {
+        const wariant = wew ? wariantWewnetrznej(profil, s.h, m.wariantBokuSzuflady) : undefined;
+        if (wew && !wariant) {
+          const najmniejsza = Math.min(...Object.values(wew.min_opening_by_variant_mm));
+          ostrzezenia.push(`Szuflada wewnętrzna ${w.kod}: strefa ${Math.round(s.h)} mm niższa niż minimum ${najmniejsza} mm z karty ${profil.family}.`);
+          continue;
+        }
+        const wy = wymiarySzuflady(profil, LW, NL, s.h, wariant ?? m.wariantBokuSzuflady);
+        if (wew && s.h < (wew.min_opening_by_variant_mm[wy.wariant] ?? 0)) ostrzezenia.push(`Szuflada wewnętrzna ${w.kod}: wariant ${wy.wariant} wymaga komory min. ${wew.min_opening_by_variant_mm[wy.wariant]} mm (jest ${Math.round(s.h)} mm).`);
+        el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + (LW - wy.dnoSzer) / 2, s.y + 20, cofniecie, wy.dnoSzer, wy.grubosc, wy.dnoGl, "szuflada"));
+        el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + (LW - wy.plecySzer) / 2, s.y + 20 + wy.grubosc, cofniecie + wy.dnoGl - wy.grubosc, wy.plecySzer, wy.plecyWys, wy.grubosc, "szuflada"));
+        const fp = wew?.front_panel;
+        if (fp) {
+          const opis = `${profil.manufacturer === "AMIX" ? "Amix" : profil.manufacturer} ${fp.part} — panel frontu szuflady wewnętrznej (${fp.material}), L = LW − ${fp.length.subtract_mm} = ${r1(LW - fp.length.subtract_mm)} mm, H ${fp.height_by_variant_mm[wy.wariant] ?? "?"} mm`;
+          panele.set(opis, (panele.get(opis) ?? 0) + 1);
+        }
+        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h, NL, profilId: profil.id, wariant: wy.wariant });
+      } else if (!m.szufladySystemowe) {
+        // Skrzynka z płyty na prowadnicach bocznych — reguła robocza jak dla szuflad z frontem; czoło jest frontem wewnętrznym.
+        const L = Math.max(250, Math.min(550, Math.floor((uzytkowa - 10) / 50) * 50));
+        const szerSkrzynki = LW - 2 * LUZ_PROWADNIC_MM;
+        const h = Math.max(80, Math.min(250, s.h - 40));
+        const y = s.y + 20;
+        el.push(p(`${w.kod}-BOK-L`, "drawerSide", s.x + LUZ_PROWADNIC_MM, y, 0, ts, h, L, "szuflada"));
+        el.push(p(`${w.kod}-BOK-P`, "drawerSide", s.x + LW - LUZ_PROWADNIC_MM - ts, y, 0, ts, h, L, "szuflada"));
+        el.push(p(`${w.kod}-CZOLO`, "drawerFrontBack", s.x + LUZ_PROWADNIC_MM + ts, y, 0, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
+        el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + LUZ_PROWADNIC_MM + ts, y, L - ts, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
+        el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + LUZ_PROWADNIC_MM, y - k.gruboscPlecHDFMM, 0, szerSkrzynki, k.gruboscPlecHDFMM, L, "plecy"));
+        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h });
+      }
+    }
+    for (const [opis, ilosc] of panele) okucia.push({ typ: "inne", ilosc, opis });
+    okucia.push({ typ: m.szufladySystemowe ? "systemSzuflad" : "prowadnica", ilosc: zaDrzwiami.length, opis: "Szuflady wewnętrzne za drzwiami — komplet na każdą szufladę." });
+    if (fronty.size && [...fronty.keys()].some((id) => typFrontu(m.fronty, id) === "drzwi"))
+      ostrzezenia.push("Szuflady wewnętrzne za drzwiami: zawias musi dawać zerowe wystawanie skrzydła w światło korpusu albo potrzebna jest listwa dystansowa — sprawdź kartę zawiasu.");
+  }
+
   // --- Nisze AGD ---
   for (const s of strefy.values()) {
     if (s.s.wyposazenie?.typ !== "nisza") continue;
@@ -227,7 +286,7 @@ export function zbudujMebel(
   }
   if (m.korpus.nogi && zKorpusem) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
 
-  return { modul, elementy: el, okucia, ostrzezenia };
+  return { modul, elementy: el, okucia, ostrzezenia, ...(szufladyWewnetrzne.length ? { szufladyWewnetrzne } : {}) };
 }
 
 export interface UkladPola {

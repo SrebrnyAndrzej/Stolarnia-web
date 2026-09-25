@@ -6,7 +6,7 @@ import { zbudujModul } from "./core/builder.js";
 import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
-import { BladPolecenia, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
+import { BladPolecenia, dodajSzufladyZaDrzwiami, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
 import { domyslnaKonfiguracja, KATALOG_MODULOW, modulKatalogowy } from "./core/catalog/modules.js";
 import { formatkiCSV, listaFormatek, rozkroj, zapotrzebowanieObrzeza, type MaterialyModulu } from "./core/production.js";
@@ -602,7 +602,11 @@ export class Stolarnia {
   }
 
   /** Polecenie edycji konstrukcji modułu przez silnik. Pierwsze polecenie tworzy drzewo z obecnej konfiguracji (adapter). */
-  polecenieKonstrukcji(projektId: string, modulId: string, polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string }): { modul: Modul; uwagi: string[] } {
+  polecenieKonstrukcji(
+    projektId: string,
+    modulId: string,
+    polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string } | { typ: "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string },
+  ): { modul: Modul; uwagi: string[] } {
     let wynik!: { modul: Modul; uwagi: string[] };
     this.edytuj(projektId, (p, b) => {
       const m = p.moduly.find((x) => x.id === modulId);
@@ -610,8 +614,15 @@ export class Stolarnia {
       const k = b.ustawienia.konstrukcja;
       const mebel = m.drzewo ?? mebelZModulu(m, k);
       try {
-        if (polecenie.typ !== "zamienDrzwiNaSzuflady") throw new BladPolecenia(`Nieznane polecenie „${(polecenie as { typ: string }).typ}”.`);
-        const r = zamienDrzwiNaSzuflady({ ...mebel, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM }, k, polecenie);
+        const wymiary = { ...mebel, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM };
+        const r =
+          polecenie.typ === "zamienDrzwiNaSzuflady"
+            ? zamienDrzwiNaSzuflady(wymiary, k, polecenie)
+            : polecenie.typ === "dodajSzufladyZaDrzwiami"
+              ? dodajSzufladyZaDrzwiami(wymiary, k, polecenie)
+              : (() => {
+                  throw new BladPolecenia(`Nieznane polecenie „${(polecenie as { typ: string }).typ}”.`);
+                })();
         m.drzewo = r.mebel;
         wynik = { modul: m, uwagi: r.uwagi };
       } catch (e) {
@@ -755,7 +766,14 @@ export class Stolarnia {
       if (front?.zrodloKatalogu) konstrukcja.gruboscFrontuMM = front.gruboscMM;
       if (m.drzewo) {
         // Konstrukcja z edytora silnika; gabaryty zawsze z modułu (zmiana wymiaru przelicza drzewo).
-        const zm = zbudujMebel({ ...m.drzewo, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM }, m, konstrukcja, b.ustawienia.technologia);
+        // System szuflad zawsze z konfiguracji modułu (inspektor), także gdy konstrukcję zmieniono poleceniem.
+        const c = m.konfiguracja;
+        const zm = zbudujMebel(
+          { ...m.drzewo, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM, szufladySystemowe: c.szufladySystemowe, profilSzuflad: c.profilSzuflad ?? undefined, wariantBokuSzuflady: c.wariantBokuSzuflady ?? undefined },
+          m,
+          konstrukcja,
+          b.ustawienia.technologia,
+        );
         zm.ostrzezenia.unshift("Konstrukcja z edytora — liczniki półek, drzwi i szuflad z konfiguracji nie są używane (przywróć konstrukcję standardową, aby do nich wrócić).");
         return { zm, materialy };
       }

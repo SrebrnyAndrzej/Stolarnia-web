@@ -112,6 +112,46 @@
           "Min33 od górnej powierzchni płyty pod szufladą do osi otworów prowadnicy (przekroje H=84/116/167/199).",
           "Otwory od przedniej krawędzi korpusu: 37 i 69, tylna para wg NL (rysunek „Wymiary montażowe prowadnic”)."
         ]
+      },
+      "inner_drawer": {
+        "depth_min": {
+          "variable": "NL",
+          "add_mm": 16
+        },
+        "runner_holes_offset_mm": 18,
+        "first_hole_from_front_min_mm": 50,
+        "min_opening_by_variant_mm": {
+          "84": 112,
+          "116": 144,
+          "167": 195,
+          "199": 227
+        },
+        "front_panel": {
+          "part": "05B.023-FB",
+          "material": "stal",
+          "length": {
+            "variable": "LW",
+            "subtract_mm": 37
+          },
+          "height_by_variant_mm": {
+            "84": 108.5,
+            "116": 140.5,
+            "167": 192.5,
+            "199": 224.5
+          }
+        },
+        "hinge_requirement": "unknown",
+        "source_id": "AMIX-Elite-Box-wewnetrzne",
+        "pdf_page_1based": 2,
+        "verification": "visually_checked",
+        "notes": [
+          "s.2: LT=NL+16 dla szuflady wewnętrznej (standard NL+5); pierwszy otwór prowadnicy min. 50 od krawędzi korpusu.",
+          "s.1: otwory prowadnicy przesunięte o 18 względem wersji standardowej (37 → 55) — do potwierdzenia przez Codex, czy wymiary 192/224/256 liczone są od pierwszego otworu.",
+          "Dno LW−75 × NL−26 i plecy LW−87 × H jak w wersji standardowej (s.2, „Wymiary cięcia płyty”).",
+          "Min. wysokość komory (od płyty do płyty): H84 112, H116 144, H167 195, H199 227 (przekroje s.2).",
+          "Front wewnętrzny: panel stalowy 05B.023-FB, L2 = LW−37, wysokość 108,5/140,5/192,5/224,5 (s.2); front z płyty — brak wymiarów w karcie.",
+          "Wymagania zawiasu drzwi (zerowe wystawanie / listwa dystansowa) — karta nie podaje."
+        ]
       }
     },
     {

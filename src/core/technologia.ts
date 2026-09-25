@@ -329,26 +329,35 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     });
 
     // --- Szuflady: wysokości prowadnic w rastrze 32 i otwory z karty producenta ---
+    // Szuflady z frontem (FRONT-SZ) i wewnętrzne za drzwiami (z silnika) leżą w jednym rastrze boku.
     const frontySzEl = zm.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).sort((a, b) => a.y - b.y);
     const frontySz = frontySzEl.map((e) => e.kod);
-    if (frontySz.length) {
-      const czesciSz = zm.elementy.filter((e) => e.kod.startsWith("SZ")).map((e) => e.kod);
+    const wewnetrzne = zm.szufladyWewnetrzne ?? [];
+    if (frontySz.length || wewnetrzne.length) {
+      const czesciSz = zm.elementy.filter((e) => /^S[ZW]\d/.test(e.kod)).map((e) => e.kod);
       if (m.konfiguracja.szufladySystemowe) {
         const idProfilu = m.konfiguracja.profilSzuflad ?? t.profilSzuflad;
         const pr = profilSzuflady(idProfilu);
         const NL = dobierzNL(D - rezerwaPlecow);
         const rm = pr?.runner_mounting;
-        if (pr && rm && NL && boki.length) {
+        if (pr && rm && boki.length) {
           const dodatek = t.prowadniceMontowanePrzedKorpusem ? rm.premount_extra_mm ?? 0 : 0;
-          const wyniki = wysokosciProwadnic(zm.elementy, frontySzEl, boki[0], rm.axis_above_panel_min_mm + dodatek, t.rastrMM);
-          const otwory = otworyProwadnicy(pr, NL);
+          const a = rm.axis_above_panel_min_mm + dodatek;
           const zrodlo = `${rm.source_id}, s.${rm.pdf_page_1based}`;
+          const wpisy: WpisProwadnicy[] = [];
+          if (frontySzEl.length && NL) wpisy.push(...minimaZFrontow(zm.elementy, frontySzEl, boki[0], a).map((q) => ({ ...q, NL, wewnetrzna: false })));
+          else if (frontySzEl.length) brak("PROWADNICA_NL", boki.map((b) => b.kod), `głębokość korpusu za mała dla prowadnic ${pr.family}.`);
+          for (const q of wewnetrzne) if (q.NL) wpisy.push({ kod: q.kod, min: q.podlogaY + a, sufit: q.sufitY, NL: q.NL, wewnetrzna: true });
+          const wyniki = rastrujProwadnice(wpisy, t.rastrMM);
           for (const w of wyniki) {
+            const przesuniecie = w.wewnetrzna ? pr.inner_drawer?.runner_holes_offset_mm ?? 0 : 0;
+            const otwory = otworyProwadnicy(pr, w.NL)?.map((z) => z + przesuniecie);
             const uwagi: string[] = [];
             if (w.rastr === 0) uwagi.push(`Kotwica rastra: ${rm.axis_above_panel_min_mm}${dodatek ? ` + ${dodatek}` : ""} mm nad płytą pod szufladą (${zrodlo}).`);
-            if (w.podniesienie > 0.05) uwagi.push(`Prowadnica ${f1(w.podniesienie)} mm wyżej niż minimum (dociągnięcie do rastra 32) — skrzynka wyżej względem frontu; otwory mocowania frontu mierz od skrzynki.`);
+            if (w.podniesienie > 0.05) uwagi.push(`Prowadnica ${f1(w.podniesienie)} mm wyżej niż minimum (dociągnięcie do rastra 32)${w.wewnetrzna ? "" : " — skrzynka wyżej względem frontu; otwory mocowania frontu mierz od skrzynki"}.`);
             if (rm.space_above_axis_min_mm !== undefined && w.wolneNadOsia < rm.space_above_axis_min_mm)
               uwagi.push(`Nad osią ${f1(w.wolneNadOsia)} mm, karta wymaga min. ${f1(rm.space_above_axis_min_mm)} mm (wysokość M) — sprawdź wysokość boku.`);
+            if (w.wewnetrzna && pr.inner_drawer) uwagi.push(`Szuflada wewnętrzna za drzwiami: otwory +${przesuniecie} mm względem standardu, pierwszy min. ${pr.inner_drawer.first_hole_from_front_min_mm} od frontu korpusu (${pr.inner_drawer.source_id}, s.${pr.inner_drawer.pdf_page_1based}).`);
             if (!otwory) uwagi.push("Otwory wzdłuż głębokości: producent nie podaje ich w karcie — montaż wg szablonu.");
             prowadnice.push({
               modulId: m.id,
@@ -356,26 +365,30 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
               szuflada: w.kod,
               profilId: pr.id,
               system: `${pr.manufacturer === "AMIX" ? "Amix" : pr.manufacturer === "BLUM" ? "Blum" : pr.manufacturer} ${pr.family}`,
-              NL,
+              NL: w.NL,
               osOdDoluBokuMM: r1(w.os - boki[0].y),
               osMinimalnaMM: r1(w.min - boki[0].y),
               rastr: w.rastr,
               otworyOdFrontuMM: otwory,
+              ...(w.wewnetrzna ? { wewnetrzna: true } : {}),
               zrodlo,
               uwagi,
             });
-            if (w.kolizja) diagnostyka.push({ kod: "PROWADNICA_KOLIZJA", poziom: "blad", obiekty: boki.map((b) => cz.get(b.kod)?.id).filter(Boolean) as string[], opis: `${m.nazwa}: prowadnica ${w.kod} po dociągnięciu do rastra 32 wypada ponad strefą szuflady — zmień podział frontów.` });
+            if (w.kolizja) diagnostyka.push({ kod: "PROWADNICA_KOLIZJA", poziom: "blad", obiekty: boki.map((b) => cz.get(b.kod)?.id).filter(Boolean) as string[], opis: `${m.nazwa}: prowadnica ${w.kod} po dociągnięciu do rastra 32 wypada ponad strefą szuflady — zmień podział.` });
             for (const b of boki) {
               const lico = b.kod === "BOK-L" ? b.x + b.szer : b.x;
               for (const z of otwory ?? [])
                 dodaj(b.kod, [lico, w.os, b.z + z], { typ: "otwor", srednica: t.prowadnicaOtworSrednicaMM, glebokosc: t.prowadnicaOtworGlebokoscMM, przeznaczenie: `Prowadnica ${w.kod}`, polaczenie: `${cz.get(b.kod)?.etykieta} ↔ ${w.kod}`, regula: { ...R.prowadnica, zrodlo: `${zrodlo}; ${R.prowadnica.zrodlo}` } });
             }
           }
-          const opisBoku = `Prowadnice ${pr.family} NL ${NL}, oś od dolnej krawędzi boku: ${prowadnice.filter((q) => q.modulId === m.id).map((q) => `${q.szuflada} ${f1(q.osOdDoluBokuMM)}`).join(", ")} mm (raster ${t.rastrMM}).`;
-          for (const b of boki) cz.get(b.kod)?.uwagi.push(opisBoku);
-          if (!otwory) brak("PROWADNICA_OTWORY", boki.map((b) => b.kod), `${pr.manufacturer} ${pr.family}: wysokości prowadnic wyznaczone (${zrodlo}), ale karta nie podaje otworów wzdłuż głębokości.`, "Wpisz otwory z szablonu montażowego producenta albo montuj z szablonem.");
-        } else if (pr && !NL) {
-          brak("PROWADNICA_NL", boki.map((b) => b.kod), `głębokość korpusu za mała dla prowadnic ${pr.family}.`);
+          const moje = prowadnice.filter((q) => q.modulId === m.id);
+          if (moje.length) {
+            const opisBoku = `Prowadnice ${pr.family}, oś od dolnej krawędzi boku: ${moje.map((q) => `${q.szuflada} ${f1(q.osOdDoluBokuMM)}${q.wewnetrzna ? " (wewn., NL " + q.NL + ")" : ""}`).join(", ")} mm (raster ${t.rastrMM}).`;
+            for (const b of boki) cz.get(b.kod)?.uwagi.push(opisBoku);
+          }
+          if (moje.some((q) => !q.otworyOdFrontuMM)) brak("PROWADNICA_OTWORY", boki.map((b) => b.kod), `${pr.manufacturer} ${pr.family}: wysokości prowadnic wyznaczone (${zrodlo}), ale karta nie podaje otworów wzdłuż głębokości.`, "Wpisz otwory z szablonu montażowego producenta albo montuj z szablonem.");
+          if (wewnetrzne.length && !pr.inner_drawer)
+            brak("SZUFLADA_WEWNETRZNA", [...boki.map((b) => b.kod), ...czesciSz.filter((k) => k.startsWith("SW"))], `${pr.manufacturer} ${pr.family}: profil nie ma danych szuflady wewnętrznej (głębokość, cofnięcie, front wewnętrzny) — użyto wymiarów szuflady z frontem.`, "Uzupełnij `inner_drawer` w reguly-szuflad.json z karty producenta.");
         } else if (!pr) {
           brak("SZUFLADA_WIERCENIA", boki.map((b) => b.kod), `nieznany profil szuflad „${idProfilu}” — brak wysokości prowadnic.`);
         }
@@ -390,6 +403,10 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
         if (pr?.family === "LEGRABOX") brak("LEGRABOX_DNO", czesciSz.filter((k) => k.endsWith("DNO")), "dno LEGRABOX wymaga obróbki wg rysunku producenta — profil frezowania nieznormalizowany.");
       } else {
         brak("SZUFLADA_PROWADNICE", ["BOK-L", "BOK-P", ...frontySz, ...czesciSz], "skrzynki z płyty: nie wybrano systemu szuflad — brak wysokości prowadnic w rastrze 32 i połączeń skrzynki.", "Wybierz system szuflad w inspektorze szafki.");
+      }
+      if (wewnetrzne.length) {
+        const drzwiKody = zm.elementy.filter((e) => e.kod.startsWith("FRONT-D")).map((e) => e.kod);
+        brak("ZAWIAS_ZA_DRZWIAMI", drzwiKody, "szuflady wewnętrzne za drzwiami: zawias musi dawać zerowe wystawanie skrzydła w światło korpusu albo potrzebna jest listwa dystansowa — karta zawiasu nieprzypisana.", "Wybierz zawias z danymi wystawania (np. kąt 155°/170° lub zerowe wystawanie) albo dodaj listwę dystansową.");
       }
     }
 
@@ -467,24 +484,46 @@ function podpis(c: Czesc): string {
   return [c.materialId, c.gruboscMM, c.dlugoscCieciaMM, c.szerokoscCieciaMM, c.obrzeza.join("/"), c.kierunekDekoru, ops].join("|");
 }
 
+interface WpisProwadnicy {
+  kod: string;
+  /** Minimalna oś prowadnicy (układ modułu) wg karty producenta. */
+  min: number;
+  /** Górna granica strefy szuflady (następna podłoga albo spód płyty powyżej). */
+  sufit: number;
+  NL: number;
+  wewnetrzna: boolean;
+}
+
 /**
- * Oś prowadnicy każdej szuflady (od dołu do góry) w układzie modułu. Najniższa: płyta pod szufladą + wymiar z karty
- * (kotwica rastra). Wyższe: to samo położenie względem własnego frontu, dociągnięte w górę do wielokrotności rastra
- * nad kotwicą — wtedy wszystkie prowadnice leżą w jednej linii otworów systemu 32.
+ * Minimalne osie prowadnic szuflad z frontem (od dołu). Najniższa: płyta pod szufladą + wymiar z karty. Wyższe: to samo
+ * położenie względem własnego frontu (brak płyt między szufladami).
  */
-export function wysokosciProwadnic(elementy: Element[], fronty: Element[], bok: Element, osNadPlyta: number, raster: number) {
+export function minimaZFrontow(elementy: Element[], fronty: Element[], bok: Element, osNadPlyta: number) {
   const f0 = fronty[0];
   const plyty = elementy.filter((e) => ["bottom", "fixedShelf", "top", "rail", "reinforcement"].includes(e.rola) && e.y + e.wys <= bok.y + bok.wys + EPS);
   const podloga = Math.max(bok.y, ...plyty.map((e) => e.y + e.wys).filter((y) => y <= f0.y + f0.wys / 2));
-  const kotwica = podloga + osNadPlyta;
   const podlogi = fronty.map((f) => podloga + (f.y - f0.y));
   return fronty.map((f, i) => {
     const min = podlogi[i] + osNadPlyta;
-    const rastr = Math.max(0, Math.ceil((min - kotwica) / raster - 1e-6));
-    const os = kotwica + rastr * raster;
-    const sufit = i + 1 < fronty.length ? podlogi[i + 1] : Math.min(bok.y + bok.wys, ...plyty.map((e) => e.y).filter((y) => y >= os));
-    return { kod: f.kod.replace("FRONT-", ""), min, os, rastr, podniesienie: os - min, wolneNadOsia: sufit - os, kolizja: os >= sufit };
+    const sufit = i + 1 < fronty.length ? podlogi[i + 1] : Math.min(bok.y + bok.wys, ...plyty.map((e) => e.y).filter((y) => y >= min));
+    return { kod: f.kod.replace("FRONT-", ""), min, sufit };
   });
+}
+
+/**
+ * Raster 32 na boku: kotwica = najniższa minimalna oś; każda prowadnica dociągnięta w górę do wielokrotności rastra
+ * nad kotwicą — wszystkie leżą w jednej linii otworów systemu 32.
+ */
+export function rastrujProwadnice<T extends { kod: string; min: number; sufit: number }>(wpisy: T[], raster: number) {
+  if (!wpisy.length) return [];
+  const kotwica = Math.min(...wpisy.map((w) => w.min));
+  return [...wpisy]
+    .sort((a, b) => a.min - b.min)
+    .map((w) => {
+      const rastr = Math.max(0, Math.ceil((w.min - kotwica) / raster - 1e-6));
+      const os = kotwica + rastr * raster;
+      return { ...w, os, rastr, podniesienie: os - w.min, wolneNadOsia: w.sufit - os, kolizja: os >= w.sufit };
+    });
 }
 
 function f1(v: number): string {

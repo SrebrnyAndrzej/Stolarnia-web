@@ -92,8 +92,19 @@ Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z j
   - A2 Darii po zamianie na 3 szuflady daje dokładnie formatki szafki szufladowej z równą podziałką;
   - pełny obieg przez serwis.
 
+**Etap 2 — szuflady za drzwiami, zrobione częściowo:**
+- polecenie `dodajSzufladyZaDrzwiami` (`polecenia.ts`): dolna część strefy za drzwiami dzieli się na N stref po 160 mm (można zmienić), każda z wysuwem „zaDrzwiami”; półki zostają nad szufladami, jeśli się mieszczą;
+- budowa (`budowa.ts`) według `inner_drawer` z profilu. Dla Amix Elite:
+  - NL + 16 ≤ głębokość użytkowa;
+  - skrzynka cofnięta o 18 mm;
+  - wariant boku z minimalnej komory: H84 112, H116 144, H167 195, H199 227;
+  - stalowy panel frontu wewnętrznego 05B.023-FB (L = LW − 37) jako okucie;
+- dokumentacja: prowadnice wewnętrzne w tym samym rastrze 32 co szuflady z frontem, otwory +18 mm, diagnostyka `ZAWIAS_ZA_DRZWIAMI` na drzwiach, `SZUFLADA_WEWNETRZNA` dla profili bez danych (Blum, GTV);
+- API: `POST …/polecenie {typ:"dodajSzufladyZaDrzwiami", liczba, wysokoscMM}`; MCP `dodaj_szuflady_za_drzwiami`; przycisk w inspektorze;
+- system szuflad z inspektora działa także na modułach z drzewem (wcześniej drzewo trzymało stary profil).
+
 **Nie ma jeszcze:**
-- szuflad za drzwiami (reguła zawiasów i dystansu),
+- reguły zawiasu i listwy dystansowej dla szuflad za drzwiami (brak danych — zamówione u Codexa),
 - szuflady z ukrytą szufladą i zabierakiem,
 - przegród pionowych w edytorze,
 - edytora graficznego z zakładkami „Fronty” i „Wnętrze”,

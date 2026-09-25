@@ -95,3 +95,8 @@ Zmiana zachowania: dla Blum automatyczny dobór może wybrać teraz inny wariant
 W inspektorze szafki z szufladami jest jedna lista „System szuflad”: skrzynka z płyty, system z ustawień albo jeden z sześciu systemów Amix/GTV/Blum. Obok jest wybór wysokości boku.
 
 Dokumentacja produkcyjna podaje dla każdej szuflady wysokość osi prowadnicy od dolnej krawędzi boku w rastrze 32. Dane pochodzą z kart producentów (`runner_mounting` w reguly-szuflad.json). Dla Amix i GTV dochodzą otwory w bokach. Szczegóły: docs/okucia/README.md. Test: `src/przelicznik-szuflad.test.ts`.
+
+## 2026-09-25 - Silnik etap 2: szuflady wewnętrzne za drzwiami (Claude)
+Polecenie „Dodaj szuflady za drzwiami” działa w inspektorze, API i MCP. Pełne dane są dla Amix Elite Box w wersji wewnętrznej (karta s.2: NL+16, cofnięcie 18, minimalne komory, panel 05B.023-FB). Dla Blum i GTV brakuje danych: dokumentacja pokazuje „brak danych” i używa wymiarów szuflady z frontem. Zawias i listwa dystansowa są w brakach. Szczegóły: RESEARCH-konstruktor-mebli-niestandardowych.md §6. Zamówienia danych i przegląd: docs/KOORDYNACJA-Claude-Codex.md.
+
+Tomek (Kuchnia Tomek, online): trzy słupki z szufladami mają system Amix Elite Box. Zapis z 25.09 z warunkiem na wersję bazy (75 → 76), rewizja projektu 46.

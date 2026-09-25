@@ -39,6 +39,20 @@ export interface ProfilSzuflady {
     verification: string;
     notes: string[];
   };
+  /** Szuflada wewnętrzna za drzwiami (Amix Elite: LT = NL+16, otwory przesunięte, panel frontu stalowy). */
+  inner_drawer?: {
+    depth_min: { variable: "NL"; add_mm: number };
+    runner_holes_offset_mm: number;
+    first_hole_from_front_min_mm: number;
+    /** Minimalna wysokość komory (od płyty do płyty) dla wariantu wysokości boku. */
+    min_opening_by_variant_mm: Record<string, number>;
+    front_panel?: { part: string; material: string; length: { variable: "LW"; subtract_mm: number }; height_by_variant_mm: Record<string, number> };
+    hinge_requirement: string;
+    source_id: string;
+    pdf_page_1based: number;
+    verification: string;
+    notes: string[];
+  };
 }
 
 export const PROFILE_SZUFLAD = (dane as unknown as { profiles: ProfilSzuflady[] }).profiles;
@@ -128,4 +142,18 @@ export function przeliczSzuflade(
  */
 export function otworyProwadnicy(p: ProfilSzuflady, NL: number): number[] | undefined {
   return p.runner_mounting?.holes_from_front_mm?.[String(NL)];
+}
+
+/** Największa NL dla szuflady wewnętrznej: NL + dodatek z karty (Amix: +16) ≤ głębokość użytkowa. */
+export function dobierzNLWewnetrznej(p: ProfilSzuflady, glebokoscUzytkowaMM: number): number | undefined {
+  const dodatek = p.inner_drawer?.depth_min.add_mm ?? 3;
+  return [...DLUGOSCI_NOMINALNE].reverse().find((nl) => nl + dodatek <= glebokoscUzytkowaMM && (!p.runner_mounting?.holes_from_front_mm || otworyProwadnicy(p, nl)));
+}
+
+/** Wariant wysokości boku szuflady wewnętrznej: najwyższy, którego minimalna komora mieści się w strefie. */
+export function wariantWewnetrznej(p: ProfilSzuflady, wysokoscStrefyMM: number, wariantJawny?: string): string | undefined {
+  const min = p.inner_drawer?.min_opening_by_variant_mm;
+  if (wariantJawny && p.back.height_by_variant_mm[wariantJawny] !== undefined) return wariantJawny;
+  if (!min) return undefined;
+  return Object.entries(min).sort((a, b) => b[1] - a[1]).find(([, h]) => h <= wysokoscStrefyMM)?.[0];
 }

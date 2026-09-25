@@ -114,3 +114,43 @@ test("wysokości prowadnic w rastrze 32: kotwica z karty, wyższe szuflady na wi
   assert.equal(d2.prowadnice.length, 0);
   assert.ok(d2.diagnostyka.some((x) => x.kod === "SZUFLADA_PROWADNICE"));
 });
+
+test("szuflady wewnętrzne za drzwiami (Amix Elite): NL+16, cofnięcie 18, wariant z min. komory, raster 32, zawias w brakach", () => {
+  const s = new Stolarnia(new Magazyn(mkdtempSync(join(tmpdir(), "wewnetrzne-"))));
+  const p = s.utworzProjekt({ nazwa: "W", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-shelves-600", konfiguracja: { szufladySystemowe: true, profilSzuflad: "amix-elite-standard" } });
+  assert.throws(() => s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajSzufladyZaDrzwiami", liczba: 6, wysokoscMM: 300 }), /nie mieści się/);
+  const r = s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajSzufladyZaDrzwiami", liczba: 2 });
+  assert.ok(r.uwagi.some((u) => u.includes("Dodano 2")));
+
+  const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  const t = 18;
+  const LW = m.szerokoscMM - 2 * t;
+  const uzytkowa = m.glebokoscMM - 10 - 3; // odsunięcie pleców + HDF (ustawienia domyślne)
+  const NL = [650, 600, 550, 500, 450, 400, 350, 300, 270].find((nl) => nl + 16 <= uzytkowa && nl !== 600 && nl !== 650)!;
+  const dno = z.elementy.find((e) => e.kod === "SW01-DNO")!;
+  assert.equal(dno.szer, LW - 75);
+  assert.equal(dno.gl, NL - 26);
+  assert.equal(dno.z, 18); // skrzynka cofnięta za drzwi
+  assert.equal(z.elementy.find((e) => e.kod === "SW02-TYL")!.wys, 116); // strefa 160 → H116 (komora min. 144)
+  assert.ok(z.okucia.some((o) => o.opis.includes("05B.023-FB") && o.opis.includes(`${LW - 37} mm`) && o.ilosc === 2));
+  assert.ok(z.elementy.some((e) => e.kod.startsWith("FRONT-D")), "drzwi zostają");
+
+  const d = s.dokumentacja(p.id);
+  const pr = d.prowadnice.filter((q) => q.modulId === m.id);
+  assert.deepEqual(pr.map((q) => q.szuflada), ["SW01", "SW02"]);
+  assert.ok(pr.every((q) => q.wewnetrzna));
+  const bok = z.elementy.find((e) => e.kod === "BOK-L")!;
+  assert.equal(pr[0].osOdDoluBokuMM, t - bok.y + 33);
+  assert.equal(pr[1].osOdDoluBokuMM, pr[0].osOdDoluBokuMM + 5 * 32); // strefa 160 = 5 rastrów
+  const standard = { 450: [37, 69, 261, 293], 500: [37, 69, 261, 293], 400: [37, 69, 229, 261] }[NL as 400 | 450 | 500]!;
+  assert.deepEqual(pr[0].otworyOdFrontuMM, standard.map((x) => x + 18));
+  assert.ok(d.diagnostyka.some((x) => x.kod === "ZAWIAS_ZA_DRZWIAMI"));
+  assert.ok(!d.diagnostyka.some((x) => x.kod === "OP_POZA_CZESCIA" || x.kod === "PROWADNICA_KOLIZJA"));
+
+  // Zmiana systemu w inspektorze działa też na module z drzewem: Blum bez danych wewnętrznych → jawny brak.
+  s.zmienModul(p.id, m.id, { konfiguracja: { profilSzuflad: "blum-tandembox-antaro-m-wood" } });
+  const d2 = s.dokumentacja(p.id);
+  assert.ok(d2.diagnostyka.some((x) => x.kod === "SZUFLADA_WEWNETRZNA"));
+  assert.ok(d2.prowadnice.filter((q) => q.modulId === m.id).every((q) => q.system.includes("TANDEMBOX")));
+});

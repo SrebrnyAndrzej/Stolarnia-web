@@ -512,6 +512,23 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "dodaj_szuflady_za_drzwiami",
+    {
+      title: "Dodaj szuflady wewnętrzne za drzwiami",
+      description:
+        "Silnik konstrukcji: dzieli dolną część strefy za drzwiami na N stref z szufladami wewnętrznymi (wysuw „za drzwiami”); półki nastawne zostają nad nimi, jeśli się mieszczą. Wymiary skrzynki, NL (np. Amix: NL+16 ≤ głębokość), wariant boku (min. komora z karty) i panel frontu wewnętrznego z profilu systemu modułu. Dokumentacja podaje wysokości prowadnic w rastrze 32 i zgłasza wymagania zawiasu.",
+      inputSchema: {
+        projektId: z.string(),
+        modulId: z.string(),
+        liczba: z.number().int().min(1).max(6),
+        wysokoscMM: z.number().min(100).optional().describe("Wysokość strefy jednej szuflady; domyślnie 160"),
+        poleId: z.string().optional().describe("Pole drzwi, gdy mebel ma drzwi na różnych wysokościach"),
+      },
+    },
+    bezpiecznie(({ projektId, modulId, liczba, wysokoscMM, poleId }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM, poleId })),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",

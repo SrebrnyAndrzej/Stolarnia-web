@@ -436,6 +436,8 @@ export interface ZbudowanyModul {
   elementy: Element[];
   okucia: OkucieModulu[];
   ostrzezenia: string[];
+  /** Szuflady wewnętrzne (za drzwiami) z silnika: strefa pracy prowadnic w układzie modułu. */
+  szufladyWewnetrzne?: { kod: string; podlogaY: number; sufitY: number; NL?: number; profilId?: string; wariant?: string }[];
 }
 
 // ---------- Formatki / produkcja ----------
@@ -562,6 +564,8 @@ export interface ProwadnicaSzuflady {
   rastr: number;
   /** Otwory od przedniej krawędzi boku; brak = producent nie podaje. */
   otworyOdFrontuMM?: number[];
+  /** Szuflada wewnętrzna za drzwiami. */
+  wewnetrzna?: boolean;
   zrodlo: string;
   uwagi: string[];
 }

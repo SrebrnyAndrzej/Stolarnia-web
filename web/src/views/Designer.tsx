@@ -337,6 +337,7 @@ export function Designer({ analiza, odswiez }: Props) {
             ostrzezenia={analiza.zbudowane.find((z) => z.modul.id === modul.id)?.ostrzezenia ?? []}
             onZmien={(d) => wykonaj(() => api.zmienModul(p.id, modul.id, d))}
             onDrzwiNaSzuflady={(liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "zamienDrzwiNaSzuflady", liczba }))}
+            onSzufladyZaDrzwiami={(liczba, wysokoscMM) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM }))}
             onPrzywrocStandardowa={() => wykonaj(() => api.przywrocKonstrukcjeStandardowa(p.id, modul.id))}
             onUsun={() => wykonaj(async () => { await api.usunModul(p.id, modul.id); setWybrany(null); })}
             onDuplikuj={() => wykonaj(async () => setWybrany((await api.duplikujModul(p.id, modul.id)).id))}
@@ -633,17 +634,20 @@ interface InspektorProps {
   ostrzezenia: string[];
   onZmien: (d: Record<string, unknown>) => void;
   onDrzwiNaSzuflady: (liczba: number) => void;
+  onSzufladyZaDrzwiami: (liczba: number, wysokoscMM: number) => void;
   onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
   const [liczbaSzufladEdytor, setLiczbaSzufladEdytor] = useState(3);
+  const [liczbaWewnetrznych, setLiczbaWewnetrznych] = useState(2);
+  const [strefaWewnetrznej, setStrefaWewnetrznej] = useState(160);
   const [systemy, setSystemy] = useState<Awaited<ReturnType<typeof api.systemySzuflad>>>([]);
   useEffect(() => {
     api.systemySzuflad().then(setSystemy).catch(() => setSystemy([]));
@@ -708,7 +712,7 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
           <Liczba label="Podziałka szuflad [mm]" value={k.wysokoscSzufladyMM ?? 0} onSave={(v) => konf({ wysokoscSzufladyMM: v > 0 ? v : (null as unknown as undefined) })} />
         </div>
-        {(k.liczbaSzuflad > 0 || k.typFrontu === "szuflady") && (
+        {(k.liczbaSzuflad > 0 || k.typFrontu === "szuflady" || (m.drzewo?.wysuwy.length ?? 0) > 0) && (
           <div className="grid2">
             <div className="field">
               <label>System szuflad</label>
@@ -763,6 +767,13 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <div className="row">
             <Liczba label="Szuflad" value={liczbaSzufladEdytor} onSave={(v) => setLiczbaSzufladEdytor(Math.max(1, Math.min(8, v)))} />
             <button className="btn" onClick={() => onDrzwiNaSzuflady(liczbaSzufladEdytor)}>Zamień drzwi na szuflady</button>
+          </div>
+        )}
+        {(m.drzewo ? JSON.stringify(m.drzewo.fronty).includes('"typ":"drzwi"') : k.typFrontu === "drzwi" && k.liczbaDrzwi > 0) && (
+          <div className="row">
+            <Liczba label="Szuflad wewn." value={liczbaWewnetrznych} onSave={(v) => setLiczbaWewnetrznych(Math.max(1, Math.min(6, v)))} />
+            <Liczba label="Strefa [mm]" value={strefaWewnetrznej} onSave={(v) => setStrefaWewnetrznej(Math.max(100, v))} />
+            <button className="btn" onClick={() => onSzufladyZaDrzwiami(liczbaWewnetrznych, strefaWewnetrznej)}>Dodaj szuflady za drzwiami</button>
           </div>
         )}
 
