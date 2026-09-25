@@ -1,6 +1,7 @@
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
 import { PRODUKTY_OKUC } from "../core/catalog/hardware-products.js";
+import { PROFILE_SZUFLAD } from "../core/catalog/drawers.js";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -156,6 +157,14 @@ app.put("/api/projekty/:id/stan", api((r) => s.przywrocStan(p(r, "id"), r.body))
 app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.scianaId, r.body.xMM, r.body.szerokoscMM, !!r.body.wiszacy)));
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
+// Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
+app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
+app.get("/api/przelicznik-szuflad", api((r) => {
+  const n = (k: string) => (r.query[k] !== undefined && r.query[k] !== "" ? Number(r.query[k]) : undefined);
+  const t = (k: string) => (typeof r.query[k] === "string" && r.query[k] ? String(r.query[k]) : undefined);
+  return s.przelicznikSzuflad({ LW: n("LW"), szerokoscKorpusu: n("szerokoscKorpusu"), gruboscBoku: n("gruboscBoku"), NL: n("NL"), glebokoscKorpusu: n("glebokoscKorpusu"),
+    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId") });
+}));
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));
 app.delete("/api/projekty/:id/moduly/:mid/drzewo", api((r) => s.przywrocKonstrukcjeStandardowa(p(r, "id"), p(r, "mid"))));

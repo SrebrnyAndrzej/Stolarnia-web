@@ -154,7 +154,7 @@
       "id": "blum-merivobox-m-wood",
       "manufacturer": "BLUM",
       "family": "MERIVOBOX",
-      "scope": "Standard M, drewniana ścianka tylna",
+      "scope": "Szuflady standardowe N/M/K i z wysokim frontem E (modular z relingiem), drewniana ścianka tylna, płyta 16 mm (id historyczne „-m-wood”)",
       "units": "mm",
       "board_thickness_mm": 16,
       "bottom": {
@@ -173,7 +173,10 @@
           "subtract_mm": 51
         },
         "height_by_variant_mm": {
-          "M": 83
+          "N": 60.5,
+          "M": 83,
+          "K": 121,
+          "E": 184
         }
       },
       "source_id": "BLUM-Merivobox-planowanie",
@@ -185,7 +188,8 @@
       "drilling_status": "not_normalized",
       "allowed_nominal_lengths_status": "not_normalized",
       "notes": [
-        "Nie rozszerzać na pozostałe wysokości ani inne konfiguracje tylnej ścianki."
+        "Nie rozszerzać na pozostałe wysokości ani inne konfiguracje tylnej ścianki.",
+        "25.09.2026: dodane wysokości pleców dla pozostałych wysokości boków z tego samego PDF (strony w variant_sources). Pozycje „text_extracted_same_layout” odczytane z tekstu strony o układzie identycznym jak strona sprawdzona wizualnie."
       ],
       "example": {
         "LW": 564,
@@ -193,13 +197,31 @@
         "bottom_width": 513,
         "bottom_depth": 474,
         "back_width": 513
+      },
+      "variant_sources": {
+        "N": {
+          "pdf_page_1based": 11,
+          "verification": "text_extracted_same_layout"
+        },
+        "M": {
+          "pdf_page_1based": 15,
+          "verification": "visually_checked"
+        },
+        "K": {
+          "pdf_page_1based": 23,
+          "verification": "text_extracted_same_layout"
+        },
+        "E": {
+          "pdf_page_1based": 31,
+          "verification": "text_extracted_same_layout"
+        }
       }
     },
     {
       "id": "blum-legrabox-m-wood",
       "manufacturer": "BLUM",
       "family": "LEGRABOX",
-      "scope": "Standard M, drewniana ścianka tylna",
+      "scope": "Szuflady standardowe N/M/K i z wysokim frontem C/F, drewniana ścianka tylna, płyta 16 mm (id historyczne „-m-wood”)",
       "units": "mm",
       "board_thickness_mm": 16,
       "bottom": {
@@ -218,7 +240,11 @@
           "subtract_mm": 38
         },
         "height_by_variant_mm": {
-          "M": 63
+          "N": 39,
+          "M": 63,
+          "K": 101,
+          "C": 148,
+          "F": 212
         }
       },
       "source_id": "BLUM-Legrabox-planowanie",
@@ -230,7 +256,8 @@
       "drilling_status": "not_normalized",
       "allowed_nominal_lengths_status": "not_normalized",
       "notes": [
-        "Dno wymaga obróbki zgodnej z rysunkiem producenta; sam prostokąt nie opisuje gotowej części. Profil frezowania nie został znormalizowany."
+        "Dno wymaga obróbki zgodnej z rysunkiem producenta; sam prostokąt nie opisuje gotowej części. Profil frezowania nie został znormalizowany.",
+        "25.09.2026: dodane wysokości pleców dla pozostałych wysokości boków z tego samego PDF (strony w variant_sources). Pozycje „text_extracted_same_layout” odczytane z tekstu strony o układzie identycznym jak strona sprawdzona wizualnie."
       ],
       "example": {
         "LW": 564,
@@ -238,13 +265,40 @@
         "bottom_width": 529,
         "bottom_depth": 490,
         "back_width": 526
+      },
+      "variant_sources": {
+        "N": {
+          "pdf_page_1based": 11,
+          "verification": "visually_checked"
+        },
+        "M": {
+          "pdf_page_1based": 15,
+          "verification": "visually_checked"
+        },
+        "K": {
+          "pdf_page_1based": 23,
+          "verification": "text_extracted_same_layout"
+        },
+        "C": {
+          "pdf_page_1based": 33,
+          "verification": "visually_checked"
+        },
+        "F": {
+          "pdf_page_1based": 63,
+          "verification": "text_extracted_same_layout"
+        }
+      },
+      "bottom_machining": {
+        "id": "C",
+        "opis": "Frezowanie krawędzi dna wg rysunku C (płyta 16, wymiary 8 i 38 mm na rysunku) — odczytać z PDF przed CNC",
+        "verification": "visually_checked_not_normalized"
       }
     },
     {
       "id": "blum-tandembox-antaro-m-wood",
       "manufacturer": "BLUM",
       "family": "TANDEMBOX antaro",
-      "scope": "Standard M, drewniana ścianka tylna",
+      "scope": "Szuflady standardowe N/M/K i z wysokim frontem C/D, płyta 16 mm; dno NL−24 przy drewnianej, NL−22 przy stalowej ściance tylnej (id historyczne „-m-wood”)",
       "units": "mm",
       "board_thickness_mm": 16,
       "bottom": {
@@ -263,7 +317,11 @@
           "subtract_mm": 87
         },
         "height_by_variant_mm": {
-          "M": 84
+          "N": 69,
+          "M": 84,
+          "K": 116,
+          "C": 167,
+          "D": 199
         }
       },
       "source_id": "BLUM-Tandembox-antaro-planowanie",
@@ -275,7 +333,8 @@
       "drilling_status": "not_normalized",
       "allowed_nominal_lengths_status": "not_normalized",
       "notes": [
-        "Nie stosować wymiaru długości dla stalowej ścianki tylnej do tego profilu."
+        "Nie stosować wymiaru długości dla stalowej ścianki tylnej do tego profilu.",
+        "25.09.2026: dodane wysokości pleców dla pozostałych wysokości boków z tego samego PDF (strony w variant_sources). Pozycje „text_extracted_same_layout” odczytane z tekstu strony o układzie identycznym jak strona sprawdzona wizualnie."
       ],
       "example": {
         "LW": 564,
@@ -283,6 +342,32 @@
         "bottom_width": 489,
         "bottom_depth": 476,
         "back_width": 477
+      },
+      "variant_sources": {
+        "N": {
+          "pdf_page_1based": 5,
+          "verification": "visually_checked"
+        },
+        "M": {
+          "pdf_page_1based": 7,
+          "verification": "visually_checked"
+        },
+        "K": {
+          "pdf_page_1based": 11,
+          "verification": "text_extracted_same_layout"
+        },
+        "C": {
+          "pdf_page_1based": 15,
+          "verification": "text_extracted_same_layout"
+        },
+        "D": {
+          "pdf_page_1based": 21,
+          "verification": "text_extracted_same_layout"
+        }
+      },
+      "bottom_depth_steel_back": {
+        "variable": "NL",
+        "subtract_mm": 22
       }
     }
   ]

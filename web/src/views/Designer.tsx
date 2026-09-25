@@ -644,6 +644,10 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
   const [liczbaSzufladEdytor, setLiczbaSzufladEdytor] = useState(3);
+  const [systemy, setSystemy] = useState<Awaited<ReturnType<typeof api.systemySzuflad>>>([]);
+  useEffect(() => {
+    api.systemySzuflad().then(setSystemy).catch(() => setSystemy([]));
+  }, []);
   const plyty = materialy.filter((x) => x.typ === "plytaLaminowana" || x.typ === "mdf");
   const fronty = materialy.filter((x) => x.typ === "plytaLaminowana" || x.typ === "front" || x.typ === "mdf");
 
@@ -705,6 +709,24 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
           <Liczba label="Podziałka szuflad [mm]" value={k.wysokoscSzufladyMM ?? 0} onSave={(v) => konf({ wysokoscSzufladyMM: v > 0 ? v : (null as unknown as undefined) })} />
         </div>
+        {k.szufladySystemowe && (
+          <div className="grid2">
+            <div className="field">
+              <label>System szuflad</label>
+              <select className="input" value={k.profilSzuflad ?? ""} onChange={(e) => konf({ profilSzuflad: e.target.value || (null as unknown as undefined), wariantBokuSzuflady: null as unknown as undefined })}>
+                <option value="">jak w ustawieniach</option>
+                {systemy.map((s) => <option key={s.id} value={s.id}>{s.producent === "AMIX" ? "Amix" : s.producent === "BLUM" ? "Blum" : s.producent} {s.system}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label>Wysokość boku</label>
+              <select className="input" value={k.wariantBokuSzuflady ?? ""} onChange={(e) => konf({ wariantBokuSzuflady: e.target.value || (null as unknown as undefined) })}>
+                <option value="">dobór do frontu</option>
+                {(systemy.find((s) => s.id === k.profilSzuflad)?.warianty ?? []).map((w) => <option key={w.wariant} value={w.wariant}>{w.wariant} — plecy {w.plecyWys} mm</option>)}
+              </select>
+            </div>
+          </div>
+        )}
         {k.typFrontu === "drzwi" && k.liczbaSzuflad > 0 && <div className="muted" style={{ fontSize: 12 }}>Szuflady pod drzwiami: {k.liczbaSzuflad} × {k.wysokoscSzufladyMM ?? 360} mm, nad nimi półka stała i drzwi.</div>}
         {m.konstrukcja === "blindCorner" && (
           <div className="grid2">

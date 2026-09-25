@@ -85,3 +85,8 @@ Dodano cenaUzgodnionaBrutto projektu: wyłącznie Standard, odrębnie od kosztó
 
 ## 2026-09-25 - Silnik konstrukcji mebli, etap 1 (Claude)
 Nowy silnik `src/core/silnik/` (model drzewa, budowa, adapter, polecenia). Na wszystkich 11 szafkach kuchni Darii, całym katalogu i ponad 150 wariantach daje dokładnie te same formatki i okucia co stary builder. Pierwsze polecenie: „zamień drzwi na szuflady” — w API, MCP i inspektorze modułu. Moduł z `drzewo` buduje silnik; bez niego nic się nie zmienia. Projekt Darii w bazie nietknięty. Szczegóły i dalsze etapy: docs/RESEARCH-konstruktor-mebli-niestandardowych.md §6.
+
+## 2026-09-25 - Przelicznik dna i pleców szuflad Amix, GTV, Blum (Claude)
+Przelicznik w zakładce „Materiały i okucia”, w API (`/api/przelicznik-szuflad`, `/api/systemy-szuflad`) i w MCP (`przelicznik_szuflad`). Profile Blum mają wszystkie wysokości boków ze stron PDF. Szafka może mieć własny system i wariant boku; builder i silnik liczą z niego formatki. Testy: `src/przelicznik-szuflad.test.ts`.
+
+Zmiana zachowania: dla Blum automatyczny dobór może wybrać teraz inny wariant niż M (wcześniej był tylko M). Dotyczy wyłącznie szafek z szufladami systemowymi Blum. Profile nadal mają `production_approved=false`.

@@ -110,6 +110,7 @@ export const api = {
   dodajModul: (id: string, d: unknown) => zadanie<Modul>("POST", `/api/projekty/${id}/moduly`, d),
   zmienModul: (id: string, mid: string, d: unknown) => zadanie<Modul>("PATCH", `/api/projekty/${id}/moduly/${mid}`, d),
   usunModul: (id: string, mid: string) => zadanie("DELETE", `/api/projekty/${id}/moduly/${mid}`),
+  systemySzuflad: () => zadanie<{ id: string; producent: string; system: string; grubosc: number; warianty: { wariant: string; plecyWys: number }[] }[]>("GET", "/api/systemy-szuflad"),
   polecenieKonstrukcji: (id: string, mid: string, polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string }) =>
     zadanie<{ modul: Modul; uwagi: string[] }>("POST", `/api/projekty/${id}/moduly/${mid}/polecenie`, polecenie),
   przywrocKonstrukcjeStandardowa: (id: string, mid: string) => zadanie<Modul>("DELETE", `/api/projekty/${id}/moduly/${mid}/drzewo`),

@@ -254,6 +254,10 @@ export interface KonfiguracjaModulu {
   nogi: boolean;
   /** Szuflady w systemie (Tandembox/Legrabox) zamiast skrzynek z płyty. */
   szufladySystemowe: boolean;
+  /** System szuflad dla tej szafki (id profilu z reguly-szuflad.json); brak → ustawienie technologii. */
+  profilSzuflad?: string;
+  /** Wysokość boku / wariant pleców (np. „M”, „K”, „C”); brak → dobór do wysokości frontu. */
+  wariantBokuSzuflady?: string;
   /**
    * Wysokość modułowa szuflady (podziałka frontów) [mm]. Podana → fronty szuflad równe.
    * Przy typFrontu „drzwi” z liczbaSzuflad > 0 (słupek): szuflady na dole, półka stała, drzwi nad nimi (domyślnie 360).

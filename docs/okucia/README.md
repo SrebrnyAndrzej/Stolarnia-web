@@ -17,6 +17,27 @@ Poniższe wzory odczytano i porównano wizualnie z rysunkami. Są materiałem do
 
 Przykład: korpus zewnętrzny 600, dwa boki po 18, bez dodatkowych elementów zmniejszających światło: LW=564. Dla NL=500 dna wynoszą odpowiednio: Amix 489×474, Axis/Modern 489×476, MERIVOBOX 513×474, LEGRABOX 529×490, TANDEMBOX 489×476. Grubość dna wynika z profilu okucia, a nie automatycznie z grubości boków korpusu. LEGRABOX wymaga dodatkowej obróbki zgodnej z diagramem.
 
+### Wysokości pleców Blum według wariantu boku (25.09.2026)
+
+Z tych samych PDF, strona dla każdego wariantu (`variant_sources` w `reguly-szuflad.json`). Wzory dna i szerokości pleców są takie same dla wszystkich wariantów danego systemu.
+
+| System | Wariant → wysokość pleców [mm] | Strony |
+|---|---|---|
+| LEGRABOX | N 39 · M 63 · K 101 · C 148 · F 212 | 11, 15, 23, 33, 63 |
+| MERIVOBOX | N 60,5 · M 83 · K 121 · E 184 | 11, 15, 23, 31 |
+| TANDEMBOX antaro | N 69 · M 84 · K 116 · C 167 · D 199 | 5, 7, 11, 15, 21 |
+
+Strony N i C LEGRABOX oraz M sprawdzono na rysunku. Pozostałe odczytano z tekstu strony o identycznym układzie. TANDEMBOX ze stalową ścianką tylną: dno (NL−22). LEGRABOX: dno wymaga frezowania według diagramu (`bottom_machining`).
+
+### Przelicznik w aplikacji
+
+„Materiały i okucia → Przelicznik szuflad”, `GET /api/przelicznik-szuflad`, narzędzie MCP `przelicznik_szuflad`. Wejście:
+- LW albo szerokość korpusu i grubość boku;
+- NL albo głębokość korpusu, z której NL dobiera się automatycznie;
+- opcjonalnie wysokość frontu i wariant.
+
+Wynik: dno i plecy dla wszystkich sześciu systemów obok siebie, ze wzorem, stroną źródła i statusem weryfikacji. W inspektorze szafki z szufladami systemowymi można wybrać system i wysokość boku dla tej jednej szafki (`profilSzuflad`, `wariantBokuSzuflady`). Bez wyboru działa ustawienie technologii i automatyczny dobór: najwyższy wariant, którego plecy są co najmniej o 40 mm niższe od frontu.
+
 `reguly-szuflad.json` zawiera te sześć profili, zakres zastosowania, źródło, sumę kontrolną i przykłady. Każdy ma `production_approved=false`: nie uzupełniono jeszcze kompletnego przypisania SKU, długości, wierceń i obróbki. Nie używać go bezpośrednio jako zatwierdzonego katalogu CNC.
 
 ## Ważne rozróżnienia i braki

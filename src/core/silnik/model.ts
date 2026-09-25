@@ -101,5 +101,8 @@ export interface Mebel {
   wysuwy: Wysuw[];
   /** Skrzynki systemowe (profil producenta) zamiast skrzynek z płyty. */
   szufladySystemowe: boolean;
+  /** Profil systemu szuflad i wariant wysokości boku; brak → ustawienia technologii / dobór do frontu. */
+  profilSzuflad?: string;
+  wariantBokuSzuflady?: string;
   dodatki: { cargo?: number; podnosnik?: boolean; systemNarozny?: "lemans" };
 }

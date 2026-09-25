@@ -166,9 +166,10 @@ export function zbudujMebel(
   }
   if (zFrontem.length && zKorpusem) {
     const uzytkowa = D - rezerwaPlecow;
-    const profil = profilSzuflady(tech.profilSzuflad);
+    const idProfilu = m.profilSzuflad ?? tech.profilSzuflad;
+    const profil = profilSzuflady(idProfilu);
     const NL = m.szufladySystemowe && profil ? dobierzNL(uzytkowa) : undefined;
-    if (m.szufladySystemowe && !profil) ostrzezenia.push(`Nieznany profil systemu szuflad "${tech.profilSzuflad}" — brak wymiarów dna i pleców.`);
+    if (m.szufladySystemowe && !profil) ostrzezenia.push(`Nieznany profil systemu szuflad "${idProfilu}" — brak wymiarów dna i pleców.`);
     if (m.szufladySystemowe && profil && !NL) ostrzezenia.push(`Głębokość użytkowa ${uzytkowa} mm za mała dla prowadnic ${profil.family} (min. NL 270 + 3 mm).`);
     const L = Math.max(250, Math.min(550, Math.floor((uzytkowa - 10) / 50) * 50));
     const ts = k.gruboscPlytySzufladMM;
@@ -182,7 +183,7 @@ export function zbudujMebel(
       const LW = s.w; // rzeczywiste światło w miejscu montażu prowadnic
       if (m.szufladySystemowe) {
         if (!profil || !NL) continue;
-        const wy = wymiarySzuflady(profil, LW, NL, f.wys);
+        const wy = wymiarySzuflady(profil, LW, NL, f.wys, m.wariantBokuSzuflady);
         el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + (LW - wy.dnoSzer) / 2, f.y + 20, 0, wy.dnoSzer, wy.grubosc, wy.dnoGl, "szuflada"));
         el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + (LW - wy.plecySzer) / 2, f.y + 20 + wy.grubosc, wy.dnoGl - wy.grubosc, wy.plecySzer, wy.plecyWys, wy.grubosc, "szuflada"));
       } else {

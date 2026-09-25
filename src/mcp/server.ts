@@ -29,6 +29,8 @@ const konfiguracja = z
     blat: z.boolean().optional(),
     nogi: z.boolean().optional(),
     szufladySystemowe: z.boolean().optional().describe("true = system (Tandembox/Legrabox), false = skrzynki z płyty"),
+    profilSzuflad: z.string().optional().describe("System szuflad tej szafki: amix-elite-standard, gtv-axis-pro-option1, gtv-modern-box-pro, blum-legrabox-m-wood, blum-merivobox-m-wood, blum-tandembox-antaro-m-wood"),
+    wariantBokuSzuflady: z.string().optional().describe("Wysokość boku / wariant pleców, np. M, K, C (Blum) lub 84/116 (Amix)"),
     wysokoscSzufladyMM: z.number().positive().optional().describe("Podziałka szuflad [mm] — równe fronty. Z typFrontu 'drzwi' i liczbaSzuflad > 0: szuflady pod drzwiami (półka stała), domyślnie 360"),
     stronaDrzwiNaroznika: z.enum(["lewa", "prawa"]).optional().describe("Szafka narożna ślepa: strona drzwi (część ślepa po przeciwnej)"),
     szerokoscDrzwiNaroznikaMM: z.number().positive().optional().describe("Szafka narożna ślepa: szerokość drzwi [mm], domyślnie 450"),
@@ -480,6 +482,22 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
       inputSchema: { projektId: z.string(), modulId: z.string(), ...wymiaryModulu },
     },
     bezpiecznie(({ projektId, modulId, ...d }) => s.zmienModul(projektId, modulId, d)),
+  );
+
+  server.registerTool(
+    "przelicznik_szuflad",
+    {
+      title: "Przelicznik dna i pleców szuflad",
+      description: "Wymiary przycięcia dna i pleców szuflady dla systemów Amix Elite Box, GTV Axis Pro / Modern Box PRO i Blum LEGRABOX / MERIVOBOX / TANDEMBOX antaro, z kart producentów (strona PDF i status weryfikacji). Podaj LW albo szerokość korpusu, NL albo głębokość korpusu.",
+      inputSchema: {
+        LW: z.number().optional().describe("Światło korpusu [mm]"), szerokoscKorpusu: z.number().optional(), gruboscBoku: z.number().optional(),
+        NL: z.number().optional().describe("Długość nominalna prowadnicy [mm]"), glebokoscKorpusu: z.number().optional(),
+        wysokoscFrontu: z.number().optional(), wariant: z.string().optional().describe("Wysokość boku, np. N/M/K/C (Blum), 84/116 (Amix)"),
+        sciankaTylna: z.enum(["drewniana", "stalowa"]).optional(), profilId: z.string().optional(),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    bezpiecznie((a) => s.przelicznikSzuflad(a)),
   );
 
   server.registerTool(

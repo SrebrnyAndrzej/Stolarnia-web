@@ -150,6 +150,8 @@ export function mebelZModulu(m: Modul, k: UstawieniaKonstrukcyjne): Mebel {
     fronty,
     wysuwy,
     szufladySystemowe: cfg.szufladySystemowe,
+    profilSzuflad: cfg.profilSzuflad,
+    wariantBokuSzuflady: cfg.wariantBokuSzuflady,
     dodatki: { cargo: cfg.liczbaCargo || undefined, podnosnik: cfg.typFrontu === "uchylny" || undefined, systemNarozny: cfg.systemNarozny },
   };
 }

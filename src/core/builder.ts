@@ -115,7 +115,7 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   if (szuflady.length && !bezKorpusu) {
     const LW = innerW; // rzeczywiste światło korpusu w miejscu montażu prowadnic
     const uzytkowa = D - rezerwaPlecow;
-    const profil = profilSzuflady(tech.profilSzuflad);
+    const profil = profilSzuflady(cfg.profilSzuflad ?? tech.profilSzuflad);
     if (cfg.szufladySystemowe && profil) {
       // Wymiary dna i pleców wyłącznie z profilu producenta (reguly-szuflad.json).
       const NL = dobierzNL(uzytkowa);
@@ -124,14 +124,14 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
       } else {
         szuflady.forEach((f, i) => {
           const n = pad(i + 1);
-          const w = wymiarySzuflady(profil, LW, NL, f.wys);
+          const w = wymiarySzuflady(profil, LW, NL, f.wys, cfg.wariantBokuSzuflady);
           const x0 = t + (LW - w.dnoSzer) / 2;
           el.push(p(`SZ${n}-DNO`, "drawerBottom", x0, f.y + 20, 0, w.dnoSzer, w.grubosc, w.dnoGl, "szuflada"));
           el.push(p(`SZ${n}-TYL`, "drawerFrontBack", t + (LW - w.plecySzer) / 2, f.y + 20 + w.grubosc, w.dnoGl - w.grubosc, w.plecySzer, w.plecyWys, w.grubosc, "szuflada"));
         });
       }
     } else if (cfg.szufladySystemowe) {
-      ostrzezenia.push(`Nieznany profil systemu szuflad "${tech.profilSzuflad}" — brak wymiarów dna i pleców.`);
+      ostrzezenia.push(`Nieznany profil systemu szuflad "${cfg.profilSzuflad ?? tech.profilSzuflad}" — brak wymiarów dna i pleców.`);
     } else {
       // Skrzynka z płyty na prowadnicach bocznych — reguła robocza (luz 13 mm/stronę), bez profilu producenta.
       const L = Math.max(250, Math.min(550, Math.floor((uzytkowa - 10) / 50) * 50));

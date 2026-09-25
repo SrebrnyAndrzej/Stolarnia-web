@@ -1,6 +1,7 @@
 import { DecorCatalog } from "./DecorCatalog";
 import { useEffect, useState } from "react";
 import { HardwareCatalog } from "./HardwareCatalog";
+import { PrzelicznikSzuflad } from "./PrzelicznikSzuflad";
 import { api, zl, type CennikMaterialow, type Material, type Okucie } from "../api";
 
 const TYPY: Record<string, string> = {
@@ -15,7 +16,7 @@ const TYPY: Record<string, string> = {
 const JEDN: Record<string, string> = { sztuka: "ark.", metrKwadratowy: "m²", metrBiezacy: "mb" };
 
 export function Materials() {
-  const [zakladka, setZakladka] = useState<"dekory" | "materialy" | "okucia">("dekory");
+  const [zakladka, setZakladka] = useState<"dekory" | "materialy" | "okucia" | "szuflady">("dekory");
   const [materialy, setMaterialy] = useState<Material[]>([]);
   const [cennik, setCennik] = useState<CennikMaterialow>({});
   const [widokOkuc, setWidokOkuc] = useState<"katalog" | "cennik">("katalog");
@@ -58,9 +59,10 @@ export function Materials() {
           <button className={zakladka === "dekory" ? "on" : ""} onClick={() => setZakladka("dekory")}>Dekory producentów</button>
           <button className={zakladka === "materialy" ? "on" : ""} onClick={() => setZakladka("materialy")}>Materiały ({materialy.length})</button>
           <button className={zakladka === "okucia" ? "on" : ""} onClick={() => setZakladka("okucia")}>Okucia ({okucia.length})</button>
+          <button className={zakladka === "szuflady" ? "on" : ""} onClick={() => setZakladka("szuflady")}>Przelicznik szuflad</button>
         </nav>
         <span className="spacer" />
-        {zakladka !== "dekory" && <input className="input" style={{ width: 240 }} placeholder="Szukaj…" value={szukaj} onChange={(e) => setSzukaj(e.target.value)} />}
+        {(zakladka === "materialy" || zakladka === "okucia") && <input className="input" style={{ width: 240 }} placeholder="Szukaj…" value={szukaj} onChange={(e) => setSzukaj(e.target.value)} />}
       </div>
       {blad && <div className="alert blad">{blad}</div>}
       <p className="muted" style={{ margin: 0 }}>
@@ -68,6 +70,7 @@ export function Materials() {
       </p>
 
       {zakladka === "dekory" && <DecorCatalog onAdded={() => { wczytaj(); }} />}
+      {zakladka === "szuflady" && <PrzelicznikSzuflad />}
       {zakladka === "materialy" && (
         <>
           <div className="stats">

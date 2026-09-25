@@ -3,6 +3,7 @@ import { PRODUKTY_OKUC } from "./core/catalog/hardware-products.js";
 import type { ProduktOkucia } from "./core/hardware-products.js";
 import { randomUUID } from "node:crypto";
 import { zbudujModul } from "./core/builder.js";
+import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
 import { BladPolecenia, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
@@ -576,6 +577,28 @@ export class Stolarnia {
       p.pomieszczenia = stan.pomieszczenia;
       p.moduly = stan.moduly;
     });
+  }
+
+  /**
+   * Przelicznik dna i pleców szuflad dla wszystkich (albo wskazanego) systemów. LW podane wprost albo z szerokości
+   * korpusu i grubości boków; NL podane wprost albo dobrane z głębokości użytkowej (głębokość − odsunięcie i HDF pleców).
+   */
+  przelicznikSzuflad(q: { LW?: number; szerokoscKorpusu?: number; gruboscBoku?: number; NL?: number; glebokoscKorpusu?: number; wysokoscFrontu?: number; wariant?: string; sciankaTylna?: "drewniana" | "stalowa"; profilId?: string }) {
+    const k = this.ustawienia().konstrukcja;
+    const LW = q.LW ?? (q.szerokoscKorpusu ? q.szerokoscKorpusu - 2 * (q.gruboscBoku ?? k.gruboscPlytyKorpusuMM) : undefined);
+    if (!LW || !Number.isFinite(LW) || LW <= 0) throw new BladUslugi("Podaj LW albo szerokość korpusu.");
+    const glebokoscUzytkowa = q.glebokoscKorpusu ? q.glebokoscKorpusu - k.odsunieciePlecMM - k.gruboscPlecHDFMM : undefined;
+    const NL = q.NL ?? (glebokoscUzytkowa ? dobierzNL(glebokoscUzytkowa) : undefined);
+    if (!NL) throw new BladUslugi(glebokoscUzytkowa ? `Głębokość użytkowa ${glebokoscUzytkowa} mm za mała dla prowadnic (min. NL 270 + 3 mm).` : "Podaj NL albo głębokość korpusu.");
+    const profile = PROFILE_SZUFLAD.filter((p) => !q.profilId || p.id === q.profilId);
+    if (!profile.length) throw new BladUslugi(`Nieznany system szuflad „${q.profilId}”.`);
+    return {
+      LW,
+      NL,
+      glebokoscUzytkowa,
+      wyniki: profile.map((p) => przeliczSzuflade(p, { LW, NL, wariant: q.wariant, wysokoscFrontuMM: q.wysokoscFrontu, sciankaTylna: q.sciankaTylna })),
+      warianty: Object.fromEntries(PROFILE_SZUFLAD.map((p) => [p.id, Object.entries(p.back.height_by_variant_mm).map(([w, h]) => ({ wariant: w, plecyWys: h }))])),
+    };
   }
 
   /** Polecenie edycji konstrukcji modułu przez silnik. Pierwsze polecenie tworzy drzewo z obecnej konfiguracji (adapter). */
