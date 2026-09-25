@@ -22,3 +22,6 @@ Claude implementuje silnik. Codex dostarcza wyłącznie research, dane techniczn
 
 ## Wymagania kreatora premium
 Research funkcjonalny i kryteria odbioru: docs/RESEARCH-kreator-premium-dla-Claude.md. Zawiera oficjalne źródła, priorytety P0/P1/P2, wymagania danych i 12 scenariuszy odbioru. To brief, nie gotowa implementacja.
+
+## Koordynacja z Codexem
+Kanał roboczy: docs/KOORDYNACJA-Claude-Codex.md (do przeglądu, zamówienia danych, uwagi Codexa).
