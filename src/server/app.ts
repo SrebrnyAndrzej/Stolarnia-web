@@ -9,7 +9,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { KATALOG_MODULOW } from "../core/catalog/modules.js";
 import { konwerterDwg } from "../core/dwg.js";
 import { utworzSerwerMcp } from "../mcp/server.js";
-import { BladUslugi, Stolarnia } from "../service.js";
+import { jsonBezMigawek, BladUslugi, Stolarnia } from "../service.js";
 import { KonfliktZapisu, Magazyn, konfiguracjaChmury } from "../store/store.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
@@ -73,7 +73,7 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
     const wynik = await fn(req);
     // Zapis przed odpowiedzią, żeby konflikt zapisu wrócił jako błąd (409), a nie po cichu.
     await s.magazyn.utrwal();
-    res.json(wynik ?? { ok: true });
+    res.type("application/json").send(jsonBezMigawek(wynik ?? { ok: true }));
   } catch (e) {
     next(e);
   }
@@ -173,6 +173,19 @@ app.post("/api/projekty/:id/moduly/:mid/duplikuj", api((r) => s.duplikujModul(p(
 
 app.get("/api/projekty/:id/analiza", api((r) => s.analiza(p(r, "id"))));
 app.get("/api/projekty/:id/dokumentacja", api((r) => s.dokumentacja(p(r, "id"))));
+app.get("/api/projekty/:id/wydania", api((r) => s.wydania(p(r, "id"))));
+app.post("/api/projekty/:id/wydania", api((r) => s.utworzWydanie(p(r, "id"), r.body ?? {})));
+app.get("/api/projekty/:id/wydania/:wid/dokumentacja", api((r) => s.wydanieDokumentacja(p(r, "id"), p(r, "wid"))));
+app.get("/api/projekty/:id/wydania/:wid/dokumentacja.pdf", (req, res, next) => {
+  const lista = (k: string) => (typeof req.query[k] === "string" ? String(req.query[k]).split(",").filter(Boolean) : undefined);
+  s.wydaniePdf(p(req, "id"), p(req, "wid"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1" })
+    .then(({ pdf, numer, rewizja }) => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="wydanie-${numer}-${p(req, "id")}-rew${rewizja}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
+});
 app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
   const lista = (k: string) => (req.query[k] ? String(req.query[k]).split(",") : undefined);
   s.dokumentacjaPdf(p(req, "id"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1" })

@@ -112,3 +112,10 @@ Polecenie „Podziel front”: skrzydła obok siebie albo jedno nad drugim, z p�
 
 ## 2026-09-25 - Silnik K03: nierówne fronty (Claude)
 Inspektor pokazuje wymiary frontów modułu z drzewem. Zmiana jednego frontu wyrównuje pozostałe, a zablokowane zostają bez zmian. Szuflady, prowadnice i dokumentacja podążają za frontami.
+
+## 2026-09-25 - Wydania produkcyjne P03 (Claude)
+Zakładka „Produkcja → Wydania produkcyjne”, API `POST/GET /api/projekty/:id/wydania`, `GET …/wydania/:wid/dokumentacja(.pdf)`, MCP `utworz_wydanie_produkcyjne`, `lista_wydan`.
+
+Wydanie zamraża projekt, elementy i dokumentację bieżącej rewizji w migawce gzip + base64 z sumą SHA-256 (około 20–30 kB na kuchnię) w `Projekt.wydania`. PDF wydania powstaje wyłącznie z migawki, więc zmiany projektu, ustawień i katalogów go nie zmieniają. Wydanie nie podbija rewizji projektu.
+
+Braki danych oznaczają wydanie jako robocze; `tylkoKompletne` blokuje takie wydanie. Odpowiedzi API i MCP nie zawierają migawek (`jsonBezMigawek`). Kopia projektu zaczyna bez wydań. Test: `src/wydania.test.ts`.

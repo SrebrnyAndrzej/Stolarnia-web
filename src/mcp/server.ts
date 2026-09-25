@@ -1,7 +1,7 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
-import { BladUslugi, Stolarnia } from "../service.js";
+import { BladUslugi, jsonBezMigawek, Stolarnia } from "../service.js";
 import { STATUSY_PROJEKTU } from "../core/statusy.js";
 
 const KATEGORIE = ["base", "wall", "tall", "corner", "appliance", "open"] as const;
@@ -53,7 +53,7 @@ const wymiaryModulu = {
 };
 
 function ok(dane: unknown) {
-  return { content: [{ type: "text" as const, text: typeof dane === "string" ? dane : JSON.stringify(dane, null, 2) }] };
+  return { content: [{ type: "text" as const, text: typeof dane === "string" ? dane : JSON.stringify(JSON.parse(jsonBezMigawek(dane) ?? "null"), null, 2) }] };
 }
 
 function bezpiecznie<A>(fn: (a: A) => unknown) {
@@ -587,6 +587,28 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "utworz_wydanie_produkcyjne",
+    {
+      title: "Wydaj rewizję do produkcji",
+      description:
+        "Zamraża bieżącą rewizję projektu: migawka projektu, elementów i dokumentacji z sumą SHA-256. PDF wydania (GET /api/projekty/{id}/wydania/{numer}/dokumentacja.pdf) nie zmienia się po późniejszych zmianach projektu, katalogów i reguł. Wydanie z brakami danych jest robocze; tylkoKompletne=true odrzuca takie wydanie.",
+      inputSchema: { projektId: z.string(), notatka: z.string().optional(), tylkoKompletne: z.boolean().optional() },
+    },
+    bezpiecznie(({ projektId, notatka, tylkoKompletne }) => s.utworzWydanie(projektId, { notatka, tylkoKompletne })),
+  );
+
+  server.registerTool(
+    "lista_wydan",
+    {
+      title: "Wydania produkcyjne projektu",
+      description: "Lista zamrożonych wydań: numer, rewizja, data, status kompletności, liczba części i operacji.",
+      inputSchema: { projektId: z.string() },
+      annotations: { readOnlyHint: true },
+    },
+    bezpiecznie(({ projektId }) => s.wydania(projektId)),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",
@@ -769,7 +791,7 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
       list: async () => ({ resources: s.projekty().map((p) => ({ uri: `stolarnia://projekt/${p.id}`, name: p.nazwa, mimeType: "application/json" })) }),
     }),
     { title: "Projekt stolarski", mimeType: "application/json" },
-    async (uri, { projektId }) => ({ contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(s.projekt(String(projektId)), null, 2) }] }),
+    async (uri, { projektId }) => ({ contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify(JSON.parse(jsonBezMigawek(s.projekt(String(projektId)))), null, 2) }] }),
   );
 
   // ---------- Prompty ----------

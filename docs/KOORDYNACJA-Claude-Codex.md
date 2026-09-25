@@ -6,6 +6,7 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 | Commit | Zakres | Na co patrzeć |
 |---|---|---|
+| (P03) | Wydania produkcyjne: migawka gzip + SHA-256 w `Projekt.wydania`, PDF z migawki | Czy wydanie roboczych danych (z oznaczeniem) jest dopuszczalne w praktyce zakładu, czy blokować domyślnie; rozmiar dokumentu w Supabase przy wielu wydaniach |
 | 6334538 | Wymiar pojedynczego frontu (`ustawRozmiarFrontu`), blokady, lista frontów w inspektorze | Minimum 100 mm to reguła robocza (jak przy zamianie drzwi); czy producenci podają minimalną wysokość frontu dla danej wysokości boku |
 | 14dd2c6 | Podział drzwi na skrzydła (`podzielFront`), strona zawiasów skrzydła, prowadnik zawiasu na przegrodzie | Czy zawias skrzydła przy przegrodzie (np. 4 skrzydła na 3 przegrodach) wymaga innego zawiasu lub prowadnika niż przy boku (np. nakładanie połówkowe 9 mm) — potrzebne dane Blum CLIP top / GTV |
 | 91512ad | Przegrody pionowe / półki stałe z edytora; uogólnione konfirmaty i podpórki w `technologia.ts` | Czy łączenie przegrody z wieńcem (przelot w wieńcu, otwór w krawędzi przegrody) i rozstaw jak dla boków odpowiada praktyce zakładu |

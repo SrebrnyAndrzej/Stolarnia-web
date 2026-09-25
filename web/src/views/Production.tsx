@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { mm, type Analiza, type Arkusz } from "../api";
+import { useEffect, useMemo, useState } from "react";
+import { api, mm, type Analiza, type Arkusz, type WydanieMeta } from "../api";
 
 const OBRZEZE: Record<string, string> = { brak: "", abs08: "0,8", abs20: "2,0" };
 
@@ -9,6 +9,28 @@ export function Production({ analiza }: { analiza: Analiza }) {
   const formatki = analiza.formatki.filter((f) => !kat || f.kategoria === kat);
   const kategorie = useMemo(() => [...new Set(analiza.formatki.map((f) => f.kategoria))], [analiza.formatki]);
   const r = analiza.rozkroj;
+  const pid = analiza.projekt.id;
+  const [wydania, setWydania] = useState<WydanieMeta[]>([]);
+  const [notatka, setNotatka] = useState("");
+  const [blad, setBlad] = useState("");
+  const [trwa, setTrwa] = useState(false);
+  useEffect(() => {
+    api.wydania(pid).then(setWydania).catch(() => setWydania([]));
+  }, [pid]);
+  const ostatnie = wydania[wydania.length - 1];
+  const wydaj = async () => {
+    setTrwa(true);
+    setBlad("");
+    try {
+      await api.utworzWydanie(pid, notatka || undefined);
+      setNotatka("");
+      setWydania(await api.wydania(pid));
+    } catch (e) {
+      setBlad((e as Error).message);
+    } finally {
+      setTrwa(false);
+    }
+  };
 
   return (
     <>
@@ -23,6 +45,49 @@ export function Production({ analiza }: { analiza: Analiza }) {
         <div className="card-b muted" style={{ fontSize: 13 }}>
           Rzut, elewacje, indeks, karty szafek oraz osobne rysunki wszystkich części: wymiary, obrzeża, widoki krawędzi, tabele operacji i źródła reguł — z rewizji {analiza.projekt.rewizja}.
           Dopóki reguły technologii nie są zatwierdzone, a okucia (prowadnice, uchwyty, zawieszki) nie mają danych montażowych, pakiet ma status „dokument roboczy”.
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-h" style={{ flexWrap: "wrap", gap: 8 }}>
+          <h2 style={{ flex: 1 }}>Wydania produkcyjne</h2>
+          <input className="input" style={{ maxWidth: 260 }} placeholder="Notatka do wydania (opcjonalnie)" value={notatka} onChange={(e) => setNotatka(e.target.value)} />
+          <button className="btn primary" disabled={trwa || ostatnie?.rewizja === analiza.projekt.rewizja} onClick={wydaj}>
+            {ostatnie?.rewizja === analiza.projekt.rewizja ? `Rewizja ${analiza.projekt.rewizja} już wydana` : `Wydaj rewizję ${analiza.projekt.rewizja} do produkcji`}
+          </button>
+        </div>
+        <div className="card-b" style={{ display: "grid", gap: 8 }}>
+          <div className="muted" style={{ fontSize: 13 }}>
+            Wydanie zamraża projekt, części i dokumentację. Jego PDF nie zmienia się po późniejszych zmianach projektu ani aktualizacji katalogów. Pracownik drukuje z wydania, nie z bieżącego projektu.
+          </div>
+          {blad && <div className="alert blad">{blad}</div>}
+          {ostatnie && ostatnie.rewizja !== analiza.projekt.rewizja && (
+            <div className="alert ostrzezenie">Projekt zmienił się po wydaniu {ostatnie.numer} (rew. {ostatnie.rewizja} → {analiza.projekt.rewizja}). Produkcja pracuje na wydaniu {ostatnie.numer}, dopóki nie wydasz nowej rewizji.</div>
+          )}
+          {wydania.length > 0 && (
+            <table className="t">
+              <thead>
+                <tr><th>Nr</th><th>Rewizja</th><th>Data</th><th>Stan</th><th className="r">Części</th><th className="r">Operacje</th><th>Notatka</th><th></th></tr>
+              </thead>
+              <tbody>
+                {[...wydania].reverse().map((w) => (
+                  <tr key={w.id}>
+                    <td><b>{w.numer}</b></td>
+                    <td className="num">{w.rewizja}</td>
+                    <td>{new Date(w.utworzono).toLocaleString("pl-PL")}</td>
+                    <td>{w.gotowaDoProdukcji ? <span className="ok">kompletne</span> : <span className="muted">robocze (braki danych: {w.podsumowanie.brakDanych})</span>}</td>
+                    <td className="r num">{w.liczbaCzesci}</td>
+                    <td className="r num">{w.podsumowanie.operacje}</td>
+                    <td style={{ fontSize: 12 }}>{w.notatka ?? ""}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <a className="btn small" href={`/api/projekty/${pid}/wydania/${w.id}/dokumentacja.pdf`} target="_blank" rel="noreferrer">PDF</a>{" "}
+                      <a className="btn small" href={`/api/projekty/${pid}/wydania/${w.id}/dokumentacja.pdf?skrocony=1`} target="_blank" rel="noreferrer">Karty</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 

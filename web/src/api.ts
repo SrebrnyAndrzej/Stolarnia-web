@@ -16,7 +16,10 @@ import type {
   UstawieniaStolarni,
   ZapotrzebowanieObrzeza,
   ZbudowanyModul,
+  WydanieProdukcyjne,
 } from "../../src/core/types";
+
+export type WydanieMeta = Omit<WydanieProdukcyjne, "dane">;
 
 export type { Arkusz, CennikMaterialow, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UrzadzenieAGD, UstawieniaStolarni };
 
@@ -114,6 +117,8 @@ export const api = {
   polecenieKonstrukcji: (id: string, mid: string, polecenie: { typ: "zamienDrzwiNaSzuflady" | "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string } | { typ: "dodajUkrytaSzuflade"; sprzezona: boolean; poleId?: string } | { typ: "podzielWnetrze"; kierunek: "pion" | "poziom"; liczba: number; strefaId?: string; rozmiaryMM?: number[] } | { typ: "podzielFront"; kierunek: "pion" | "poziom"; liczba: number; poleId?: string; przegroda?: boolean } | { typ: "ustawRozmiarFrontu"; poleId: string; mm: number; zablokowane?: string[] }) =>
     zadanie<{ modul: Modul; uwagi: string[] }>("POST", `/api/projekty/${id}/moduly/${mid}/polecenie`, polecenie),
   przywrocKonstrukcjeStandardowa: (id: string, mid: string) => zadanie<Modul>("DELETE", `/api/projekty/${id}/moduly/${mid}/drzewo`),
+  wydania: (id: string) => zadanie<WydanieMeta[]>("GET", `/api/projekty/${id}/wydania`),
+  utworzWydanie: (id: string, notatka?: string) => zadanie<WydanieMeta>("POST", `/api/projekty/${id}/wydania`, { notatka }),
   duplikujModul: (id: string, mid: string) => zadanie<Modul>("POST", `/api/projekty/${id}/moduly/${mid}/duplikuj`, {}),
 };
 

@@ -367,6 +367,28 @@ export interface Projekt {
   terminMontazu?: string;
   /** Urządzenia AGD klienta (modele i wymiary z kart producentów) — do szkiców i dopasowania nisz. */
   agd?: UrzadzenieAGD[];
+  /** Wydania produkcyjne: zamrożone rewizje dokumentacji (P03). */
+  wydania?: WydanieProdukcyjne[];
+}
+
+/**
+ * Wydanie produkcyjne — zamrożona rewizja: projekt, elementy i dokumentacja zapisane w chwili wydania (gzip + base64).
+ * PDF wydania powstaje wyłącznie z tych danych, więc późniejsze zmiany projektu, katalogów i reguł go nie zmieniają.
+ */
+export interface WydanieProdukcyjne {
+  id: string;
+  numer: number;
+  rewizja: number;
+  utworzono: string;
+  notatka?: string;
+  wersjaGeneratora: string;
+  gotowaDoProdukcji: boolean;
+  liczbaCzesci: number;
+  podsumowanie: DokumentacjaProjektu["podsumowanie"];
+  /** SHA-256 nieskompresowanego JSON migawki — kontrola integralności. */
+  skrot: string;
+  /** Migawka { projekt, zbudowane, dokumentacja, firma } jako gzip + base64. */
+  dane: string;
 }
 
 export type RodzajAGD = "piekarnik" | "mikrofala" | "plyta" | "lodowka" | "zmywarka" | "okap" | "inne";

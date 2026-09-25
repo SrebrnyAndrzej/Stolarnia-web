@@ -35,6 +35,8 @@ export interface WejsciePdf {
   tylkoModuly?: string[];
   /** Skrócone karty szafek bez osobnych rysunków części. Domyślnie pełny pakiet. */
   skrocony?: boolean;
+  /** PDF zamrożonego wydania produkcyjnego (numer i data wydania w nagłówku). */
+  wydanie?: { numer: number; utworzono: string };
 }
 
 export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
@@ -105,7 +107,14 @@ class Kontekst {
     doc.lineWidth(0.6).strokeColor("#000").rect(x, m - 4, 230, 34).stroke();
     doc.font("R").fontSize(7).fillColor("#000");
     doc.text(`${this.w.projekt.nazwa}`, x + 5, m - 1, { width: 220, lineBreak: false, ellipsis: true });
-    doc.text(`Rewizja ${this.d.rewizja} · ${new Date(this.d.wygenerowano).toLocaleString("pl-PL")} · jednostki: mm`, x + 5, m + 9, { width: 220 });
+    doc.text(
+      this.w.wydanie
+        ? `Wydanie ${this.w.wydanie.numer} · rew. ${this.d.rewizja} · ${new Date(this.w.wydanie.utworzono).toLocaleString("pl-PL")} · mm`
+        : `Rewizja ${this.d.rewizja} · ${new Date(this.d.wygenerowano).toLocaleString("pl-PL")} · jednostki: mm`,
+      x + 5,
+      m + 9,
+      { width: 220 },
+    );
     doc.fillColor(this.d.gotowaDoProdukcji ? KOLOR_STATUSU.gotowa : KOLOR_STATUSU.brakDanych).font("B")
       .text(this.d.gotowaDoProdukcji ? "GOTOWA DO PRODUKCJI" : "DOKUMENT ROBOCZY — NIE DO PRODUKCJI", x + 5, m + 19, { width: 220 });
     doc.fillColor("#000");
@@ -132,7 +141,12 @@ class Kontekst {
   stronaTytulowa() {
     const { doc, m } = this;
     const p = this.w.projekt;
-    this.nowaStrona("Dokumentacja produkcyjna", `Wygenerowano z rewizji ${this.d.rewizja} projektu — wszystkie rysunki i zestawienia pochodzą z tej samej rewizji.`);
+    this.nowaStrona(
+      "Dokumentacja produkcyjna",
+      this.w.wydanie
+        ? `Wydanie produkcyjne nr ${this.w.wydanie.numer} — zamrożona rewizja ${this.d.rewizja}; późniejsze zmiany projektu i katalogów nie zmieniają tego pakietu.`
+        : `Wygenerowano z rewizji ${this.d.rewizja} projektu — wszystkie rysunki i zestawienia pochodzą z tej samej rewizji.`,
+    );
     let y = m + 50;
     doc.font("B").fontSize(20).text(p.nazwa, m, y, { width: 380 });
     y = doc.y + 14;

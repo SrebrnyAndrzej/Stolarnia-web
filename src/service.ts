@@ -1,7 +1,8 @@
 import { schematUmowy, type Umowa } from "./core/contracts.js";
 import { PRODUKTY_OKUC } from "./core/catalog/hardware-products.js";
 import type { ProduktOkucia } from "./core/hardware-products.js";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { zbudujModul } from "./core/builder.js";
 import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
@@ -29,6 +30,9 @@ import type {
   UrzadzenieAGD,
   UstawieniaStolarni,
   WariantWyceny,
+  WydanieProdukcyjne,
+  ZbudowanyModul,
+  DokumentacjaProjektu,
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
 import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
@@ -40,6 +44,16 @@ import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
 import { jednostkaZNaglowka, odcinkiDxf, scianyZDxf, warstwyDxf, type DxfDane, type JednostkaDxf } from "./core/dxf.js";
 import { Magazyn, type BazaDanych } from "./store/store.js";
+
+/**
+ * JSON odpowiedzi bez migawek wydań (gzip, dziesiątki kB na wydanie) — przeglądarka i MCP dostają tylko metadane.
+ * Pełne dane wydania czyta wyłącznie serwer (PDF, dokumentacja wydania).
+ */
+export function jsonBezMigawek(v: unknown): string {
+  const tekst = JSON.stringify(v);
+  if (!tekst || !tekst.includes('"wydania"')) return tekst;
+  return JSON.stringify(JSON.parse(tekst, (k, x) => (k === "wydania" && Array.isArray(x) ? x.map((w: { dane?: string }) => ({ ...w, dane: undefined })) : x)));
+}
 
 export class BladUslugi extends Error {}
 
@@ -404,7 +418,7 @@ export class Stolarnia {
     return this.magazyn.zmien((b) => {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
-      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
       delete kopia.cenaUzgodnionaBrutto;
       b.projekty.push(kopia);
       return kopia;
@@ -822,6 +836,64 @@ export class Stolarnia {
     const a = this.analiza(projektId);
     const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
     return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony });
+  }
+
+  // ---------- Wydania produkcyjne (P03) ----------
+
+  /**
+   * Zamraża bieżącą rewizję: migawka projektu, elementów i dokumentacji. Wydanie z niekompletnymi danymi jest zapisywane
+   * jako robocze (gotowaDoProdukcji=false) — PDF nosi wtedy oznaczenie dokumentu roboczego.
+   */
+  utworzWydanie(projektId: string, dane: { notatka?: string; tylkoKompletne?: boolean } = {}): Omit<WydanieProdukcyjne, "dane"> {
+    const a = this.analiza(projektId);
+    const dokumentacja = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
+    if (dane.tylkoKompletne && !dokumentacja.gotowaDoProdukcji) throw new BladUslugi("Dokumentacja ma braki danych lub reguły robocze — wydanie produkcyjne wstrzymane (tylkoKompletne).");
+    const { wydania: _w, umovy: _u, ...projekt } = a.projekt;
+    const json = JSON.stringify({ projekt, zbudowane: a.zbudowane, dokumentacja, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined });
+    let wynik!: WydanieProdukcyjne;
+    this.edytujTemat(projektId, (p) => {
+      if (p.rewizja !== a.projekt.rewizja) throw new BladUslugi("Projekt zmienił się w trakcie tworzenia wydania — spróbuj ponownie.");
+      const numer = (p.wydania ?? []).reduce((mx, w) => Math.max(mx, w.numer), 0) + 1;
+      wynik = {
+        id: randomUUID().slice(0, 8),
+        numer,
+        rewizja: p.rewizja,
+        utworzono: teraz(),
+        ...(dane.notatka?.trim() ? { notatka: dane.notatka.trim().slice(0, 500) } : {}),
+        wersjaGeneratora: dokumentacja.wersjaGeneratora,
+        gotowaDoProdukcji: dokumentacja.gotowaDoProdukcji,
+        liczbaCzesci: dokumentacja.czesci.length,
+        podsumowanie: dokumentacja.podsumowanie,
+        skrot: createHash("sha256").update(json).digest("hex"),
+        dane: gzipSync(Buffer.from(json, "utf8")).toString("base64"),
+      };
+      p.wydania = [...(p.wydania ?? []), wynik];
+    });
+    const { dane: _d, ...meta } = wynik;
+    return meta;
+  }
+
+  wydania(projektId: string): Omit<WydanieProdukcyjne, "dane">[] {
+    return (this.projekt(projektId).wydania ?? []).map(({ dane: _d, ...w }) => w);
+  }
+
+  /** Migawka wydania z kontrolą sumy SHA-256. */
+  private migawkaWydania(projektId: string, wydanieId: string) {
+    const w = (this.projekt(projektId).wydania ?? []).find((x) => x.id === wydanieId || String(x.numer) === wydanieId);
+    if (!w) throw new BladUslugi(`Nie ma wydania „${wydanieId}”.`);
+    const json = gunzipSync(Buffer.from(w.dane, "base64")).toString("utf8");
+    if (createHash("sha256").update(json).digest("hex") !== w.skrot) throw new BladUslugi(`Wydanie ${w.numer}: suma kontrolna się nie zgadza — dane uszkodzone.`);
+    return { wydanie: w, ...(JSON.parse(json) as { projekt: Projekt; zbudowane: ZbudowanyModul[]; dokumentacja: DokumentacjaProjektu; firma?: string }) };
+  }
+
+  wydanieDokumentacja(projektId: string, wydanieId: string): DokumentacjaProjektu {
+    return this.migawkaWydania(projektId, wydanieId).dokumentacja;
+  }
+
+  async wydaniePdf(projektId: string, wydanieId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean } = {}): Promise<{ pdf: Buffer; numer: number; rewizja: number }> {
+    const m = this.migawkaWydania(projektId, wydanieId);
+    const pdf = await dokumentacjaPdf({ projekt: m.projekt, zbudowane: m.zbudowane, dokumentacja: m.dokumentacja, firma: m.firma, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony, wydanie: { numer: m.wydanie.numer, utworzono: m.wydanie.utworzono } });
+    return { pdf, numer: m.wydanie.numer, rewizja: m.wydanie.rewizja };
   }
 
   /** Oferta dla klienta z wizualizacjami (JPEG renderowane w przeglądarce). */
