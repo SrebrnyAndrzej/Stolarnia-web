@@ -88,3 +88,33 @@ test("podział drzwi jedno nad drugim z półką stałą na linii podziału", ()
   assert.ok(Math.abs(stala.y + stala.wys / 2 - szczelina) < 0.2, "półka stała w osi szczeliny");
   assert.throws(() => s.polecenieKonstrukcji(p.id, m.id, { typ: "podzielFront", kierunek: "pion", liczba: 4 }), /wskaż|150/);
 });
+
+test("nierówne fronty: wysokość jednej szuflady, reszta po równo, blokada, minimum 100", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "R", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-shelves-600" });
+  s.polecenieKonstrukcji(p.id, m.id, { typ: "zamienDrzwiNaSzuflady", liczba: 3 });
+  const pola = () => {
+    const mod = s.projekt(p.id).moduly.find((q) => q.id === m.id)!;
+    const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+    type Pole = NonNullable<typeof mod.drzewo>["fronty"];
+    const znajdz = (q: Pole): Pole | undefined => (q.podzial?.czesci.some((c) => c.front?.typ === "szuflada") ? q : q.podzial?.czesci.map(znajdz).find(Boolean));
+    const stos = znajdz(mod.drzewo!.fronty)!.podzial!.czesci;
+    return stos.map((c) => ({ id: c.id, wys: z.elementy.find((e) => e.kod === (c.front as { kod: string }).kod)!.wys }));
+  };
+  const przed = pola();
+  const suma = przed.reduce((a, q) => a + q.wys, 0);
+  s.polecenieKonstrukcji(p.id, m.id, { typ: "ustawRozmiarFrontu", poleId: przed[0].id, mm: 300 });
+  const po = pola();
+  assert.equal(Math.round(po[0].wys * 10) / 10, 300);
+  assert.ok(Math.abs(po[1].wys - po[2].wys) < 0.01, "reszta po równo");
+  assert.ok(Math.abs(po.reduce((a, q) => a + q.wys, 0) - suma) < 0.2, `suma frontów bez zmian: ${JSON.stringify(przed)} → ${JSON.stringify(po)}`);
+  // Blokada górnej: zmiana środkowej nie rusza górnej, dolna wyrównuje.
+  s.polecenieKonstrukcji(p.id, m.id, { typ: "ustawRozmiarFrontu", poleId: po[1].id, mm: 150, zablokowane: [po[2].id] });
+  const po2 = pola();
+  assert.ok(Math.abs(po2[2].wys - po[2].wys) < 0.01);
+  assert.equal(Math.round(po2[1].wys), 150);
+  assert.throws(() => s.polecenieKonstrukcji(p.id, m.id, { typ: "ustawRozmiarFrontu", poleId: po2[0].id, mm: suma - 150 }), /minimum 100/);
+  const d = s.dokumentacja(p.id);
+  assert.ok(!d.diagnostyka.some((x) => x.kod === "OP_POZA_CZESCIA"));
+});

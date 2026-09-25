@@ -109,3 +109,6 @@ Polecenie „Podziel wnętrze” w inspektorze, API i MCP. Połączenia konfirma
 
 ## 2026-09-25 - Silnik K04: podział drzwi na skrzydła (Claude)
 Polecenie „Podziel front”: skrzydła obok siebie albo jedno nad drugim, z płytą na linii podziału lub bez niej. Zawiasy skrzydła przy przegrodzie mocowane do przegrody. Test: `src/przegrody.test.ts`.
+
+## 2026-09-25 - Silnik K03: nierówne fronty (Claude)
+Inspektor pokazuje wymiary frontów modułu z drzewem. Zmiana jednego frontu wyrównuje pozostałe, a zablokowane zostają bez zmian. Szuflady, prowadnice i dokumentacja podążają za frontami.

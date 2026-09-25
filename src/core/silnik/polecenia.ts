@@ -352,3 +352,61 @@ export function podzielFront(
 function r1(v: number): number {
   return Math.round(v * 10) / 10;
 }
+
+/** Minimalny wymiar frontu po zmianie rozmiaru [mm]. */
+const MIN_FRONT_MM = 100;
+
+/**
+ * Ustawia wymiar jednego frontu w jego podziale (wysokość w stosie, szerokość w rzędzie) — np. nierówne szuflady.
+ * Wymiar dotyczy samego frontu; szczeliny dolicza silnik. Pozostałe fronty podziału dzielą resztę po równo, chyba że są
+ * na liście `zablokowane` (zachowują dotychczasowy wymiar). Wysuwy i skrzynki podążają za frontami.
+ */
+export function ustawRozmiarFrontu(
+  wejscie: Mebel,
+  k: UstawieniaKonstrukcyjne,
+  opcje: { poleId: string; mm: number; zablokowane?: string[] },
+): WynikPolecenia {
+  const mebel: Mebel = structuredClone(wejscie);
+  const gap = k.szczelinaFrontowMM;
+  const uklad = ukladFrontow(mebel.fronty, mebel.szerokoscMM, mebel.wysokoscMM, gap);
+  const cel = uklad.get(opcje.poleId);
+  if (!cel) throw new BladPolecenia(`Nie ma pola frontu „${opcje.poleId}”.`);
+  let rodzic: PoleFrontu | undefined;
+  const szukaj = (p: PoleFrontu) => {
+    if (p.podzial?.czesci.some((c) => c.id === opcje.poleId)) rodzic = p;
+    p.podzial?.czesci.forEach(szukaj);
+  };
+  szukaj(mebel.fronty);
+  if (!rodzic?.podzial) throw new BladPolecenia("Ten front wypełnia całe pole — nie ma czego podzielić inaczej.");
+  if (!(opcje.mm >= MIN_FRONT_MM)) throw new BladPolecenia(`Front musi mieć co najmniej ${MIN_FRONT_MM} mm.`);
+  const pion = rodzic.podzial.kierunek === "pion";
+  const zablokowane = new Set(opcje.zablokowane ?? []);
+  // Rozmiar w podziale obejmuje szczeliny przypisane do pola — przeliczenie z wymiaru frontu.
+  const wymiarPola = (id: string, mmFrontu: number) => {
+    const u = uklad.get(id)!;
+    return mmFrontu + (pion ? u.obszar.w - u.front.w : u.obszar.h - u.front.h);
+  };
+  // Pozostałe fronty mają być równe (same fronty, nie pola — skrajne pola niosą szczelinę krawędzi).
+  const czesci = rodzic.podzial.czesci;
+  const stale = new Map<string, number>();
+  stale.set(opcje.poleId, wymiarPola(opcje.poleId, opcje.mm));
+  for (const c of czesci) if (zablokowane.has(c.id) && c.id !== opcje.poleId) stale.set(c.id, pion ? uklad.get(c.id)!.obszar.w : uklad.get(c.id)!.obszar.h);
+  const wolne = czesci.filter((c) => !stale.has(c.id));
+  if (!wolne.length) throw new BladPolecenia("Wszystkie fronty podziału byłyby zablokowane — zostaw co najmniej jeden do wyrównania.");
+  const dlugosc = pion ? uklad.get(rodzic.id)!.obszar.w : uklad.get(rodzic.id)!.obszar.h;
+  const narzut = (id: string) => (pion ? uklad.get(id)!.obszar.w - uklad.get(id)!.front.w : uklad.get(id)!.obszar.h - uklad.get(id)!.front.h);
+  const rowny = (dlugosc - [...stale.values()].reduce((a, x) => a + x, 0) - wolne.reduce((a, c) => a + narzut(c.id), 0)) / wolne.length;
+  const ostatni = wolne[wolne.length - 1].id;
+  rodzic.podzial.czesci = czesci.map((c) =>
+    stale.has(c.id) ? { ...c, rozmiar: { mm: r1(stale.get(c.id)!) } } : c.id === ostatni ? { ...c, rozmiar: { reszta: true } } : { ...c, rozmiar: { mm: r1(rowny + narzut(c.id)) } },
+  );
+  // Kontrola: żaden front po zmianie nie może być mniejszy niż minimum.
+  const po = ukladFrontow(mebel.fronty, mebel.szerokoscMM, mebel.wysokoscMM, gap);
+  for (const c of rodzic.podzial.czesci) {
+    const u = po.get(c.id)!;
+    const wym = pion ? u.front.w : u.front.h;
+    if (wym < MIN_FRONT_MM) throw new BladPolecenia(`Po zmianie front „${c.id}” miałby ${Math.round(wym)} mm — minimum ${MIN_FRONT_MM} mm.`);
+  }
+  const opis = rodzic.podzial.czesci.map((c) => Math.round(pion ? po.get(c.id)!.front.w : po.get(c.id)!.front.h)).join(" / ");
+  return { mebel, uwagi: [`Fronty w podziale: ${opis} mm.`] };
+}

@@ -576,6 +576,17 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "ustaw_rozmiar_frontu",
+    {
+      title: "Ustaw wymiar frontu",
+      description:
+        "Silnik konstrukcji: ustawia wysokość (w stosie) albo szerokość (w rzędzie) jednego frontu, np. nierówne szuflady. Pozostałe fronty podziału dzielą resztę po równo, chyba że są na liście zablokowanych. Pola frontów (poleId) zwraca analiza modułu z drzewem (m.drzewo.fronty).",
+      inputSchema: { projektId: z.string(), modulId: z.string(), poleId: z.string(), mm: z.number().min(100), zablokowane: z.array(z.string()).optional() },
+    },
+    bezpiecznie(({ projektId, modulId, poleId, mm, zablokowane }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "ustawRozmiarFrontu", poleId, mm, zablokowane })),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",

@@ -124,6 +124,11 @@ Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z j
 - „jeden front zasłania dwa wysuwy”: szuflada ukryta (etap 3);
 - API `podzielFront`, MCP `podziel_front`, przyciski w inspektorze.
 
+**K03 — wymiar pojedynczego frontu, zrobione:**
+- polecenie `ustawRozmiarFrontu`: wysokość (stos) albo szerokość (rząd) jednego frontu;
+- pozostałe fronty podziału są równe; wyrównane są same fronty, nie pola ze szczelinami. Fronty z listy `zablokowane` zachowują wymiar. Kontrola minimum 100 mm;
+- w inspektorze lista „Wymiary frontów” z kłódką blokady (moduły z drzewem). MCP `ustaw_rozmiar_frontu`.
+
 **Nie ma jeszcze:**
 - reguły zawiasu i listwy dystansowej dla szuflad za drzwiami (brak danych — zamówione u Codexa),
 - szuflady z ukrytą szufladą i zabierakiem,

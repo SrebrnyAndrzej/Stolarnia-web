@@ -6,7 +6,7 @@ import { zbudujModul } from "./core/builder.js";
 import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
-import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, podzielFront, podzielWnetrze, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
+import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, podzielFront, podzielWnetrze, ustawRozmiarFrontu, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
 import { domyslnaKonfiguracja, KATALOG_MODULOW, modulKatalogowy } from "./core/catalog/modules.js";
 import { formatkiCSV, listaFormatek, rozkroj, zapotrzebowanieObrzeza, type MaterialyModulu } from "./core/production.js";
@@ -608,7 +608,8 @@ export class Stolarnia {
     polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string } | { typ: "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string }
       | { typ: "dodajUkrytaSzuflade"; sprzezona: boolean; poleId?: string }
       | { typ: "podzielWnetrze"; kierunek: "pion" | "poziom"; liczba: number; strefaId?: string; rozmiaryMM?: number[] }
-      | { typ: "podzielFront"; kierunek: "pion" | "poziom"; liczba: number; poleId?: string; przegroda?: boolean },
+      | { typ: "podzielFront"; kierunek: "pion" | "poziom"; liczba: number; poleId?: string; przegroda?: boolean }
+      | { typ: "ustawRozmiarFrontu"; poleId: string; mm: number; zablokowane?: string[] },
   ): { modul: Modul; uwagi: string[] } {
     let wynik!: { modul: Modul; uwagi: string[] };
     this.edytuj(projektId, (p, b) => {
@@ -629,7 +630,9 @@ export class Stolarnia {
                   ? podzielWnetrze(wymiary, k, polecenie)
                   : polecenie.typ === "podzielFront"
                     ? podzielFront(wymiary, k, polecenie)
-                    : (() => {
+                    : polecenie.typ === "ustawRozmiarFrontu"
+                      ? ustawRozmiarFrontu(wymiary, k, polecenie)
+                      : (() => {
                   throw new BladPolecenia(`Nieznane polecenie „${(polecenie as { typ: string }).typ}”.`);
                 })();
         m.drzewo = r.mebel;

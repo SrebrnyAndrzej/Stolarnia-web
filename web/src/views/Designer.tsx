@@ -335,6 +335,8 @@ export function Designer({ analiza, odswiez }: Props) {
             materialy={materialy}
             sciany={sciany}
             ostrzezenia={analiza.zbudowane.find((z) => z.modul.id === modul.id)?.ostrzezenia ?? []}
+            elementy={analiza.zbudowane.find((z) => z.modul.id === modul.id)?.elementy ?? []}
+            onRozmiarFrontu={(poleId, mm, zablokowane) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "ustawRozmiarFrontu", poleId, mm, zablokowane }))}
             onZmien={(d) => wykonaj(() => api.zmienModul(p.id, modul.id, d))}
             onDrzwiNaSzuflady={(liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "zamienDrzwiNaSzuflady", liczba }))}
             onSzufladyZaDrzwiami={(liczba, wysokoscMM) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM }))}
@@ -641,13 +643,15 @@ interface InspektorProps {
   onUkrytaSzuflada: (sprzezona: boolean) => void;
   onPodzielWnetrze: (kierunek: "pion" | "poziom", liczba: number) => void;
   onPodzielFront: (kierunek: "pion" | "poziom", liczba: number, przegroda: boolean) => void;
+  elementy: { kod: string; szer: number; wys: number }[];
+  onRozmiarFrontu: (poleId: string, mm: number, zablokowane: string[]) => void;
   onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPodzielWnetrze, onPodzielFront, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPodzielWnetrze, onPodzielFront, elementy, onRozmiarFrontu, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
@@ -657,6 +661,22 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
   const [liczbaKomor, setLiczbaKomor] = useState(2);
   const [liczbaSkrzydel, setLiczbaSkrzydel] = useState(2);
   const [zPrzegroda, setZPrzegroda] = useState(true);
+  const [zablokowaneFronty, setZablokowaneFronty] = useState<string[]>([]);
+  // Fronty w podziałach drzewa: pole, kod elementu i kierunek podziału rodzica (wymiar edytowany: wysokość albo szerokość).
+  const frontyDrzewa = useMemo(() => {
+    const wynik: { poleId: string; kod: string; pion: boolean; mm: number }[] = [];
+    const idz = (pole: NonNullable<Modul["drzewo"]>["fronty"]) => {
+      for (const c of pole.podzial?.czesci ?? []) {
+        if (c.front && "kod" in c.front && !c.podzial) {
+          const e = elementy.find((q) => q.kod === (c.front as { kod: string }).kod);
+          if (e) wynik.push({ poleId: c.id, kod: e.kod, pion: pole.podzial!.kierunek === "pion", mm: Math.round((pole.podzial!.kierunek === "pion" ? e.szer : e.wys) * 10) / 10 });
+        }
+        idz(c);
+      }
+    };
+    if (m.drzewo) idz(m.drzewo.fronty);
+    return wynik;
+  }, [m.drzewo, elementy]);
   const [systemy, setSystemy] = useState<Awaited<ReturnType<typeof api.systemySzuflad>>>([]);
   useEffect(() => {
     api.systemySzuflad().then(setSystemy).catch(() => setSystemy([]));
@@ -804,6 +824,22 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
             <Liczba label="Komór" value={liczbaKomor} onSave={(v) => setLiczbaKomor(Math.max(2, Math.min(6, v)))} />
             <button className="btn" onClick={() => onPodzielWnetrze("pion", liczbaKomor)}>Przegrody pionowe</button>
             <button className="btn" onClick={() => onPodzielWnetrze("poziom", liczbaKomor)}>Półki stałe</button>
+          </div>
+        )}
+
+        {frontyDrzewa.length > 1 && (
+          <div className="field">
+            <label>Wymiary frontów (pozostałe dzielą resztę; zaznacz, by zablokować)</label>
+            <div className="grid2">
+              {frontyDrzewa.map((f) => (
+                <div key={f.poleId} className="row" style={{ alignItems: "flex-end", gap: 6 }}>
+                  <Liczba label={`${f.kod.replace("FRONT-", "")} ${f.pion ? "szer." : "wys."}`} value={f.mm} onSave={(v) => onRozmiarFrontu(f.poleId, v, zablokowaneFronty.filter((x) => x !== f.poleId))} />
+                  <label className="check" title="Zablokuj wymiar przy zmianie innego frontu">
+                    <input type="checkbox" checked={zablokowaneFronty.includes(f.poleId)} onChange={(e) => setZablokowaneFronty((z) => (e.target.checked ? [...z, f.poleId] : z.filter((x) => x !== f.poleId)))} /> 🔒
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
