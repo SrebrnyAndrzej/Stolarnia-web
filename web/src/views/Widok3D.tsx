@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { KIERUNEK_KLUCZA, studioEnvironment } from "./studio3d";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { granice, punktNaRzucie, scianyNaRzucie } from "../../../src/core/geometry";
 import type { Analiza, Material } from "../api";
@@ -29,7 +30,18 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     zawartosc: THREE.Group;
     sciany: { mesh: THREE.Object3D; cx: number; cz: number; nx: number; nz: number }[];
     kamUstawiona: string;
+    hemi: THREE.HemisphereLight;
+    slonce: THREE.DirectionalLight;
+    srodowisko?: THREE.Texture;
   } | null>(null);
+  // Oświetlenie studyjne (HDRI z PMREM) albo proste — wybór zapamiętany w przeglądarce.
+  const [studio, setStudio] = useState(() => {
+    try {
+      return localStorage.getItem("widok3d.studio") !== "0";
+    } catch {
+      return true;
+    }
+  });
   const onWybierzRef = useRef(onWybierz);
   onWybierzRef.current = onWybierz;
 
@@ -48,9 +60,12 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     controls.enableDamping = true;
     controls.maxPolarAngle = Math.PI * 0.495;
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a66, 1.6));
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7a66, 1.6);
+    scene.add(hemi);
     const slonce = new THREE.DirectionalLight(0xffffff, 1.4);
-    slonce.position.set(3, 6, 4);
+    slonce.position.copy(KIERUNEK_KLUCZA).multiplyScalar(7.8);
+    slonce.shadow.bias = -0.0004;
+    slonce.shadow.normalBias = 0.02;
     slonce.castShadow = true;
     slonce.shadow.mapSize.set(2048, 2048);
     Object.assign(slonce.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8 });
@@ -58,7 +73,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
 
     const zawartosc = new THREE.Group();
     scene.add(zawartosc);
-    stan.current = { renderer, scene, camera, controls, zawartosc, sciany: [], kamUstawiona: "" };
+    stan.current = { renderer, scene, camera, controls, zawartosc, sciany: [], kamUstawiona: "", hemi, slonce };
 
     const rozmiar = () => {
       const w = el.clientWidth;
@@ -103,11 +118,37 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       cancelAnimationFrame(raf);
       ro.disconnect();
       controls.dispose();
+      stan.current?.srodowisko?.dispose();
       renderer.dispose();
       el.removeChild(renderer.domElement);
       stan.current = null;
     };
   }, []);
+
+  // Tryb oświetlenia: studio — mapa środowiska, ACES, słabsze światło otoczenia; proste — dotychczasowe światła.
+  useEffect(() => {
+    const s = stan.current;
+    if (!s) return;
+    try {
+      localStorage.setItem("widok3d.studio", studio ? "1" : "0");
+    } catch {
+      /* brak dostępu do pamięci przeglądarki */
+    }
+    if (studio) {
+      s.srodowisko ??= studioEnvironment(s.renderer);
+      s.scene.environment = s.srodowisko;
+      s.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      s.renderer.toneMappingExposure = 0.9;
+      s.hemi.intensity = 0.12;
+      s.slonce.intensity = 2.2;
+    } else {
+      s.scene.environment = null;
+      s.renderer.toneMapping = THREE.NoToneMapping;
+      s.renderer.toneMappingExposure = 1;
+      s.hemi.intensity = 1.6;
+      s.slonce.intensity = 1.4;
+    }
+  }, [studio]);
 
   // Budowa sceny przy każdej zmianie projektu
   useEffect(() => {
@@ -154,9 +195,11 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     // Moduły
     const kolor = (id: string | undefined, zapas: string) => new THREE.Color((id && matMap.get(id)?.kolorHEX) || zapas);
     const materialy = new Map<string, THREE.MeshStandardMaterial>();
-    const mat = (hex: THREE.Color, sel: boolean) => {
-      const k = `${hex.getHexString()}|${sel}`;
-      if (!materialy.has(k)) materialy.set(k, new THREE.MeshStandardMaterial({ color: hex, roughness: 0.6, emissive: sel ? new THREE.Color(0xd09a5e) : new THREE.Color(0), emissiveIntensity: sel ? 0.35 : 0 }));
+    // Chropowatość wg roli: blat i fronty z delikatnym połyskiem (widoczne refleksy softboxów), korpus matowy.
+    const CHROPOWATOSC: Record<string, number> = { blat: 0.32, front: 0.42, korpus: 0.62, plecy: 0.8, szuflada: 0.62 };
+    const mat = (hex: THREE.Color, sel: boolean, rola = "korpus") => {
+      const k = `${hex.getHexString()}|${sel}|${rola}`;
+      if (!materialy.has(k)) materialy.set(k, new THREE.MeshStandardMaterial({ color: hex, roughness: CHROPOWATOSC[rola] ?? 0.6, emissive: sel ? new THREE.Color(0xd09a5e) : new THREE.Color(0), emissiveIntensity: sel ? 0.35 : 0 }));
       return materialy.get(k)!;
     };
     const krawedz = new THREE.LineBasicMaterial({ color: 0x3b3128, transparent: true, opacity: 0.35 });
@@ -178,7 +221,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       for (const e of z.elementy) {
         if (e.rola === "drawerSide" || e.rola === "drawerFrontBack" || e.rola === "drawerBottom") continue; // niewidoczne za frontem
         const geo = new THREE.BoxGeometry(Math.max(e.szer, 1) * M, Math.max(e.wys, 1) * M, Math.max(e.gl, 1) * M);
-        const mesh = new THREE.Mesh(geo, mat(barwy[e.materialRola], sel));
+        const mesh = new THREE.Mesh(geo, mat(barwy[e.materialRola], sel, e.materialRola));
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.userData.modulId = m.id;
@@ -216,12 +259,22 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       const [ax, az] = aktywna ? punktNaRzucie(aktywna, aktywna.sciana.dlugoscMM / 2, 0) : [cx / M, cz / M];
       const kx = aktywna ? ax * M + aktywna.nx * r * 1.1 : cx + r;
       const kz = aktywna ? az * M + aktywna.ny * r * 1.1 : cz + r;
-      s.camera.position.set(kx, 1.9, kz);
+      // Kamera ponad najwyższą szafką: zabudowa po przeciwnej stronie nie zasłania oglądanej ściany.
+      const najwyzej = Math.max(0, ...analiza.zbudowane.map((z) => (z.modul.pozycjaYMM + z.modul.wysokoscMM) * M));
+      s.camera.position.set(kx, Math.max(1.9, najwyzej + 0.7), kz);
       s.controls.target.set(aktywna ? ax * M : cx, 1.0, aktywna ? az * M : cz);
       s.controls.update();
       s.kamUstawiona = pom.id;
     }
   }, [analiza, pomieszczenieId, scianaId, wybrany, matMap]);
 
-  return <div ref={host} className="widok3d" />;
+  return (
+    <div style={{ position: "relative" }}>
+      <div ref={host} className="widok3d" />
+      <div className="seg" style={{ position: "absolute", top: 8, right: 8 }} role="group" aria-label="Oświetlenie widoku 3D">
+        <button className={studio ? "on" : ""} onClick={() => setStudio(true)} title="Studyjne HDRI: odbicia i miękkie światło">Studio</button>
+        <button className={!studio ? "on" : ""} onClick={() => setStudio(false)} title="Proste światło — szybsze na słabszych komputerach">Proste</button>
+      </div>
+    </div>
+  );
 }
