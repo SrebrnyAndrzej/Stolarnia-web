@@ -17,3 +17,5 @@ Przed rozbudową konstruktora przeczytaj docs/RESEARCH-silnik-mebli-i-konta.md. 
 
 ## Konstruktor mebli niestandardowych (25.09.2026)
 Przed pracą nad edycją modułów (fronty, szuflady za drzwiami, szuflada z ukrytą szufladą) przeczytaj docs/RESEARCH-konstruktor-mebli-niestandardowych.md razem z planem Codexa. To plan, nie gotowa funkcja.
+## Podział pracy — decyzja użytkownika 25.09.2026
+Claude implementuje silnik. Codex dostarcza wyłącznie research, dane techniczne i źródła; nie buduje logiki silnika. Rozpoczęty lokalnie prototyp Codexa odłożono poza repozytorium, nie został opublikowany. Obowiązuje cena uzgodniona projektu, niezależna od aktualizacji katalogów.
