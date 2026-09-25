@@ -6,7 +6,7 @@ import { zbudujModul } from "./core/builder.js";
 import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
-import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
+import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, podzielWnetrze, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
 import { domyslnaKonfiguracja, KATALOG_MODULOW, modulKatalogowy } from "./core/catalog/modules.js";
 import { formatkiCSV, listaFormatek, rozkroj, zapotrzebowanieObrzeza, type MaterialyModulu } from "./core/production.js";
@@ -606,7 +606,8 @@ export class Stolarnia {
     projektId: string,
     modulId: string,
     polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string } | { typ: "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string }
-      | { typ: "dodajUkrytaSzuflade"; sprzezona: boolean; poleId?: string },
+      | { typ: "dodajUkrytaSzuflade"; sprzezona: boolean; poleId?: string }
+      | { typ: "podzielWnetrze"; kierunek: "pion" | "poziom"; liczba: number; strefaId?: string; rozmiaryMM?: number[] },
   ): { modul: Modul; uwagi: string[] } {
     let wynik!: { modul: Modul; uwagi: string[] };
     this.edytuj(projektId, (p, b) => {
@@ -623,7 +624,9 @@ export class Stolarnia {
               ? dodajSzufladyZaDrzwiami(wymiary, k, polecenie)
               : polecenie.typ === "dodajUkrytaSzuflade"
                 ? dodajUkrytaSzuflade(wymiary, k, polecenie)
-                : (() => {
+                : polecenie.typ === "podzielWnetrze"
+                  ? podzielWnetrze(wymiary, k, polecenie)
+                  : (() => {
                   throw new BladPolecenia(`Nieznane polecenie „${(polecenie as { typ: string }).typ}”.`);
                 })();
         m.drzewo = r.mebel;

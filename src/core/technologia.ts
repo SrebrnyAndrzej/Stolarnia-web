@@ -224,17 +224,39 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     const bokP = el.get("BOK-P");
     const boki = [bokL, bokP].filter(Boolean) as Element[];
 
-    // --- Konfirmaty: boki ↔ wieńce i wzmocnienia ---
-    for (const hz of zm.elementy.filter((e) => e.rola === "bottom" || e.rola === "top" || e.rola === "reinforcement" || e.rola === "fixedShelf")) {
+    // --- Konfirmaty: płyty pionowe (boki, przegrody) ↔ wieńce, wzmocnienia i półki stałe ---
+    // Płyta pozioma łączy się z tą płytą pionową, której lico dotyka jej końca (bok albo przegroda).
+    const pionowe = zm.elementy.filter((e) => e.rola === "side" || e.rola === "divider");
+    const obokX = (x: number, y: number) =>
+      pionowe.filter((v) => (Math.abs(v.x + v.szer - x) < EPS || Math.abs(v.x - x) < EPS) && v.y - EPS <= y && y <= v.y + v.wys + EPS);
+    const poziome = zm.elementy.filter((e) => e.rola === "bottom" || e.rola === "top" || e.rola === "reinforcement" || e.rola === "fixedShelf");
+    for (const hz of poziome) {
       const yOs = hz.y + hz.wys / 2;
-      for (const b of boki) {
-        const lewy = b.kod === "BOK-L";
-        const licoBoku = lewy ? b.x + b.szer : b.x;
-        for (const dz of rozstaw(hz.gl, t.konfirmatOdKrawedziMM, t.konfirmatMaxRozstawMM)) {
-          const z = hz.z + dz;
-          const pol = `${cz.get(b.kod)?.etykieta ?? b.kod} ↔ ${cz.get(hz.kod)?.etykieta ?? hz.kod}`;
-          dodaj(b.kod, [licoBoku, yOs, z], { typ: "otwor", srednica: t.konfirmatSrednicaLicaMM, przelotowy: true, przeznaczenie: "Konfirmat — przelot w licu", polaczenie: pol, regula: R.konfirmat });
-          dodaj(hz.kod, [licoBoku, yOs, z], { typ: "otwor", srednica: t.konfirmatSrednicaKrawedziMM, glebokosc: t.konfirmatGlebokoscKrawedziMM, przeznaczenie: "Konfirmat — otwór w krawędzi", polaczenie: pol, regula: R.konfirmat });
+      for (const xKonca of [hz.x, hz.x + hz.szer]) {
+        for (const b of obokX(xKonca, yOs)) {
+          for (const dz of rozstaw(hz.gl, t.konfirmatOdKrawedziMM, t.konfirmatMaxRozstawMM)) {
+            const z = hz.z + dz;
+            const pol = `${cz.get(b.kod)?.etykieta ?? b.kod} ↔ ${cz.get(hz.kod)?.etykieta ?? hz.kod}`;
+            dodaj(b.kod, [xKonca, yOs, z], { typ: "otwor", srednica: t.konfirmatSrednicaLicaMM, przelotowy: true, przeznaczenie: "Konfirmat — przelot w licu", polaczenie: pol, regula: R.konfirmat });
+            dodaj(hz.kod, [xKonca, yOs, z], { typ: "otwor", srednica: t.konfirmatSrednicaKrawedziMM, glebokosc: t.konfirmatGlebokoscKrawedziMM, przeznaczenie: "Konfirmat — otwór w krawędzi", polaczenie: pol, regula: R.konfirmat });
+          }
+        }
+      }
+    }
+    // Przegroda pionowa ↔ płyta pozioma nad nią i pod nią: przelot w licu płyty poziomej, otwór w krawędzi przegrody.
+    for (const d of zm.elementy.filter((e) => e.rola === "divider")) {
+      const xOs = d.x + d.szer / 2;
+      for (const yKonca of [d.y, d.y + d.wys]) {
+        const hz = poziome.find((h) => (Math.abs(h.y + h.wys - yKonca) < EPS || Math.abs(h.y - yKonca) < EPS) && h.x - EPS <= xOs && xOs <= h.x + h.szer + EPS);
+        if (!hz) {
+          brak("PRZEGRODA_BEZ_OPARCIA", [d.kod], `przegroda ${d.kod} nie opiera się na płycie ${yKonca === d.y ? "pod" : "nad"} nią.`);
+          continue;
+        }
+        for (const dz of rozstaw(d.gl, t.konfirmatOdKrawedziMM, t.konfirmatMaxRozstawMM)) {
+          const z = d.z + dz;
+          const pol = `${cz.get(hz.kod)?.etykieta ?? hz.kod} ↔ ${cz.get(d.kod)?.etykieta ?? d.kod}`;
+          dodaj(hz.kod, [xOs, yKonca, z], { typ: "otwor", srednica: t.konfirmatSrednicaLicaMM, przelotowy: true, przeznaczenie: "Konfirmat — przelot w licu", polaczenie: pol, regula: R.konfirmat });
+          dodaj(d.kod, [xOs, yKonca, z], { typ: "otwor", srednica: t.konfirmatSrednicaKrawedziMM, glebokosc: t.konfirmatGlebokoscKrawedziMM, przeznaczenie: "Konfirmat — otwór w krawędzi", polaczenie: pol, regula: R.konfirmat });
         }
       }
     }
@@ -244,8 +266,9 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     for (const polka of zm.elementy.filter((e) => e.rola === "shelf")) {
       const yBaza = polka.y - 7; // oś podpórki pod spodem półki
       const rzedy = [t.podporkaOdKrawedziMM, D - rezerwaPlecow - t.podporkaOdKrawedziMM];
-      for (const b of boki) {
-        const licoBoku = b.kod === "BOK-L" ? b.x + b.szer : b.x;
+      for (const licoBoku of [polka.x, polka.x + polka.szer]) {
+        const b = obokX(licoBoku, polka.y)[0];
+        if (!b) continue;
         for (const z of rzedy)
           for (const dy of [-t.rastrMM, 0, t.rastrMM])
             dodaj(b.kod, [licoBoku, yBaza + dy, z], { typ: "otwor", srednica: t.podporkaSrednicaMM, glebokosc: t.podporkaGlebokoscMM, przeznaczenie: "Podpórka półki", polaczenie: cz.get(polka.kod)?.etykieta, regula: R.podporka });

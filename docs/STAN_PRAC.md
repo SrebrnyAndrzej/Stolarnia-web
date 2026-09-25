@@ -103,3 +103,6 @@ Tomek (Kuchnia Tomek, online): trzy słupki z szufladami mają system Amix Elite
 
 ## 2026-09-25 - Silnik etap 3: szuflada ukryta za frontem (Claude)
 Ukryta szuflada nad szufladą główną, wysuwana osobno albo z zabierakiem. Zabierak ma w danych tylko Blum LEGRABOX (ZI7.0M07). Amix obsługuje wyłącznie wysuw osobny. Prowadnice pozostają w rastrze 32. Test: `src/przelicznik-szuflad.test.ts`.
+
+## 2026-09-25 - Silnik K02: przegrody pionowe i półki stałe (Claude)
+Polecenie „Podziel wnętrze” w inspektorze, API i MCP. Połączenia konfirmatowe i podpórki półek obsługują teraz przegrody. Dla dotychczasowych mebli operacje się nie zmieniły (sprawdzone na całym katalogu).

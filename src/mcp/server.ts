@@ -540,6 +540,24 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "podziel_wnetrze",
+    {
+      title: "Podziel wnętrze przegrodami",
+      description:
+        "Silnik konstrukcji: dzieli strefę wnętrza (domyślnie największą) na 2–6 komór przegrodami pionowymi z płyty korpusu albo półkami stałymi. Półki nastawne strefy przechodzą do każdej komory. Dokumentacja łączy przegrody konfirmatami z płytami nad i pod nimi, a podpórki półek wierci w bokach lub przegrodach.",
+      inputSchema: {
+        projektId: z.string(),
+        modulId: z.string(),
+        kierunek: z.enum(["pion", "poziom"]),
+        liczba: z.number().int().min(2).max(6),
+        strefaId: z.string().optional(),
+        rozmiaryMM: z.array(z.number()).optional().describe("Szerokości/wysokości pierwszych komór; pozostałe dzielą resztę"),
+      },
+    },
+    bezpiecznie(({ projektId, modulId, kierunek, liczba, strefaId, rozmiaryMM }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "podzielWnetrze", kierunek, liczba, strefaId, rozmiaryMM })),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",

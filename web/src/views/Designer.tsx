@@ -339,6 +339,7 @@ export function Designer({ analiza, odswiez }: Props) {
             onDrzwiNaSzuflady={(liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "zamienDrzwiNaSzuflady", liczba }))}
             onSzufladyZaDrzwiami={(liczba, wysokoscMM) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM }))}
             onUkrytaSzuflada={(sprzezona) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajUkrytaSzuflade", sprzezona }))}
+            onPodzielWnetrze={(kierunek, liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "podzielWnetrze", kierunek, liczba }))}
             onPrzywrocStandardowa={() => wykonaj(() => api.przywrocKonstrukcjeStandardowa(p.id, modul.id))}
             onUsun={() => wykonaj(async () => { await api.usunModul(p.id, modul.id); setWybrany(null); })}
             onDuplikuj={() => wykonaj(async () => setWybrany((await api.duplikujModul(p.id, modul.id)).id))}
@@ -637,19 +638,21 @@ interface InspektorProps {
   onDrzwiNaSzuflady: (liczba: number) => void;
   onSzufladyZaDrzwiami: (liczba: number, wysokoscMM: number) => void;
   onUkrytaSzuflada: (sprzezona: boolean) => void;
+  onPodzielWnetrze: (kierunek: "pion" | "poziom", liczba: number) => void;
   onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPodzielWnetrze, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
   const [liczbaSzufladEdytor, setLiczbaSzufladEdytor] = useState(3);
   const [liczbaWewnetrznych, setLiczbaWewnetrznych] = useState(2);
   const [strefaWewnetrznej, setStrefaWewnetrznej] = useState(160);
+  const [liczbaKomor, setLiczbaKomor] = useState(2);
   const [systemy, setSystemy] = useState<Awaited<ReturnType<typeof api.systemySzuflad>>>([]);
   useEffect(() => {
     api.systemySzuflad().then(setSystemy).catch(() => setSystemy([]));
@@ -782,6 +785,13 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <div className="row">
             <button className="btn" onClick={() => onUkrytaSzuflada(false)}>Szuflada ukryta za frontem</button>
             <button className="btn" onClick={() => onUkrytaSzuflada(true)}>…z zabierakiem</button>
+          </div>
+        )}
+        {!["filler", "dishwasherFront"].includes(m.konstrukcja) && (
+          <div className="row">
+            <Liczba label="Komór" value={liczbaKomor} onSave={(v) => setLiczbaKomor(Math.max(2, Math.min(6, v)))} />
+            <button className="btn" onClick={() => onPodzielWnetrze("pion", liczbaKomor)}>Przegrody pionowe</button>
+            <button className="btn" onClick={() => onPodzielWnetrze("poziom", liczbaKomor)}>Półki stałe</button>
           </div>
         )}
 

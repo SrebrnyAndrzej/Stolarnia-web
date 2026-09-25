@@ -113,10 +113,14 @@ Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z j
 - dokumentacja: `ZABIERAK_FRONT` (Ø25 pod obudowę zabieraka, położenie pionowe do potwierdzenia);
 - API `dodajUkrytaSzuflade`, MCP `dodaj_ukryta_szuflade`, przyciski w inspektorze.
 
+**K02 — przegrody i półki stałe z edytora, zrobione:**
+- polecenie `podzielWnetrze` (pion/poziom, 2–6 komór, równe albo z wymiarami pierwszych komór); półki nastawne przechodzą do każdej komory;
+- dokumentacja łączy płyty poziome z płytą pionową dotykającą ich końca (bok albo przegroda), a przegrodę z płytami nad i pod nią. Podpórki półek są w bokach lub przegrodach. Porównanie całego katalogu (536 części) nie wykazało zmian w operacjach;
+- API `podzielWnetrze`, MCP `podziel_wnetrze`, przyciski „Przegrody pionowe / Półki stałe” w inspektorze. Test: `src/przegrody.test.ts`.
+
 **Nie ma jeszcze:**
 - reguły zawiasu i listwy dystansowej dla szuflad za drzwiami (brak danych — zamówione u Codexa),
 - szuflady z ukrytą szufladą i zabierakiem,
-- przegród pionowych w edytorze,
 - edytora graficznego z zakładkami „Fronty” i „Wnętrze”,
 - profilu produkcyjnego zatwierdzonego próbnym montażem.
 

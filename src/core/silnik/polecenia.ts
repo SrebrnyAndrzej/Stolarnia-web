@@ -205,3 +205,50 @@ export function dodajUkrytaSzuflade(wejscie: Mebel, k: UstawieniaKonstrukcyjne, 
   if (!mebel.szufladySystemowe) uwagi.push("Wybierz system szuflad — szuflada ukryta powstaje tylko z danymi producenta.");
   return { mebel, uwagi };
 }
+
+/**
+ * Dzieli strefę wnętrza przegrodami z płyty korpusu na N komór (pionowo — obok siebie, poziomo — półkami stałymi).
+ * Wyposażenie strefy (półki nastawne) przechodzi do każdej komory. Komory są równe albo mają podane szerokości/wysokości [mm]
+ * (pozostałe dzielą resztę). Strefa z wysuwem albo niszą AGD nie jest dzielona.
+ */
+export function podzielWnetrze(
+  wejscie: Mebel,
+  k: UstawieniaKonstrukcyjne,
+  opcje: { kierunek: "pion" | "poziom"; liczba: number; strefaId?: string; rozmiaryMM?: number[] },
+): WynikPolecenia {
+  const n = Math.round(opcje.liczba);
+  if (!(n >= 2 && n <= 6)) throw new BladPolecenia("Liczba komór musi być w zakresie 2–6.");
+  if (wejscie.korpus.rodzaj !== "korpus") throw new BladPolecenia("Podział wymaga korpusu.");
+  const mebel: Mebel = structuredClone(wejscie);
+  const t = k.gruboscPlytyKorpusuMM;
+  const wnetrze = ukladWnetrza(mebel.wnetrze, mebel.szerokoscMM, mebel.wysokoscMM, t);
+  const liscie = [...wnetrze.values()].filter((s) => !s.strefa.podzial);
+  const cel = opcje.strefaId ? wnetrze.get(opcje.strefaId) : liscie.sort((a, b) => b.w * b.h - a.w * a.h)[0];
+  if (!cel) throw new BladPolecenia(`Nie ma strefy „${opcje.strefaId}”.`);
+  if (cel.strefa.podzial) throw new BladPolecenia("Ta strefa jest już podzielona — wskaż jedną z jej komór.");
+  if (cel.strefa.wyposazenie?.typ === "nisza") throw new BladPolecenia("Nisza urządzenia nie może być podzielona.");
+  if (mebel.wysuwy.some((w) => w.strefaId === cel.strefa.id)) throw new BladPolecenia("W tej strefie pracują szuflady — najpierw je usuń.");
+  const wzdluz = opcje.kierunek === "pion" ? cel.w : cel.h;
+  const netto = wzdluz - t * (n - 1);
+  const rozmiary = opcje.rozmiaryMM ?? [];
+  if (rozmiary.length > n - 1) throw new BladPolecenia(`Podaj najwyżej ${n - 1} wymiarów — pozostałe komory dzielą resztę.`);
+  const rowne = (netto - rozmiary.reduce((s, x) => s + x, 0)) / (n - rozmiary.length);
+  const minimum = 100;
+  if (rozmiary.some((x) => x < minimum) || rowne < minimum) throw new BladPolecenia(`Komora węższa niż ${minimum} mm — zmniejsz liczbę komór albo zmień wymiary.`);
+  const wyp = cel.strefa.wyposazenie;
+  const czesci: StrefaWnetrza[] = Array.from({ length: n }, (_, i) => ({
+    id: `${cel.strefa.id}-k${i + 1}`,
+    rozmiar: i < rozmiary.length ? { mm: rozmiary[i] } : { reszta: true },
+    wyposazenie: wyp ? structuredClone(wyp) : { typ: "pusta" },
+  }));
+  const id = cel.strefa.id;
+  const zastap = (s: StrefaWnetrza): StrefaWnetrza =>
+    s.id === id
+      ? { id: s.id, rozmiar: s.rozmiar, bezPlecow: s.bezPlecow, podzial: { kierunek: opcje.kierunek, przegroda: "plyta", czesci } }
+      : s.podzial
+        ? { ...s, podzial: { ...s.podzial, czesci: s.podzial.czesci.map(zastap) } }
+        : s;
+  mebel.wnetrze = zastap(mebel.wnetrze);
+  const opis = czesci.map((_, i) => Math.round(i < rozmiary.length ? rozmiary[i] : rowne)).join(" / ");
+  return { mebel, uwagi: [`Strefa podzielona ${opcje.kierunek === "pion" ? "przegrodami pionowymi" : "półkami stałymi"} na ${n} komór: ${opis} mm.`] };
+}
