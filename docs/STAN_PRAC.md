@@ -82,3 +82,6 @@ Test „własny cennik…” rozszerzony o rabat. Testy 34/34.
 
 ## 25.09.2026 — cena uzgodniona
 Dodano cenaUzgodnionaBrutto projektu: wyłącznie Standard, odrębnie od kosztów, z korektą handlową netto. Nowe umowy i oferty korzystają z tej ceny; zapisane umowy są niezmienne. PATCH projektu obsługuje dodatnią kwotę do grosza lub null do usunięcia. Duplikat projektu nie dziedziczy uzgodnienia. Testy ceny i umów oraz typy frontendu przeszły.
+
+## 2026-09-25 - Silnik konstrukcji mebli, etap 1 (Claude)
+Nowy silnik `src/core/silnik/` (model drzewa, budowa, adapter, polecenia). Na wszystkich 11 szafkach kuchni Darii, całym katalogu i ponad 150 wariantach daje dokładnie te same formatki i okucia co stary builder. Pierwsze polecenie: „zamień drzwi na szuflady” — w API, MCP i inspektorze modułu. Moduł z `drzewo` buduje silnik; bez niego nic się nie zmienia. Projekt Darii w bazie nietknięty. Szczegóły i dalsze etapy: docs/RESEARCH-konstruktor-mebli-niestandardowych.md §6.

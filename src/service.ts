@@ -3,6 +3,9 @@ import { PRODUKTY_OKUC } from "./core/catalog/hardware-products.js";
 import type { ProduktOkucia } from "./core/hardware-products.js";
 import { randomUUID } from "node:crypto";
 import { zbudujModul } from "./core/builder.js";
+import { mebelZModulu } from "./core/silnik/adapter.js";
+import { zbudujMebel } from "./core/silnik/budowa.js";
+import { BladPolecenia, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
 import { domyslnaKonfiguracja, KATALOG_MODULOW, modulKatalogowy } from "./core/catalog/modules.js";
 import { formatkiCSV, listaFormatek, rozkroj, zapotrzebowanieObrzeza, type MaterialyModulu } from "./core/production.js";
@@ -575,6 +578,39 @@ export class Stolarnia {
     });
   }
 
+  /** Polecenie edycji konstrukcji modułu przez silnik. Pierwsze polecenie tworzy drzewo z obecnej konfiguracji (adapter). */
+  polecenieKonstrukcji(projektId: string, modulId: string, polecenie: { typ: "zamienDrzwiNaSzuflady"; liczba: number; poleId?: string }): { modul: Modul; uwagi: string[] } {
+    let wynik!: { modul: Modul; uwagi: string[] };
+    this.edytuj(projektId, (p, b) => {
+      const m = p.moduly.find((x) => x.id === modulId);
+      if (!m) throw new BladUslugi(`Nie ma modułu o id "${modulId}".`);
+      const k = b.ustawienia.konstrukcja;
+      const mebel = m.drzewo ?? mebelZModulu(m, k);
+      try {
+        if (polecenie.typ !== "zamienDrzwiNaSzuflady") throw new BladPolecenia(`Nieznane polecenie „${(polecenie as { typ: string }).typ}”.`);
+        const r = zamienDrzwiNaSzuflady({ ...mebel, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM }, k, polecenie);
+        m.drzewo = r.mebel;
+        wynik = { modul: m, uwagi: r.uwagi };
+      } catch (e) {
+        if (e instanceof BladPolecenia) throw new BladUslugi(e.message);
+        throw e;
+      }
+    });
+    return wynik;
+  }
+
+  /** Usuwa konstrukcję z edytora — moduł wraca do budowy z konfiguracji (liczników). */
+  przywrocKonstrukcjeStandardowa(projektId: string, modulId: string): Modul {
+    let wynik!: Modul;
+    this.edytuj(projektId, (p) => {
+      const m = p.moduly.find((x) => x.id === modulId);
+      if (!m) throw new BladUslugi(`Nie ma modułu o id "${modulId}".`);
+      delete m.drzewo;
+      wynik = m;
+    });
+    return wynik;
+  }
+
   zmienModul(projektId: string, modulId: string, dane: Omit<NowyModul, "katalogId">): Modul {
     let wynik!: Modul;
     this.edytuj(projektId, (p, b) => {
@@ -694,6 +730,12 @@ export class Stolarnia {
       const korpus = mapa.get(materialy.korpus), front = mapa.get(materialy.front);
       if (korpus?.zrodloKatalogu) konstrukcja.gruboscPlytyKorpusuMM = korpus.gruboscMM;
       if (front?.zrodloKatalogu) konstrukcja.gruboscFrontuMM = front.gruboscMM;
+      if (m.drzewo) {
+        // Konstrukcja z edytora silnika; gabaryty zawsze z modułu (zmiana wymiaru przelicza drzewo).
+        const zm = zbudujMebel({ ...m.drzewo, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM }, m, konstrukcja, b.ustawienia.technologia);
+        zm.ostrzezenia.unshift("Konstrukcja z edytora — liczniki półek, drzwi i szuflad z konfiguracji nie są używane (przywróć konstrukcję standardową, aby do nich wrócić).");
+        return { zm, materialy };
+      }
       return { zm: zbudujModul(m, konstrukcja, b.ustawienia.technologia), materialy };
     });
 

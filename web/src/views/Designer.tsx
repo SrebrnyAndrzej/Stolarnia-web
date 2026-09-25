@@ -336,6 +336,8 @@ export function Designer({ analiza, odswiez }: Props) {
             sciany={sciany}
             ostrzezenia={analiza.zbudowane.find((z) => z.modul.id === modul.id)?.ostrzezenia ?? []}
             onZmien={(d) => wykonaj(() => api.zmienModul(p.id, modul.id, d))}
+            onDrzwiNaSzuflady={(liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "zamienDrzwiNaSzuflady", liczba }))}
+            onPrzywrocStandardowa={() => wykonaj(() => api.przywrocKonstrukcjeStandardowa(p.id, modul.id))}
             onUsun={() => wykonaj(async () => { await api.usunModul(p.id, modul.id); setWybrany(null); })}
             onDuplikuj={() => wykonaj(async () => setWybrany((await api.duplikujModul(p.id, modul.id)).id))}
             onZamknij={() => setWybrany(null)}
@@ -630,15 +632,18 @@ interface InspektorProps {
   sciany: { id: string; nazwa: string }[];
   ostrzezenia: string[];
   onZmien: (d: Record<string, unknown>) => void;
+  onDrzwiNaSzuflady: (liczba: number) => void;
+  onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
+  const [liczbaSzufladEdytor, setLiczbaSzufladEdytor] = useState(3);
   const plyty = materialy.filter((x) => x.typ === "plytaLaminowana" || x.typ === "mdf");
   const fronty = materialy.filter((x) => x.typ === "plytaLaminowana" || x.typ === "front" || x.typ === "mdf");
 
@@ -715,11 +720,25 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           </div>
         )}
 
+        <h3>Konstrukcja (silnik)</h3>
+        {m.drzewo && (
+          <div className="alert info">
+            Konstrukcja z edytora — pola półek, drzwi i szuflad powyżej nie są używane.{" "}
+            <button className="btn small" onClick={onPrzywrocStandardowa}>Przywróć standardową</button>
+          </div>
+        )}
+        {(m.drzewo ? JSON.stringify(m.drzewo.fronty).includes('"typ":"drzwi"') : k.typFrontu === "drzwi" && k.liczbaDrzwi > 0) && (
+          <div className="row">
+            <Liczba label="Szuflad" value={liczbaSzufladEdytor} onSave={(v) => setLiczbaSzufladEdytor(Math.max(1, Math.min(8, v)))} />
+            <button className="btn" onClick={() => onDrzwiNaSzuflady(liczbaSzufladEdytor)}>Zamień drzwi na szuflady</button>
+          </div>
+        )}
+
         <h3>Materiały (nadpisanie)</h3>
         <WyborMaterialu label="Korpus" value={m.materialKorpusuId ?? ""} lista={plyty} pusty="jak w pomieszczeniu" onChange={(v) => onZmien({ materialKorpusuId: v })} />
         <WyborMaterialu label="Front" value={m.materialFrontuId ?? ""} lista={fronty} pusty="jak w pomieszczeniu" onChange={(v) => onZmien({ materialFrontuId: v })} />
 
-        {ostrzezenia.map((o, i) => <div key={i} className="alert ostrzezenie">{o}</div>)}
+        {ostrzezenia.filter((o) => !(m.drzewo && o.startsWith("Konstrukcja z edytora"))).map((o, i) => <div key={i} className="alert ostrzezenie">{o}</div>)}
 
         <div className="row">
           <button className="btn" onClick={onDuplikuj}>Duplikuj</button>

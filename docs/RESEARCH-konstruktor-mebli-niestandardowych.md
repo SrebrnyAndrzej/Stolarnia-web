@@ -78,3 +78,27 @@ Regułę z każdego źródła zapisujemy w **profilu okucia** (`docs/okucia/regu
 6. **MCP:** te same polecenia dla Claude.
 
 Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z jednego modelu. Niepewne dane z producenta blokują wydanie produkcyjne, ale nie projektowanie.
+
+## 6. Stan wdrożenia (25.09.2026)
+
+**Etap 1 — zrobiony** (`src/core/silnik/`), na przykładzie kuchni Darii (Pieszczyńscy):
+- `model.ts`: model mebla — korpus, drzewo przestrzeni wnętrza (podziały pionowe i poziome, półka stała lub przegroda, strefy bez pleców), niezależna siatka frontów (szczelina wspólna lub osobna) i wysuwy z rodzajem powiązania.
+- `budowa.ts`: silnik liczący elementy, plecy dzielone wokół nisz, fronty, skrzynki i okucia; `ukladFrontow` i `ukladWnetrza` do poleceń.
+- `adapter.ts`: dotychczasowa konfiguracja → drzewo. Tu są reguły szablonów starego buildera.
+- `polecenia.ts`: **zamień drzwi na szuflady**. Równe fronty, usunięcie półek nastawnych i cargo za frontem, wysuwy, błąd przy frontach poniżej 100 mm i przy niszy AGD.
+- Integracja: `Modul.drzewo`. Gdy jest ustawione, moduł buduje silnik (gabaryty zawsze z modułu). API: `POST /api/projekty/:id/moduly/:mid/polecenie`, `DELETE …/drzewo`. MCP: `zamien_drzwi_na_szuflady`, `przywroc_konstrukcje_standardowa`. Panel: sekcja „Konstrukcja (silnik)” w inspektorze modułu.
+- Testy (`src/silnik.test.ts`):
+  - silnik = stary builder dla 11 szafek Darii (`kuchnia-darii.fixture.json`), całego katalogu i ponad 150 wariantów;
+  - A2 Darii po zamianie na 3 szuflady daje dokładnie formatki szafki szufladowej z równą podziałką;
+  - pełny obieg przez serwis.
+
+**Nie ma jeszcze:**
+- szuflad za drzwiami (reguła zawiasów i dystansu),
+- szuflady z ukrytą szufladą i zabierakiem,
+- przegród pionowych w edytorze,
+- edytora graficznego z zakładkami „Fronty” i „Wnętrze”,
+- profilu produkcyjnego zatwierdzonego próbnym montażem.
+
+Wysuwy o innym powiązaniu niż „z frontem” silnik jawnie odrzuca ostrzeżeniem.
+
+Kuchni Darii w bazie nie zmieniono: szafka A2 ma nadal drzwi, a jej funkcję („szuflady / zmywarka”) ustala klient.

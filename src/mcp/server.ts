@@ -483,6 +483,27 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "zamien_drzwi_na_szuflady",
+    {
+      title: "Zamień drzwi na szuflady",
+      description:
+        "Silnik konstrukcji: zamienia drzwi modułu (pojedyncze albo rząd skrzydeł) na N szuflad o równych frontach. Półki nastawne za frontem i cargo są usuwane; powstają skrzynki szuflad. Moduł przechodzi na konstrukcję z edytora (liczniki konfiguracji przestają działać do czasu przywrócenia).",
+      inputSchema: { projektId: z.string(), modulId: z.string(), liczba: z.number().int().min(1).max(8), poleId: z.string().optional().describe("Pole frontu, gdy mebel ma kilka pól z drzwiami") },
+    },
+    bezpiecznie(({ projektId, modulId, liczba, poleId }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "zamienDrzwiNaSzuflady", liczba, poleId })),
+  );
+
+  server.registerTool(
+    "przywroc_konstrukcje_standardowa",
+    {
+      title: "Przywróć konstrukcję standardową",
+      description: "Usuwa konstrukcję z edytora silnika — moduł wraca do budowy z konfiguracji (półki, drzwi, szuflady).",
+      inputSchema: { projektId: z.string(), modulId: z.string() },
+    },
+    bezpiecznie((a) => s.przywrocKonstrukcjeStandardowa(a.projektId, a.modulId)),
+  );
+
+  server.registerTool(
     "duplikuj_modul",
     { title: "Duplikuj moduł", description: "Kopiuje moduł i stawia go na końcu rzędu.", inputSchema: { projektId: z.string(), modulId: z.string() } },
     bezpiecznie((a) => s.duplikujModul(a.projektId, a.modulId)),

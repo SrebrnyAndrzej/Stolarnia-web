@@ -285,6 +285,11 @@ export interface Modul {
   materialKorpusuId?: string;
   materialFrontuId?: string;
   uwagi?: string;
+  /**
+   * Konstrukcja z edytora silnika (drzewo przestrzeni, frontów i wysuwów). Gdy jest — moduł buduje silnik,
+   * a liczniki z `konfiguracja` nie są używane. Brak → budowa z konfiguracji jak dotąd.
+   */
+  drzewo?: import("./silnik/model.js").Mebel;
 }
 
 export interface Sciana {

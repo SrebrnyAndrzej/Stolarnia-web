@@ -156,6 +156,9 @@ app.put("/api/projekty/:id/stan", api((r) => s.przywrocStan(p(r, "id"), r.body))
 app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.scianaId, r.body.xMM, r.body.szerokoscMM, !!r.body.wiszacy)));
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
+// Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
+app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));
+app.delete("/api/projekty/:id/moduly/:mid/drzewo", api((r) => s.przywrocKonstrukcjeStandardowa(p(r, "id"), p(r, "mid"))));
 app.delete("/api/projekty/:id/moduly/:mid", api((r) => s.usunModul(p(r, "id"), p(r, "mid"))));
 app.post("/api/projekty/:id/moduly/:mid/duplikuj", api((r) => s.duplikujModul(p(r, "id"), p(r, "mid"))));
 
