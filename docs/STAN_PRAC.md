@@ -71,3 +71,11 @@ Kolektor `scripts/okucia/zbierz_katalog_okuc.py` zbiera dane z GTV, Amix, Spray-
 
 ## 2026-09-25 - Katalog okuć: Blum, Hettich, Häfele z kolejnych dystrybutorów (Claude)
 Kolektor ma dwa nowe źródła: meblownia.pl (Blum, Häfele i pokrewne, z jawnym kodem producenta i EAN) oraz akcesoriazagrosze.pl (Hettich). Duplikaty łączą się po kodzie producenta. Katalog ma 2987 pozycji: Blum 780, Hettich 148, Häfele 153. Häfele.com (403) i bimeb.pl (robots.txt blokuje boty AI) pominięte. Szczegóły: docs/okucia/README.md. Testy 34/34.
+
+## 2026-09-25 - Własny cennik materiałów (Codex → Claude)
+Codex zaczął cennik własny: `cennikMaterialow` w bazie, API `/api/cennik/materialow`, kolumnę „Mój cennik netto” w Materiałach i priorytet ceny własnej w wycenach bez zmiany katalogu. Claude go dokończył:
+- cena własna jest traktowana jako faktyczna cena zakupu, więc rabat katalogowy obniża już tylko cenę referencyjną;
+- pozycje wyceny pokazują źródło ceny („Cena z Twojego cennika” albo „Cena referencyjna katalogu”);
+- MCP: `lista_materialow` zwraca `cenaWlasnaNetto`, a nowe narzędzie `ustaw_cene_materialu` ustawia albo usuwa cenę własną.
+
+Test „własny cennik…” rozszerzony o rabat. Testy 34/34.

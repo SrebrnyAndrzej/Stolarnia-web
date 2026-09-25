@@ -82,6 +82,29 @@ test("minimalna wartość zlecenia dla pustego projektu", () => {
   assert.equal(w.cenaNetto, 1500);
 });
 
+test("własny cennik ma priorytet nad ceną referencyjną i nie zmienia katalogu", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Cennik własny", sciany: [{ dlugoscMM: 1200 }] });
+  s.dodajModul(p.id, { katalogId: "base-shelves-600" });
+  const materialId = p.pomieszczenia[0].materialKorpusuId;
+  const referencja = s.materialy().find((m) => m.id === materialId)!.cenaNetto;
+  const przed = s.analiza(p.id).warianty[1].kosztMaterialowNetto;
+  assert.equal(Object.keys(s.cennikMaterialow()).length, 0);
+  s.zapiszCeneMaterialu(materialId, 1);
+  const po = s.analiza(p.id).warianty[1].kosztMaterialowNetto;
+  assert.equal(s.materialy().find((m) => m.id === materialId)!.cenaNetto, referencja);
+  assert.ok(po < przed, `${po} nie jest mniejsze od ${przed}`);
+  assert.equal(s.cennikMaterialow()[materialId].cenaNetto, 1);
+  assert.throws(() => s.zapiszCeneMaterialu(materialId, 0), /Cena własna/);
+  // Rabat katalogowy nie obniża ceny własnej (to już cena zakupu)
+  s.zapiszMaterial({ id: materialId, rabatProcent: 50 });
+  assert.equal(s.analiza(p.id).warianty[1].kosztMaterialowNetto, po);
+  assert.ok(s.analiza(p.id).warianty[1].pozycje.some((x) => x.uwagi.includes("Twojego cennika")));
+  s.zapiszMaterial({ id: materialId, rabatProcent: 0 });
+  s.usunCeneMaterialu(materialId);
+  assert.equal(Object.keys(s.cennikMaterialow()).length, 0);
+});
+
 test("kolizja modułów jest wykrywana", () => {
   const s = nowa();
   const p = s.utworzProjekt({ nazwa: "Kolizja" });

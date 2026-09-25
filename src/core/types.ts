@@ -144,7 +144,18 @@ export interface Material {
   kierunekDekoru: boolean;
   kolorHEX: string;
   notatki: string;
+  /** Tylko w wycenie: cena pochodzi z własnego cennika (nie zapisywane w katalogu). */
+  zrodloCeny?: "cennikWlasny";
 }
+
+/** Własne ceny zakupu używane przez silnik wycen; brak wpisu oznacza cenę referencyjną. */
+export interface PozycjaCennikaMaterialow {
+  materialId: string;
+  cenaNetto: number;
+  zmieniono: string;
+}
+
+export type CennikMaterialow = Record<string, PozycjaCennikaMaterialow>;
 
 // ---------- Okucia (BazaOkucModels.swift) ----------
 

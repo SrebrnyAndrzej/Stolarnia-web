@@ -3,12 +3,13 @@ import { dirname, join, resolve } from "node:path";
 import { OKUCIA_STARTOWE } from "../core/catalog/hardware.js";
 import { MATERIALY_STARTOWE } from "../core/catalog/materials.js";
 import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
-import type { Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
+import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
 
 export interface BazaDanych {
   wersja: number;
   ustawienia: UstawieniaStolarni;
   materialy: Material[];
+  cennikMaterialow?: CennikMaterialow;
   okucia: Okucie[];
   projekty: Projekt[];
 }
@@ -115,6 +116,7 @@ export class Magazyn {
       wersja: 1,
       ustawienia: structuredClone(USTAWIENIA_DOMYSLNE),
       materialy: structuredClone(MATERIALY_STARTOWE),
+      cennikMaterialow: {},
       okucia: structuredClone(OKUCIA_STARTOWE),
       projekty: [],
     };
@@ -131,6 +133,7 @@ export class Magazyn {
     // Uzupełnij nowe pozycje katalogowe, nie nadpisując cen edytowanych przez firmę.
     const idM = new Set(baza.materialy.map((m) => m.id));
     for (const m of MATERIALY_STARTOWE) if (!idM.has(m.id)) baza.materialy.push(structuredClone(m));
+    if (!baza.cennikMaterialow || typeof baza.cennikMaterialow !== "object") baza.cennikMaterialow = {};
     const idO = new Set(baza.okucia.map((o) => o.id));
     for (const o of OKUCIA_STARTOWE) if (!idO.has(o.id)) baza.okucia.push(structuredClone(o));
     // Nowe sekcje i pola ustawień dostają wartości domyślne (bazy zapisane starszą wersją).

@@ -2,6 +2,7 @@ import type {
   Arkusz,
   Formatka,
   Material,
+  CennikMaterialow,
   ModulKatalogowy,
   Modul,
   NotatkaProjektu,
@@ -17,7 +18,7 @@ import type {
   ZbudowanyModul,
 } from "../../src/core/types";
 
-export type { Arkusz, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UrzadzenieAGD, UstawieniaStolarni };
+export type { Arkusz, CennikMaterialow, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UrzadzenieAGD, UstawieniaStolarni };
 
 export interface Uwaga {
   poziom: "blad" | "ostrzezenie" | "info";
@@ -72,6 +73,9 @@ export const api = {
     return zadanie<Material[]>("GET", `/api/materialy${suffix}`);
   },
   zapiszMaterial: (m: Partial<Material>) => (m.id ? zadanie<Material>("PUT", `/api/materialy/${m.id}`, m) : zadanie<Material>("POST", "/api/materialy", m)),
+  cennikMaterialow: () => zadanie<CennikMaterialow>("GET", "/api/cennik/materialow"),
+  zapiszCeneMaterialu: (id: string, cenaNetto: number) => zadanie<CennikMaterialow[string]>("PUT", `/api/cennik/materialow/${id}`, { cenaNetto }),
+  usunCeneMaterialu: (id: string) => zadanie("DELETE", `/api/cennik/materialow/${id}`),
   okucia: () => zadanie<Okucie[]>("GET", "/api/okucia"),
   zapiszOkucie: (o: Partial<Okucie> & { id: string }) => zadanie<Okucie>("PUT", `/api/okucia/${o.id}`, o),
   ustawienia: () => zadanie<UstawieniaStolarni>("GET", "/api/ustawienia"),

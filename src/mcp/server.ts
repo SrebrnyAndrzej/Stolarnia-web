@@ -98,12 +98,13 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
     "lista_materialow",
     {
       title: "Baza materiałów",
-      description: "Płyty (EGGER, Kronospan), fronty, HDF i blaty z cenami netto. Id materiału podajesz przy projekcie/pomieszczeniu/module.",
+      description: "Płyty (EGGER, Kronospan), fronty, HDF i blaty z cenami netto (referencyjna i własna z cennika, jeśli ustawiona). Id materiału podajesz przy projekcie/pomieszczeniu/module.",
       inputSchema: { typ: z.enum(TYPY_MATERIALU).optional(), szukaj: z.string().optional().describe("kod, dekor lub producent, np. 'W1100', 'dąb'") },
       annotations: { readOnlyHint: true },
     },
-    bezpiecznie((a) =>
-      s.materialy({ ...a, tylkoAktywne: true }).map((m) => ({
+    bezpiecznie((a) => {
+      const cennik = s.cennikMaterialow();
+      return s.materialy({ ...a, tylkoAktywne: true }).map((m) => ({
         id: m.id,
         nazwa: m.nazwa,
         producent: m.producent,
@@ -111,10 +112,27 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
         grupa: m.grupaDekoru,
         gruboscMM: m.gruboscMM,
         cenaNetto: m.cenaNetto,
+        cenaWlasnaNetto: cennik[m.id]?.cenaNetto ?? null,
         jednostka: m.jednostka,
         kolor: m.kolorHEX,
-      })),
-    ),
+      }));
+    }),
+  );
+
+  server.registerTool(
+    "ustaw_cene_materialu",
+    {
+      title: "Cena własna materiału",
+      description: "Ustaw własną cenę zakupu netto materiału (ma pierwszeństwo w wycenach przed ceną referencyjną katalogu, bez rabatu katalogowego) albo usuń ją (cenaNetto: null).",
+      inputSchema: { materialId: z.string(), cenaNetto: z.number().positive().nullable() },
+    },
+    bezpiecznie(({ materialId, cenaNetto }) => {
+      if (cenaNetto === null) {
+        s.usunCeneMaterialu(materialId);
+        return { usunieto: materialId };
+      }
+      return s.zapiszCeneMaterialu(materialId, cenaNetto);
+    }),
   );
 
   server.registerTool(

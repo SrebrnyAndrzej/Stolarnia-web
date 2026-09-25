@@ -14,6 +14,7 @@ import type {
   KonfiguracjaModulu,
   KonstrukcjaModulu,
   Material,
+  CennikMaterialow,
   Modul,
   NotatkaProjektu,
   Okucie,
@@ -96,6 +97,30 @@ export class Stolarnia {
           (!filtr?.tylkoAktywne || m.aktywny) &&
           (!s || `${m.kod} ${m.nazwa} ${m.producent} ${m.dekor}`.toLowerCase().includes(s)),
       );
+  }
+
+  cennikMaterialow(): CennikMaterialow {
+    return structuredClone(this.magazyn.odczytaj().cennikMaterialow ?? {});
+  }
+
+  zapiszCeneMaterialu(materialId: string, cenaNetto: number): CennikMaterialow[string] {
+    if (!Number.isFinite(cenaNetto) || cenaNetto <= 0 || cenaNetto > 1_000_000 || Math.abs(cenaNetto * 100 - Math.round(cenaNetto * 100)) > 0.00001) {
+      throw new BladUslugi("Cena własna musi być dodatnia, nie większa niż 1 000 000 zł i mieć maksymalnie dwa miejsca po przecinku.");
+    }
+    return this.magazyn.zmien((b) => {
+      const material = b.materialy.find((m) => m.id === materialId);
+      if (!material) throw new BladUslugi(`Nie ma materiału o id "${materialId}".`);
+      const wpis = { materialId, cenaNetto: Math.round(cenaNetto * 100) / 100, zmieniono: teraz() };
+      b.cennikMaterialow ??= {};
+      b.cennikMaterialow[materialId] = wpis;
+      return wpis;
+    });
+  }
+
+  usunCeneMaterialu(materialId: string): void {
+    this.magazyn.zmien((b) => {
+      if (b.cennikMaterialow) delete b.cennikMaterialow[materialId];
+    });
   }
 
   zapiszMaterial(dane: Partial<Material> & { id?: string }): Material {
@@ -672,7 +697,7 @@ export class Stolarnia {
     const obrzeza = zapotrzebowanieObrzeza(formatki, b.ustawienia.okleinowanie);
     const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
     const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza, raportRozkroju.arkusze.length);
-    const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia);
+    const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia, b.cennikMaterialow ?? {});
     const walidacja = walidujProjekt(p);
 
     return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja, ustawienia: b.ustawienia };

@@ -1,7 +1,7 @@
 import { DecorCatalog } from "./DecorCatalog";
 import { useEffect, useState } from "react";
 import { HardwareCatalog } from "./HardwareCatalog";
-import { api, zl, type Material, type Okucie } from "../api";
+import { api, zl, type CennikMaterialow, type Material, type Okucie } from "../api";
 
 const TYPY: Record<string, string> = {
   plytaLaminowana: "Płyta laminowana",
@@ -17,6 +17,7 @@ const JEDN: Record<string, string> = { sztuka: "ark.", metrKwadratowy: "m²", me
 export function Materials() {
   const [zakladka, setZakladka] = useState<"dekory" | "materialy" | "okucia">("dekory");
   const [materialy, setMaterialy] = useState<Material[]>([]);
+  const [cennik, setCennik] = useState<CennikMaterialow>({});
   const [widokOkuc, setWidokOkuc] = useState<"katalog" | "cennik">("katalog");
   const [okucia, setOkucia] = useState<Okucie[]>([]);
   const [szukaj, setSzukaj] = useState("");
@@ -26,7 +27,7 @@ export function Materials() {
   const [grubosc, setGrubosc] = useState("wszystkie");
   const [blad, setBlad] = useState<string | null>(null);
 
-  const wczytaj = () => Promise.all([api.materialy().then(setMaterialy), api.okucia().then(setOkucia)]).catch((e) => setBlad(e.message));
+  const wczytaj = () => Promise.all([api.materialy().then(setMaterialy), api.cennikMaterialow().then(setCennik), api.okucia().then(setOkucia)]).catch((e) => setBlad(e.message));
   useEffect(() => {
     wczytaj();
   }, []);
@@ -46,6 +47,7 @@ export function Materials() {
       (grubosc === "wszystkie" || m.gruboscMM === Number(grubosc));
   });
   const zapiszM = (id: string, d: Partial<Material>) => api.zapiszMaterial({ id, ...d }).then(wczytaj).catch((e) => setBlad(e.message));
+  const zapiszC = (id: string, cena: number | null) => (cena === null ? api.usunCeneMaterialu(id) : api.zapiszCeneMaterialu(id, cena)).then(wczytaj).catch((e) => setBlad(e.message));
   const zapiszO = (id: string, d: Partial<Okucie>) => api.zapiszOkucie({ id, ...d }).then(wczytaj).catch((e) => setBlad(e.message));
 
   return (
@@ -75,7 +77,9 @@ export function Materials() {
               </button>
             ))}
             <div className="stat"><b>{katalogowe.length}</b><span>wariantów materiałów</span></div>
+            <div className="stat"><b>{Object.keys(cennik).length}</b><span>pozycji z własną ceną</span></div>
           </div>
+          {Object.keys(cennik).length === 0 && <div className="alert info">Cennik własny jest pusty. Uzupełnij cenę przy wybranym materiale — od tej chwili będzie używana priorytetowo w wycenach.</div>}
           <div className="row">
             <select className="input" style={{ width: 180 }} value={producent} onChange={(e) => setProducent(e.target.value)}>
               <option value="wszyscy">Wszyscy producenci</option>
@@ -99,7 +103,7 @@ export function Materials() {
           <table className="t">
             <thead>
               <tr>
-                <th></th><th>Materiał</th><th>Typ</th><th className="r">Gr.</th><th className="r">Cena netto</th><th>Jedn.</th><th className="r">Rabat %</th><th>Aktywny</th>
+                <th></th><th>Materiał</th><th>Typ</th><th className="r">Gr.</th><th className="r">Referencja netto</th><th className="r">Mój cennik netto</th><th>Jedn.</th><th className="r" title="Rabat od ceny referencyjnej; cena własna jest już ceną zakupu">Rabat % (ref.)</th><th>Aktywny</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +116,8 @@ export function Materials() {
                     </td>
                     <td>{TYPY[m.typ] ?? m.typ}</td>
                     <td className="r num">{m.gruboscMM}</td>
-                    <td className="r">{m.cenaNetto === 0 && <small>Brak ceny </small>}<Kwota value={m.cenaNetto} onSave={(v) => zapiszM(m.id, { cenaNetto: v })} /></td>
+                    <td className="r num">{m.cenaNetto > 0 ? zl(m.cenaNetto) : "brak"}</td>
+                    <td className="r"><KwotaWlasna value={cennik[m.id]?.cenaNetto ?? null} onSave={(v) => zapiszC(m.id, v)} />{cennik[m.id] && <button className="btn small" title="Usuń cenę własną" onClick={() => zapiszC(m.id, null)}>×</button>}</td>
                     <td>{JEDN[m.jednostka]}</td>
                     <td className="r"><Kwota value={m.rabatProcent} onSave={(v) => zapiszM(m.id, { rabatProcent: v })} /></td>
                     <td><input type="checkbox" checked={m.aktywny} onChange={(e) => zapiszM(m.id, { aktywny: e.target.checked })} /></td>
@@ -178,6 +183,31 @@ function Kwota({ value, onSave }: { value: number; onSave: (v: number) => void }
         const n = Number(v.replace(",", "."));
         if (Number.isFinite(n) && n >= 0 && n !== value) onSave(n);
         else setV(String(value));
+      }}
+      onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+    />
+  );
+}
+
+function KwotaWlasna({ value, onSave }: { value: number | null; onSave: (v: number | null) => void }) {
+  const [v, setV] = useState(value === null ? "" : String(value));
+  useEffect(() => setV(value === null ? "" : String(value)), [value]);
+  return (
+    <input
+      className="input num"
+      style={{ width: 95, textAlign: "right" }}
+      inputMode="decimal"
+      placeholder="brak"
+      value={v}
+      onChange={(e) => setV(e.target.value)}
+      onBlur={() => {
+        if (!v.trim()) {
+          if (value !== null) onSave(null);
+          return;
+        }
+        const n = Number(v.replace(",", "."));
+        if (Number.isFinite(n) && n > 0 && n <= 1000000 && n !== value) onSave(n);
+        else setV(value === null ? "" : String(value));
       }}
       onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
     />

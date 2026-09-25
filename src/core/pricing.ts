@@ -3,6 +3,7 @@ import { cenaPoRabacieNetto, cenaZaM2Netto, opisMaterialu } from "./catalog/mate
 import type { MaterialyModulu } from "./production.js";
 import type {
   Material,
+  CennikMaterialow,
   Okucie,
   PodsumowanieWariantu,
   PozycjaKosztowa,
@@ -144,8 +145,14 @@ export function wycenWszystkie(
   ustawienia: UstawieniaStolarni,
   materialy: Material[],
   okucia: Okucie[],
+  cennikMaterialow: CennikMaterialow = {},
 ): PodsumowanieWariantu[] {
-  return KOLEJNOSC_WARIANTOW.map((w) => wycenWariant(w, projekt, ustawienia, materialy, okucia));
+  const efektywne = materialy.map((m) => {
+    const wpis = cennikMaterialow[m.id];
+    // Cena własna to faktyczna cena zakupu netto — rabat katalogowy dotyczy tylko ceny referencyjnej.
+    return wpis ? { ...m, cenaNetto: wpis.cenaNetto, rabatProcent: 0, zrodloCeny: "cennikWlasny" as const } : m;
+  });
+  return KOLEJNOSC_WARIANTOW.map((w) => wycenWariant(w, projekt, ustawienia, efektywne, okucia));
 }
 
 export function wycenWariant(
@@ -206,7 +213,7 @@ function pozycjeMaterialowe(projekt: ProjektWyceny, materialy: Material[], waria
     const kategoria = u.rola === "front" ? "fronty" : "plyty";
     const cena = m ? cenaZaM2Netto(m) : null;
     if (m && cena && cena > 0) {
-      wynik.push(poz(`${rolaNazwa} • ${opisMaterialu(m)}`, kategoria, u.iloscM2, "m²", cena, `Dokładny materiał z projektu: ${m.kod}.`));
+      wynik.push(poz(`${rolaNazwa} • ${opisMaterialu(m)}`, kategoria, u.iloscM2, "m²", cena, `Dokładny materiał z projektu: ${m.kod}. ${ZRODLO_CENY(m)}`));
     } else if (m) {
       // DoborMaterialowWyceny fallback — materiał bez ceny: cena wariantowa, pozycja oznaczona jako błąd.
       const fb = u.rola === "front" ? FALLBACK_FRONT[wariant] : u.rola === "plecy" ? 7 : 95;
@@ -219,6 +226,8 @@ function pozycjeMaterialowe(projekt: ProjektWyceny, materialy: Material[], waria
   if (projekt.ostrzezenia.length && wynik.length) wynik[0].uwagi += " " + projekt.ostrzezenia.join(" ");
   return wynik;
 }
+
+const ZRODLO_CENY = (m: Material) => (m.zrodloCeny === "cennikWlasny" ? "Cena z Twojego cennika." : "Cena referencyjna katalogu.");
 
 const FALLBACK_FRONT: Record<WariantWyceny, number> = { eco: 150, standard: 240, premium: 420, vip: 650 };
 const FALLBACK_BLAT: Record<WariantWyceny, number> = { eco: 180, standard: 320, premium: 760, vip: 1350 };
@@ -238,7 +247,7 @@ const OPIS_BLATU: Record<WariantWyceny, string> = {
 function pozycjaBlatu(projekt: ProjektWyceny, materialy: Material[], wariant: WariantWyceny): PozycjaKosztowa {
   const wybrany = projekt.blatMaterialId ? materialy.find((m) => m.id === projekt.blatMaterialId && m.jednostka === "metrBiezacy") : undefined;
   if (wybrany && cenaPoRabacieNetto(wybrany) > 0) {
-    return poz(`Blat • ${opisMaterialu(wybrany)}`, "blaty", projekt.metryBiezaceBlatu, "mb", cenaPoRabacieNetto(wybrany), "Blat wybrany w projekcie.");
+    return poz(`Blat • ${opisMaterialu(wybrany)}`, "blaty", projekt.metryBiezaceBlatu, "mb", cenaPoRabacieNetto(wybrany), `Blat wybrany w projekcie. ${ZRODLO_CENY(wybrany)}`);
   }
   // DoborMaterialowWyceny.wybierz — kandydaci posortowani po cenie, pozycja wg frakcji wariantu.
   const kandydaci = materialy
@@ -250,7 +259,7 @@ function pozycjaBlatu(projekt: ProjektWyceny, materialy: Material[], wariant: Wa
   const frakcja = { eco: 0.1, standard: 0.4, premium: 0.72, vip: 0.95 }[wariant];
   const idx = Math.min(Math.max(Math.round((kandydaci.length - 1) * frakcja), 0), kandydaci.length - 1);
   const m = kandydaci[idx];
-  return poz(`Blat • ${opisMaterialu(m)}`, "blaty", projekt.metryBiezaceBlatu, "mb", cenaPoRabacieNetto(m), OPIS_BLATU[wariant]);
+  return poz(`Blat • ${opisMaterialu(m)}`, "blaty", projekt.metryBiezaceBlatu, "mb", cenaPoRabacieNetto(m), `${OPIS_BLATU[wariant]} ${ZRODLO_CENY(m)}`);
 }
 
 // ---------- Automatyczny dobór okuć ----------
