@@ -14,3 +14,6 @@ Zachowaj dotychczasowe ustalenia w pozostałych dokumentach docs/. Stan implemen
 
 ## Plan silnika i kont (25.09.2026)
 Przed rozbudową konstruktora przeczytaj docs/RESEARCH-silnik-mebli-i-konta.md. Dokument opisuje rekomendację i etapy, nie ukończoną implementację. Katalogi prowadzi Claude. Domyślne dane Pan Stolarz uzupełniają puste ustawienia w nowych umowach; zapisane dokumenty i ceny pozostają bez zmian.
+
+## Konstruktor mebli niestandardowych (25.09.2026)
+Przed pracą nad edycją modułów (fronty, szuflady za drzwiami, szuflada z ukrytą szufladą) przeczytaj docs/RESEARCH-konstruktor-mebli-niestandardowych.md razem z planem Codexa. To plan, nie gotowa funkcja.
