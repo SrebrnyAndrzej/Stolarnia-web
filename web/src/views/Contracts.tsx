@@ -19,7 +19,9 @@ export function Contracts({ analiza }: { analiza: Analiza }) {
       setLista(umowy);
       setDane({ numer: `UM/${new Date().getFullYear()}/${crypto.randomUUID().slice(0, 8).toUpperCase()}`, rodzaj: "kuchnia",
         klient: analiza.projekt.klient.nazwa, adresKlienta: analiza.projekt.klient.adres,
-        firma: [f.nazwaFirmy, f.wlasciciel].filter(Boolean).join(" - "), adresFirmy: [f.adres, [f.kodPocztowy, f.miasto].filter(Boolean).join(" ")].filter(Boolean).join(", "), nip: f.nip,
+        firma: [f.nazwaFirmy?.trim() || "Pan Stolarz", f.wlasciciel?.trim() || "Mateusz Wojciechowski"].join(" - "),
+        adresFirmy: [f.adres?.trim() || "Poniatowskiego 4/4", [f.kodPocztowy?.trim() || "65-305", f.miasto?.trim() || "Zielona Góra"].join(" ")].join(", "),
+        nip: f.nip?.trim() || "9292091438",
         adresMontazu: analiza.projekt.klient.adres, miejsce: "", data: "", termin: "", cena: Math.round((analiza.warianty.find(w => w.wariant === "standard")?.cenaBrutto ?? 0) * 100) / 100,
         zaliczka: 0, zaliczkaZaplacona: false, dataZaliczki: "", zakres: ZAKRESY.kuchnia, warunki: WARUNKI_UMOWY });
     }).catch(e => active && setBlad(e.message)).finally(() => active && setLoading(false));
