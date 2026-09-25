@@ -5,6 +5,8 @@
   amix     – producent Amix: wybrane kategorie sklepu (PrestaShop, JSON-LD Product: sku/mpn),
   spraykon – producent Spray-Kon: kleje i zmywacze (indeks producenta i EAN z karty),
   mamut    – Den Braven/Bostik Mamut Glue: karta rodziny z kartą techniczną i kartą charakterystyki,
+  meblownia – dystrybutor Meblownia.pl: Blum, Hettich, Häfele, Kesseböhmer, Grass, Salice — jawny „Kod producenta” i EAN na karcie,
+  zagrosze – dystrybutor Akcesoriazagrosze.pl: Hettich (numer artykułu z nazwy, EAN z karty),
   merkury  – dystrybutor Merkury AM: marki bez publicznego katalogu producenta w tym zbiorze (Blum, Hettich,
              Häfele, Laguna, Sevroll, Matrix, Astra Trade, Würth…); robots.txt: Crawl-delay 1 s — przestrzegane.
 
@@ -12,7 +14,7 @@ Zasady: nie wymyślamy SKU. `sku` = indeks producenta potwierdzony na karcie; w 
 w parametrach. Dystrybutor: `symbolDystrybutora` osobno; kod producenta tylko, gdy występuje w nazwie produktu.
 Ceny dystrybutora zapisujemy jako cenę referencyjną sklepu (nie cenę zakupu). `zatwierdzoneProdukcyjnie=false`.
 
-Użycie:  python scripts/okucia/zbierz_katalog_okuc.py --cache <katalog-cache> [--zrodla gtv,amix,spraykon,mamut,merkury]
+Użycie:  python scripts/okucia/zbierz_katalog_okuc.py --cache <katalog-cache> [--zrodla gtv,amix,spraykon,mamut,meblownia,zagrosze,merkury]
 Wymaga: httpx, beautifulsoup4, pillow (opcjonalnie ścieżka do bibliotek w zmiennej SCRAPER_DEPS).
 """
 import argparse, hashlib, json, os, re, sys, time, threading
@@ -42,7 +44,7 @@ class Pobieracz:
         self.c = httpx.Client(follow_redirects=True, timeout=30, headers=UA)
         self.ostatnio: dict[str, float] = {}
         self.blokada = threading.Lock()
-        self.opoznienie = {"sklep.merkuryam.pl": 1.05}  # robots.txt Crawl-delay: 1
+        self.opoznienie = {"sklep.merkuryam.pl": 1.05, "meblownia.pl": 0.5, "akcesoriazagrosze.pl": 0.5}  # Merkury: robots.txt Crawl-delay 1; Meblownia: umiarkowanie
 
     def get(self, url: str) -> str:
         f = self.cache / (hashlib.sha256(url.encode()).hexdigest() + ".html")
@@ -71,12 +73,14 @@ class Pobieracz:
 # ---------- Kategorie aplikacji ----------
 
 KATEGORIE = [
+    # Najpierw narzędzia: nazwy wzorników zawierają nazwy systemów (np. „wzornik … Clip”).
+    ("narzedzia", r"szablon|wzornik|matryc|liniał|linial|narzędzi|narzedzi|pomoce montaż|minipress|ecodrill"),
     ("zawiasy", r"zawias|clip ?top|clip-on|puszk"),
     ("podnosniki", r"podnośnik|podnosnik|aventos|kinvaro|siłownik|top-stay|klap|pantograf"),
     ("przesuwne", r"przesuwn|wózek|wozek|układ jezdny|tor |prowadnica górna|prowadnica dolna|laguna|sevroll|drzwi przesuw"),
     ("prowadnice", r"prowadnic|movento|tandem|wysuw|slide"),
     ("szuflady", r"szuflad|box|legrabox|merivobox|tandembox"),
-    ("odbojniki", r"odbojnik|tip-on|push|amortyzator|dociąg"),
+    ("odbojniki", r"odbojnik|tip-on|push|amortyzator|dociąg|servo|napęd|zatrzask"),
     ("wkrety", r"wkręt|wkret|konfirmat|śrub|srub|bit|konfi"),
     ("laczniki", r"łącznik|lacznik|łącząc|laczac|łączeni|złącz|zlacz|mimośr|mimosr|kołek|kolek|kołki|trzpie|klin"),
     ("mocowania", r"zawiesz|podpórk|podpork|wspornik|mocowan|kątownik|katownik|listwa"),
@@ -85,14 +89,14 @@ KATEGORIE = [
     ("akcesoria", r"przepust|kratk|obrotnic|magnes|zamek|zamk|stelaż|stelaz|tapicer"),
     ("chemia", r"zmywacz|czyści|czysci|clean|silikon|akryl|olej|wosk|rozpuszczal|rozdzielacz|blocker|farba"),
     ("kleje", r"klej|mamut|cyjanoakryl|lep-kon|aktywator"),
-    ("wyposazenie", r"kosz|cargo|organiz|segregator|wieszak|drążek|drazek|relin|ociekark|garderob|kuchn"),
+    ("wyposazenie", r"space step|stopień|kosz|cargo|organiz|segregator|wieszak|drążek|drazek|relin|ociekark|garderob|kuchn"),
 ]
 NAZWY_KATEGORII = {
     "zawiasy": "Zawiasy", "podnosniki": "Podnośniki", "przesuwne": "Systemy przesuwne", "prowadnice": "Prowadnice",
     "szuflady": "Systemy szuflad", "odbojniki": "Odbojniki i push", "wkrety": "Wkręty i konfirmaty",
     "laczniki": "Łączniki i kołki", "mocowania": "Zawieszki i mocowania", "nogi": "Nogi i kółka",
     "kleje": "Kleje", "chemia": "Chemia meblowa", "wyposazenie": "Wyposażenie mebli", "uchwyty": "Uchwyty i gałki",
-    "akcesoria": "Akcesoria (przepusty, kratki, zamki)", "inne": "Inne",
+    "akcesoria": "Akcesoria (przepusty, kratki, zamki)", "narzedzia": "Narzędzia i szablony montażowe", "inne": "Inne",
 }
 
 
@@ -416,7 +420,139 @@ def merkury(pb: Pobieracz, istniejace: set[str]) -> list[dict]:
 # ---------- Wspólne ----------
 
 BLEDY: list[dict] = []
-ZRODLO_HOSTA = {"gtv.com.pl": "gtv", "amix.pl": "amix", "spraykon.pl": "spraykon", "mamutglue.pl": "mamut", "sklep.merkuryam.pl": "merkury"}
+ZRODLO_HOSTA = {"gtv.com.pl": "gtv", "amix.pl": "amix", "spraykon.pl": "spraykon", "mamutglue.pl": "mamut", "sklep.merkuryam.pl": "merkury", "meblownia.pl": "meblownia", "akcesoriazagrosze.pl": "zagrosze"}
+
+
+# ---------- Meblownia.pl (dystrybutor: Blum, Hettich, Häfele i pokrewne) ----------
+
+MEBLOWNIA_WZORZEC = (r"blum|hettich|hafele|haefele|häfele|sensys|intermat|quadro|innotech|actro|arcitech|atira|avantech|clip|movento|tandem|"
+                     r"aventos|legrabox|merivobox|antaro|blumotion|servo|tip-on|space-corner|kesseb|grass|salice|dynapro|nova-pro|vionaro")
+MEBLOWNIA_MARKI = {"BLUM": "Blum", "HETTICH": "Hettich", "HAFELE": "Häfele", "HÄFELE": "Häfele", "HAEFELE": "Häfele",
+                   "KESSEBÖHMER": "Kesseböhmer", "KESSEBOHMER": "Kesseböhmer", "GRASS": "Grass", "SALICE": "Salice"}
+
+
+def meblownia(pb: Pobieracz, istniejace: set[str]) -> list[dict]:
+    urls = set()
+    for i in range(1, 8):
+        try:
+            mapa = pb.get(f"https://meblownia.pl/xml/sitemap_index_pl_{i}.xml")
+        except Exception:
+            break
+        urls |= {u for u in re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", mapa) if u.endswith(".html") and re.search(MEBLOWNIA_WZORZEC, u, re.I)}
+    urls = sorted(u.replace("http://", "https://") for u in urls)
+    print(f"Meblownia: {len(urls)} kart", flush=True)
+
+    def karta(url):
+        html = pb.get(url)
+        s = BeautifulSoup(html, "html.parser")
+        p = json_ld_produkt(s)
+        if not p:
+            return None
+        tekst = re.sub(r"\s+", " ", s.get_text(" ", strip=True))
+        prod = re.search(r"Producent:\s*([A-ZÄÖÜa-zäöü][\w äöüÄÖÜ-]{1,30}?)\s+(?:Kod producenta|Obserwuj|Dostępn|$)", tekst)
+        marka_surowa = ((p.get("brand") or {}).get("name") if isinstance(p.get("brand"), dict) else p.get("brand")) or (prod.group(1) if prod else "")
+        marka = MEBLOWNIA_MARKI.get(str(marka_surowa).strip().upper())
+        if not marka:
+            return None  # tylko marki bez pełnego katalogu producenta w zbiorze
+        okr_tekst = p.get("name", "") + " " + " ".join(a.get_text(" ", strip=True) for a in s.select(".breadcrumb a"))
+        if re.search(r"oświetleni|oswietleni|\bLED\b|oprawa|zasilacz|żyrandol", okr_tekst, re.I):
+            return None  # oświetlenie poza zakresem katalogu okuć (jak przy GTV)
+        oferta = p.get("offers") or {}
+        kod_tekst = re.search(r"Kod producenta:\s*([0-9A-Za-z./-]+)", tekst)
+        mpn = (oferta.get("mpn") or p.get("mpn") or (kod_tekst.group(1) if kod_tekst else "")).strip()
+        nazwa = p.get("name", "")
+        # Kod producenta przyjmujemy, gdy strona podaje go jawnie („Kod producenta” lub mpn) — bez wyciągania z nazwy.
+        kod = mpn if mpn and (not kod_tekst or kod_tekst.group(1) == mpn) else ""
+        par = {}
+        okr = [a.get_text(" ", strip=True) for a in s.select(".breadcrumb a, nav[aria-label*=readcrumb] a, [itemtype*=BreadcrumbList] a") if a.get_text(strip=True)]
+        if okr:
+            par["Kategoria dystrybutora"] = " › ".join(okr[1:])
+        opis = s.select_one("#product-description, .product-description, [itemprop=description], #opis")
+        if opis:
+            par["Opis dystrybutora"] = re.sub(r"\s+", " ", opis.get_text(" ", strip=True))[:500]
+        if not kod:
+            par["Zakres indeksu"] = "Dystrybutor nie podaje kodu producenta — zamawiaj po symbolu dystrybutora lub EAN."
+        img = p.get("image") or []
+        img = [img] if isinstance(img, str) else img
+        cena = {"kwota": float(oferta["price"]), "waluta": oferta.get("priceCurrency", "PLN"), "opis": "cena detaliczna brutto w sklepie dystrybutora za jednostkę sprzedaży z karty", "data": TERAZ[:10]} if oferta.get("price") else None
+        return rekord(producent=marka, system=" › ".join(okr[-2:]) if okr else marka, kategoria=kategoria(" ".join(okr[1:]), nazwa),
+                      sku=kod, rodzajSKU="wariant" if kod else "dystrybutor", ean=oferta.get("gtin13") or p.get("gtin13"),
+                      symbolDystrybutora=f"Meblownia {oferta.get('sku') or p.get('sku') or ''}".strip(), nazwa=nazwa,
+                      rodzaj="zestaw" if re.search(r"komplet|zestaw|kpl", nazwa, re.I) else "element",
+                      zdjecia=img, parametry=par, dokumenty=dokumenty(s, url), zrodloURL=url, zrodloTyp="dystrybutor",
+                      cenaReferencyjna=cena, sha256=sha(html))
+
+    return rownolegle(karta, urls, 2, "Meblownia")
+
+
+# ---------- Akcesoriazagrosze.pl (dystrybutor: Hettich) ----------
+
+def zagrosze(pb: Pobieracz, istniejace: set[str]) -> list[dict]:
+    baza = "https://akcesoriazagrosze.pl/"
+    mapa = pb.get(baza + "sitemap.xml")
+    wszystkie = re.findall(r"<loc>\s*([^<\s]+)\s*</loc>", mapa)
+    kategorie = sorted({u for u in wszystkie if re.search(r"akcesoriazagrosze\.pl/\d+-[^/]*hettich[^/]*$", u, re.I)})
+    urls = {u for u in wszystkie if re.search(r"hettich", u, re.I) and re.search(r"/\d+-[^/]+\.html$", u)}
+    for kat in kategorie:
+        for strona in range(1, 15):
+            s = pb.soup(kat + (f"?page={strona}" if strona > 1 else ""))
+            nowe = {a["href"].split("#")[0] for a in s.select("article.product-miniature a[href], .products .product-title a[href]") if a["href"].endswith(".html")}
+            if not nowe - urls:
+                break
+            urls |= nowe
+    urls = sorted(urls)
+    print(f"Akcesoriazagrosze (Hettich): {len(kategorie)} kategorii, {len(urls)} kart", flush=True)
+
+    def karta(url):
+        html = pb.get(url)
+        s = BeautifulSoup(html, "html.parser")
+        h = s.select_one("h1")
+        nazwa = h.get_text(" ", strip=True) if h else ""
+        okr = [a.get_text(" ", strip=True) for a in s.select(".breadcrumb a") if a.get_text(strip=True)]
+        if "hettich" not in (nazwa + " " + " ".join(okr)).lower():
+            return None
+        ean = s.select_one("[itemprop=sku]")
+        # Numer artykułu Hettich (7 cyfr, np. 9071205) jawnie w nazwie produktu
+        kod = re.findall(r"\b(\d{7})\b", nazwa)
+        og = s.select_one('meta[property="og:image"]')
+        par = {"Kategoria dystrybutora": " › ".join(okr[1:])} if okr else {}
+        opis = s.select_one("#description, .product-description")
+        if opis:
+            par["Opis dystrybutora"] = re.sub(r"\s+", " ", opis.get_text(" ", strip=True))[:500]
+        if not kod:
+            par["Zakres indeksu"] = "Dystrybutor nie podaje numeru artykułu Hettich — zamawiaj po EAN."
+        cena_el = s.select_one("[itemprop=price]")
+        liczba = re.search(r"\d+(?:[.,]\d+)?", (cena_el.get("content") or cena_el.get_text() or "").replace("\xa0", "")) if cena_el else None
+        cena = {"kwota": float(liczba.group(0).replace(",", ".")), "waluta": "PLN", "opis": "cena detaliczna brutto w sklepie dystrybutora za jednostkę sprzedaży z karty", "data": TERAZ[:10]} if liczba else None
+        e = ean.get_text(strip=True) if ean else None
+        return rekord(producent="Hettich", system=okr[-1] if okr else "Hettich", kategoria=kategoria(" ".join(okr[1:]), nazwa), sku=kod[-1] if kod else "",
+                      rodzajSKU="wariant" if kod else "dystrybutor", ean=e, symbolDystrybutora=f"Akcesoriazagrosze {e or url.rsplit('/', 1)[-1].split('-')[0]}",
+                      nazwa=nazwa, rodzaj="zestaw" if re.search(r"komplet|zestaw|kpl", nazwa, re.I) else "element",
+                      zdjecia=[og["content"]] if og else [], parametry=par, dokumenty=dokumenty(s, url), zrodloURL=url, zrodloTyp="dystrybutor",
+                      cenaReferencyjna=cena, sha256=sha(html))
+
+    return rownolegle(karta, urls, 2, "Akcesoriazagrosze")
+
+
+def scal_duplikaty(lista: list[dict]) -> list[dict]:
+    """Ten sam kod producenta z kilku źródeł → jedna pozycja. Pierwszeństwo: producent > karta z EAN i dokumentami.
+    Adresy pozostałych źródeł trafiają do parametru „Inne źródła”."""
+    grupy: dict[tuple, list[dict]] = {}
+    bez_kodu = []
+    for p in lista:
+        if p.get("sku") and p.get("rodzajSKU") == "wariant":
+            grupy.setdefault((p["producent"].lower(), p["sku"].upper().replace(" ", "")), []).append(p)
+        else:
+            bez_kodu.append(p)
+    wynik = []
+    for g in grupy.values():
+        g.sort(key=lambda p: (p.get("zrodloTyp") != "producent", not p.get("ean"), -len(p.get("dokumenty", []))))
+        glowny = dict(g[0])
+        if len(g) > 1:
+            glowny["parametry"] = dict(glowny["parametry"], **{"Inne źródła": " · ".join(x["zrodloURL"] for x in g[1:])})
+            glowny["ean"] = glowny.get("ean") or next((x["ean"] for x in g[1:] if x.get("ean")), None)
+        wynik.append(glowny)
+    return wynik + bez_kodu
 
 
 def rownolegle(fn, urls, watki, nazwa):
@@ -473,7 +609,7 @@ def zdjecia_lokalne(produkty: list[dict], pb: Pobieracz):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", required=True)
-    ap.add_argument("--zrodla", default="gtv,amix,spraykon,mamut,merkury")
+    ap.add_argument("--zrodla", default="gtv,amix,spraykon,mamut,meblownia,zagrosze,merkury")
     a = ap.parse_args()
     pb = Pobieracz(Path(a.cache))
     plik = OUT / "katalog.json"
@@ -492,8 +628,13 @@ def main():
     zdjecia_lokalne(nowe, pb)
     # Deduplikacja po id; kolejność: producent, kategoria, SKU
     wszystkie = {p["id"]: p for p in zachowane + nowe}
-    lista = sorted(wszystkie.values(), key=lambda p: (p["kategoria"], p["producent"], p["sku"] or "~", p["nazwa"]))
+    lista = sorted(scal_duplikaty(list(wszystkie.values())), key=lambda p: (p["kategoria"], p["producent"], p["sku"] or "~", p["nazwa"]))
     plik.write_text(json.dumps(lista, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    # Zdjęcia, do których nie odwołuje się już żadna pozycja (np. wykluczone oświetlenie), usuwamy z repozytorium.
+    uzywane = {p["zdjecieURL"].rsplit("/", 1)[-1] for p in lista if p.get("zdjecieURL")}
+    for f in IMG.glob("*.jpg"):
+        if f.name not in uzywane:
+            f.unlink()
     from collections import Counter
     raport = {"pobrano": TERAZ, "produkty": len(lista), "kategorie": dict(Counter(p["kategoria"] for p in lista)),
               "producenci": dict(Counter(p["producent"] for p in lista)), "zrodla": dict(Counter(p.get("zrodloTyp", "producent") for p in lista)),

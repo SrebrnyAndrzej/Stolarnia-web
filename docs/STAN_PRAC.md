@@ -68,3 +68,6 @@ Codex zebrał karty produktów Amix, GTV i Blum oraz podłączył galerię w Oku
 
 ## 2026-09-25 - Katalog okuć, wkrętów, klejów i chemii (Claude)
 Kolektor `scripts/okucia/zbierz_katalog_okuc.py` zbiera dane z GTV, Amix, Spray-Kon i Mamut (producenci) oraz z Merkury AM (dystrybutor: Blum, Hettich, Häfele, Laguna, Sevroll, Matrix, Astra Trade, Würth, chemia). Katalog ma 2472 pozycje w 16 kategoriach, wszystkie ze zdjęciem. Panel pokazuje go w Materiały i okucia → Okucia; filtrowanie i stronicowanie działa na serwerze (`/api/okucia-katalog?widok=strona`). Do cennika trafia tylko pozycja z indeksem producenta albo z symbolem dystrybutora. Szczegóły i ograniczenia: docs/okucia/README.md. Testy: 33/33.
+
+## 2026-09-25 - Katalog okuć: Blum, Hettich, Häfele z kolejnych dystrybutorów (Claude)
+Kolektor ma dwa nowe źródła: meblownia.pl (Blum, Häfele i pokrewne, z jawnym kodem producenta i EAN) oraz akcesoriazagrosze.pl (Hettich). Duplikaty łączą się po kodzie producenta. Katalog ma 2987 pozycji: Blum 780, Hettich 148, Häfele 153. Häfele.com (403) i bimeb.pl (robots.txt blokuje boty AI) pominięte. Szczegóły: docs/okucia/README.md. Testy 34/34.

@@ -99,3 +99,21 @@ Kolektor `scripts/okucia/zbierz_katalog_okuc.py` dopisuje do `produkty/katalog.j
 - **Zdjęcia dystrybutora:** mogą przedstawiać wariant poglądowy. Karta pokazuje wtedy uwagę.
 - **Kategorie** są przypisywane regułami słów kluczowych w kolektorze (`KATEGORIE`). Pomyłki trzeba poprawiać w regułach, a nie ręcznie w JSON.
 - **Ponowne pobranie:** `SCRAPER_DEPS=<ścieżka bibliotek> python scripts/okucia/zbierz_katalog_okuc.py --cache <katalog-cache>`, a potem `node scripts/oznacz-konflikty-okuc.mjs`. Cache HTML trzymaj poza repozytorium.
+
+## Dodatkowe źródła: Blum, Hettich, Häfele (25.09.2026)
+
+Merkury AM miał tylko pojedyncze pozycje Hettich i Häfele, dlatego kolektor ma dwa kolejne źródła:
+
+| Źródło | Marki | Indeks | Uwagi |
+|---|---|---|---|
+| meblownia.pl (dystrybutor) | Blum, Häfele, Kesseböhmer, Grass, Salice (Hettich tylko pojedyncze) | „Kod producenta” jawnie na karcie (np. 71B3590, 502.90.201) oraz EAN (gtin13) | Oświetlenie (Häfele Loox) wykluczone, tak jak przy GTV. 5 kart z mapy strony nie istnieje (404 lub pętla przekierowań); lista w `errors.json` |
+| akcesoriazagrosze.pl (dystrybutor) | Hettich: zawiasy Sensys i Intermat, AvanTech, Atira, systemy przesuwne, wkłady | 7-cyfrowy numer artykułu Hettich z nazwy produktu (134 ze 148), EAN z karty | pozostałe 14 kart bez numeru — zamawiane po EAN |
+
+- **Duplikaty:** ta sama marka z tym samym kodem producenta z kilku źródeł to jedna pozycja. Pierwszeństwo ma dane producenta, potem karta z EAN i dokumentami. Pozostałe adresy są w parametrze „Inne źródła”.
+- **Pominięte:** hafele.com blokuje automatyczny dostęp (HTTP 403); nie obchodzimy tego. bimeb.pl w robots.txt wprost zabrania dostępu botom AI (ClaudeBot, anthropic-ai). Strony blum.com i hettich.com mają publiczne tylko strony rodzin produktów, a listy artykułów ładują się przez JavaScript.
+- **Nowa kategoria:** „Narzędzia i szablony montażowe” (wzorniki, szablony wiertarskie, MINIPRESS). SERVO-DRIVE jest w „Odbojniki i push”.
+- **Zdjęcia:** po każdym przebiegu kolektor usuwa pliki, do których nie odwołuje się żadna pozycja.
+
+**Stan po przebiegu z 25.09.2026:** 2987 pozycji (1479 od producentów, 1508 od dystrybutorów): Blum 780, Hettich 148, Häfele 153. Zawiasy 406, prowadnice 396, systemy przesuwne 223, szuflady 754. Bez zdjęcia: 2.
+
+Uruchomienie wszystkich źródeł: `--zrodla spraykon,mamut,amix,gtv,meblownia,zagrosze,merkury`.

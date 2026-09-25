@@ -14,6 +14,7 @@ export type KategoriaProduktuOkucia =
   | "wyposazenie"
   | "uchwyty"
   | "akcesoria"
+  | "narzedzia"
   | "inne";
 
 export const NAZWY_KATEGORII_OKUC: Record<KategoriaProduktuOkucia, string> = {
@@ -32,6 +33,7 @@ export const NAZWY_KATEGORII_OKUC: Record<KategoriaProduktuOkucia, string> = {
   wyposazenie: "Wyposażenie mebli",
   uchwyty: "Uchwyty i gałki",
   akcesoria: "Akcesoria (przepusty, kratki, zamki)",
+  narzedzia: "Narzędzia i szablony montażowe",
   inne: "Inne",
 };
 

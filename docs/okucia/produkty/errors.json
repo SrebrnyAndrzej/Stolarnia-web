@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "zrodlo": "Meblownia",
+    "url": "https://meblownia.pl/blum-servodrive-uno-z10na30eez10na30ee.html",
+    "blad": "Exceeded maximum allowed redirects."
+  },
+  {
+    "zrodlo": "Meblownia",
+    "url": "https://meblownia.pl/nowoczesny-zyrandol-blum-1-punktowy-bialy.html",
+    "blad": "Client error '404 Not Found' for url 'https://meblownia.pl/nowoczesny-zyrandol-blum-1-punktowy-bialy.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "zrodlo": "Meblownia",
+    "url": "https://meblownia.pl/nowoczesny-zyrandol-blum-1-punktowy-czarny.html",
+    "blad": "Client error '404 Not Found' for url 'https://meblownia.pl/nowoczesny-zyrandol-blum-1-punktowy-czarny.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "zrodlo": "Meblownia",
+    "url": "https://meblownia.pl/nowoczesny-zyrandol-blum-3-punktowy-bialy.html",
+    "blad": "Client error '404 Not Found' for url 'https://meblownia.pl/nowoczesny-zyrandol-blum-3-punktowy-bialy.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  },
+  {
+    "zrodlo": "Meblownia",
+    "url": "https://meblownia.pl/nowoczesny-zyrandol-blum-3-punktowy-czarny.html",
+    "blad": "Client error '404 Not Found' for url 'https://meblownia.pl/nowoczesny-zyrandol-blum-3-punktowy-czarny.html'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+  }
+]
