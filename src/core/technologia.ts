@@ -332,8 +332,12 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     // --- Zawiasy: puszki we frontach i prowadniki w bokach ---
     const drzwi = zm.elementy.filter((e) => e.kod.startsWith("FRONT-D"));
     drzwi.forEach((d, i) => {
-      const lewy = m.konstrukcja === "blindCorner" ? m.konfiguracja.stronaDrzwiNaroznika === "lewa" : drzwi.length === 1 ? true : i % 2 === 0;
-      const bok = lewy ? bokL : bokP;
+      const lewy = d.stronaZawiasow ? d.stronaZawiasow === "lewa" : m.konstrukcja === "blindCorner" ? m.konfiguracja.stronaDrzwiNaroznika === "lewa" : drzwi.length === 1 ? true : i % 2 === 0;
+      // Prowadnik na płycie pionowej przy krawędzi zawiasów: bok albo przegroda (skrzydła na komorach).
+      const krawedz = lewy ? d.x : d.x + d.szer;
+      const yS = d.y + d.wys / 2;
+      const kandydaci = pionowe.filter((v) => v.y - EPS <= yS && yS <= v.y + v.wys + EPS && (lewy ? v.x <= krawedz + EPS : v.x + v.szer >= krawedz - EPS));
+      const bok = kandydaci.sort((a, b) => (lewy ? b.x - a.x : a.x - b.x))[0] ?? (lewy ? bokL : bokP);
       const n = zawiasyDlaWysokosci(d.wys);
       const pozycje = n === 1 ? [d.wys / 2] : Array.from({ length: n }, (_, k) => t.zawiasOdKoncaFrontuMM + ((d.wys - 2 * t.zawiasOdKoncaFrontuMM) * k) / (n - 1));
       const xPuszki = lewy ? d.x + t.zawiasPuszkaOdKrawedziMM : d.x + d.szer - t.zawiasPuszkaOdKrawedziMM;
@@ -342,7 +346,7 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
         const pol = `${cz.get(d.kod)?.etykieta} ↔ ${bok ? cz.get(bok.kod)?.etykieta : "?"}`;
         dodaj(d.kod, [xPuszki, y, d.z + d.gl], { typ: "otwor", srednica: t.zawiasPuszkaSrednicaMM, glebokosc: t.zawiasPuszkaGlebokoscMM, przeznaczenie: "Puszka zawiasu", polaczenie: pol, regula: R.puszka });
         if (bok) {
-          const lico = bok.kod === "BOK-L" ? bok.x + bok.szer : bok.x;
+          const lico = lewy ? bok.x + bok.szer : bok.x;
           for (const dy of [-t.prowadnikRozstawMM / 2, t.prowadnikRozstawMM / 2])
             dodaj(bok.kod, [lico, y + dy, t.prowadnikOdFrontuMM], { typ: "otwor", srednica: t.prowadnikSrednicaMM, glebokosc: t.prowadnikGlebokoscMM, przeznaczenie: "Prowadnik zawiasu", polaczenie: pol, regula: R.prowadnik });
         } else {

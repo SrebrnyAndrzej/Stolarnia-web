@@ -46,7 +46,7 @@ export interface PodzialFrontow {
 }
 
 export type Front =
-  | { typ: "drzwi"; kod: string; strona?: "lewa" | "prawa" }
+  | { typ: "drzwi"; kod: string; strona?: "lewa" | "prawa"; /** Strona zawiasów ustawiona w edytorze (skrzydła z podziału frontu). */ zawiasy?: "lewa" | "prawa" }
   | { typ: "szuflada"; kod: string }
   /** Zaślepka / blenda z materiału frontu (np. część ślepa narożnika). */
   | { typ: "blenda"; kod: string }

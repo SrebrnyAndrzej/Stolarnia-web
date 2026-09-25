@@ -558,6 +558,24 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "podziel_front",
+    {
+      title: "Podziel drzwi na skrzydła",
+      description:
+        "Silnik konstrukcji: dzieli pojedyncze skrzydło drzwi na 2–4 skrzydła obok siebie (pion) albo jedno nad drugim (poziom), niezależnie od wnętrza. Skrzydła obok siebie mają zawiasy na zewnątrz. przegroda=true dodaje płytę na linii podziału (przegrodę albo półkę stałą) — prowadniki zawiasów trafiają wtedy na przegrodę.",
+      inputSchema: {
+        projektId: z.string(),
+        modulId: z.string(),
+        kierunek: z.enum(["pion", "poziom"]),
+        liczba: z.number().int().min(2).max(4),
+        poleId: z.string().optional(),
+        przegroda: z.boolean().optional(),
+      },
+    },
+    bezpiecznie(({ projektId, modulId, kierunek, liczba, poleId, przegroda }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "podzielFront", kierunek, liczba, poleId, przegroda })),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",

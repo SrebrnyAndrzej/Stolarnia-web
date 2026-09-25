@@ -154,6 +154,7 @@ export function zbudujMebel(
       continue;
     }
     const e = p(f.kod, f.typ === "blenda" ? "filler" : "front", x, y, -tf, w, h, tf, "front");
+    if (f.typ === "drzwi" && f.zawiasy) e.stronaZawiasow = f.zawiasy;
     fronty.set(id, e);
     el.push(e);
     if (f.typ === "drzwi" && w > 600) ostrzezenia.push(`Skrzydło drzwi ${Math.round(w)} mm szersze niż 600 mm — rozważ 2 skrzydła.`);

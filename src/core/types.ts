@@ -421,6 +421,8 @@ export interface Element {
   wys: number;
   gl: number;
   materialRola: "korpus" | "front" | "plecy" | "blat" | "szuflada";
+  /** Drzwi z edytora: strona zawiasów (bez pola — reguła domyślna dokumentacji). */
+  stronaZawiasow?: "lewa" | "prawa";
 }
 
 export interface OkucieModulu {

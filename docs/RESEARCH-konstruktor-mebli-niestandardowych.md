@@ -118,6 +118,12 @@ Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z j
 - dokumentacja łączy płyty poziome z płytą pionową dotykającą ich końca (bok albo przegroda), a przegrodę z płytami nad i pod nią. Podpórki półek są w bokach lub przegrodach. Porównanie całego katalogu (536 części) nie wykazało zmian w operacjach;
 - API `podzielWnetrze`, MCP `podziel_wnetrze`, przyciski „Przegrody pionowe / Półki stałe” w inspektorze. Test: `src/przegrody.test.ts`.
 
+**K04 — fronty niezależnie od wnętrza, zrobione częściowo:**
+- polecenie `podzielFront`: pojedyncze skrzydło → 2–4 skrzydła obok siebie (zawiasy na zewnątrz) albo jedno nad drugim; opcja `przegroda` dodaje płytę w osi szczeliny (przegrodę albo półkę stałą) i rozdziela półki;
+- `Front.zawiasy` → `Element.stronaZawiasow`. Dokumentacja wybiera płytę pod prowadnik przy krawędzi zawiasów: bok albo przegroda. Dla katalogu położenia wszystkich operacji są identyczne (536 części);
+- „jeden front zasłania dwa wysuwy”: szuflada ukryta (etap 3);
+- API `podzielFront`, MCP `podziel_front`, przyciski w inspektorze.
+
 **Nie ma jeszcze:**
 - reguły zawiasu i listwy dystansowej dla szuflad za drzwiami (brak danych — zamówione u Codexa),
 - szuflady z ukrytą szufladą i zabierakiem,

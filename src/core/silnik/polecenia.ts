@@ -252,3 +252,103 @@ export function podzielWnetrze(
   const opis = czesci.map((_, i) => Math.round(i < rozmiary.length ? rozmiary[i] : rowne)).join(" / ");
   return { mebel, uwagi: [`Strefa podzielona ${opcje.kierunek === "pion" ? "przegrodami pionowymi" : "półkami stałymi"} na ${n} komór: ${opis} mm.`] };
 }
+
+/**
+ * Dzieli pole drzwi na N skrzydeł obok siebie („pion”) albo jedno nad drugim („poziom”) — niezależnie od wnętrza.
+ * Skrzydła obok siebie dostają zawiasy na zewnątrz (lewe — lewa, prawe — prawa). Opcja `przegroda` dodaje płytę
+ * na linii podziału w strefie za drzwiami (przegrodę pionową albo półkę stałą), tak aby każde skrzydło zamykało swoją komorę.
+ */
+export function podzielFront(
+  wejscie: Mebel,
+  k: UstawieniaKonstrukcyjne,
+  opcje: { kierunek: "pion" | "poziom"; liczba: number; poleId?: string; przegroda?: boolean },
+): WynikPolecenia {
+  const n = Math.round(opcje.liczba);
+  if (!(n >= 2 && n <= 4)) throw new BladPolecenia("Front można podzielić na 2–4 części.");
+  const mebel: Mebel = structuredClone(wejscie);
+  const gap = k.szczelinaFrontowMM;
+  const uklad = ukladFrontow(mebel.fronty, mebel.szerokoscMM, mebel.wysokoscMM, gap);
+  const drzwi = [...uklad.values()].filter((u) => u.pole.front?.typ === "drzwi" && !u.pole.podzial);
+  const cel = opcje.poleId ? uklad.get(opcje.poleId) : drzwi.length === 1 ? drzwi[0] : undefined;
+  if (!cel) throw new BladPolecenia(opcje.poleId ? `Nie ma pola frontu „${opcje.poleId}”.` : drzwi.length ? "Mebel ma kilka skrzydeł — wskaż, które podzielić (poleId)." : "Mebel nie ma drzwi do podzielenia.");
+  const front = cel.pole.front;
+  if (front?.typ !== "drzwi" || cel.pole.podzial) throw new BladPolecenia("Wskazane pole nie jest pojedynczym skrzydłem drzwi.");
+  const wymiar = opcje.kierunek === "pion" ? cel.front.w : cel.front.h;
+  const czesc = (wymiar - gap * (n - 1)) / n;
+  if (czesc < 150) throw new BladPolecenia(`Skrzydło miałoby ${Math.round(czesc)} mm — minimum 150 mm.`);
+  if (opcje.kierunek === "pion" && czesc > 600) throw new BladPolecenia(`Skrzydło ${Math.round(czesc)} mm szersze niż 600 mm — zwiększ liczbę skrzydeł.`);
+
+  const juz = new Set<string>();
+  const zbierz = (p: PoleFrontu) => {
+    if (p.front && "kod" in p.front) juz.add(p.front.kod);
+    p.podzial?.czesci.forEach(zbierz);
+  };
+  zbierz(mebel.fronty);
+  let nr = 0;
+  const nowyKod = () => {
+    let kod: string;
+    do kod = `FRONT-D${pad(++nr)}`;
+    while (juz.has(kod));
+    juz.add(kod);
+    return kod;
+  };
+  const stronaPionu = (i: number): "lewa" | "prawa" => (i < n / 2 ? "lewa" : "prawa");
+  const czesci: PoleFrontu[] = Array.from({ length: n }, (_, i) => ({
+    id: `${cel.pole.id}-${opcje.kierunek === "pion" ? "s" : "p"}${i + 1}`,
+    rozmiar: { reszta: true },
+    front: { typ: "drzwi", kod: i === 0 ? front.kod : nowyKod(), zawiasy: opcje.kierunek === "pion" ? stronaPionu(i) : front.zawiasy ?? "lewa" },
+  }));
+  const zastap = (p: PoleFrontu): PoleFrontu =>
+    p.id === cel.pole.id
+      ? { id: p.id, rozmiar: p.rozmiar, podzial: { kierunek: opcje.kierunek, szczelinaWspolna: true, czesci } }
+      : p.podzial
+        ? { ...p, podzial: { ...p.podzial, czesci: p.podzial.czesci.map(zastap) } }
+        : p;
+  mebel.fronty = zastap(mebel.fronty);
+  const uwagi = [`Drzwi podzielone na ${n} skrzydła ${opcje.kierunek === "pion" ? "obok siebie" : "jedno nad drugim"} po ${Math.round(czesc)} mm.`];
+
+  if (opcje.przegroda) {
+    // Płyta na każdej linii podziału frontu: oś płyty = oś szczeliny między skrzydłami.
+    const t = k.gruboscPlytyKorpusuMM;
+    const wnetrze = ukladWnetrza(mebel.wnetrze, mebel.szerokoscMM, mebel.wysokoscMM, t);
+    const [a0, a1] = opcje.kierunek === "pion" ? [cel.obszar.x, cel.obszar.x + cel.obszar.w] : [cel.obszar.y, cel.obszar.y + cel.obszar.h];
+    const pokrycie = (s: { x: number; y: number; w: number; h: number }) =>
+      opcje.kierunek === "pion" ? Math.min(s.x + s.w, a1) - Math.max(s.x, a0) : Math.min(s.y + s.h, a1) - Math.max(s.y, a0);
+    const strefa = [...wnetrze.values()].filter((s) => !s.strefa.podzial && pokrycie(s) > 0).sort((a, b) => pokrycie(b) - pokrycie(a))[0];
+    if (!strefa) throw new BladPolecenia("Brak strefy wnętrza za drzwiami.");
+    if (strefa.strefa.wyposazenie?.typ === "nisza") throw new BladPolecenia("Za drzwiami jest nisza urządzenia — bez przegrody.");
+    if (mebel.wysuwy.some((w) => w.strefaId === strefa.strefa.id)) throw new BladPolecenia("W strefie za drzwiami pracują szuflady — przegroda by z nimi kolidowała.");
+    const start = opcje.kierunek === "pion" ? strefa.x : strefa.y;
+    const dl = opcje.kierunek === "pion" ? strefa.w : strefa.h;
+    const krokFrontu = (a1 - a0) / n;
+    const linie = Array.from({ length: n - 1 }, (_, i) => a0 + krokFrontu * (i + 1));
+    const rozmiary: number[] = [];
+    let od = start;
+    for (const l of linie) {
+      rozmiary.push(l - t / 2 - od);
+      od = l + t / 2;
+    }
+    if (rozmiary.some((r) => r < 100) || start + dl - od < 100) throw new BladPolecenia("Komora za skrzydłem węższa niż 100 mm — przegroda nie pasuje do strefy.");
+    const wyp = strefa.strefa.wyposazenie;
+    const polki = wyp?.typ === "polki" ? wyp.liczba : 0;
+    const komory: StrefaWnetrza[] = Array.from({ length: n }, (_, i) => ({
+      id: `${strefa.strefa.id}-k${i + 1}`,
+      rozmiar: i < n - 1 ? { mm: r1(rozmiary[i]) } : { reszta: true },
+      wyposazenie: opcje.kierunek === "pion" ? (wyp ? structuredClone(wyp) : { typ: "pusta" }) : polki ? { typ: "polki", liczba: Math.floor(polki / n) + (i < polki % n ? 1 : 0) } : { typ: "pusta" },
+    }));
+    const id = strefa.strefa.id;
+    const zastapW = (s: StrefaWnetrza): StrefaWnetrza =>
+      s.id === id
+        ? { id: s.id, rozmiar: s.rozmiar, bezPlecow: s.bezPlecow, podzial: { kierunek: opcje.kierunek, przegroda: "plyta", czesci: komory } }
+        : s.podzial
+          ? { ...s, podzial: { ...s.podzial, czesci: s.podzial.czesci.map(zastapW) } }
+          : s;
+    mebel.wnetrze = zastapW(mebel.wnetrze);
+    uwagi.push(`Dodano ${opcje.kierunek === "pion" ? "przegrodę pionową" : "półkę stałą"} na linii podziału frontu (${n} komory).`);
+  }
+  return { mebel, uwagi };
+}
+
+function r1(v: number): number {
+  return Math.round(v * 10) / 10;
+}

@@ -106,3 +106,6 @@ Ukryta szuflada nad szufladą główną, wysuwana osobno albo z zabierakiem. Zab
 
 ## 2026-09-25 - Silnik K02: przegrody pionowe i półki stałe (Claude)
 Polecenie „Podziel wnętrze” w inspektorze, API i MCP. Połączenia konfirmatowe i podpórki półek obsługują teraz przegrody. Dla dotychczasowych mebli operacje się nie zmieniły (sprawdzone na całym katalogu).
+
+## 2026-09-25 - Silnik K04: podział drzwi na skrzydła (Claude)
+Polecenie „Podziel front”: skrzydła obok siebie albo jedno nad drugim, z płytą na linii podziału lub bez niej. Zawiasy skrzydła przy przegrodzie mocowane do przegrody. Test: `src/przegrody.test.ts`.

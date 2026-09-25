@@ -340,6 +340,7 @@ export function Designer({ analiza, odswiez }: Props) {
             onSzufladyZaDrzwiami={(liczba, wysokoscMM) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM }))}
             onUkrytaSzuflada={(sprzezona) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajUkrytaSzuflade", sprzezona }))}
             onPodzielWnetrze={(kierunek, liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "podzielWnetrze", kierunek, liczba }))}
+            onPodzielFront={(kierunek, liczba, przegroda) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "podzielFront", kierunek, liczba, przegroda }))}
             onPrzywrocStandardowa={() => wykonaj(() => api.przywrocKonstrukcjeStandardowa(p.id, modul.id))}
             onUsun={() => wykonaj(async () => { await api.usunModul(p.id, modul.id); setWybrany(null); })}
             onDuplikuj={() => wykonaj(async () => setWybrany((await api.duplikujModul(p.id, modul.id)).id))}
@@ -639,13 +640,14 @@ interface InspektorProps {
   onSzufladyZaDrzwiami: (liczba: number, wysokoscMM: number) => void;
   onUkrytaSzuflada: (sprzezona: boolean) => void;
   onPodzielWnetrze: (kierunek: "pion" | "poziom", liczba: number) => void;
+  onPodzielFront: (kierunek: "pion" | "poziom", liczba: number, przegroda: boolean) => void;
   onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPodzielWnetrze, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPodzielWnetrze, onPodzielFront, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
@@ -653,6 +655,8 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
   const [liczbaWewnetrznych, setLiczbaWewnetrznych] = useState(2);
   const [strefaWewnetrznej, setStrefaWewnetrznej] = useState(160);
   const [liczbaKomor, setLiczbaKomor] = useState(2);
+  const [liczbaSkrzydel, setLiczbaSkrzydel] = useState(2);
+  const [zPrzegroda, setZPrzegroda] = useState(true);
   const [systemy, setSystemy] = useState<Awaited<ReturnType<typeof api.systemySzuflad>>>([]);
   useEffect(() => {
     api.systemySzuflad().then(setSystemy).catch(() => setSystemy([]));
@@ -779,6 +783,14 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
             <Liczba label="Szuflad wewn." value={liczbaWewnetrznych} onSave={(v) => setLiczbaWewnetrznych(Math.max(1, Math.min(6, v)))} />
             <Liczba label="Strefa [mm]" value={strefaWewnetrznej} onSave={(v) => setStrefaWewnetrznej(Math.max(100, v))} />
             <button className="btn" onClick={() => onSzufladyZaDrzwiami(liczbaWewnetrznych, strefaWewnetrznej)}>Dodaj szuflady za drzwiami</button>
+          </div>
+        )}
+        {(m.drzewo ? JSON.stringify(m.drzewo.fronty).includes('"typ":"drzwi"') : k.typFrontu === "drzwi" && k.liczbaDrzwi === 1) && (
+          <div className="row">
+            <Liczba label="Skrzydeł" value={liczbaSkrzydel} onSave={(v) => setLiczbaSkrzydel(Math.max(2, Math.min(4, v)))} />
+            <label className="check"><input type="checkbox" checked={zPrzegroda} onChange={(e) => setZPrzegroda(e.target.checked)} /> z płytą na podziale</label>
+            <button className="btn" onClick={() => onPodzielFront("pion", liczbaSkrzydel, zPrzegroda)}>Skrzydła obok siebie</button>
+            <button className="btn" onClick={() => onPodzielFront("poziom", liczbaSkrzydel, zPrzegroda)}>Jedno nad drugim</button>
           </div>
         )}
         {(m.drzewo ? m.drzewo.wysuwy.some((w) => w.powiazanie === "zFrontem") : k.typFrontu === "szuflady" && k.liczbaSzuflad > 0) && (
