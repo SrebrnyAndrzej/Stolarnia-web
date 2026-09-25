@@ -2,6 +2,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import PDFDocument from "pdfkit";
 import { obrysModulu, scianyNaRzucie, granice } from "../core/geometry.js";
+import { doLokalnego } from "../core/technologia.js";
 import type { Czesc, DokumentacjaProjektu, Operacja, Projekt, StatusCzesci, ZbudowanyModul } from "../core/types.js";
 
 // Pakiet dokumentacji produkcyjnej w PDF (wektorowo): strona tytułowa ze statusem, rzut i elewacje kuchni,
@@ -420,11 +421,22 @@ class Kontekst {
     }
     doc.lineWidth(0.3).strokeColor("#aaa").rect(x1 + 30 * s, baseY - md.wysokoscMM * s, md.glebokoscMM * s, md.wysokoscMM * s).stroke();
     wymiarPoziomy(doc, x1 + 30 * s, x1 + (30 + md.glebokoscMM) * s, baseY + 9, String(md.glebokoscMM));
+    // Osie prowadnic szuflad (raster 32) na przekroju: linia na długości NL i wysokość od dołu boku.
+    const prowadnice = this.d.prowadnice.filter((q) => q.modulId === md.id);
+    const bokY = zm.elementy.find((e) => e.kod === "BOK-L")?.y ?? 0;
+    for (const q of prowadnice) {
+      const yy = baseY - (bokY + q.osOdDoluBokuMM) * s;
+      doc.lineWidth(0.9).strokeColor("#c25400").dash(4, { space: 1.5 }).moveTo(x1 + 30 * s, yy).lineTo(x1 + (30 + q.NL) * s, yy).stroke().undash();
+      for (const z of q.otworyOdFrontuMM ?? []) doc.circle(x1 + (30 + z) * s, yy, 1.1).fillColor("#c25400").fill();
+      doc.font("B").fontSize(5.8).fillColor("#c25400").text(`${q.szuflada} ${f(q.osOdDoluBokuMM)}`, x1 + (30 + md.glebokoscMM) * s + 3, yy - 3, { lineBreak: false });
+    }
+    doc.fillColor("#000");
     // Etykiety formatek na przekroju/widoku pomijamy — numeracja na kartach poniżej.
 
     // --- Siatka formatek ---
     const siatkaY = baseY + 24;
-    const dolnyPas = 64;
+    const liniaProwadnic = this.d.prowadnice.some((q) => q.modulId === md.id) ? 11 : 0;
+    const dolnyPas = 64 + liniaProwadnic;
     const siatkaH = H - siatkaY - dolnyPas - 24;
     const liczba = Math.max(czesci.length, 1);
     let kol = 1;
@@ -445,9 +457,19 @@ class Kontekst {
     // --- Okucia i braki (dolny pas) ---
     const okucia = zm.okucia.map((o) => `${o.typ} ×${o.ilosc}`).join(" · ");
     const braki = [...new Set(this.d.diagnostyka.filter((dg) => dg.obiekty.some((id) => czesci.some((c) => c.id === id))).map((dg) => `[${dg.poziom}] ${dg.opis.replace(`${md.nazwa}: `, "")}`))];
-    doc.font("B").fontSize(7).fillColor("#000").text("Okucia:", m, H - dolnyPas - 18);
-    doc.font("R").fontSize(7).text(okucia || "—", m + 38, H - dolnyPas - 18, { width: lewaW - 38 });
-    doc.font("R").fontSize(6.3).fillColor("#b3261e").text(braki.join("\n") || "", m, H - dolnyPas - 6, { width: lewaW, height: dolnyPas - 8, ellipsis: true });
+    if (liniaProwadnic) {
+      const pr = this.d.prowadnice.filter((q) => q.modulId === md.id);
+      const osie = pr.map((q) => `${q.szuflada} ${f(q.osOdDoluBokuMM)}`).join(" · ");
+      const otwory = pr[0].otworyOdFrontuMM ? `otwory od frontu ${pr[0].otworyOdFrontuMM.join("/")}` : "otwory wg szablonu";
+      doc.font("B").fontSize(7).fillColor("#c25400").text("Prowadnice:", m, H - dolnyPas - 18);
+      let tekst = `${osie} (oś od dołu boku, raster 32) · ${pr[0].system} NL ${pr[0].NL} · ${otwory}`;
+      doc.font("R").fontSize(7);
+      while (doc.widthOfString(tekst) > lewaW - 60 && tekst.length > 10) tekst = tekst.slice(0, -2);
+      doc.text(tekst, m + 52, H - dolnyPas - 18, { lineBreak: false });
+    }
+    doc.font("B").fontSize(7).fillColor("#000").text("Okucia:", m, H - dolnyPas - 18 + liniaProwadnic);
+    doc.font("R").fontSize(7).text(okucia || "—", m + 38, H - dolnyPas - 18 + liniaProwadnic, { width: lewaW - 38 });
+    doc.font("R").fontSize(6.3).fillColor("#b3261e").text(braki.join("\n") || "", m, H - dolnyPas - 6 + liniaProwadnic, { width: lewaW, height: dolnyPas - 8 - liniaProwadnic, ellipsis: true });
 
     // --- Tabela operacji całej szafki (1–2 kolumny, ciąg dalszy na kolejnej stronie) ---
     this.tabelaOperacji(czesci, W - m - tabW, top, tabW, H - top - 40, nazwaStr);
@@ -669,6 +691,18 @@ class Kontekst {
       const off = nazwa === "DA" ? [0, 6] : nazwa === "DB" ? [0, -14] : nazwa === "KA" ? [-26, -4] : [6, -4];
       doc.font("B").fontSize(7).fillColor("#b36b1e").text(`${nazwa}${ob !== "brak" ? " " + OBRZEZE[ob] : ""}`, sx + off[0] - (nazwa.startsWith("D") ? 25 : 0), sy + off[1], { width: 60, align: nazwa.startsWith("D") ? "center" : "left" });
     }
+    // Osie prowadnic szuflad na boku (raster 32): linia przez całą szerokość i wysokość od dołu boku.
+    if (c.rola === "side") {
+      const zm = this.w.zbudowane.find((z) => z.modul.id === c.modulId);
+      const bok = zm?.elementy.find((e) => e.kod === c.kodElementu);
+      for (const q of bok ? this.d.prowadnice.filter((p) => p.modulId === c.modulId) : []) {
+        const lx = doLokalnego(c.uklad, [c.uklad.o[0], bok!.y + q.osOdDoluBokuMM, c.uklad.o[2]])[0];
+        const [ax, ay] = P(lx, 0);
+        const [, by] = P(lx, c.szerokoscMM);
+        doc.lineWidth(0.7).strokeColor("#c25400").dash(4, { space: 1.5 }).moveTo(ax, ay).lineTo(ax, by).stroke().undash();
+        doc.font("B").fontSize(6).fillColor("#c25400").text(`${q.szuflada} ${f(q.osOdDoluBokuMM)}`, ax + 2, by + 3, { lineBreak: false });
+      }
+    }
     // Początek układu i osie
     doc.lineWidth(0.8).strokeColor("#1f5fbf").fillColor("#1f5fbf");
     doc.moveTo(ox, oy).lineTo(ox + 26, oy).stroke().polygon([ox + 26, oy - 2.5], [ox + 31, oy], [ox + 26, oy + 2.5]).fill();
@@ -798,14 +832,14 @@ class Kontekst {
       for (const slowo of uwaga.split(/\s+/).flatMap((slowo) => {
         const fragmenty: string[] = []; let fragment = "";
         for (const znak of slowo) {
-          if (fragment && doc.widthOfString(fragment + znak) > szerUwagi) { fragmenty.push(fragment); fragment = ""; }
+          if (fragment && doc.widthOfString(fragment + znak) > szerUwagi - 8) { fragmenty.push(fragment); fragment = ""; }
           fragment += znak;
         }
         if (fragment) fragmenty.push(fragment);
         return fragmenty;
       })) {
         const kandydat = wiersz ? `${wiersz} ${slowo}` : slowo;
-        if (wiersz && doc.widthOfString(kandydat) > szerUwagi) { linie.push(wiersz); wiersz = slowo; }
+        if (wiersz && doc.widthOfString(kandydat) > szerUwagi - 8) { linie.push(wiersz); wiersz = slowo; }
         else wiersz = kandydat;
       }
       if (wiersz) linie.push(wiersz);

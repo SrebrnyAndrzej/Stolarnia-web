@@ -26,6 +26,19 @@ export interface ProfilSzuflady {
   bottom_depth_steel_back?: { variable: "NL"; subtract_mm: number };
   /** Obróbka dna wymagana przez system (LEGRABOX — frezowanie C). */
   bottom_machining?: { id: string; opis: string; verification: string };
+  /** Montaż prowadnicy w boku korpusu: oś wkręta nad płytą pod szufladą i otwory od przedniej krawędzi (wg NL). */
+  runner_mounting?: {
+    axis_above_panel_min_mm: number;
+    /** Dodatek, gdy prowadnicę montuje się przed skręceniem korpusu (Blum: +1 mm). */
+    premount_extra_mm?: number;
+    /** Miejsce nad osią prowadnicy do płyty powyżej (dotyczy wysokości M). */
+    space_above_axis_min_mm?: number;
+    holes_from_front_mm?: Record<string, number[]>;
+    source_id: string;
+    pdf_page_1based: number;
+    verification: string;
+    notes: string[];
+  };
 }
 
 export const PROFILE_SZUFLAD = (dane as unknown as { profiles: ProfilSzuflady[] }).profiles;
@@ -107,4 +120,12 @@ export function przeliczSzuflade(
     zatwierdzoneProdukcyjnie: p.production_approved,
     uwagi,
   };
+}
+
+/**
+ * Otwory prowadnicy od przedniej krawędzi boku dla długości NL — tylko gdy producent podaje je w karcie.
+ * Brak wpisu = brak danych (Blum: pozycje wzdłuż głębokości nie są na stronach planowania).
+ */
+export function otworyProwadnicy(p: ProfilSzuflady, NL: number): number[] | undefined {
+  return p.runner_mounting?.holes_from_front_mm?.[String(NL)];
 }

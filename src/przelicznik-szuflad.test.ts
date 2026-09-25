@@ -75,3 +75,42 @@ test("system szuflad wybrany dla szafki: builder i silnik liczą dno i plecy z t
   const posortuj = (e: typeof z.elementy) => [...e].sort((a, b) => a.kod.localeCompare(b.kod));
   assert.deepEqual(posortuj(zbudujModulSilnikiem(m, k, tech).elementy), posortuj(z.elementy));
 });
+
+test("wysokości prowadnic w rastrze 32: kotwica z karty, wyższe szuflady na wielokrotności 32, otwory Amix w bokach", () => {
+  const s = new Stolarnia(new Magazyn(mkdtempSync(join(tmpdir(), "prowadnice-"))));
+  const p = s.utworzProjekt({ nazwa: "P", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-drawers-600", konfiguracja: { szufladySystemowe: true, profilSzuflad: "amix-elite-standard" } });
+  const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  const bok = z.elementy.find((e) => e.kod === "BOK-L")!;
+  const wieniec = z.elementy.find((e) => e.kod === "WIENIEC-D")!;
+  const d = s.dokumentacja(p.id);
+  const pr = d.prowadnice.filter((q) => q.modulId === m.id);
+  assert.equal(pr.length, 3);
+  // Najniższa: górna powierzchnia wieńca + 33 (Amix, karta s.2), liczona od dolnej krawędzi boku.
+  assert.equal(pr[0].osOdDoluBokuMM, wieniec.y + wieniec.wys - bok.y + 33);
+  assert.equal(pr[0].rastr, 0);
+  for (const q of pr) {
+    assert.equal((q.osOdDoluBokuMM - pr[0].osOdDoluBokuMM) % 32, 0, q.szuflada);
+    assert.ok(q.osOdDoluBokuMM >= q.osMinimalnaMM, q.szuflada);
+    assert.ok(q.osOdDoluBokuMM - q.osMinimalnaMM < 32, q.szuflada);
+    assert.deepEqual(q.otworyOdFrontuMM, [37, 69, 261, 293]); // NL 500
+  }
+  const bokL = d.czesci.find((c) => c.modulId === m.id && c.kodElementu === "BOK-L")!;
+  assert.equal(bokL.operacje.filter((o) => o.przeznaczenie.startsWith("Prowadnica")).length, 3 * 4);
+  assert.ok(bokL.uwagi.some((u) => u.includes("oś od dolnej krawędzi boku")));
+  assert.ok(!d.diagnostyka.some((x) => x.kod === "PROWADNICA_OTWORY" || x.kod === "OP_POZA_CZESCIA"));
+
+  // Blum: wysokości są, otworów wzdłuż głębokości karta nie podaje; montaż przed korpusem dodaje 1 mm.
+  s.zmienModul(p.id, m.id, { konfiguracja: { profilSzuflad: "blum-legrabox-m-wood" } });
+  const b1 = s.dokumentacja(p.id).prowadnice.find((q) => q.modulId === m.id)!;
+  assert.equal(b1.osOdDoluBokuMM, wieniec.y + wieniec.wys - bok.y + 38);
+  assert.ok(s.dokumentacja(p.id).diagnostyka.some((x) => x.kod === "PROWADNICA_OTWORY"));
+  s.zmienUstawienia({ technologia: { prowadniceMontowanePrzedKorpusem: true } });
+  assert.equal(s.dokumentacja(p.id).prowadnice.find((q) => q.modulId === m.id)!.osOdDoluBokuMM, b1.osOdDoluBokuMM + 1);
+
+  // Skrzynki z płyty: bez systemu nie ma wysokości, jest brak danych z podpowiedzią wyboru systemu.
+  s.zmienModul(p.id, m.id, { konfiguracja: { szufladySystemowe: false } });
+  const d2 = s.dokumentacja(p.id);
+  assert.equal(d2.prowadnice.length, 0);
+  assert.ok(d2.diagnostyka.some((x) => x.kod === "SZUFLADA_PROWADNICE"));
+});

@@ -90,3 +90,8 @@ Nowy silnik `src/core/silnik/` (model drzewa, budowa, adapter, polecenia). Na ws
 Przelicznik w zakładce „Materiały i okucia”, w API (`/api/przelicznik-szuflad`, `/api/systemy-szuflad`) i w MCP (`przelicznik_szuflad`). Profile Blum mają wszystkie wysokości boków ze stron PDF. Szafka może mieć własny system i wariant boku; builder i silnik liczą z niego formatki. Testy: `src/przelicznik-szuflad.test.ts`.
 
 Zmiana zachowania: dla Blum automatyczny dobór może wybrać teraz inny wariant niż M (wcześniej był tylko M). Dotyczy wyłącznie szafek z szufladami systemowymi Blum. Profile nadal mają `production_approved=false`.
+
+## 2026-09-25 - Wybór systemu szuflad w szafce i wysokości prowadnic w rastrze 32 (Claude)
+W inspektorze szafki z szufladami jest jedna lista „System szuflad”: skrzynka z płyty, system z ustawień albo jeden z sześciu systemów Amix/GTV/Blum. Obok jest wybór wysokości boku.
+
+Dokumentacja produkcyjna podaje dla każdej szuflady wysokość osi prowadnicy od dolnej krawędzi boku w rastrze 32. Dane pochodzą z kart producentów (`runner_mounting` w reguly-szuflad.json). Dla Amix i GTV dochodzą otwory w bokach. Szczegóły: docs/okucia/README.md. Test: `src/przelicznik-szuflad.test.ts`.

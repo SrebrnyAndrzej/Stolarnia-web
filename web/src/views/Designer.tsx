@@ -703,28 +703,38 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
           <label className="check"><input type="checkbox" checked={k.plecy} onChange={(e) => konf({ plecy: e.target.checked })} /> Plecy HDF</label>
           <label className="check"><input type="checkbox" checked={k.blat} onChange={(e) => konf({ blat: e.target.checked })} /> Blat</label>
           <label className="check"><input type="checkbox" checked={k.nogi} onChange={(e) => konf({ nogi: e.target.checked })} /> Nogi + cokół</label>
-          <label className="check"><input type="checkbox" checked={k.szufladySystemowe} onChange={(e) => konf({ szufladySystemowe: e.target.checked })} /> Szuflady systemowe</label>
         </div>
         <div className="grid2">
           <Liczba label="Cargo [kpl.]" value={k.liczbaCargo} onSave={(v) => konf({ liczbaCargo: v })} />
           <Liczba label="Podziałka szuflad [mm]" value={k.wysokoscSzufladyMM ?? 0} onSave={(v) => konf({ wysokoscSzufladyMM: v > 0 ? v : (null as unknown as undefined) })} />
         </div>
-        {k.szufladySystemowe && (
+        {(k.liczbaSzuflad > 0 || k.typFrontu === "szuflady") && (
           <div className="grid2">
             <div className="field">
               <label>System szuflad</label>
-              <select className="input" value={k.profilSzuflad ?? ""} onChange={(e) => konf({ profilSzuflad: e.target.value || (null as unknown as undefined), wariantBokuSzuflady: null as unknown as undefined })}>
-                <option value="">jak w ustawieniach</option>
+              <select
+                className="input"
+                value={k.szufladySystemowe ? k.profilSzuflad ?? "" : "plyta"}
+                onChange={(e) =>
+                  e.target.value === "plyta"
+                    ? konf({ szufladySystemowe: false })
+                    : konf({ szufladySystemowe: true, profilSzuflad: e.target.value || (null as unknown as undefined), wariantBokuSzuflady: null as unknown as undefined })
+                }
+              >
+                <option value="plyta">Skrzynka z płyty na prowadnicach</option>
+                <option value="">System jak w ustawieniach</option>
                 {systemy.map((s) => <option key={s.id} value={s.id}>{s.producent === "AMIX" ? "Amix" : s.producent === "BLUM" ? "Blum" : s.producent} {s.system}</option>)}
               </select>
             </div>
-            <div className="field">
-              <label>Wysokość boku</label>
-              <select className="input" value={k.wariantBokuSzuflady ?? ""} onChange={(e) => konf({ wariantBokuSzuflady: e.target.value || (null as unknown as undefined) })}>
-                <option value="">dobór do frontu</option>
-                {(systemy.find((s) => s.id === k.profilSzuflad)?.warianty ?? []).map((w) => <option key={w.wariant} value={w.wariant}>{w.wariant} — plecy {w.plecyWys} mm</option>)}
-              </select>
-            </div>
+            {k.szufladySystemowe && (
+              <div className="field">
+                <label>Wysokość boku</label>
+                <select className="input" value={k.wariantBokuSzuflady ?? ""} onChange={(e) => konf({ wariantBokuSzuflady: e.target.value || (null as unknown as undefined) })}>
+                  <option value="">dobór do frontu</option>
+                  {(systemy.find((s) => s.id === k.profilSzuflad)?.warianty ?? []).map((w) => <option key={w.wariant} value={w.wariant}>{w.wariant} — plecy {w.plecyWys} mm</option>)}
+                </select>
+              </div>
+            )}
           </div>
         )}
         {k.typFrontu === "drzwi" && k.liczbaSzuflad > 0 && <div className="muted" style={{ fontSize: 12 }}>Szuflady pod drzwiami: {k.liczbaSzuflad} × {k.wysokoscSzufladyMM ?? 360} mm, nad nimi półka stała i drzwi.</div>}

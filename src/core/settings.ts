@@ -77,6 +77,9 @@ export const USTAWIENIA_DOMYSLNE: UstawieniaStolarni = {
     prowadnikGlebokoscMM: 13,
     zawiasyZatwierdzone: false,
     profilSzuflad: "blum-tandembox-antaro-m-wood",
+    prowadniceMontowanePrzedKorpusem: false,
+    prowadnicaOtworSrednicaMM: 5,
+    prowadnicaOtworGlebokoscMM: 13,
   },
 };
 

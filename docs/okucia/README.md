@@ -38,6 +38,25 @@ Strony N i C LEGRABOX oraz M sprawdzono na rysunku. Pozostałe odczytano z tekst
 
 Wynik: dno i plecy dla wszystkich sześciu systemów obok siebie, ze wzorem, stroną źródła i statusem weryfikacji. W inspektorze szafki z szufladami systemowymi można wybrać system i wysokość boku dla tej jednej szafki (`profilSzuflad`, `wariantBokuSzuflady`). Bez wyboru działa ustawienie technologii i automatyczny dobór: najwyższy wariant, którego plecy są co najmniej o 40 mm niższe od frontu.
 
+### Wysokość montażu prowadnic i raster 32 (25.09.2026)
+
+`runner_mounting` w profilu to wymiar od górnej powierzchni płyty pod szufladą do osi wkrętów prowadnicy. Wartości odczytano z rysunków „Wymiary zabudowy” i „Wymiary montażowe”:
+
+| System | Oś nad płytą [mm] | Otwory od przedniej krawędzi boku | Źródło |
+|---|---:|---|---|
+| Amix Elite Box | min. 33 | 37, 69 + tylna para wg NL (165/197, 229/261, 261/293) | AMIX-Elite-Box-standardowe s.2 |
+| GTV Axis Pro | 32 | 37 + tylny wg NL (+96/+128/+192/+224; 600: +224 i +352) | GTV-Axis-Pro-karta s.6–7 |
+| GTV Modern Box PRO | 33 | 37 + tylny +192 (NL 300–400) / +224 (450–550) | GTV-Modern-Box-Pro-instrukcja s.6 |
+| Blum TANDEMBOX antaro | min. 33 (nad osią 65,5) | brak w karcie | planowanie s.7 |
+| Blum LEGRABOX | min. 38 (+1 przy montażu przed korpusem; nad osią 68) | brak w karcie | planowanie s.14 |
+| Blum MERIVOBOX | min. 54 (+1 przy montażu przed korpusem; nad osią 54) | brak w karcie | planowanie s.14 |
+
+Dokumentacja (`technologia.ts → wysokosciProwadnic`): najniższa prowadnica = płyta pod szufladą + wymiar z karty (kotwica rastra). Każda wyższa zachowuje położenie względem swojego frontu i jest dociągana w górę do wielokrotności 32 mm nad kotwicą. Wszystkie prowadnice leżą więc w jednej linii otworów systemu 32.
+
+Podniesienie (do 31 mm) oznacza, że skrzynka siedzi wyżej względem frontu. Wymiary mocowania frontu w kartach są minimalne, więc to dopuszczalne; uwaga trafia do dokumentacji. Wynik jest w `DokumentacjaProjektu.prowadnice`, na karcie szafki (linie na przekroju i wiersz „Prowadnice”) oraz na rysunku boku.
+
+Dla Amix i GTV otwory prowadnic są operacjami w bokach. Średnica i głębokość otworu (domyślnie Ø5×13) to ustawienia zakładu, reguła ma status roboczy. Dla Blum brak otworów wzdłuż głębokości daje diagnostykę `PROWADNICA_OTWORY`. Skrzynki z płyty bez wybranego systemu nie mają wysokości (`SZUFLADA_PROWADNICE`).
+
 `reguly-szuflad.json` zawiera te sześć profili, zakres zastosowania, źródło, sumę kontrolną i przykłady. Każdy ma `production_approved=false`: nie uzupełniono jeszcze kompletnego przypisania SKU, długości, wierceń i obróbki. Nie używać go bezpośrednio jako zatwierdzonego katalogu CNC.
 
 ## Ważne rozróżnienia i braki

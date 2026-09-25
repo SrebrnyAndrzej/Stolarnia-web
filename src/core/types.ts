@@ -92,6 +92,11 @@ export interface UstawieniaTechnologii {
   zawiasyZatwierdzone: boolean;
   /** Profil systemu szuflad z docs/okucia/reguly-szuflad.json. */
   profilSzuflad: string;
+  /** Prowadnice przykręcane do boków przed skręceniem korpusu (Blum: oś +1 mm). */
+  prowadniceMontowanePrzedKorpusem: boolean;
+  /** Otwór pod wkręt prowadnicy w linii systemu 32 — wartość zakładu, producenci podają tylko wkręt. */
+  prowadnicaOtworSrednicaMM: number;
+  prowadnicaOtworGlebokoscMM: number;
 }
 
 export interface UstawieniaStolarni {
@@ -540,6 +545,27 @@ export interface Czesc {
   podpis: string;
 }
 
+/** Wysokość montażu prowadnicy jednej szuflady w boku korpusu, w rastrze systemu 32. */
+export interface ProwadnicaSzuflady {
+  modulId: string;
+  nazwaModulu: string;
+  /** Kod szuflady, np. SZ01 (od dołu). */
+  szuflada: string;
+  profilId: string;
+  system: string;
+  NL: number;
+  /** Oś wkrętów prowadnicy od dolnej krawędzi boku [mm]. */
+  osOdDoluBokuMM: number;
+  /** Minimalna oś wg producenta (płyta pod szufladą + wymiar z karty) od dolnej krawędzi boku. */
+  osMinimalnaMM: number;
+  /** Ile rastrów 32 nad prowadnicą najniższej szuflady (0 = kotwica rastra). */
+  rastr: number;
+  /** Otwory od przedniej krawędzi boku; brak = producent nie podaje. */
+  otworyOdFrontuMM?: number[];
+  zrodlo: string;
+  uwagi: string[];
+}
+
 export interface DokumentacjaProjektu {
   projektId: string;
   nazwaProjektu: string;
@@ -548,6 +574,8 @@ export interface DokumentacjaProjektu {
   wersjaGeneratora: string;
   czesci: Czesc[];
   diagnostyka: Diagnostyka[];
+  /** Wysokości montażu prowadnic szuflad systemowych (raster 32), od dołu szafki. */
+  prowadnice: ProwadnicaSzuflady[];
   pozycjeProdukcyjne: { podpis: string; ilosc: number; czesci: string[] }[];
   gotowaDoProdukcji: boolean;
   podsumowanie: Record<StatusCzesci, number> & { operacje: number; bezWiercen: number };

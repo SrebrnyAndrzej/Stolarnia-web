@@ -52,6 +52,66 @@
         "bottom_width": 489,
         "bottom_depth": 474,
         "back_width": 477
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 33,
+        "holes_from_front_mm": {
+          "250": [
+            37,
+            69,
+            165,
+            197
+          ],
+          "270": [
+            37,
+            69,
+            165,
+            197
+          ],
+          "300": [
+            37,
+            69,
+            165,
+            197
+          ],
+          "350": [
+            37,
+            69,
+            165,
+            197
+          ],
+          "400": [
+            37,
+            69,
+            229,
+            261
+          ],
+          "450": [
+            37,
+            69,
+            261,
+            293
+          ],
+          "500": [
+            37,
+            69,
+            261,
+            293
+          ],
+          "550": [
+            37,
+            69,
+            261,
+            293
+          ]
+        },
+        "source_id": "AMIX-Elite-Box-standardowe",
+        "pdf_page_1based": 2,
+        "verification": "visually_checked",
+        "notes": [
+          "Min33 od górnej powierzchni płyty pod szufladą do osi otworów prowadnicy (przekroje H=84/116/167/199).",
+          "Otwory od przedniej krawędzi korpusu: 37 i 69, tylna para wg NL (rysunek „Wymiary montażowe prowadnic”)."
+        ]
       }
     },
     {
@@ -100,6 +160,51 @@
         "bottom_width": 489,
         "bottom_depth": 476,
         "back_width": 477
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 32,
+        "holes_from_front_mm": {
+          "250": [
+            37,
+            133
+          ],
+          "300": [
+            37,
+            165
+          ],
+          "350": [
+            37,
+            165
+          ],
+          "400": [
+            37,
+            229
+          ],
+          "450": [
+            37,
+            261
+          ],
+          "500": [
+            37,
+            261
+          ],
+          "550": [
+            37,
+            261
+          ],
+          "600": [
+            37,
+            261,
+            389
+          ]
+        },
+        "source_id": "GTV-Axis-Pro-karta",
+        "pdf_page_1based": 6,
+        "verification": "visually_checked",
+        "notes": [
+          "32 od płyty pod szufladą do osi prowadnicy — s.6 (szuflada niska H=86) i s.7 (H=120/168/200, ten sam wymiar w tekście).",
+          "Otwory: 37 od krawędzi szafki, tylny wg NL: +96 (250), +128 (300–350), +192 (400), +224 (450–550), 600: +224 i +352."
+        ]
       }
     },
     {
@@ -148,6 +253,42 @@
         "bottom_width": 489,
         "bottom_depth": 476,
         "back_width": 477
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 33,
+        "holes_from_front_mm": {
+          "300": [
+            37,
+            229
+          ],
+          "350": [
+            37,
+            229
+          ],
+          "400": [
+            37,
+            229
+          ],
+          "450": [
+            37,
+            261
+          ],
+          "500": [
+            37,
+            261
+          ],
+          "550": [
+            37,
+            261
+          ]
+        },
+        "source_id": "GTV-Modern-Box-Pro-instrukcja",
+        "pdf_page_1based": 6,
+        "verification": "visually_checked",
+        "notes": [
+          "33 od płyty pod szufladą do osi prowadnicy (H=84/135/167/199).",
+          "Otwory: 37 od krawędzi szafki, tylny +192 (NL 300–400) albo +224 (NL 450–550)."
+        ]
       }
     },
     {
@@ -215,6 +356,18 @@
           "pdf_page_1based": 31,
           "verification": "text_extracted_same_layout"
         }
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 54,
+        "premount_extra_mm": 1,
+        "space_above_axis_min_mm": 54,
+        "source_id": "BLUM-Merivobox-planowanie",
+        "pdf_page_1based": 14,
+        "verification": "visually_checked",
+        "notes": [
+          "min. 54 od płyty pod szufladą do osi wkręta prowadnicy, +1 mm przy montażu prowadnicy przed skręceniem korpusu; nad osią min. 54 (z 2 mm regulacji nachylenia) — wysokość M.",
+          "Pozycje otworów prowadnicy wzdłuż głębokości nie są podane na stronach planowania — brak danych."
+        ]
       }
     },
     {
@@ -292,6 +445,18 @@
         "id": "C",
         "opis": "Frezowanie krawędzi dna wg rysunku C (płyta 16, wymiary 8 i 38 mm na rysunku) — odczytać z PDF przed CNC",
         "verification": "visually_checked_not_normalized"
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 38,
+        "premount_extra_mm": 1,
+        "space_above_axis_min_mm": 68,
+        "source_id": "BLUM-Legrabox-planowanie",
+        "pdf_page_1based": 14,
+        "verification": "visually_checked",
+        "notes": [
+          "min 38 od płyty pod szufladą do osi wkręta prowadnicy, +1 mm przy montażu prowadnicy przed skręceniem korpusu; nad osią min 68 (z 2 mm regulacji) — wysokość M.",
+          "Pozycje otworów prowadnicy wzdłuż głębokości nie są podane na stronach planowania — brak danych."
+        ]
       }
     },
     {
@@ -368,6 +533,17 @@
       "bottom_depth_steel_back": {
         "variable": "NL",
         "subtract_mm": 22
+      },
+      "runner_mounting": {
+        "axis_above_panel_min_mm": 33,
+        "space_above_axis_min_mm": 65.5,
+        "source_id": "BLUM-Tandembox-antaro-planowanie",
+        "pdf_page_1based": 7,
+        "verification": "visually_checked",
+        "notes": [
+          "min 33 od płyty pod szufladą do osi wkręta prowadnicy, nad osią 65.5 do płyty powyżej — wysokość M.",
+          "Pozycje otworów prowadnicy wzdłuż głębokości nie są podane na stronach planowania — brak danych."
+        ]
       }
     }
   ]
