@@ -119,3 +119,6 @@ Zakładka „Produkcja → Wydania produkcyjne”, API `POST/GET /api/projekty/:
 Wydanie zamraża projekt, elementy i dokumentację bieżącej rewizji w migawce gzip + base64 z sumą SHA-256 (około 20–30 kB na kuchnię) w `Projekt.wydania`. PDF wydania powstaje wyłącznie z migawki, więc zmiany projektu, ustawień i katalogów go nie zmieniają. Wydanie nie podbija rewizji projektu.
 
 Braki danych oznaczają wydanie jako robocze; `tylkoKompletne` blokuje takie wydanie. Odpowiedzi API i MCP nie zawierają migawek (`jsonBezMigawek`). Kopia projektu zaczyna bez wydań. Test: `src/wydania.test.ts`.
+
+## 2026-09-25 - Widok 3D: studyjne HDRI (Claude)
+Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska generowana w przeglądarce (cyklorama i softboxy HDR przez PMREM) z tone mappingiem ACES i cieniem od głównego softboxu. Nie wymaga pobierania plików. Prawdziwy plik HDRI (np. Poly Haven, CC0) można dodać później, po zgodzie na pobranie. Kamera startowa stoi ponad najwyższą szafką.
