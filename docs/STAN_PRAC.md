@@ -100,3 +100,6 @@ Dokumentacja produkcyjna podaje dla każdej szuflady wysokość osi prowadnicy o
 Polecenie „Dodaj szuflady za drzwiami” działa w inspektorze, API i MCP. Pełne dane są dla Amix Elite Box w wersji wewnętrznej (karta s.2: NL+16, cofnięcie 18, minimalne komory, panel 05B.023-FB). Dla Blum i GTV brakuje danych: dokumentacja pokazuje „brak danych” i używa wymiarów szuflady z frontem. Zawias i listwa dystansowa są w brakach. Szczegóły: RESEARCH-konstruktor-mebli-niestandardowych.md §6. Zamówienia danych i przegląd: docs/KOORDYNACJA-Claude-Codex.md.
 
 Tomek (Kuchnia Tomek, online): trzy słupki z szufladami mają system Amix Elite Box. Zapis z 25.09 z warunkiem na wersję bazy (75 → 76), rewizja projektu 46.
+
+## 2026-09-25 - Silnik etap 3: szuflada ukryta za frontem (Claude)
+Ukryta szuflada nad szufladą główną, wysuwana osobno albo z zabierakiem. Zabierak ma w danych tylko Blum LEGRABOX (ZI7.0M07). Amix obsługuje wyłącznie wysuw osobny. Prowadnice pozostają w rastrze 32. Test: `src/przelicznik-szuflad.test.ts`.

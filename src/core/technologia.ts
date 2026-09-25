@@ -357,7 +357,11 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
             if (w.podniesienie > 0.05) uwagi.push(`Prowadnica ${f1(w.podniesienie)} mm wyżej niż minimum (dociągnięcie do rastra 32)${w.wewnetrzna ? "" : " — skrzynka wyżej względem frontu; otwory mocowania frontu mierz od skrzynki"}.`);
             if (rm.space_above_axis_min_mm !== undefined && w.wolneNadOsia < rm.space_above_axis_min_mm)
               uwagi.push(`Nad osią ${f1(w.wolneNadOsia)} mm, karta wymaga min. ${f1(rm.space_above_axis_min_mm)} mm (wysokość M) — sprawdź wysokość boku.`);
-            if (w.wewnetrzna && pr.inner_drawer) uwagi.push(`Szuflada wewnętrzna za drzwiami: otwory +${przesuniecie} mm względem standardu, pierwszy min. ${pr.inner_drawer.first_hole_from_front_min_mm} od frontu korpusu (${pr.inner_drawer.source_id}, s.${pr.inner_drawer.pdf_page_1based}).`);
+            const rodzaj = wewnetrzne.find((q) => q.kod === w.kod)?.rodzaj;
+            if (w.wewnetrzna && pr.inner_drawer && rodzaj !== "ukrytaZaFrontem" && rodzaj !== "zZabierakiem")
+              uwagi.push(`Szuflada wewnętrzna za drzwiami: otwory +${przesuniecie} mm względem standardu${pr.inner_drawer.first_hole_from_front_min_mm ? `, pierwszy min. ${pr.inner_drawer.first_hole_from_front_min_mm} od frontu korpusu` : ""} (${pr.inner_drawer.source_id}, s.${pr.inner_drawer.pdf_page_1based}).`);
+            if (rodzaj === "ukrytaZaFrontem" || rodzaj === "zZabierakiem")
+              uwagi.push(`Szuflada ukryta za frontem ${wewnetrzne.find((q) => q.kod === w.kod)?.frontKod?.replace("FRONT-", "")}${rodzaj === "zZabierakiem" ? ", sprzężona zabierakiem" : ", wysuwana osobno"}; prowadnica dociągnięta w dół do rastra 32 (${pr.inner_drawer?.source_id}, s.${pr.inner_drawer?.pdf_page_1based}).`);
             if (!otwory) uwagi.push("Otwory wzdłuż głębokości: producent nie podaje ich w karcie — montaż wg szablonu.");
             prowadnice.push({
               modulId: m.id,
@@ -404,7 +408,11 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
       } else {
         brak("SZUFLADA_PROWADNICE", ["BOK-L", "BOK-P", ...frontySz, ...czesciSz], "skrzynki z płyty: nie wybrano systemu szuflad — brak wysokości prowadnic w rastrze 32 i połączeń skrzynki.", "Wybierz system szuflad w inspektorze szafki.");
       }
-      if (wewnetrzne.length) {
+      for (const q of wewnetrzne.filter((x) => x.rodzaj === "zZabierakiem" && x.frontKod)) {
+        const c = profilSzuflady(m.konfiguracja.profilSzuflad ?? t.profilSzuflad)?.inner_drawer?.coupler;
+        brak("ZABIERAK_FRONT", [q.frontKod!], `front ${q.frontKod}: wiercenie${c?.front_drilling ? ` Ø${c.front_drilling.diameter_mm} (${c.front_drilling.horizontal})` : ""} pod obudowę zabieraka ${c?.part ?? ""} dla ${q.kod} — ${c?.front_drilling?.note ?? "brak danych"}.`, "Potwierdź położenie pionowe otworu z rysunku producenta.");
+      }
+      if (wewnetrzne.some((q) => !q.rodzaj || q.rodzaj === "zaDrzwiami")) {
         const drzwiKody = zm.elementy.filter((e) => e.kod.startsWith("FRONT-D")).map((e) => e.kod);
         brak("ZAWIAS_ZA_DRZWIAMI", drzwiKody, "szuflady wewnętrzne za drzwiami: zawias musi dawać zerowe wystawanie skrzydła w światło korpusu albo potrzebna jest listwa dystansowa — karta zawiasu nieprzypisana.", "Wybierz zawias z danymi wystawania (np. kąt 155°/170° lub zerowe wystawanie) albo dodaj listwę dystansową.");
       }

@@ -497,6 +497,41 @@
           "min 38 od płyty pod szufladą do osi wkręta prowadnicy, +1 mm przy montażu prowadnicy przed skręceniem korpusu; nad osią min 68 (z 2 mm regulacji) — wysokość M.",
           "Pozycje otworów prowadnicy wzdłuż głębokości nie są podane na stronach planowania — brak danych."
         ]
+      },
+      "inner_drawer": {
+        "depth_min": {
+          "variable": "NL",
+          "add_mm": 3
+        },
+        "runner_holes_offset_mm": 0,
+        "min_opening_by_variant_mm": {
+          "M": 104
+        },
+        "coupler": {
+          "part": "ZI7.0M07",
+          "min_opening_by_variant_mm": {
+            "M": 109
+          },
+          "front_drilling": {
+            "diameter_mm": 25,
+            "horizontal": "środek frontu",
+            "note": "s.18: Ø25 pod obudowę zabieraka, min 17 / 59 / x / x+46 — położenie pionowe do potwierdzenia (Codex)"
+          },
+          "exclusions": [
+            "TIP-ON BLUMOTION"
+          ]
+        },
+        "hinge_requirement": "n/a",
+        "source_id": "BLUM-Legrabox-planowanie",
+        "pdf_page_1based": 18,
+        "verification": "visually_checked",
+        "notes": [
+          "s.16: szuflada wewnętrzna M z frontem metalowym, wysokość zabudowy 104 (109 z zestawem zabieraka), NL+3.",
+          "s.18: oś prowadnicy min 38 nad płytą (+1 przy montażu przed korpusem), nad osią min 66 (71 z zabierakiem).",
+          "s.19: dno LW−35 × NL−10, plecy LW−38 × 63 — jak szuflada standardowa M.",
+          "s.17: zestaw zabieraka ZI7.0M07 (obudowa RAL 7037 + zabierak), montowany do frontu; kombinacja z TIP-ON BLUMOTION niemożliwa.",
+          "Front wewnętrzny metalowy ZI7.0MS0 / ZI7.0MI0 — wymiar przycięcia nieodczytany; do uzupełnienia."
+        ]
       }
     },
     {

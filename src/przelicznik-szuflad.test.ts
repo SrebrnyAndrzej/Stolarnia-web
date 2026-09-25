@@ -154,3 +154,42 @@ test("szuflady wewnętrzne za drzwiami (Amix Elite): NL+16, cofnięcie 18, waria
   assert.ok(d2.diagnostyka.some((x) => x.kod === "SZUFLADA_WEWNETRZNA"));
   assert.ok(d2.prowadnice.filter((q) => q.modulId === m.id).every((q) => q.system.includes("TANDEMBOX")));
 });
+
+test("szuflada ukryta za frontem: LEGRABOX z zabierakiem ZI7.0M07, Amix osobno; raster 32 w dół, skrzynka główna niższa", () => {
+  const s = new Stolarnia(new Magazyn(mkdtempSync(join(tmpdir(), "ukryta-"))));
+  const p = s.utworzProjekt({ nazwa: "U", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-drawers-600", konfiguracja: { szufladySystemowe: true, profilSzuflad: "blum-legrabox-m-wood" } });
+  const przed = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  // Najwyższy front i jego skrzynka przed zmianą
+  const fronty = przed.elementy.filter((e) => e.kod.startsWith("FRONT-SZ")).sort((a, b) => b.wys - a.wys);
+  const kodSz = fronty[0].kod.replace("FRONT-", "");
+  const plecyPrzed = przed.elementy.find((e) => e.kod === `${kodSz}-TYL`)!.wys;
+
+  s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajUkrytaSzuflade", sprzezona: true });
+  const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  assert.equal(z.elementy.find((e) => e.kod === "SU01-TYL")!.wys, 63); // LEGRABOX wewnętrzna M
+  assert.ok(z.elementy.find((e) => e.kod === `${kodSz}-TYL`)!.wys < plecyPrzed, "skrzynka główna niższa pod ukrytą");
+  assert.ok(z.okucia.some((o) => o.opis.includes("ZI7.0M07")));
+  assert.ok(z.ostrzezenia.some((o) => o.includes("TIP-ON")));
+
+  const d = s.dokumentacja(p.id);
+  const pr = d.prowadnice.filter((q) => q.modulId === m.id);
+  const su = pr.find((q) => q.szuflada === "SU01")!;
+  assert.ok(su.wewnetrzna);
+  assert.equal(su.osOdDoluBokuMM, su.osMinimalnaMM); // dociągnięta w dół — bez podniesienia
+  assert.equal((su.osOdDoluBokuMM - Math.min(...pr.map((q) => q.osOdDoluBokuMM))) % 32, 0);
+  assert.ok(d.diagnostyka.some((x) => x.kod === "ZABIERAK_FRONT" && x.opis.includes("Ø25")));
+  assert.ok(!d.diagnostyka.some((x) => x.kod === "PROWADNICA_KOLIZJA" || x.kod === "ZAWIAS_ZA_DRZWIAMI"));
+  assert.throws(() => s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajUkrytaSzuflade", sprzezona: false, poleId: m.drzewo ? undefined : undefined }), /już szuflada ukryta|ukryt/);
+
+  // Amix: brak zabieraka w danych → ostrzeżenie; wersja niezależna budowana z danych szuflady wewnętrznej.
+  const m2 = s.dodajModul(p.id, { katalogId: "base-drawers-600", konfiguracja: { szufladySystemowe: true, profilSzuflad: "amix-elite-standard" } });
+  s.polecenieKonstrukcji(p.id, m2.id, { typ: "dodajUkrytaSzuflade", sprzezona: true });
+  let z2 = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m2.id)!;
+  assert.ok(z2.ostrzezenia.some((o) => o.includes("zabieraka")));
+  assert.ok(!z2.elementy.some((e) => e.kod.startsWith("SU01")));
+  s.przywrocKonstrukcjeStandardowa(p.id, m2.id);
+  s.polecenieKonstrukcji(p.id, m2.id, { typ: "dodajUkrytaSzuflade", sprzezona: false });
+  z2 = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m2.id)!;
+  assert.equal(z2.elementy.find((e) => e.kod === "SU01-TYL")!.wys, 84); // najniższa komora Amix H84 (112)
+});

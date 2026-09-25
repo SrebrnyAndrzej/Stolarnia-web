@@ -111,7 +111,7 @@ export const api = {
   zmienModul: (id: string, mid: string, d: unknown) => zadanie<Modul>("PATCH", `/api/projekty/${id}/moduly/${mid}`, d),
   usunModul: (id: string, mid: string) => zadanie("DELETE", `/api/projekty/${id}/moduly/${mid}`),
   systemySzuflad: () => zadanie<{ id: string; producent: string; system: string; grubosc: number; warianty: { wariant: string; plecyWys: number }[] }[]>("GET", "/api/systemy-szuflad"),
-  polecenieKonstrukcji: (id: string, mid: string, polecenie: { typ: "zamienDrzwiNaSzuflady" | "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string }) =>
+  polecenieKonstrukcji: (id: string, mid: string, polecenie: { typ: "zamienDrzwiNaSzuflady" | "dodajSzufladyZaDrzwiami"; liczba: number; wysokoscMM?: number; poleId?: string } | { typ: "dodajUkrytaSzuflade"; sprzezona: boolean; poleId?: string }) =>
     zadanie<{ modul: Modul; uwagi: string[] }>("POST", `/api/projekty/${id}/moduly/${mid}/polecenie`, polecenie),
   przywrocKonstrukcjeStandardowa: (id: string, mid: string) => zadanie<Modul>("DELETE", `/api/projekty/${id}/moduly/${mid}/drzewo`),
   duplikujModul: (id: string, mid: string) => zadanie<Modul>("POST", `/api/projekty/${id}/moduly/${mid}/duplikuj`, {}),

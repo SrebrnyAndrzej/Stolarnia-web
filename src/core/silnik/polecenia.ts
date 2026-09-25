@@ -179,3 +179,29 @@ export function dodajSzufladyZaDrzwiami(
   if (!mebel.szufladySystemowe) uwagi.push("Skrzynki z płyty — wybierz system szuflad, aby dostać wymiary z karty producenta.");
   return { mebel, uwagi };
 }
+
+/**
+ * Dodaje szufladę ukrytą za frontem szuflady (np. płytka szuflada na sztućce nad szufladą garnkową). Niezależna — wysuwana
+ * osobno po otwarciu frontu; sprzężona — zabierak łączy ją z frontem (tylko systemy z danymi zabieraka). Położenie i wymiary
+ * wyznacza silnik z profilu systemu (górna część strefy za frontem, prowadnica w rastrze 32).
+ */
+export function dodajUkrytaSzuflade(wejscie: Mebel, k: UstawieniaKonstrukcyjne, opcje: { sprzezona: boolean; poleId?: string }): WynikPolecenia {
+  if (wejscie.korpus.rodzaj !== "korpus") throw new BladPolecenia("Szuflady wymagają korpusu.");
+  const mebel: Mebel = structuredClone(wejscie);
+  const uklad = ukladFrontow(mebel.fronty, mebel.szerokoscMM, mebel.wysokoscMM, k.szczelinaFrontowMM);
+  const zFrontem = mebel.wysuwy.filter((w) => w.powiazanie === "zFrontem" && uklad.get(w.poleFrontuId));
+  if (!zFrontem.length) throw new BladPolecenia("Mebel nie ma szuflad z frontem — najpierw zamień drzwi na szuflady.");
+  const cel = opcje.poleId
+    ? zFrontem.find((w) => w.poleFrontuId === opcje.poleId)
+    : [...zFrontem].sort((a, b) => uklad.get(b.poleFrontuId)!.front.h - uklad.get(a.poleFrontuId)!.front.h)[0];
+  if (!cel) throw new BladPolecenia(`Pole „${opcje.poleId}” nie jest frontem szuflady.`);
+  const front = uklad.get(cel.poleFrontuId)!.front;
+  if (front.h < 200) throw new BladPolecenia(`Front ${Math.round(front.h)} mm jest za niski na szufladę ukrytą (min. 200 mm).`);
+  if (mebel.wysuwy.some((w) => w.poleFrontuId === cel.poleFrontuId && w.powiazanie !== "zFrontem")) throw new BladPolecenia("Za tym frontem jest już szuflada ukryta.");
+  const nr = mebel.wysuwy.filter((w) => w.kod.startsWith("SU")).length + 1;
+  const kod = `SU${pad(nr)}`;
+  mebel.wysuwy.push({ id: `wysuw-${kod.toLowerCase()}`, kod, poleFrontuId: cel.poleFrontuId, strefaId: cel.strefaId, powiazanie: opcje.sprzezona ? "zZabierakiem" : "ukrytaZaFrontem" });
+  const uwagi = [`Dodano szufladę ukrytą ${kod} za frontem ${Math.round(front.h)} mm (${opcje.sprzezona ? "sprzężoną zabierakiem" : "wysuwaną osobno"}).`];
+  if (!mebel.szufladySystemowe) uwagi.push("Wybierz system szuflad — szuflada ukryta powstaje tylko z danymi producenta.");
+  return { mebel, uwagi };
+}

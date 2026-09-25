@@ -163,8 +163,73 @@ export function zbudujMebel(
   const zFrontem = m.wysuwy.filter((w) => w.powiazanie === "zFrontem");
   const zaDrzwiami = m.wysuwy.filter((w) => w.powiazanie === "zaDrzwiami");
   const szufladyWewnetrzne: NonNullable<ZbudowanyModul["szufladyWewnetrzne"]> = [];
-  for (const w of m.wysuwy.filter((x) => x.powiazanie !== "zFrontem" && x.powiazanie !== "zaDrzwiami")) {
-    ostrzezenia.push(`Wysuw ${w.kod} (${w.powiazanie}) — ten rodzaj szuflady nie jest jeszcze obsługiwany przez silnik (etap 1).`);
+  const ukryte = m.wysuwy.filter((w) => w.powiazanie === "ukrytaZaFrontem" || w.powiazanie === "zZabierakiem");
+  // Szuflada ukryta za wysokim frontem: górna część strefy za frontem; skrzynka główna dostaje miejsce pod nią.
+  const miejsceGlownej = new Map<string, number>(); // pole frontu → wysokość dostępna dla skrzynki głównej
+  if (ukryte.length && zKorpusem) {
+    const idProfilu = m.profilSzuflad ?? tech.profilSzuflad;
+    const profil = m.szufladySystemowe ? profilSzuflady(idProfilu) : undefined;
+    const wew = profil?.inner_drawer;
+    const rm = profil?.runner_mounting;
+    const frontySz = zFrontem.map((w) => ({ w, f: fronty.get(w.poleFrontuId) })).filter((q): q is { w: typeof q.w; f: Element } => !!q.f).sort((a, b) => a.f.y - b.f.y);
+    const uzytkowa = D - rezerwaPlecow;
+    for (const w of ukryte) {
+      const sprzezona = w.powiazanie === "zZabierakiem";
+      const i = frontySz.findIndex((q) => q.w.poleFrontuId === w.poleFrontuId);
+      const s = strefy.get(w.strefaId);
+      if (i < 0 || !s) {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: brak szuflady z frontem, za którą ma być.`);
+        continue;
+      }
+      if (!profil || !wew || !rm) {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: ${profil ? `${profil.manufacturer} ${profil.family} nie ma danych szuflady wewnętrznej` : "wybierz system szuflad"} — nie zbudowano.`);
+        continue;
+      }
+      const dane = sprzezona ? wew.coupler?.min_opening_by_variant_mm : wew.min_opening_by_variant_mm;
+      if (!dane) {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: ${profil.family} nie ma w danych zestawu zabieraka — wybierz szufladę niezależną.`);
+        continue;
+      }
+      const [wariant, komora] = Object.entries(dane).sort((a, b) => a[1] - b[1])[0];
+      // Podłogi szuflad z frontem liczone jak w dokumentacji: płyta pod najniższym frontem + przesunięcie frontów.
+      const f0 = frontySz[0].f;
+      const podloga0 = s.y;
+      const podlogaFrontu = (f: Element) => podloga0 + (f.y - f0.y);
+      const f = frontySz[i].f;
+      const sufit = i + 1 < frontySz.length ? podlogaFrontu(frontySz[i + 1].f) : s.y + s.h;
+      const a = rm.axis_above_panel_min_mm;
+      const kotwica = podloga0 + a;
+      const osMax = sufit - komora + a;
+      const os = kotwica + Math.floor((osMax - kotwica) / tech.rastrMM + 1e-6) * tech.rastrMM; // w dół do rastra 32
+      const podloga = os - a;
+      const miejsce = podloga - podlogaFrontu(f);
+      const najnizsze = Math.min(...Object.values(profil.back.height_by_variant_mm));
+      if (miejsce < najnizsze + 40) {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: za frontem ${f.kod} zostaje ${Math.round(miejsce)} mm na skrzynkę główną — za mało (front za niski).`);
+        continue;
+      }
+      miejsceGlownej.set(w.poleFrontuId, miejsce);
+      const NL = dobierzNLWewnetrznej(profil, uzytkowa);
+      if (!NL) {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: głębokość użytkowa ${uzytkowa} mm za mała.`);
+        continue;
+      }
+      const LW = s.w;
+      const wy = wymiarySzuflady(profil, LW, NL, komora, wariant);
+      el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + (LW - wy.dnoSzer) / 2, podloga + 20, 0, wy.dnoSzer, wy.grubosc, wy.dnoGl, "szuflada"));
+      el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + (LW - wy.plecySzer) / 2, podloga + 20 + wy.grubosc, wy.dnoGl - wy.grubosc, wy.plecySzer, wy.plecyWys, wy.grubosc, "szuflada"));
+      szufladyWewnetrzne.push({ kod: w.kod, podlogaY: podloga, sufitY: sufit, NL, profilId: profil.id, wariant: wy.wariant, rodzaj: w.powiazanie as "ukrytaZaFrontem" | "zZabierakiem", frontKod: f.kod });
+      const producent = profil.manufacturer === "BLUM" ? "Blum" : profil.manufacturer === "AMIX" ? "Amix" : profil.manufacturer;
+      okucia.push({ typ: "systemSzuflad", ilosc: 1, opis: `Szuflada ukryta ${w.kod} za frontem ${f.kod} (${producent} ${profil.family}, wariant ${wy.wariant}) — komplet.` });
+      if (wew.front_panel) okucia.push({ typ: "inne", ilosc: 1, opis: `${producent} ${wew.front_panel.part} — panel frontu szuflady ukrytej, L = ${r1(LW - wew.front_panel.length.subtract_mm)} mm` });
+      if (sprzezona && wew.coupler) {
+        okucia.push({ typ: "inne", ilosc: 1, opis: `${producent} ${wew.coupler.part} — zestaw zabieraka (szuflada ukryta ${w.kod} wysuwana z frontem ${f.kod}).` });
+        if (wew.coupler.exclusions.length) ostrzezenia.push(`Zabierak ${wew.coupler.part}: nie łączyć z ${wew.coupler.exclusions.join(", ")}.`);
+      }
+    }
+  }
+  for (const w of m.wysuwy.filter((x) => x.powiazanie !== "zFrontem" && x.powiazanie !== "zaDrzwiami" && x.powiazanie !== "ukrytaZaFrontem" && x.powiazanie !== "zZabierakiem")) {
+    ostrzezenia.push(`Wysuw ${w.kod} (${w.powiazanie}) — ten rodzaj szuflady nie jest jeszcze obsługiwany przez silnik.`);
   }
   if (zFrontem.length && zKorpusem) {
     const uzytkowa = D - rezerwaPlecow;
@@ -185,7 +250,7 @@ export function zbudujMebel(
       const LW = s.w; // rzeczywiste światło w miejscu montażu prowadnic
       if (m.szufladySystemowe) {
         if (!profil || !NL) continue;
-        const wy = wymiarySzuflady(profil, LW, NL, f.wys, m.wariantBokuSzuflady);
+        const wy = wymiarySzuflady(profil, LW, NL, miejsceGlownej.get(w.poleFrontuId) ?? f.wys, miejsceGlownej.has(w.poleFrontuId) ? undefined : m.wariantBokuSzuflady);
         el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + (LW - wy.dnoSzer) / 2, f.y + 20, 0, wy.dnoSzer, wy.grubosc, wy.dnoGl, "szuflada"));
         el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + (LW - wy.plecySzer) / 2, f.y + 20 + wy.grubosc, wy.dnoGl - wy.grubosc, wy.plecySzer, wy.plecyWys, wy.grubosc, "szuflada"));
       } else {
@@ -239,7 +304,7 @@ export function zbudujMebel(
           const opis = `${profil.manufacturer === "AMIX" ? "Amix" : profil.manufacturer} ${fp.part} — panel frontu szuflady wewnętrznej (${fp.material}), L = LW − ${fp.length.subtract_mm} = ${r1(LW - fp.length.subtract_mm)} mm, H ${fp.height_by_variant_mm[wy.wariant] ?? "?"} mm`;
           panele.set(opis, (panele.get(opis) ?? 0) + 1);
         }
-        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h, NL, profilId: profil.id, wariant: wy.wariant });
+        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h, NL, profilId: profil.id, wariant: wy.wariant, rodzaj: "zaDrzwiami" });
       } else if (!m.szufladySystemowe) {
         // Skrzynka z płyty na prowadnicach bocznych — reguła robocza jak dla szuflad z frontem; czoło jest frontem wewnętrznym.
         const L = Math.max(250, Math.min(550, Math.floor((uzytkowa - 10) / 50) * 50));
@@ -251,7 +316,7 @@ export function zbudujMebel(
         el.push(p(`${w.kod}-CZOLO`, "drawerFrontBack", s.x + LUZ_PROWADNIC_MM + ts, y, 0, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
         el.push(p(`${w.kod}-TYL`, "drawerFrontBack", s.x + LUZ_PROWADNIC_MM + ts, y, L - ts, szerSkrzynki - 2 * ts, h - 12, ts, "szuflada"));
         el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + LUZ_PROWADNIC_MM, y - k.gruboscPlecHDFMM, 0, szerSkrzynki, k.gruboscPlecHDFMM, L, "plecy"));
-        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h });
+        szufladyWewnetrzne.push({ kod: w.kod, podlogaY: s.y, sufitY: s.y + s.h, rodzaj: "zaDrzwiami" });
       }
     }
     for (const [opis, ilosc] of panele) okucia.push({ typ: "inne", ilosc, opis });

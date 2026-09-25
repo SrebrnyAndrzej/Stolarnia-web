@@ -43,10 +43,17 @@ export interface ProfilSzuflady {
   inner_drawer?: {
     depth_min: { variable: "NL"; add_mm: number };
     runner_holes_offset_mm: number;
-    first_hole_from_front_min_mm: number;
+    first_hole_from_front_min_mm?: number;
     /** Minimalna wysokość komory (od płyty do płyty) dla wariantu wysokości boku. */
     min_opening_by_variant_mm: Record<string, number>;
     front_panel?: { part: string; material: string; length: { variable: "LW"; subtract_mm: number }; height_by_variant_mm: Record<string, number> };
+    /** Zestaw zabieraka: szuflada wewnętrzna wysuwana razem z frontem (Blum ZI7.0M07). */
+    coupler?: {
+      part: string;
+      min_opening_by_variant_mm: Record<string, number>;
+      front_drilling?: { diameter_mm: number; horizontal: string; note: string };
+      exclusions: string[];
+    };
     hinge_requirement: string;
     source_id: string;
     pdf_page_1based: number;

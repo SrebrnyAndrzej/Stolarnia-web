@@ -529,6 +529,17 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
   );
 
   server.registerTool(
+    "dodaj_ukryta_szuflade",
+    {
+      title: "Dodaj szufladę ukrytą za frontem",
+      description:
+        "Silnik konstrukcji: szuflada wewnętrzna w górnej części strefy za frontem szuflady (np. sztućce nad garnkami). sprzezona=true — zabierak (tylko systemy z danymi zabieraka, np. Blum LEGRABOX ZI7.0M07); false — wysuwana osobno. Skrzynka główna dostaje wysokość boku mieszczącą się pod ukrytą; prowadnica ukrytej leży w rastrze 32.",
+      inputSchema: { projektId: z.string(), modulId: z.string(), sprzezona: z.boolean(), poleId: z.string().optional().describe("Pole frontu szuflady; domyślnie najwyższy front") },
+    },
+    bezpiecznie(({ projektId, modulId, sprzezona, poleId }) => s.polecenieKonstrukcji(projektId, modulId, { typ: "dodajUkrytaSzuflade", sprzezona, poleId })),
+  );
+
+  server.registerTool(
     "przywroc_konstrukcje_standardowa",
     {
       title: "Przywróć konstrukcję standardową",

@@ -338,6 +338,7 @@ export function Designer({ analiza, odswiez }: Props) {
             onZmien={(d) => wykonaj(() => api.zmienModul(p.id, modul.id, d))}
             onDrzwiNaSzuflady={(liczba) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "zamienDrzwiNaSzuflady", liczba }))}
             onSzufladyZaDrzwiami={(liczba, wysokoscMM) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajSzufladyZaDrzwiami", liczba, wysokoscMM }))}
+            onUkrytaSzuflada={(sprzezona) => wykonaj(() => api.polecenieKonstrukcji(p.id, modul.id, { typ: "dodajUkrytaSzuflade", sprzezona }))}
             onPrzywrocStandardowa={() => wykonaj(() => api.przywrocKonstrukcjeStandardowa(p.id, modul.id))}
             onUsun={() => wykonaj(async () => { await api.usunModul(p.id, modul.id); setWybrany(null); })}
             onDuplikuj={() => wykonaj(async () => setWybrany((await api.duplikujModul(p.id, modul.id)).id))}
@@ -635,13 +636,14 @@ interface InspektorProps {
   onZmien: (d: Record<string, unknown>) => void;
   onDrzwiNaSzuflady: (liczba: number) => void;
   onSzufladyZaDrzwiami: (liczba: number, wysokoscMM: number) => void;
+  onUkrytaSzuflada: (sprzezona: boolean) => void;
   onPrzywrocStandardowa: () => void;
   onUsun: () => void;
   onDuplikuj: () => void;
   onZamknij: () => void;
 }
 
-function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
+function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmien, onDrzwiNaSzuflady, onSzufladyZaDrzwiami, onUkrytaSzuflada, onPrzywrocStandardowa, onUsun, onDuplikuj, onZamknij }: InspektorProps) {
   const k = m.konfiguracja;
   const konf = (d: Partial<typeof k>) => onZmien({ konfiguracja: d });
   const [nazwa, setNazwa] = useState(m.nazwa);
@@ -774,6 +776,12 @@ function Inspektor({ modul: m, projektId, materialy, sciany, ostrzezenia, onZmie
             <Liczba label="Szuflad wewn." value={liczbaWewnetrznych} onSave={(v) => setLiczbaWewnetrznych(Math.max(1, Math.min(6, v)))} />
             <Liczba label="Strefa [mm]" value={strefaWewnetrznej} onSave={(v) => setStrefaWewnetrznej(Math.max(100, v))} />
             <button className="btn" onClick={() => onSzufladyZaDrzwiami(liczbaWewnetrznych, strefaWewnetrznej)}>Dodaj szuflady za drzwiami</button>
+          </div>
+        )}
+        {(m.drzewo ? m.drzewo.wysuwy.some((w) => w.powiazanie === "zFrontem") : k.typFrontu === "szuflady" && k.liczbaSzuflad > 0) && (
+          <div className="row">
+            <button className="btn" onClick={() => onUkrytaSzuflada(false)}>Szuflada ukryta za frontem</button>
+            <button className="btn" onClick={() => onUkrytaSzuflada(true)}>…z zabierakiem</button>
           </div>
         )}
 

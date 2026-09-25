@@ -103,6 +103,16 @@ Kryterium odbioru każdego kroku: formatki, wiercenia, okucia i 3D pochodzą z j
 - API: `POST …/polecenie {typ:"dodajSzufladyZaDrzwiami", liczba, wysokoscMM}`; MCP `dodaj_szuflady_za_drzwiami`; przycisk w inspektorze;
 - system szuflad z inspektora działa także na modułach z drzewem (wcześniej drzewo trzymało stary profil).
 
+**Etap 3 — szuflada ukryta za frontem, zrobione:**
+- polecenie `dodajUkrytaSzuflade` (`sprzezona`: zabierak albo wysuw osobny). Domyślnie najwyższy front szuflady;
+- budowa: szuflada ukryta w górnej części strefy za frontem. Prowadnica jest dociągana w dół do rastra 32, żeby nie przekroczyć komory z karty. Skrzynka główna dostaje wysokość boku mieszczącą się pod ukrytą;
+- dane:
+  - LEGRABOX wewnętrzna M: komora 104, z zabierakiem 109 (s.16/18);
+  - zabierak ZI7.0M07, wyklucza TIP-ON (s.17);
+  - Amix wewnętrzna bez zabieraka, więc tylko wysuw osobny;
+- dokumentacja: `ZABIERAK_FRONT` (Ø25 pod obudowę zabieraka, położenie pionowe do potwierdzenia);
+- API `dodajUkrytaSzuflade`, MCP `dodaj_ukryta_szuflade`, przyciski w inspektorze.
+
 **Nie ma jeszcze:**
 - reguły zawiasu i listwy dystansowej dla szuflad za drzwiami (brak danych — zamówione u Codexa),
 - szuflady z ukrytą szufladą i zabierakiem,
