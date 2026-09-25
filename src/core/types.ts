@@ -331,6 +331,8 @@ export interface NotatkaProjektu {
 }
 
 export interface Projekt {
+  /** Uzgodniona z klientem cena wariantu Standard, niezależna od bieżących kosztów. */
+  cenaUzgodnionaBrutto?: number;
   umovy?: import("./contracts.js").Umowa[];
   id: string;
   nazwa: string;
@@ -615,6 +617,8 @@ export interface PozycjaKosztowa {
 }
 
 export interface PodsumowanieWariantu {
+  cenaKalkulowanaBrutto?: number;
+  korektaHandlowaNetto?: number;
   wariant: WariantWyceny;
   nazwa: string;
   opis: string;

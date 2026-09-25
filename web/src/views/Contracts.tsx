@@ -70,7 +70,7 @@ export function Contracts({ analiza }: { analiza: Analiza }) {
           {pole("adresMontazu", "Adres montażu", "text", true)}{pole("termin", "Termin zakończenia (można uzupełnić ręcznie)", "date")}
         </div>
         <h3>Rozliczenie</h3>
-        <p className="muted">Cena startowa pochodzi z wyceny Standard. Sprawdź uzgodnioną z klientem kwotę.</p>
+        <p className="muted">{analiza.projekt.cenaUzgodnionaBrutto !== undefined ? "Cena startowa jest ceną uzgodnioną z klientem dla tego projektu." : "Cena startowa pochodzi z wyceny Standard. Sprawdź uzgodnioną z klientem kwotę."}</p>
         <div className="contract-grid">
           <label>Cena brutto [zł]<input required type="number" min="0.01" max="100000000" step="0.01" value={dane.cena || ""} onChange={e => zmien("cena", e.target.valueAsNumber || 0)} /></label>
           <label>Zaliczka [zł]<input required type="number" min="0" max={dane.cena} step="0.01" value={dane.zaliczka} onChange={e => zmien("zaliczka", e.target.valueAsNumber || 0)} /></label>

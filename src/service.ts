@@ -313,7 +313,9 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; agd?: UrzadzenieAGD[] }): Projekt {
+  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; agd?: UrzadzenieAGD[] }): Projekt {
+    const cena = dane.cenaUzgodnionaBrutto;
+    if (cena !== undefined && cena !== null && (typeof cena !== "number" || !Number.isFinite(cena) || cena <= 0 || cena > 100000000 || Math.abs(cena * 100 - Math.round(cena * 100)) > 0.00001)) throw new BladUslugi("Cena uzgodniona musi być dodatnią kwotą do 100 000 000 zł, z maksymalnie dwoma miejscami po przecinku.");
     if (dane.agd !== undefined) dane = { ...dane, agd: sprawdzAGD(dane.agd) };
     if (dane.status !== undefined && !czyStatus(dane.status)) throw new BladUslugi(`Nieznany status "${dane.status}". Dozwolone: ${STATUSY_PROJEKTU.join(", ")}.`);
     if (dane.terminMontazu && !/^\d{4}-\d{2}-\d{2}$/.test(dane.terminMontazu)) throw new BladUslugi("Termin montażu w formacie RRRR-MM-DD.");
@@ -327,6 +329,7 @@ export class Stolarnia {
         (p.historiaStatusow ??= []).push({ status: dane.status, data: teraz() });
       }
       if (dane.notatki !== undefined) p.notatki = dane.notatki;
+      if (cena !== undefined) { if (cena === null) delete p.cenaUzgodnionaBrutto; else p.cenaUzgodnionaBrutto = Math.round(cena * 100) / 100; }
       if (dane.terminMontazu !== undefined) p.terminMontazu = dane.terminMontazu || undefined;
       if (dane.agd !== undefined) p.agd = dane.agd.length ? dane.agd : undefined;
     });
@@ -398,6 +401,7 @@ export class Stolarnia {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
       const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      delete kopia.cenaUzgodnionaBrutto;
       b.projekty.push(kopia);
       return kopia;
     });
@@ -698,6 +702,15 @@ export class Stolarnia {
     const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
     const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza, raportRozkroju.arkusze.length);
     const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia, b.cennikMaterialow ?? {});
+    const standard = warianty.find(w => w.wariant === "standard");
+    if (standard && p.cenaUzgodnionaBrutto !== undefined) {
+      const netto = Math.round(p.cenaUzgodnionaBrutto / (1 + b.ustawienia.finanse.vatProcent / 100) * 100) / 100;
+      standard.cenaKalkulowanaBrutto = standard.cenaBrutto;
+      standard.korektaHandlowaNetto = Math.round((netto - standard.cenaNetto) * 100) / 100;
+      standard.cenaNetto = netto;
+      standard.cenaBrutto = p.cenaUzgodnionaBrutto;
+      standard.vatKwota = Math.round((standard.cenaBrutto - netto) * 100) / 100;
+    }
     const walidacja = walidujProjekt(p);
 
     return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja, ustawienia: b.ustawienia };

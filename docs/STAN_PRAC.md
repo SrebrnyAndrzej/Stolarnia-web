@@ -79,3 +79,6 @@ Codex zaczął cennik własny: `cennikMaterialow` w bazie, API `/api/cennik/mate
 - MCP: `lista_materialow` zwraca `cenaWlasnaNetto`, a nowe narzędzie `ustaw_cene_materialu` ustawia albo usuwa cenę własną.
 
 Test „własny cennik…” rozszerzony o rabat. Testy 34/34.
+
+## 25.09.2026 — cena uzgodniona
+Dodano cenaUzgodnionaBrutto projektu: wyłącznie Standard, odrębnie od kosztów, z korektą handlową netto. Nowe umowy i oferty korzystają z tej ceny; zapisane umowy są niezmienne. PATCH projektu obsługuje dodatnią kwotę do grosza lub null do usunięcia. Duplikat projektu nie dziedziczy uzgodnienia. Testy ceny i umów oraz typy frontendu przeszły.

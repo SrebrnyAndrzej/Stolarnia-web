@@ -184,6 +184,7 @@ export function Quote({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
           </div>
         ))}
       </div>
+      {w.cenaKalkulowanaBrutto !== undefined && <p className="alert">Cena uzgodniona z klientem: <b>{zl(w.cenaBrutto)}</b>. Bieżąca kalkulacja: {zl(w.cenaKalkulowanaBrutto)}. Zmiany kosztów nie zmieniają uzgodnionej ceny.</p>}
 
       <CenyPlyt analiza={analiza} odswiez={odswiez} />
 
@@ -238,6 +239,7 @@ export function Quote({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
               <Suma l="Zapas kosztowy" v={w.zapasKosztowyKwota} />
               <Suma l="Narzut" v={w.narzutKwota} />
               <Suma l="Marża" v={w.marzaKwota} />
+              {w.korektaHandlowaNetto !== undefined && <Suma l="Korekta do ceny uzgodnionej" v={w.korektaHandlowaNetto} />}
               <Suma l="Cena netto" v={w.cenaNetto} b />
               <Suma l="VAT" v={w.vatKwota} />
               <Suma l="Cena brutto" v={w.cenaBrutto} b />
