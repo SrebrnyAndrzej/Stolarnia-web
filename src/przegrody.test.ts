@@ -118,3 +118,17 @@ test("nierówne fronty: wysokość jednej szuflady, reszta po równo, blokada, m
   const d = s.dokumentacja(p.id);
   assert.ok(!d.diagnostyka.some((x) => x.kod === "OP_POZA_CZESCIA"));
 });
+
+test("zmiana szerokości skrzydła przesuwa przegrodę, która leżała na linii podziału", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "S", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-shelves-800", konfiguracja: { liczbaDrzwi: 1 } });
+  s.polecenieKonstrukcji(p.id, m.id, { typ: "podzielFront", kierunek: "pion", liczba: 2, przegroda: true });
+  const r = s.polecenieKonstrukcji(p.id, m.id, { typ: "ustawRozmiarFrontu", poleId: "drzwi-1-s1", mm: 300 });
+  assert.ok(r.uwagi.some((u) => u.includes("Przesunięto przegrodę")));
+  const z = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m.id)!;
+  const [d1, d2] = z.elementy.filter((e) => e.kod.startsWith("FRONT-D")).sort((a, b) => a.x - b.x);
+  const pr = z.elementy.find((e) => e.rola === "divider")!;
+  assert.ok(Math.abs(pr.x + pr.szer / 2 - (d1.x + d1.szer + d2.x) / 2) < 0.2, `przegroda ${pr.x} vs szczelina ${(d1.x + d1.szer + d2.x) / 2}`);
+  assert.ok(!s.dokumentacja(p.id).diagnostyka.some((x) => x.kod === "OP_POZA_CZESCIA"));
+});

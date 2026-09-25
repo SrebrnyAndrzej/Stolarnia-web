@@ -408,5 +408,47 @@ export function ustawRozmiarFrontu(
     if (wym < MIN_FRONT_MM) throw new BladPolecenia(`Po zmianie front „${c.id}” miałby ${Math.round(wym)} mm — minimum ${MIN_FRONT_MM} mm.`);
   }
   const opis = rodzic.podzial.czesci.map((c) => Math.round(pion ? po.get(c.id)!.front.w : po.get(c.id)!.front.h)).join(" / ");
-  return { mebel, uwagi: [`Fronty w podziale: ${opis} mm.`] };
+  const uwagi = [`Fronty w podziale: ${opis} mm.`];
+
+  // Płyty wnętrza leżące dokładnie na liniach podziału frontów (np. z `podzielFront` z przegrodą) idą za frontami.
+  const t = k.gruboscPlytyKorpusuMM;
+  const linie = (u: typeof uklad) => {
+    const cz = rodzic!.podzial!.czesci;
+    return cz.slice(0, -1).map((c, i) => {
+      const a = u.get(c.id)!.front;
+      const b = u.get(cz[i + 1].id)!.front;
+      return pion ? (a.x + a.w + b.x) / 2 : (a.y + a.h + b.y) / 2;
+    });
+  };
+  const przed = linie(uklad);
+  const nowe = linie(po);
+  const wnetrze = ukladWnetrza(mebel.wnetrze, mebel.szerokoscMM, mebel.wysokoscMM, t);
+  const przesun = (s: StrefaWnetrza): StrefaWnetrza => {
+    const pd = s.podzial;
+    if (!pd) return s;
+    const czesci = pd.czesci.map(przesun);
+    if (pd.przegroda !== "plyta" || (pd.kierunek === "pion") !== pion) return { ...s, podzial: { ...pd, czesci } };
+    // Osie płyt podziału w układzie modułu
+    const osie = pd.czesci.slice(0, -1).map((c) => {
+      const r = wnetrze.get(c.id)!;
+      return pion ? r.x + r.w + t / 2 : r.y + r.h + t / 2;
+    });
+    const dopasowanie = osie.map((o) => przed.findIndex((l) => Math.abs(l - o) < 1));
+    if (!osie.length || dopasowanie.some((i) => i < 0)) return { ...s, podzial: { ...pd, czesci } };
+    const r0 = wnetrze.get(s.id)!;
+    let od = pion ? r0.x : r0.y;
+    const rozm = dopasowanie.map((i) => {
+      const w = nowe[i] - t / 2 - od;
+      od = nowe[i] + t / 2;
+      return w;
+    });
+    if (rozm.some((w) => w < 100) || (pion ? r0.x + r0.w : r0.y + r0.h) - od < 100) {
+      uwagi.push("Płyta za linią podziału frontów nie może się przesunąć (komora < 100 mm) — została na miejscu.");
+      return { ...s, podzial: { ...pd, czesci } };
+    }
+    uwagi.push(`Przesunięto ${pion ? "przegrodę" : "półkę stałą"} za linią podziału frontów.`);
+    return { ...s, podzial: { ...pd, czesci: czesci.map((c, i) => ({ ...c, rozmiar: i < rozm.length ? { mm: r1(rozm[i]) } : { reszta: true } })) } };
+  };
+  mebel.wnetrze = przesun(mebel.wnetrze);
+  return { mebel, uwagi };
 }
