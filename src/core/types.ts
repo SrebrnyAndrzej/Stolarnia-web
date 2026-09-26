@@ -279,6 +279,11 @@ export interface KonfiguracjaModulu {
    * x od lewej krawędzi korpusu, z od płaszczyzny tyłu frontów w stronę frontu (ujemne = przed frontami). Brak = blat standardowy.
    */
   blatWymiar?: { szerokoscMM: number; glebokoscMM: number; xMM: number; zMM: number };
+  /**
+   * Kółka zamiast nóg (meble mobilne): liczba, w tym z hamulcem, wysokość kółka i produkty z katalogu okuć.
+   * Moduł stoi wtedy na wysokości kółka (pozycjaYMM = wysokoscMM), bez cokołu.
+   */
+  kolka?: { liczba: number; zHamulcem: number; wysokoscMM: number; produktHamulec?: string; produktBez?: string };
 }
 
 export interface Modul {
@@ -727,6 +732,9 @@ export interface ProjektWyceny {
   liczbaTransportow: number;
   liczbaModulowDolnych: number;
   liczbaNog: number;
+  /** Kółka meblowe (meble mobilne): bez hamulca i z hamulcem. */
+  liczbaKolek?: number;
+  liczbaKolekHamulec?: number;
   liczbaModulowWiszacych: number;
   liczbaPolekWewnetrznych: number;
   dlugoscCokoluM: number;

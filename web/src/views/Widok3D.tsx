@@ -239,6 +239,24 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         kr.userData.modulId = m.id;
         zawartosc.add(mesh, kr);
       }
+      // Kółka: czarne walce pod narożnikami od strony frontu i tyłu (poglądowo, liczba z konfiguracji)
+      if (m.konfiguracja.kolka && m.pozycjaYMM > 0) {
+        const k = m.konfiguracja.kolka;
+        const r = Math.min(40, m.pozycjaYMM / 2.2);
+        const gk = new THREE.CylinderGeometry(r * M, r * M, 22 * M, 20);
+        const matK = mat(new THREE.Color("#1d1b19"), false, "plecy");
+        const miejsca: [number, number][] = [[60, 60], [m.szerokoscMM - 60, 60], [60, m.glebokoscMM - 60], [m.szerokoscMM - 60, m.glebokoscMM - 60]];
+        for (const [wx, odFrontu] of miejsca.slice(0, Math.max(2, Math.min(4, k.liczba)))) {
+          const kolo = new THREE.Mesh(gk, matK);
+          kolo.rotation.x = Math.PI / 2;
+          const [px, pz] = punktNaRzucie(w, m.pozycjaXMM + wx, m.glebokoscMM - odFrontu);
+          kolo.position.set(px * M, r * M, pz * M);
+          kolo.rotation.z = grupa.rotation.y;
+          kolo.castShadow = true;
+          kolo.userData.modulId = m.id;
+          zawartosc.add(kolo);
+        }
+      }
       // Nogi / cokół jako ciemny pas pod szafką
       if (m.konfiguracja.nogi && m.pozycjaYMM > 0) {
         const geo = new THREE.BoxGeometry(m.szerokoscMM * M, m.pozycjaYMM * M, 0.018);

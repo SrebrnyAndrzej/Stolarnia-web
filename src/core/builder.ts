@@ -169,7 +169,8 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
     if (cfg.liczbaPolek > 0) ostrzezenia.push("Półki stałe kolidują z LeMans — ustaw 0 półek.");
     okucia.push({ typ: "inne", ilosc: 1, profilID: "kessebohmer.lemans2", opis: "Kesseböhmer LeMans II — komplet 2 półek (nerek), front 450." });
   }
-  if (cfg.nogi && !bezKorpusu) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
+  if (cfg.nogi && !bezKorpusu && !cfg.kolka) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
+  if (!bezKorpusu) okucia.push(...okuciaKolek(m));
 
   return { modul: m, elementy: el, okucia, ostrzezenia };
 }
@@ -316,4 +317,15 @@ export function blatModulu(m: Modul, k: UstawieniaKonstrukcyjne): Element {
   const b = m.konfiguracja.blatWymiar;
   if (b) return { kod: "BLAT", rola: "worktop", x: b.xMM, y: m.wysokoscMM, z: b.zMM, szer: b.szerokoscMM, wys: k.gruboscBlatuMM, gl: b.glebokoscMM, materialRola: "blat" };
   return { kod: "BLAT", rola: "worktop", x: 0, y: m.wysokoscMM, z: -k.gruboscFrontuMM - k.szczelinaFrontowMM, szer: m.szerokoscMM, wys: k.gruboscBlatuMM, gl: k.glebokoscBlatuMM, materialRola: "blat" };
+}
+
+/** Kółka meblowe modułu (z hamulcem i bez) jako pozycje okuć; profilID odróżnia je w wycenie. */
+export function okuciaKolek(m: Modul): OkucieModulu[] {
+  const k = m.konfiguracja.kolka;
+  if (!k || !(k.liczba > 0)) return [];
+  const zH = Math.min(k.liczba, Math.max(0, Math.round(k.zHamulcem)));
+  const wynik: OkucieModulu[] = [];
+  if (zH > 0) wynik.push({ typ: "inne", ilosc: zH, profilID: "kolko.meblowe.hamulec", opis: `Kółko meblowe z hamulcem H${k.wysokoscMM}${k.produktHamulec ? ` — ${k.produktHamulec}` : ""}.` });
+  if (k.liczba - zH > 0) wynik.push({ typ: "inne", ilosc: k.liczba - zH, profilID: "kolko.meblowe", opis: `Kółko meblowe bez hamulca H${k.wysokoscMM}${k.produktBez ? ` — ${k.produktBez}` : ""}.` });
+  return wynik;
 }

@@ -47,6 +47,8 @@ export function zbudujProjektWyceny(
   let podnosniki = 0;
   let narozne = 0;
   let liczbaNog = 0;
+  let liczbaKolek = 0;
+  let liczbaKolekHamulec = 0;
   let dolne = 0;
   let wiszace = 0;
   let polki = 0;
@@ -93,6 +95,8 @@ export function zbudujProjektWyceny(
       if (o.typ === "cargo") cargo += o.ilosc;
       if (o.typ === "podnosnik") podnosniki += o.ilosc;
       if (o.typ === "noga") liczbaNog += o.ilosc;
+      if (o.profilID === "kolko.meblowe") liczbaKolek += o.ilosc;
+      if (o.profilID === "kolko.meblowe.hamulec") liczbaKolekHamulec += o.ilosc;
       if (o.profilID === "kessebohmer.lemans2") narozne += o.ilosc;
     }
 
@@ -125,6 +129,8 @@ export function zbudujProjektWyceny(
     liczbaTransportow: liczba === 0 ? 0 : liczba > 14 ? 2 : 1,
     liczbaModulowDolnych: dolne,
     liczbaNog,
+    liczbaKolek,
+    liczbaKolekHamulec,
     liczbaModulowWiszacych: wiszace,
     liczbaPolekWewnetrznych: polki,
     dlugoscCokoluM: r3(cokol),
@@ -313,6 +319,9 @@ function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[
   zProfilu("blum.aventos.hf", "podnosnik", p.liczbaPodnosnikow, 337.63, "Podnośniki frontów", "kpl.", "Jeden podnośnik na front uchylny.");
   zProfilu("kessebohmer.lemans2", "inne", p.liczbaSystemowNaroznych ?? 0, 1334.93, "System narożny LeMans II", "kpl.", "Komplet: 2 półki obrotowo-wysuwne (nerki) do szafki narożnej ślepej.");
   zTypu("noga", p.liczbaModulowDolnych > 0 ? nogi(p) : 0, 1.5, "Nogi meblowe", "szt.", "Nogi regulowane pod moduły stojące.");
+  // Cena kółek nie jest podana w katalogu producenta — szacunek, do uzupełnienia w bazie okuć (profil kolko.meblowe*).
+  zProfilu("kolko.meblowe.hamulec", "inne", p.liczbaKolekHamulec ?? 0, 16, "Kółka meblowe z hamulcem", "szt.", "Kółka pod meblem mobilnym. Cena szacunkowa — producent nie podaje ceny; uzupełnij w bazie okuć.");
+  zProfilu("kolko.meblowe", "inne", p.liczbaKolek ?? 0, 12, "Kółka meblowe", "szt.", "Kółka pod meblem mobilnym. Cena szacunkowa — producent nie podaje ceny; uzupełnij w bazie okuć.");
   zProfilu("listwa.montazowa.szafek", "zawieszka", p.liczbaModulowWiszacych > 0 ? Math.max(Math.ceil(p.liczbaModulowWiszacych * 0.65), 1) : 0, 9.76, "Listwa montażowa", "mb", "Listwa montażowa szafek wiszących — ~0,65 mb na moduł.");
   zProfilu("cabinet.hanger.generic", "zawieszka", p.liczbaModulowWiszacych, 7.61, "Zawieszki szafek", "para", "Para zawieszek na szafkę wiszącą.");
   zProfilu("podpora.polki.5mm", "inne", p.liczbaPolekWewnetrznych * 4, 0.285, "Kołki półkowe", "szt.", "Kołki półkowe Ø5 mm — 4 szt. na półkę.");

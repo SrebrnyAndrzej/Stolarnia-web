@@ -1,4 +1,4 @@
-import { blatModulu, zawiasyDlaWysokosci } from "../builder.js";
+import { blatModulu, okuciaKolek, zawiasyDlaWysokosci } from "../builder.js";
 import { dobierzNL, dobierzNLWewnetrznej, profilSzuflady, wariantWewnetrznej, wymiarySzuflady } from "../catalog/drawers.js";
 import { USTAWIENIA_DOMYSLNE } from "../settings.js";
 import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "../types.js";
@@ -350,7 +350,8 @@ export function zbudujMebel(
     if (el.some((e) => e.rola === "shelf")) ostrzezenia.push("Półki stałe kolidują z LeMans — ustaw 0 półek.");
     okucia.push({ typ: "inne", ilosc: 1, profilID: "kessebohmer.lemans2", opis: "Kesseböhmer LeMans II — komplet 2 półek (nerek), front 450." });
   }
-  if (m.korpus.nogi && zKorpusem) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
+  if (m.korpus.nogi && zKorpusem && !modul.konfiguracja.kolka) okucia.push({ typ: "noga", ilosc: W > 1000 ? 6 : 4, opis: "Nogi regulowane." });
+  if (zKorpusem) okucia.push(...okuciaKolek(modul));
 
   return { modul, elementy: el, okucia, ostrzezenia, ...(szufladyWewnetrzne.length ? { szufladyWewnetrzne } : {}) };
 }
