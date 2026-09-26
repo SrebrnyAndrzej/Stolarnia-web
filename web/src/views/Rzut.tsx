@@ -44,7 +44,11 @@ export function Rzut({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onSc
         if (kat <= -90) kat += 180;
         return (
           <g key={w.sciana.id} onClick={() => onSciana(w.sciana.id)} style={{ cursor: "pointer" }}>
-            <polygon points={pts.map((q) => q.join(",")).join(" ")} fill={aktywna ? "var(--accent)" : "var(--line-strong)"} />
+            {w.sciana.wirtualna ? (
+              <line x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2} stroke={aktywna ? "var(--accent)" : "var(--line-strong)"} strokeWidth={14} strokeDasharray="60 40" />
+            ) : (
+              <polygon points={pts.map((q) => q.join(",")).join(" ")} fill={aktywna ? "var(--accent)" : "var(--line-strong)"} />
+            )}
             <text x={sx} y={sy} transform={`rotate(${kat} ${sx} ${sy})`} textAnchor="middle" dominantBaseline="middle" fontSize={120} fill={aktywna ? "var(--accent)" : "var(--muted)"} fontWeight={600}>
               {w.sciana.nazwa} · {mm(w.sciana.dlugoscMM)}
             </text>

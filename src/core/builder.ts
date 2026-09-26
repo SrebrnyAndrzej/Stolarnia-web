@@ -36,7 +36,7 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   // Blenda / maskownica: jeden panel z materiału frontu, bez korpusu.
   if (m.konstrukcja === "filler") {
     el.push(p("BLENDA", "filler", 0, 0, -k.gruboscFrontuMM, W, H, k.gruboscFrontuMM, "front"));
-    if (m.konfiguracja.blat) el.push(p("BLAT", "worktop", 0, H, -k.gruboscFrontuMM - k.szczelinaFrontowMM, W, k.gruboscBlatuMM, k.glebokoscBlatuMM, "blat"));
+    if (m.konfiguracja.blat) el.push(blatModulu(m, k));
     return { modul: m, elementy: el, okucia, ostrzezenia };
   }
 
@@ -152,9 +152,7 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   }
 
   // --- Blat ---
-  if (cfg.blat) {
-    el.push(p("BLAT", "worktop", 0, H, -tf - gap, W, k.gruboscBlatuMM, k.glebokoscBlatuMM, "blat"));
-  }
+  if (cfg.blat) el.push(blatModulu(m, k));
 
   // --- Okucia modułu ---
   const drzwi = fronty.filter((f) => f.kod.startsWith("FRONT-D"));
@@ -311,4 +309,11 @@ function r1(v: number): number {
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
+}
+
+/** Blat modułu: standardowy (szerokość modułu × głębokość z ustawień) albo o własnych wymiarach (stół, wyspa). */
+export function blatModulu(m: Modul, k: UstawieniaKonstrukcyjne): Element {
+  const b = m.konfiguracja.blatWymiar;
+  if (b) return { kod: "BLAT", rola: "worktop", x: b.xMM, y: m.wysokoscMM, z: b.zMM, szer: b.szerokoscMM, wys: k.gruboscBlatuMM, gl: b.glebokoscMM, materialRola: "blat" };
+  return { kod: "BLAT", rola: "worktop", x: 0, y: m.wysokoscMM, z: -k.gruboscFrontuMM - k.szczelinaFrontowMM, szer: m.szerokoscMM, wys: k.gruboscBlatuMM, gl: k.glebokoscBlatuMM, materialRola: "blat" };
 }

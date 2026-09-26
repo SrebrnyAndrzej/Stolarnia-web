@@ -274,6 +274,11 @@ export interface KonfiguracjaModulu {
   szerokoscDrzwiNaroznikaMM?: number;
   /** System narożny w szafce ślepej — Kesseböhmer LeMans II (komplet 2 półek „nerek”). */
   systemNarozny?: "lemans";
+  /**
+   * Blat o własnych wymiarach (stół, wyspa): szerokość × głębokość i położenie względem modułu —
+   * x od lewej krawędzi korpusu, z od płaszczyzny tyłu frontów w stronę frontu (ujemne = przed frontami). Brak = blat standardowy.
+   */
+  blatWymiar?: { szerokoscMM: number; glebokoscMM: number; xMM: number; zMM: number };
 }
 
 export interface Modul {
@@ -314,6 +319,11 @@ export interface Sciana {
   y1?: number;
   x2?: number;
   y2?: number;
+  /**
+   * Linia montażowa bez ściany (wyspa, stół wolnostojący): moduły stoją tyłem do niej, ale nie ma muru —
+   * 3D i rzut nie rysują ściany. Dwie linie na tej samej osi, skierowane przeciwnie, dają dwa rzędy plecami do siebie.
+   */
+  wirtualna?: boolean;
 }
 
 export interface Pomieszczenie {

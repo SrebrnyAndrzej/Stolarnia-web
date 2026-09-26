@@ -74,7 +74,8 @@ export function zbudujProjektWyceny(
       const [a, b] = [e.szer, e.wys, e.gl].sort((x, y) => y - x);
       const m2 = (a * b) / 1e6;
       if (e.rola === "worktop") {
-        mbBlatu += e.szer / 1000;
+        // Blat głębszy niż standardowe 600 mm (wyspa, stół) liczony proporcjonalnie do głębokości — przybliżenie.
+        mbBlatu += (e.szer / 1000) * Math.max(1, e.gl / 600);
       } else if (e.rola === "front" || e.rola === "filler") {
         pFrontow += m2;
         dodaj("front", materialy.front, m2);

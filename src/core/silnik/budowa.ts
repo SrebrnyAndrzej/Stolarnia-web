@@ -1,4 +1,4 @@
-import { zawiasyDlaWysokosci } from "../builder.js";
+import { blatModulu, zawiasyDlaWysokosci } from "../builder.js";
 import { dobierzNL, dobierzNLWewnetrznej, profilSzuflady, wariantWewnetrznej, wymiarySzuflady } from "../catalog/drawers.js";
 import { USTAWIENIA_DOMYSLNE } from "../settings.js";
 import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "../types.js";
@@ -53,7 +53,7 @@ export function zbudujMebel(
 
   if (m.korpus.rodzaj === "blenda") {
     el.push(p("BLENDA", "filler", 0, 0, -tf, W, H, tf, "front"));
-    if (m.korpus.blat) el.push(p("BLAT", "worktop", 0, H, -tf - gap, W, k.gruboscBlatuMM, k.glebokoscBlatuMM, "blat"));
+    if (m.korpus.blat) el.push(blatModulu({ ...modul, szerokoscMM: W, wysokoscMM: H }, k));
     return { modul, elementy: el, okucia, ostrzezenia };
   }
 
@@ -334,7 +334,7 @@ export function zbudujMebel(
   }
 
   // --- Blat ---
-  if (m.korpus.blat) el.push(p("BLAT", "worktop", 0, H, -tf - gap, W, k.gruboscBlatuMM, k.glebokoscBlatuMM, "blat"));
+  if (m.korpus.blat) el.push(blatModulu({ ...modul, szerokoscMM: W, wysokoscMM: H }, k));
 
   // --- Okucia ---
   const drzwi = [...fronty.entries()].filter(([id]) => typFrontu(m.fronty, id) === "drzwi").map(([, e]) => e);

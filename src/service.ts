@@ -72,6 +72,7 @@ export interface NowaSciana {
   y1?: number;
   x2?: number;
   y2?: number;
+  wirtualna?: boolean;
 }
 
 export interface NowyModul {
@@ -943,6 +944,7 @@ function nowaSciana(s: NowaSciana, i: number): Sciana {
   if (!(dlugosc > 0)) throw new BladUslugi("Długość ściany musi być dodatnia.");
   const sc: Sciana = { id: id(), nazwa: s.nazwa ?? `Ściana ${String.fromCharCode(65 + (i % 26))}`, dlugoscMM: dlugosc, wysokoscMM: s.wysokoscMM ?? 2600 };
   if (maWsp) Object.assign(sc, { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2 });
+  if (s.wirtualna) sc.wirtualna = true;
   return sc;
 }
 

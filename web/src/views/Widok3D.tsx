@@ -181,6 +181,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     const matSciany = new THREE.MeshStandardMaterial({ color: 0xece7df, roughness: 0.9 });
     const matAktywnej = new THREE.MeshStandardMaterial({ color: 0xf4e6d4, roughness: 0.9 });
     for (const w of rzut) {
+      if (w.sciana.wirtualna) continue; // linia montażowa wyspy — bez muru
       const L = w.sciana.dlugoscMM * M;
       const H = w.sciana.wysokoscMM * M;
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(L, H, 0.1), w.sciana.id === scianaId ? matAktywnej : matSciany);
