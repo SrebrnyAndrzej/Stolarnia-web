@@ -457,6 +457,7 @@ export function dokumentacjaProjektu({ projekt, zbudowane, formatki, ustawienia,
     if (zUchwytem.length) brak("UCHWYT", zUchwytem, "uchwyty: brak SKU (rozstaw otworów i pozycja na froncie nieustalone).", "Wybierz uchwyt lub mechanizm bezuchwytowy.");
     if (m.konstrukcja === "sink" || m.konstrukcja === "oven") brak("BLAT_WYCIECIE", ["BLAT"], `wycięcie w blacie pod ${m.konstrukcja === "sink" ? "zlew" : "płytę grzewczą"} — wymaga modelu urządzenia.`);
     if (m.konstrukcja === "filler") cz.get("BLENDA")?.uwagi.push("Blenda mocowana wkrętami przez bok sąsiedniej szafki — bez wierceń.");
+    if (m.konstrukcja === "filler") cz.get("PANEL-BOCZNY")?.uwagi.push(`Ścianka boczna ciągu z płyty frontowej, wysunięta ${m.konfiguracja.panelBoczny?.wysuniecieMM ?? 0} mm przed lico frontów; mocowana wkrętami od wnętrza sąsiedniej szafki — bez wierceń. Oklejać krawędź przednią i górną.`);
     if (m.konfiguracja.kolka) {
       const k = m.konfiguracja.kolka;
       cz.get("WIENIEC-D")?.uwagi.push(`Kółka (${k.liczba} szt., w tym ${k.zHamulcem} z hamulcem, H${k.wysokoscMM}) przykręcane wkrętami do lica B, płytka min. 40 mm od krawędzi — bez wierceń. Nośność sprawdź z masą mebla z zawartością.`);

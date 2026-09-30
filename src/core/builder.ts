@@ -27,6 +27,14 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   const gap = k.szczelinaFrontowMM;
   const tf = k.gruboscFrontuMM;
 
+  // Ścianka boczna ciągu (panel 18 mm) — przed walidacją korpusu, bo szerokość modułu = grubość panelu.
+  if (m.konstrukcja === "filler" && m.konfiguracja.panelBoczny) {
+    // Ścianka boczna ciągu: od ściany (tył modułu) do lica frontów + wysunięcie
+    const przod = k.gruboscFrontuMM + k.szczelinaFrontowMM + m.konfiguracja.panelBoczny.wysuniecieMM;
+    el.push(p("PANEL-BOCZNY", "side", 0, 0, -przod, W, H, D + przod, "front"));
+    return { modul: m, elementy: el, okucia, ostrzezenia };
+  }
+
   // --- Walidacja (CabinetBuildParameters.validate) ---
   if (W <= 2 * t) ostrzezenia.push("Szerokość mebla musi być większa niż suma grubości boków.");
   if (H <= 2 * t) ostrzezenia.push("Wysokość mebla musi być większa niż suma grubości wieńców.");

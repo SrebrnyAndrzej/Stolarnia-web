@@ -289,6 +289,11 @@ export interface KonfiguracjaModulu {
    * przed maskownicą stelaża. Wysokość rantu miski i środek przycisku spłukującego od podłogi [mm].
    */
   sanitariat?: { typ: "wcWiszace"; wysokoscMiskiMM?: number; przyciskYMM?: number };
+  /**
+   * Ścianka boczna ciągu (moduł „filler”): pionowy panel z płyty frontowej na pełną wysokość modułu, prostopadły
+   * do ściany, głębszy od frontów o `wysuniecieMM` (np. 20 mm). Szerokość modułu = grubość panelu.
+   */
+  panelBoczny?: { wysuniecieMM: number };
 }
 
 export interface Modul {
@@ -334,6 +339,8 @@ export interface Sciana {
    * 3D i rzut nie rysują ściany. Dwie linie na tej samej osi, skierowane przeciwnie, dają dwa rzędy plecami do siebie.
    */
   wirtualna?: boolean;
+  /** Wykończenie lica ściany (wizualizacja). */
+  wykonczenie?: WykonczeniePowierzchni;
 }
 
 export interface Pomieszczenie {
@@ -343,6 +350,25 @@ export interface Pomieszczenie {
   materialKorpusuId: string;
   materialFrontuId: string;
   materialBlatuId?: string;
+  /** Wykończenie podłogi (wizualizacja). */
+  podloga?: WykonczeniePowierzchni;
+  /** Fronty bez uchwytów (push-to-open, frezowane) — wizualizacja bez uchwytów. */
+  bezUchwytow?: boolean;
+}
+
+/** Wykończenie ściany lub podłogi do wizualizacji: płytki/płyty gresowe albo farba. */
+export interface WykonczeniePowierzchni {
+  /** Opis, np. „Płyta gresowa FLORIM (seria do potwierdzenia)”. */
+  nazwa: string;
+  kolorHEX: string;
+  /** Format płytki [szerokość, wysokość] w mm; brak = powierzchnia jednolita (farba). */
+  plytkaMM?: [number, number];
+  fugaMM?: number;
+  kolorFugiHEX?: string;
+  /** Rysunek płytki: kamień (chmurki, żyłki), beton, jednolity. */
+  wzor?: "kamien" | "beton" | "gladki";
+  /** 0 = mat, 1 = połysk. */
+  polysk?: number;
 }
 
 export interface Klient {

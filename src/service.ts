@@ -31,6 +31,7 @@ import type {
   UstawieniaStolarni,
   WariantWyceny,
   WydanieProdukcyjne,
+  WykonczeniePowierzchni,
   ZbudowanyModul,
   DokumentacjaProjektu,
 } from "./core/types.js";
@@ -73,6 +74,8 @@ export interface NowaSciana {
   x2?: number;
   y2?: number;
   wirtualna?: boolean;
+  /** Wykończenie lica (wizualizacja); null usuwa. */
+  wykonczenie?: WykonczeniePowierzchni | null;
 }
 
 export interface NowyModul {
@@ -444,7 +447,11 @@ export class Stolarnia {
     return wynik;
   }
 
-  zmienPomieszczenie(projektId: string, pomieszczenieId: string, dane: { nazwa?: string; materialKorpusuId?: string; materialFrontuId?: string; materialBlatuId?: string }): Pomieszczenie {
+  zmienPomieszczenie(
+    projektId: string,
+    pomieszczenieId: string,
+    dane: { nazwa?: string; materialKorpusuId?: string; materialFrontuId?: string; materialBlatuId?: string; podloga?: WykonczeniePowierzchni | null; bezUchwytow?: boolean },
+  ): Pomieszczenie {
     let wynik!: Pomieszczenie;
     this.edytuj(projektId, (p, b) => {
       const r = p.pomieszczenia.find((x) => x.id === pomieszczenieId);
@@ -453,6 +460,9 @@ export class Stolarnia {
       if (dane.materialKorpusuId) r.materialKorpusuId = sprawdzMaterial(b, dane.materialKorpusuId);
       if (dane.materialFrontuId) r.materialFrontuId = sprawdzMaterial(b, dane.materialFrontuId);
       if (dane.materialBlatuId) r.materialBlatuId = sprawdzMaterial(b, dane.materialBlatuId);
+      if (dane.podloga === null) delete r.podloga;
+      else if (dane.podloga) r.podloga = sprawdzWykonczenie(dane.podloga);
+      if (dane.bezUchwytow !== undefined) r.bezUchwytow = !!dane.bezUchwytow || undefined;
       wynik = r;
     });
     return wynik;
@@ -485,6 +495,8 @@ export class Stolarnia {
         s.dlugoscMM = dane.dlugoscMM;
       }
       if (dane.wysokoscMM) s.wysokoscMM = dane.wysokoscMM;
+      if (dane.wykonczenie === null) delete s.wykonczenie;
+      else if (dane.wykonczenie) s.wykonczenie = sprawdzWykonczenie(dane.wykonczenie);
       wynik = s;
     });
     return wynik;
@@ -938,6 +950,20 @@ export class Stolarnia {
   }
 }
 
+function sprawdzWykonczenie(w: WykonczeniePowierzchni): WykonczeniePowierzchni {
+  if (!/^#[0-9a-f]{6}$/i.test(w.kolorHEX ?? "")) throw new BladUslugi("Wykończenie: kolorHEX w formacie #rrggbb.");
+  if (w.plytkaMM && !(w.plytkaMM.length === 2 && w.plytkaMM.every((x) => x >= 50 && x <= 4000))) throw new BladUslugi("Wykończenie: format płytki 50–4000 mm.");
+  return {
+    nazwa: String(w.nazwa ?? "").slice(0, 120),
+    kolorHEX: w.kolorHEX,
+    ...(w.plytkaMM ? { plytkaMM: [w.plytkaMM[0], w.plytkaMM[1]] as [number, number] } : {}),
+    ...(w.fugaMM !== undefined ? { fugaMM: Math.max(0, Math.min(10, w.fugaMM)) } : {}),
+    ...(w.kolorFugiHEX && /^#[0-9a-f]{6}$/i.test(w.kolorFugiHEX) ? { kolorFugiHEX: w.kolorFugiHEX } : {}),
+    ...(w.wzor ? { wzor: w.wzor } : {}),
+    ...(w.polysk !== undefined ? { polysk: Math.max(0, Math.min(1, w.polysk)) } : {}),
+  };
+}
+
 function nowaSciana(s: NowaSciana, i: number): Sciana {
   const maWsp = [s.x1, s.y1, s.x2, s.y2].every((v) => typeof v === "number" && Number.isFinite(v));
   const dlugosc = maWsp ? Math.round(Math.hypot(s.x2! - s.x1!, s.y2! - s.y1!)) : s.dlugoscMM;
@@ -945,6 +971,7 @@ function nowaSciana(s: NowaSciana, i: number): Sciana {
   const sc: Sciana = { id: id(), nazwa: s.nazwa ?? `Ściana ${String.fromCharCode(65 + (i % 26))}`, dlugoscMM: dlugosc, wysokoscMM: s.wysokoscMM ?? 2600 };
   if (maWsp) Object.assign(sc, { x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2 });
   if (s.wirtualna) sc.wirtualna = true;
+  if (s.wykonczenie) sc.wykonczenie = sprawdzWykonczenie(s.wykonczenie);
   return sc;
 }
 

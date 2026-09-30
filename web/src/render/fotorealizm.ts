@@ -7,7 +7,7 @@ import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { granice, punktNaRzucie, scianyNaRzucie, type ScianaNaRzucie } from "../../../src/core/geometry";
-import type { Element, Modul, ZbudowanyModul } from "../../../src/core/types";
+import type { Element, Modul, WykonczeniePowierzchni, ZbudowanyModul } from "../../../src/core/types";
 import type { Analiza, Material } from "../api";
 
 // Wizualizacja ofertowa: ta sama geometria co produkcja (elementy z buildera), ale z materiałami PBR,
@@ -85,7 +85,9 @@ const DL_DREWNA_M = 2.0; // i 2 m wzdłuż
  * Proceduralny dąb rustykalny (typu Artisan): deski 12–22 cm o różnym tonie, w każdej słoje prostymi liniami
  * albo „katedrami” (rysunek przekroju stycznego), pory dębu jako krótkie kreski i pojedyncze sęki. Słoje wzdłuż osi V.
  */
-function teksturaDrewna(bazaCss: string, seed: number): { map: THREE.CanvasTexture; bump: THREE.CanvasTexture } {
+function teksturaDrewna(bazaCss: string, seed: number, opcje: { seki?: boolean; pory?: boolean } = {}): { map: THREE.CanvasTexture; bump: THREE.CanvasTexture } {
+  const seki = opcje.seki ?? true;
+  const pory = opcje.pory ?? true;
   const W = 1024;
   const H = 2048;
   const c = document.createElement("canvas");
@@ -150,12 +152,12 @@ function teksturaDrewna(bazaCss: string, seed: number): { map: THREE.CanvasTextu
       linia(pkt, los() < 0.7 ? `rgba(80,48,20,${0.05 + los() * 0.08})` : `rgba(255,240,215,${0.05 + los() * 0.06})`, 0.8 + los() * 2);
     }
     // Pory dębu
-    for (let i = 0; i < w * 5; i++) {
+    for (let i = 0; i < (pory ? w * 5 : 0); i++) {
       g.fillStyle = `rgba(50,28,10,${0.08 + los() * 0.14})`;
       g.fillRect(x + los() * w, los() * H, 0.9, 3 + los() * 9);
     }
-    // Rzadki sęk
-    if (los() < 0.35) {
+    // Rzadki sęk (nie w dekorach o prostym słoju, np. orzech)
+    if (seki && los() < 0.35) {
       const kx = x + w * (0.2 + los() * 0.6);
       const ky = los() * H;
       const r = 5 + los() * 7;
@@ -249,6 +251,86 @@ function teksturaPodlogi(): THREE.CanvasTexture {
   return t;
 }
 
+/**
+ * Jedna płytka (gres, płyta wielkoformatowa) z fugą na krawędzi: chmurzasty rysunek kamienia/betonu w kolorze bazowym.
+ * Tekstura powtarzana — `repeat` = wymiar powierzchni / format płytki.
+ */
+function teksturaPlytki(w: WykonczeniePowierzchni, seed: number): THREE.CanvasTexture {
+  const [tw, th] = w.plytkaMM ?? [1000, 1000];
+  const skala = Math.min(1, 1024 / Math.max(tw, th)); // px na mm
+  const W = Math.max(64, Math.round(tw * skala));
+  const H = Math.max(64, Math.round(th * skala));
+  const c = document.createElement("canvas");
+  c.width = W;
+  c.height = H;
+  const g = c.getContext("2d")!;
+  g.fillStyle = w.kolorHEX;
+  g.fillRect(0, 0, W, H);
+  const los = rng(seed);
+  const wzor = w.wzor ?? "kamien";
+  if (wzor !== "gladki") {
+    // miękkie plamy (chmurki) jaśniejsze i ciemniejsze
+    for (let i = 0; i < 140; i++) {
+      const x = los() * W;
+      const y = los() * H;
+      const r = (0.04 + los() * 0.22) * Math.max(W, H);
+      const jasna = los() > 0.5;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r);
+      const a = wzor === "beton" ? 0.05 : 0.035;
+      gr.addColorStop(0, jasna ? `rgba(255,255,255,${a})` : `rgba(60,50,40,${a})`);
+      gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = gr;
+      g.fillRect(0, 0, W, H);
+    }
+    // drobne ziarno
+    const img = g.getImageData(0, 0, W, H);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const n = (los() - 0.5) * (wzor === "beton" ? 16 : 9);
+      img.data[i] += n;
+      img.data[i + 1] += n;
+      img.data[i + 2] += n;
+    }
+    g.putImageData(img, 0, 0);
+    if (wzor === "kamien") {
+      // delikatne żyłki
+      g.strokeStyle = "rgba(110,100,90,0.035)";
+      for (let i = 0; i < 3; i++) {
+        g.lineWidth = 0.6 + los() * 1.4;
+        g.beginPath();
+        let x = los() * W;
+        let y = 0;
+        g.moveTo(x, y);
+        while (y < H) {
+          x += (los() - 0.5) * W * 0.12;
+          y += H * (0.04 + los() * 0.06);
+          g.lineTo(x, y);
+        }
+        g.stroke();
+      }
+    }
+  }
+  // fuga na prawej i dolnej krawędzi (sąsiednia płytka dokłada lewą i górną)
+  const fuga = Math.max(1, (w.fugaMM ?? 2) * skala);
+  g.fillStyle = w.kolorFugiHEX ?? "#b8b0a4";
+  g.fillRect(W - fuga, 0, fuga, H);
+  g.fillRect(0, H - fuga, W, fuga);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Materiał wykończenia: płytki (tekstura powtarzana w formacie płytki) albo jednolita farba. */
+function materialWykonczenia(w: WykonczeniePowierzchni, seed: number, dlMM: number, wysMM: number, przesMM = 0): THREE.MeshStandardMaterial {
+  const polysk = Math.min(1, Math.max(0, w.polysk ?? 0.2));
+  if (!w.plytkaMM) return new THREE.MeshStandardMaterial({ color: new THREE.Color(w.kolorHEX), roughness: 0.93 - polysk * 0.5 });
+  const map = teksturaPlytki(w, seed);
+  map.repeat.set(dlMM / w.plytkaMM[0], wysMM / w.plytkaMM[1]);
+  map.offset.set((przesMM % w.plytkaMM[0]) / w.plytkaMM[0], 0);
+  return new THREE.MeshStandardMaterial({ map, roughness: 0.85 - polysk * 0.65, metalness: 0 });
+}
+
 function teksturaNieba(): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 1024;
@@ -337,7 +419,9 @@ async function przygotujMaterialy(matMap: Map<string, Material>, ids: string[]):
     kolor ??= "#d8d2c8";
     const mat = drewno
       ? (() => {
-          const t = teksturaDrewna(kolor, hashTekstu(id));
+          // Orzech / walnut: prosty, gęsty słój bez sęków i porów dębu (np. Kronospan K547 Franklin)
+          const prosty = /orzech|walnut|franklin/i.test(`${m.nazwa} ${m.dekor}`);
+          const t = teksturaDrewna(kolor, hashTekstu(id), prosty ? { seki: false, pory: false } : {});
           return new THREE.MeshStandardMaterial({ map: t.map, bumpMap: t.bump, bumpScale: 0.6, roughness: m.typ === "blatLaminowany" ? 0.42 : 0.55 });
         })()
       : new THREE.MeshStandardMaterial({ color: new THREE.Color(kolor), roughness: /ST9|mat/i.test(`${m.struktura ?? ""} ${m.nazwa}`) ? 0.72 : 0.58, bumpMap: teksturaSzumu(hashTekstu(id), 40), bumpScale: 0.25 });
@@ -417,6 +501,8 @@ function naczynie(mat: THREE.Material, r: number, h: number): THREE.Mesh {
 interface Scena {
   scene: THREE.Scene;
   sciany: { mesh: THREE.Object3D; cx: number; cz: number; nx: number; nz: number }[];
+  /** Meble na ścianach rzeczywistych — w makiecie znikają razem ze ścianą, za którą stoi kamera (inaczej widać je od tyłu). */
+  meble: { mesh: THREE.Object3D; cx: number; cz: number; nx: number; nz: number }[];
   sufit: THREE.Object3D;
   naroznik: { drzwi: THREE.Object3D; otwarte: THREE.Object3D[]; kat: number }[];
   srodek: [number, number];
@@ -439,6 +525,7 @@ export async function zbudujScene(analiza: Analiza, matMap: Map<string, Material
     sciany: [],
     sufit: new THREE.Group(),
     naroznik: [],
+    meble: [],
     srodek: [(g.x + g.w / 2) * M, (g.y + g.h / 2) * M],
     zajete: zb.filter((z) => z.modul.konfiguracja.blat).map((z) => ({ scianaId: z.modul.scianaId, a0: z.modul.pozycjaXMM, a1: z.modul.pozycjaXMM + z.modul.szerokoscMM })),
   };
@@ -448,7 +535,16 @@ export async function zbudujScene(analiza: Analiza, matMap: Map<string, Material
   scene.add(new THREE.HemisphereLight(0xf3f6ff, 0xb8a894, 0.18));
 
   // Podłoga
-  const podloga = new THREE.Mesh(new THREE.PlaneGeometry(g.w * M + 1, g.h * M + 1), new THREE.MeshStandardMaterial({ map: teksturaPodlogi(), roughness: 0.42 }));
+  const matPodlogi = pom.podloga?.plytkaMM
+    ? (() => {
+        const m = materialWykonczenia(pom.podloga, hashTekstu(pom.id), 1000, 1000);
+        m.map!.repeat.set(1000 / pom.podloga.plytkaMM![0], 1000 / pom.podloga.plytkaMM![1]); // UV podłogi w metrach
+        return m;
+      })()
+    : pom.podloga
+      ? materialWykonczenia(pom.podloga, hashTekstu(pom.id), 1, 1)
+      : new THREE.MeshStandardMaterial({ map: teksturaPodlogi(), roughness: 0.42 });
+  const podloga = new THREE.Mesh(new THREE.PlaneGeometry(g.w * M + 1, g.h * M + 1), matPodlogi);
   podloga.rotation.x = -Math.PI / 2;
   podloga.position.set(sc.srodek[0], 0, sc.srodek[1]);
   podloga.receiveShadow = true;
@@ -471,9 +567,11 @@ export async function zbudujScene(analiza: Analiza, matMap: Map<string, Material
     const L = w.sciana.dlugoscMM;
     const H = w.sciana.wysokoscMM;
     const grupa = new THREE.Group();
+    if (w.sciana.wirtualna) continue; // linia montażowa wyspy — bez muru
+    const wyk = w.sciana.wykonczenie;
     const kawalek = (a0: number, a1: number, y0: number, y1: number) => {
       if (a1 - a0 <= 0 || y1 - y0 <= 0) return;
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry((a1 - a0) * M, (y1 - y0) * M, 0.12), matSciany);
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry((a1 - a0) * M, (y1 - y0) * M, 0.12), wyk ? materialWykonczenia(wyk, hashTekstu(w.sciana.id), a1 - a0, y1 - y0, a0) : matSciany);
       const [cx, cz] = punktNaRzucie(w, (a0 + a1) / 2, -60);
       mesh.position.set(cx * M, ((y0 + y1) / 2) * M, cz * M);
       mesh.rotation.y = Math.atan2(-w.dy, w.dx);
@@ -543,6 +641,27 @@ export async function zbudujScene(analiza: Analiza, matMap: Map<string, Material
     scene.add(grupa);
     const [cx, cz] = punktNaRzucie(w, L / 2, -60);
     sc.sciany.push({ mesh: grupa, cx: cx * M, cz: cz * M, nx: w.nx, nz: w.ny });
+  }
+
+  // Pomieszczenie bez okna (łazienka, garderoba): panel LED w suficie + miękkie doświetlenie ścian
+  if (!rzut.some((w) => /okno|okien|window/i.test(w.sciana.nazwa))) {
+    const panel = new THREE.RectAreaLight(0xfff4e8, 9, Math.min(1.2, g.w * M * 0.4), Math.min(1.2, g.h * M * 0.4));
+    panel.position.set(sc.srodek[0], wysPom - 0.02, sc.srodek[1]);
+    panel.lookAt(sc.srodek[0], 0, sc.srodek[1]);
+    scene.add(panel);
+    const oprawa = new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.2, g.w * M * 0.4), Math.min(1.2, g.h * M * 0.4)), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 1.35, 1.3) }));
+    oprawa.rotation.x = Math.PI / 2;
+    oprawa.position.set(sc.srodek[0], wysPom - 0.004, sc.srodek[1]);
+    scene.add(oprawa);
+    const cien = new THREE.DirectionalLight(0xfff1e0, 1.4);
+    cien.position.set(sc.srodek[0] + 0.3, wysPom - 0.05, sc.srodek[1] + 0.4);
+    cien.target.position.set(sc.srodek[0], 0, sc.srodek[1]);
+    cien.castShadow = true;
+    cien.shadow.mapSize.set(2048, 2048);
+    cien.shadow.bias = -0.0004;
+    cien.shadow.normalBias = 0.02;
+    Object.assign(cien.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.05, far: 4 });
+    scene.add(cien, cien.target);
   }
 
   // Oczka halogenowe w suficie (ciepłe 3000 K)
@@ -761,7 +880,38 @@ function dodajModul(sc: Scena,z: ZbudowanyModul, rzut: ScianaNaRzucie[], pom: An
     }
     b.position.copy(poz);
     gr.add(b);
-    if (e.rola === "front" && e.kod !== "FRONT-AGD") dodajUchwytFrontu(gr, e, m, z, mat);
+    if (e.rola === "front" && e.kod !== "FRONT-AGD" && !pom.bezUchwytow) dodajUchwytFrontu(gr, e, m, z, mat);
+  }
+
+  // Sanitariat: miska WC wisząca (ceramika) i przycisk spłukujący na maskownicy
+  if (m.konfiguracja.sanitariat?.typ === "wcWiszace") {
+    const san = m.konfiguracja.sanitariat;
+    const rant = san.wysokoscMiskiMM ?? 400;
+    const przod = D + 20;
+    const cx = (m.szerokoscMM / 2) * M;
+    const ceramika = new THREE.MeshPhysicalMaterial({ color: 0xf8f8f6, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 });
+    // czasza: bryła obrotowa (profil miski), wydłużona do ~360 × 540
+    const profil = [
+      [0.0, -0.3], [0.11, -0.3], [0.135, -0.27], [0.155, -0.2], [0.172, -0.1], [0.18, -0.03], [0.182, 0], [0.0, 0],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    const czasza = new THREE.Mesh(new THREE.LatheGeometry(profil, 64), ceramika);
+    czasza.scale.set(1, 1, 1.45);
+    czasza.position.set(cx, (rant - 25) * M, (przod + 265) * M);
+    // korpus przyścienny (zwężka do maskownicy)
+    const tyl = bryla(300, 260, 180, ceramika, 40);
+    tyl.position.set(cx, (rant - 155) * M, (przod + 90) * M);
+    // deska z klapą: spłaszczony owal
+    const deska = new THREE.Mesh(new THREE.CylinderGeometry(0.184, 0.184, 0.03, 64), ceramika);
+    deska.scale.set(1, 1, 1.45);
+    deska.position.set(cx, (rant - 8) * M, (przod + 265) * M);
+    const plytkaMat = new THREE.MeshStandardMaterial({ color: 0xdadcdf, metalness: 0.85, roughness: 0.22 });
+    const plytka = bryla(250, 165, 10, plytkaMat, 4);
+    plytka.position.set(cx, (san.przyciskYMM ?? 1000) * M, (przod + 5) * M);
+    for (const o of [czasza, tyl, deska]) {
+      o.castShadow = true;
+      o.receiveShadow = true;
+    }
+    gr.add(czasza, tyl, deska, plytka);
   }
 
   // Cokół cofnięty 50 mm
@@ -821,6 +971,10 @@ function dodajModul(sc: Scena,z: ZbudowanyModul, rzut: ScianaNaRzucie[], pom: An
     }
   }
   sc.scene.add(gr);
+  if (!w.sciana.wirtualna) {
+    const [lx, lz] = punktNaRzucie(w, 0, 0);
+    sc.meble.push({ mesh: gr, cx: lx * M, cz: lz * M, nx: w.nx, nz: w.ny });
+  }
 }
 
 const DL_UCHWYTU = 128 + 32; // uchwyt relingowy rozstaw 128 mm (jak w cenniku)
@@ -876,7 +1030,9 @@ export function domyslneUjecia(analiza: Analiza, pomieszczenieId?: string): Ujec
   const g = granice(rzut, 0);
   const cx = (g.x + g.w / 2) * M;
   const cz = (g.y + g.h / 2) * M;
-  const okno = rzut.find((w) => /okno|okien|window/i.test(w.sciana.nazwa)) ?? rzut[0];
+  const zOknem = rzut.find((w) => /okno|okien|window/i.test(w.sciana.nazwa));
+  if (!zOknem && rzut.length >= 3) return ujeciaBezOkna(analiza, pom);
+  const okno = zOknem ?? rzut[0];
   const naprzeciw = rzut.find((w) => Math.abs(w.nx + okno.nx) < 0.1 && Math.abs(w.ny + okno.ny) < 0.1) ?? rzut[2] ?? okno;
   const pkt = (w: ScianaNaRzucie, a: number, d: number, y: number): [number, number, number] => {
     const [x, z] = punktNaRzucie(w, a, d);
@@ -929,6 +1085,61 @@ export function domyslneUjecia(analiza: Analiza, pomieszczenieId?: string): Ujec
   return ujecia;
 }
 
+/**
+ * Ujęcia pomieszczenia bez okna (łazienka, garderoba): główna ściana = najwięcej frontów, druga = kolejna.
+ * Kamera na wysokości oczu, szeroki obiektyw jak w fotografii małych wnętrz; pion kamery poziomy.
+ */
+function ujeciaBezOkna(analiza: Analiza, pom: Analiza["projekt"]["pomieszczenia"][number]): Ujecie[] {
+  const rzut = scianyNaRzucie(pom);
+  const pole = (w: ScianaNaRzucie) =>
+    analiza.zbudowane.filter((z) => z.modul.scianaId === w.sciana.id).reduce((a, z) => a + z.modul.szerokoscMM * z.modul.wysokoscMM, 0);
+  const wg = [...rzut].sort((a, b) => pole(b) - pole(a));
+  const glowna = wg[0];
+  const druga = wg.find((w) => w !== glowna && pole(w) > 0);
+  const naprzeciw = rzut.find((w) => Math.abs(w.nx + glowna.nx) < 0.1 && Math.abs(w.ny + glowna.ny) < 0.1) ?? rzut[(rzut.indexOf(glowna) + 2) % rzut.length];
+  const pkt = (w: ScianaNaRzucie, a: number, d: number, y: number): [number, number, number] => {
+    const [x, z] = punktNaRzucie(w, a, d);
+    return [x * M, y, z * M];
+  };
+  const glebokosc = (w: ScianaNaRzucie) => Math.max(0, ...analiza.zbudowane.filter((z) => z.modul.scianaId === w.sciana.id).map((z) => z.modul.glebokoscMM + 40));
+  // Fotograf może stanąć tuż przy ścianie naprzeciw, jeśli meble na niej są niższe niż aparat (np. szafka pod umywalkę)
+  const niskie = analiza.zbudowane.filter((z) => z.modul.scianaId === naprzeciw.sciana.id).every((z) => z.modul.pozycjaYMM + z.modul.wysokoscMM < 1300);
+  const odNaprzeciw = niskie ? 200 : glebokosc(naprzeciw) + 150;
+  const ujecia: Ujecie[] = [
+    {
+      id: "zabudowa",
+      tytul: `Zabudowa — ${glowna.sciana.nazwa}`,
+      kamera: pkt(naprzeciw, naprzeciw.sciana.dlugoscMM * 0.55, odNaprzeciw, 1.45),
+      cel: pkt(glowna, glowna.sciana.dlugoscMM * 0.4, 0, 1.3),
+      fov: 84,
+    },
+    {
+      id: "skos",
+      tytul: "Widok z wejścia",
+      kamera: pkt(naprzeciw, naprzeciw.sciana.dlugoscMM * 0.12, odNaprzeciw, 1.6),
+      cel: pkt(glowna, glowna.sciana.dlugoscMM * 0.35, 0, 1.1),
+      fov: 70,
+    },
+  ];
+  if (druga) {
+    const zDrugiej = rzut.find((w) => Math.abs(w.nx + druga.nx) < 0.1 && Math.abs(w.ny + druga.ny) < 0.1) ?? glowna;
+    // stań przed wolnym odcinkiem przeciwległej ściany (bez zabudowy), jeśli jest
+    const zajete = analiza.zbudowane.filter((z) => z.modul.scianaId === zDrugiej.sciana.id).map((z) => [z.modul.pozycjaXMM, z.modul.pozycjaXMM + z.modul.szerokoscMM]);
+    const wolne = [0.8, 0.5, 0.2].map((f) => zDrugiej.sciana.dlugoscMM * f).find((a) => !zajete.some(([a0, a1]) => a >= a0 - 200 && a <= a1 + 200));
+    ujecia.push({
+      id: "druga",
+      tytul: `${druga.sciana.nazwa}`,
+      kamera: pkt(zDrugiej, wolne ?? zDrugiej.sciana.dlugoscMM * 0.5, wolne !== undefined ? 250 : glebokosc(zDrugiej) + 150, 1.55),
+      cel: pkt(druga, druga.sciana.dlugoscMM * 0.5, 0, 0.9),
+      fov: 72,
+    });
+  }
+  const g = granice(rzut, 0);
+  const [mx, , mz] = pkt(naprzeciw, naprzeciw.sciana.dlugoscMM / 2, -2600, 0);
+  ujecia.push({ id: "makieta", tytul: "Układ zabudowy", kamera: [mx, 5.2, mz], cel: [(g.x + g.w / 2) * M, 0.3, (g.y + g.h / 2) * M], fov: 42, makieta: true });
+  return ujecia;
+}
+
 // ---------- renderowanie ----------
 
 export async function renderuj(analiza: Analiza, matMap: Map<string, Material>, ujecia: Ujecie[], opcje: { szer?: number; wys?: number; postep?: (i: number, n: number) => void } = {}): Promise<Render[]> {
@@ -965,6 +1176,7 @@ export async function renderuj(analiza: Analiza, matMap: Map<string, Material>, 
       const vz = camera.position.z - s.cz;
       s.mesh.visible = !u.makieta || vx * s.nx + vz * s.nz > 0;
     }
+    for (const s of sc.meble) s.mesh.visible = !u.makieta || (camera.position.x - s.cx) * s.nx + (camera.position.z - s.cz) * s.nz > 0;
     for (const n of sc.naroznik) {
       n.drzwi.rotation.y = u.otwartyNaroznik ? n.kat : 0;
       n.otwarte.forEach((o) => (o.visible = !!u.otwartyNaroznik));
