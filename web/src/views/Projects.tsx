@@ -156,6 +156,8 @@ export function Projects() {
         </div>
       )}
 
+      {!lista && !blad && <div className="card card-b muted">Wczytuję projekty…</div>}
+
       {lista && lista.length === 0 && !nowy && (
         <div className="card card-b muted">
           Brak projektów. Utwórz pierwszy projekt albo poproś Claude przez MCP: „zaprojektuj kuchnię 3,6 m ze zlewem pod oknem”.
