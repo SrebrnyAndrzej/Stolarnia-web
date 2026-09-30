@@ -138,6 +138,12 @@ table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
 .projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 .project-tile { padding: 16px; cursor: pointer; display: grid; gap: 8px; }
 .project-tile:hover { border-color: var(--accent); }
+.widok-listy { gap: 6px; margin: 4px 0 10px; font-size: 13px; }
+.folder-klienta { margin-bottom: 14px; }
+.folder-naglowek { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 2px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+.folder-przelacz { display: flex; align-items: center; gap: 8px; min-width: 0; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 4px 0; text-align: left; }
+.folder-nazwa { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.folder-ikona { font-size: 18px; }
 
 /* Mikro CRM: pasek etapów nad projektami (zawijany, bez przewijania w bok) */
 .e0 { --etap: #8a8177; } .e1 { --etap: #3f7cc4; } .e2 { --etap: #7a62c9; } .e3 { --etap: #c98a1a; }

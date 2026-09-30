@@ -46,6 +46,32 @@ export function Projects() {
     zapisz("stolarnia.filtrEtapu", f);
   };
   const [szukaj, setSzukaj] = useState("");
+  const [foldery, setFoldery] = useState(() => czytaj("stolarnia.folderyKlientow") !== "0");
+  const ustawFoldery = (v: boolean) => {
+    setFoldery(v);
+    zapisz("stolarnia.folderyKlientow", v ? "1" : "0");
+  };
+  const [zwiniete, setZwiniete] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(czytaj("stolarnia.zwinieteFoldery") ?? "[]") as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+  const przelaczFolder = (k: string) =>
+    setZwiniete((z) => {
+      const n = new Set(z);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      zapisz("stolarnia.zwinieteFoldery", JSON.stringify([...n]));
+      return n;
+    });
+  const nowyDlaKlienta = (k: string) => {
+    setKlient(k);
+    setNazwa("");
+    setNowy(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const wczytaj = () => api.projekty().then(setLista).catch((e) => setBlad(e.message));
   useEffect(() => {
@@ -58,6 +84,16 @@ export function Projects() {
   const widoczne = pasujace
     .filter((p) => filtr === "wszystkie" || p.status === filtr)
     .sort((a, b) => STATUSY_PROJEKTU.indexOf(a.status) - STATUSY_PROJEKTU.indexOf(b.status) || (a.terminMontazu ?? "9").localeCompare(b.terminMontazu ?? "9") || b.zmieniono.localeCompare(a.zmieniono));
+
+  // Foldery klientów: projekty tego samego klienta razem, folder z ostatnio zmienionym projektem na górze.
+  const BEZ_KLIENTA = "Bez klienta";
+  const grupy = new Map<string, ProjektSkrot[]>();
+  for (const p of widoczne) {
+    const k = p.klient?.trim() || BEZ_KLIENTA;
+    grupy.set(k, [...(grupy.get(k) ?? []), p]);
+  }
+  const najnowszy = (l: ProjektSkrot[]) => l.reduce((m, p) => (p.zmieniono > m ? p.zmieniono : m), "");
+  const folderyKlientow = [...grupy.entries()].sort(([ka, a], [kb, b]) => Number(ka === BEZ_KLIENTA) - Number(kb === BEZ_KLIENTA) || najnowszy(b).localeCompare(najnowszy(a)));
 
   const zmienEtap = async (p: ProjektSkrot, s: StatusProjektu) => {
     if (s === p.status) return;
@@ -146,8 +182,41 @@ export function Projects() {
         </div>
       )}
 
-      <div className="projects">
-        {widoczne.map((p) => {
+      {lista && lista.length > 0 && (
+        <div className="row widok-listy">
+          <span className="muted">Widok:</span>
+          <button className={`btn small ${foldery ? "primary" : ""}`} aria-pressed={foldery} onClick={() => ustawFoldery(true)}>Foldery klientów</button>
+          <button className={`btn small ${!foldery ? "primary" : ""}`} aria-pressed={!foldery} onClick={() => ustawFoldery(false)}>Lista</button>
+        </div>
+      )}
+
+      {foldery ? (
+        folderyKlientow.map(([k, l]) => {
+          const otwarty = !zwiniete.has(k) || !!fraza;
+          const tel = l.find((p) => p.telefon)?.telefon;
+          return (
+            <section key={k} className={`folder-klienta ${otwarty ? "otwarty" : ""}`}>
+              <div className="folder-naglowek">
+                <button className="folder-przelacz" aria-expanded={otwarty} onClick={() => przelaczFolder(k)}>
+                  <span className="folder-ikona" aria-hidden>{otwarty ? "📂" : "📁"}</span>
+                  <span className="folder-nazwa">{k}</span>
+                  <span className="etap-licznik">{l.length}</span>
+                </button>
+                {tel && <a className="muted" href={`tel:${tel.replace(/\s/g, "")}`}>{tel}</a>}
+                <span className="spacer" />
+                {k !== BEZ_KLIENTA && <button className="btn small" onClick={() => nowyDlaKlienta(k)}>+ Projekt</button>}
+              </div>
+              {otwarty && <div className="projects">{l.map((p) => kafel(p))}</div>}
+            </section>
+          );
+        })
+      ) : (
+        <div className="projects">{widoczne.map((p) => kafel(p))}</div>
+      )}
+    </div>
+  );
+
+  function kafel(p: ProjektSkrot) {
           const idx = STATUSY_PROJEKTU.indexOf(p.status);
           const nastepny = STATUSY_PROJEKTU[idx + 1];
           return (
@@ -201,8 +270,5 @@ export function Projects() {
               </div>
             </div>
           );
-        })}
-      </div>
-    </div>
-  );
+  }
 }
