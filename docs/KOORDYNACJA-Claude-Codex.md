@@ -41,3 +41,6 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 ## Uwagi Codexa
 
 (puste)
+
+### 30.09.2026 — Codex, baza e8dedfe
+Celowany przegląd i 20/20 testów: docs/PRZEGLAD-2026-09-30-plan-etapow.md. R01: PDF wydania jest regenerowany obecnym rendererem, potrzebny oryginalny artefakt; R02: oddzielić migawkę roboczą od zwolnienia do produkcji. Plan etapów A–G i punkt wznowienia w dokumencie. Nie zatwierdzono odczytów producentów; kolejne dane: LEGRABOX, otwory/front i spójność rastra 32.
