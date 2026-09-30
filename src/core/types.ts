@@ -284,6 +284,11 @@ export interface KonfiguracjaModulu {
    * Moduł stoi wtedy na wysokości kółka (pozycjaYMM = wysokoscMM), bez cokołu.
    */
   kolka?: { liczba: number; zHamulcem: number; wysokoscMM: number; produktHamulec?: string; produktBez?: string };
+  /**
+   * Sanitariat przed modułem — tylko wizualizacja (3D, elewacja), bez formatek i wyceny: np. miska WC wisząca
+   * przed maskownicą stelaża. Wysokość rantu miski i środek przycisku spłukującego od podłogi [mm].
+   */
+  sanitariat?: { typ: "wcWiszace"; wysokoscMiskiMM?: number; przyciskYMM?: number };
 }
 
 export interface Modul {

@@ -590,6 +590,20 @@ function Elewacja({ analiza, scianaId, dlugosc, wysokosc, matMap, blatId, wybran
                   </g>
                 );
               })}
+            {/* Sanitariat: miska WC wisząca i przycisk (widok z przodu, poglądowo) */}
+            {m.konfiguracja.sanitariat?.typ === "wcWiszace" && (() => {
+              const rant = m.konfiguracja.sanitariat.wysokoscMiskiMM ?? 400;
+              const py = m.konfiguracja.sanitariat.przyciskYMM ?? 1000;
+              const cx = x + m.szerokoscMM / 2;
+              return (
+                <g pointerEvents="none">
+                  <path d={`M ${cx - 180} ${Y(rant)} L ${cx + 180} ${Y(rant)} L ${cx + 130} ${Y(rant - 300)} Q ${cx} ${Y(rant - 330)} ${cx - 130} ${Y(rant - 300)} Z`} fill="#fbfbfa" stroke="#3b3128" strokeWidth={3} />
+                  <rect x={cx - 185} y={Y(rant + 25)} width={370} height={25} rx={10} fill="#fbfbfa" stroke="#3b3128" strokeWidth={3} />
+                  <rect x={cx - 125} y={Y(py + 82)} width={250} height={165} rx={12} fill="#d9dadc" stroke="#3b3128" strokeWidth={3} />
+                  <line x1={cx} x2={cx} y1={Y(py + 70)} y2={Y(py - 70)} stroke="#3b3128" strokeWidth={3} />
+                </g>
+              );
+            })()}
             {/* Blat */}
             {m.konfiguracja.blat && (
               <rect x={x} y={Y(m.pozycjaYMM + m.wysokoscMM + 38)} width={m.szerokoscMM} height={38} fill={kolorMat(blatId, "#a98f6e")} stroke="#3b3128" strokeWidth={2} />

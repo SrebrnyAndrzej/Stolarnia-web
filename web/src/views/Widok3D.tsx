@@ -239,6 +239,38 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         kr.userData.modulId = m.id;
         zawartosc.add(mesh, kr);
       }
+      // Sanitariat (wizualizacja): miska WC wisząca przed frontem modułu i przycisk spłukujący na maskownicy
+      if (m.konfiguracja.sanitariat?.typ === "wcWiszace") {
+        const san = m.konfiguracja.sanitariat;
+        const rant = san.wysokoscMiskiMM ?? 400;
+        const przod = m.glebokoscMM + 20; // płaszczyzna frontu / maskownicy
+        const ceramika = new THREE.MeshStandardMaterial({ color: 0xf7f7f5, roughness: 0.12, metalness: 0 });
+        const srodek = m.pozycjaXMM + m.szerokoscMM / 2;
+        const dodaj = (geo: THREE.BufferGeometry, odLica: number, y: number, sx = 1, sz = 1) => {
+          const mesh = new THREE.Mesh(geo, ceramika);
+          const [px, pz] = punktNaRzucie(w, srodek, odLica);
+          mesh.position.set(px * M, y * M, pz * M);
+          mesh.rotation.y = grupa.rotation.y;
+          mesh.scale.set(sx, 1, sz);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.userData.modulId = m.id;
+          zawartosc.add(mesh);
+        };
+        // Korpus miski: zwężający się ku dołowi owal ~360 × 540, od ~80 mm pod rantem do 300 mm w dół
+        dodaj(new THREE.CylinderGeometry(180 * M, 120 * M, 280 * M, 40), przod + 280, rant - 160, 1, 1.5);
+        // Część przyścienna (łączy miskę z maskownicą)
+        dodaj(new THREE.BoxGeometry(300 * M, 280 * M, 120 * M), przod + 60, rant - 160);
+        // Deska z klapą
+        dodaj(new THREE.CylinderGeometry(185 * M, 185 * M, 30 * M, 40), przod + 285, rant - 5, 1, 1.45);
+        // Przycisk spłukujący na maskownicy
+        const plytka = new THREE.Mesh(new THREE.BoxGeometry(250 * M, 165 * M, 12 * M), new THREE.MeshStandardMaterial({ color: 0xd9dadc, roughness: 0.25, metalness: 0.6 }));
+        const [bx, bz] = punktNaRzucie(w, srodek, przod + 6);
+        plytka.position.set(bx * M, (san.przyciskYMM ?? 1000) * M, bz * M);
+        plytka.rotation.y = grupa.rotation.y;
+        plytka.userData.modulId = m.id;
+        zawartosc.add(plytka);
+      }
       // Kółka: czarne walce pod narożnikami od strony frontu i tyłu (poglądowo, liczba z konfiguracji)
       if (m.konfiguracja.kolka && m.pozycjaYMM > 0) {
         const k = m.konfiguracja.kolka;

@@ -42,15 +42,15 @@ const p = s.utworzProjekt({
 const [A, , C] = p.pomieszczenia[0].sciany;
 
 const wsp = { materialKorpusuId: KORPUS, materialFrontuId: FRONT };
-const blenda = (nazwa: string, x: number, y: number, h: number) =>
-  s.dodajModul(p.id, { ...wsp, nazwa, kategoria: "base", konstrukcja: "filler", scianaId: C.id, pozycjaXMM: x, pozycjaYMM: y, szerokoscMM: 500, wysokoscMM: h, glebokoscMM: 20, konfiguracja: { typFrontu: "brak", liczbaDrzwi: 0, liczbaSzuflad: 0, liczbaPolek: 0, plecy: false, blat: false, nogi: false } });
+const blenda = (nazwa: string, x: number, y: number, h: number, wc = false) =>
+  s.dodajModul(p.id, { ...wsp, nazwa, kategoria: "base", konstrukcja: "filler", scianaId: C.id, pozycjaXMM: x, pozycjaYMM: y, szerokoscMM: 500, wysokoscMM: h, glebokoscMM: D, konfiguracja: { typFrontu: "brak", liczbaDrzwi: 0, liczbaSzuflad: 0, liczbaPolek: 0, plecy: false, blat: false, nogi: false, ...(wc ? { sanitariat: { typ: "wcWiszace" as const, wysokoscMiskiMM: 400, przyciskYMM: 1000 } } : {}) } });
 const szafka = (nazwa: string, x: number, y: number, w: number, h: number, polki: number, kategoria: "base" | "wall") =>
   s.dodajModul(p.id, { ...wsp, nazwa, kategoria, konstrukcja: "shelves", scianaId: C.id, pozycjaXMM: x, pozycjaYMM: y, szerokoscMM: w, wysokoscMM: h, glebokoscMM: D, konfiguracja: { typFrontu: "drzwi", liczbaDrzwi: 1, liczbaSzuflad: 0, liczbaPolek: polki, plecy: true, blat: false, nogi: false } });
 
 // Ściana C
 blenda("C1 · maskownica pionu — dół", 0, 0, DOL);
 blenda("C1 · maskownica pionu — góra", 0, DOL, GORA);
-blenda("C2 · maskownica stelaża WC", 500, 0, DOL);
+blenda("C2 · maskownica stelaża WC", 500, 0, DOL, true); // miska WC i przycisk — tylko wizualizacja
 szafka("C2 · szafka nad WC", 500, DOL, 500, GORA, 3, "wall");
 szafka("C3 · szafka dolna 60", 1000, 0, 600, DOL, 2, "base");
 szafka("C3 · szafka górna 60", 1000, DOL, 600, GORA, 3, "wall");
