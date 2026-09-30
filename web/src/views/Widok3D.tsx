@@ -29,6 +29,8 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     controls: OrbitControls;
     zawartosc: THREE.Group;
     sciany: { mesh: THREE.Object3D; cx: number; cz: number; nx: number; nz: number }[];
+    /** Obiekty modułów na ścianach rzeczywistych — ukrywane, gdy kamera stoi za licem tej ściany (widok od tyłu). */
+    moduly: { obiekty: THREE.Object3D[]; cx: number; cz: number; nx: number; nz: number }[];
     kamUstawiona: string;
     hemi: THREE.HemisphereLight;
     slonce: THREE.DirectionalLight;
@@ -73,7 +75,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
 
     const zawartosc = new THREE.Group();
     scene.add(zawartosc);
-    stan.current = { renderer, scene, camera, controls, zawartosc, sciany: [], kamUstawiona: "", hemi, slonce };
+    stan.current = { renderer, scene, camera, controls, zawartosc, sciany: [], moduly: [], kamUstawiona: "", hemi, slonce };
 
     const rozmiar = () => {
       const w = el.clientWidth;
@@ -109,6 +111,11 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         const vx = camera.position.x - s.cx;
         const vz = camera.position.z - s.cz;
         s.mesh.visible = vx * s.nx + vz * s.nz > 0;
+      }
+      // Meble na ścianie, za którą stoi kamera, też znikają — inaczej widać je od tyłu (lustrzane wrażenie układu)
+      for (const m of stan.current!.moduly) {
+        const widoczny = (camera.position.x - m.cx) * m.nx + (camera.position.z - m.cz) * m.nz > 0;
+        for (const o of m.obiekty) o.visible = widoczny;
       }
       renderer.render(scene, camera);
     };
@@ -163,6 +170,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     });
     zawartosc.clear();
     s.sciany = [];
+    s.moduly = [];
 
     const p = analiza.projekt;
     const pom = p.pomieszczenia.find((r) => r.id === pomieszczenieId) ?? p.pomieszczenia[0];
@@ -209,6 +217,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       const m = z.modul;
       const w = rzut.find((q) => q.sciana.id === m.scianaId);
       if (!w) continue;
+      const poczatek = zawartosc.children.length;
       const sel = m.id === wybrany;
       const barwy = {
         korpus: kolor(m.materialKorpusuId ?? pom.materialKorpusuId, "#f4f3ed"),
@@ -298,6 +307,11 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         mesh.rotation.y = grupa.rotation.y;
         mesh.userData.modulId = m.id;
         zawartosc.add(mesh);
+      }
+      // Wyspy (linie bez ściany) oglądane z obu stron — bez ukrywania
+      if (!w.sciana.wirtualna) {
+        const [lx, lz] = punktNaRzucie(w, 0, 0);
+        s.moduly.push({ obiekty: zawartosc.children.slice(poczatek), cx: lx * M, cz: lz * M, nx: w.nx, nz: w.ny });
       }
     }
 
