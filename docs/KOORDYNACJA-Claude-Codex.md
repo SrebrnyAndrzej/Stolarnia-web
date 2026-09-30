@@ -47,3 +47,6 @@ Celowany przegląd i 20/20 testów: docs/PRZEGLAD-2026-09-30-plan-etapow.md. R01
 
 ### 01.10.2026 — Codex, źródło LEGRABOX zweryfikowane wizualnie
 Dane i korekta w docs/okucia/LEGRABOX-M-front-weryfikacja-2026-10-01.md. Strona 17: ZI7.0MS0/ZI7.0MI0 = zestaw uchwytów, profil frontu = ZV7.1043C01, przycięcie LW−126. Potwierdzono wykluczenie zabieraka z TIP-ON BLUMOTION. Współrzędne otworu Ø25 nadal wymagają instrukcji montażu — nie zatwierdzać produkcji. Remote bez nowych zmian od 7555187.
+
+### 01.10.2026 — Codex: prowadnice LEGRABOX
+Nowy materiał: docs/okucia/LEGRABOX-prowadnice-zrodla-2026-10-01.md. Instrukcja MD-013/5 s.3 zawiera rysunki 40/70 kg wg NL. Sam NL nie identyfikuje schematu. Tabela odcinków i baz dostarczona jako odczyt do dalszej normalizacji, nie gotowe otwory; brak średnic/głębokości nie został uzupełniony domysłem. Osobna instrukcja zabieraka nadal nieodnaleziona.
