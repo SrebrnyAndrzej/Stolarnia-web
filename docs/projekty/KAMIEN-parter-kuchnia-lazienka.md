@@ -14,29 +14,27 @@ Kolejność modułów: 60 | 68 | 90 | 68 | 60.
 - Między tyłem zabudowy a ścianą konstrukcyjną jest ok. 23 cm. Do wyjaśnienia: instalacje albo głębsza lodówka.
 
 ### Widok zabudowy
-Wysokości liczone od podłogi, odczytane z widoku:
+Widok w DWG jest narysowany do góry nogami (podłoga u góry arkusza). Po odwróceniu wysokości od podłogi:
 
 | Strefa | Wysokość [cm] | Uwagi |
 |---|---|---|
-| Cokół | ok. 11 | |
-| Rząd dolny 1 | 35 | |
-| Rząd dolny 2 | 40 | |
-| Rząd dolny 3 | 40 | Góra na ok. 126 cm |
-| Wnęka 226 szer. | 58,8 + 1,2 | Dwa gniazda; blat lub półka 1,2 cm; góra na ok. 186 cm |
-| Szafki górne (drzwi) | 34 + 41 | Góra na ok. 266 cm |
-| Pas pod sufitem | ok. 5 | Góra na ok. 271 cm |
+| Cokół | ok. 5 | |
+| Fronty dolne | 41 + 34 | Do ok. 80, wieniec do 85 |
+| Blat | 1,2 | Spiek lub kompakt 12 mm, wierzch na ok. 86 |
+| Wnęka | 58,8 | Gniazda, szerokość 226 |
+| Szafki wiszące | 40 + 40 + 35 | Od ok. 145 do ok. 260 |
+| Do sufitu | ok. 11 | Sufit ok. 271 |
 
-- Moduły skrajne 60 mają pełną wysokość. W jednym z nich jest wnęka na urządzenie o wysokości ok. 90 cm, pod nią dwie szuflady.
-- Wysokość blatu we wnęce (ok. 126 cm) jest nietypowa. Trzeba potwierdzić z architektem, czy to strefa robocza, czy nisza na ekspres lub małe AGD.
+- Moduł 90 ma w rzucie płytę 79 × 51 (płyta 80).
+- Słupek 60 z niszą AGD ok. 90 cm (86–176): piekarnik z mikrofalą. Drugi słupek 60: lodówka do zabudowy.
 
 ### Wyspa: 280 × 60, przejście 95 do zabudowy
 Kolejność modułów: 60 (zlew, warstwa armatury) | 80 | 80 (drzwi lub urządzenie z uchwytem) | 60.
 
 Widok wyspy:
-- wymiary nad wyspą: 142 | 76 | 62 (razem 280); wysokość 87 od ok. 184 cm do ok. 271 cm;
-- nad wyspą, na wysokości ok. 184–204 cm, zawieszony element o szerokości 76 cm (lampa lub okap);
-- w widoku jest blat na nogach o szerokości ok. 120 cm i wysokości ok. 87 cm;
-- linia na wysokości ok. 36 cm.
+- widok także odwrócony; wysokość blatu wyspy 87 cm;
+- podział wzdłuż wyspy: 142 | 76 | 62 (razem 280);
+- z sufitu zwisa element szer. ok. 120 cm, dół na ok. 189 cm (lampa lub okap).
 
 Układ i funkcję elementów w widoku wyspy trzeba potwierdzić.
 
@@ -62,9 +60,12 @@ Wymiary wzdłuż ściany tylnej: 139 | 91 | 49.
 - Drzwi ok. 80 w ścianie frontowej.
 - **Poza łazienką:** szafka pod schodami, długość 110 (korytarz).
 
-## Do potwierdzenia przed budową w silniku
-1. Podział frontów i szuflad zabudowy 346 oraz funkcja wnęki 126–186 cm.
-2. AGD: lodówka (model), urządzenie w module 90, piekarnik lub zmywarka w wyspie, zlew i płyta.
-3. Wysokość blatu wyspy oraz funkcja elementu nad wyspą.
-4. Łazienka: szafka pod umywalką (wymiary, wisząca czy stojąca), wykończenia.
-5. Wysokość pomieszczeń. W rysunku góra zabudowy jest na ok. 271 cm.
+## Projekty online
+Zbudowane 30.09.2026 skryptem `scripts/kamien-parter.ts`: „Kamień — kuchnia parter” (4dec301f) i „Kamień — łazienka parter” (215a0cf1). Założenia opisane w notatkach projektów.
+
+## Do potwierdzenia
+1. Podział frontów zabudowy 346 i wyspy (przyjęto: dolne 2 szuflady, wiszące drzwi z 2 półkami, wyspa: zlew 60, szuflady 80/80/60).
+2. AGD: modele lodówki, piekarnika z mikrofalą, płyty 80, zlewu; ewentualna zmywarka w wyspie.
+3. 23 cm między tyłem zabudowy a ścianą konstrukcyjną.
+4. Dekory kuchni (przyjęto biel) i łazienki (przyjęto K547 jak na piętrze); blat 12 mm: spiek czy kompakt.
+5. Łazienka: wysokość zabudowy stelaża (przyjęto 120), szafka pod umywalką (przyjęto wisząca 60 × 35 × 40, 1 szuflada).
