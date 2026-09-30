@@ -1105,7 +1105,22 @@ function ujeciaBezOkna(analiza: Analiza, pom: Analiza["projekt"]["pomieszczenia"
   // Fotograf może stanąć tuż przy ścianie naprzeciw, jeśli meble na niej są niższe niż aparat (np. szafka pod umywalkę)
   const niskie = analiza.zbudowane.filter((z) => z.modul.scianaId === naprzeciw.sciana.id).every((z) => z.modul.pozycjaYMM + z.modul.wysokoscMM < 1300);
   const odNaprzeciw = niskie ? 200 : glebokosc(naprzeciw) + 150;
+  // Ściana bez mebli prostopadła do głównej (np. z drzwiami): z tej strony widać obie zabudowy od frontu
+  const boczne = rzut.filter((w) => w !== glowna && w !== naprzeciw);
+  const bok = boczne.find((w) => pole(w) === 0) ?? boczne[0] ?? naprzeciw;
+  const zBoku = rzut.find((w) => Math.abs(w.nx + bok.nx) < 0.1 && Math.abs(w.ny + bok.ny) < 0.1) ?? glowna;
+  const g = granice(rzut, 0);
+  const srodek: [number, number, number] = [(g.x + g.w / 2) * M, 0.9, (g.y + g.h / 2) * M];
   const ujecia: Ujecie[] = [
+    {
+      // Z wejścia (przy ścianie bez mebli), na wysokości oczu: obie zabudowy naraz
+      id: "uklad",
+      tytul: "Widok z wejścia",
+      // z narożnika przy drugiej zabudowie, w stronę głównej — obie widoczne, główna od frontu ukosem
+      kamera: pkt(bok, bok.sciana.dlugoscMM * (glowna === rzut[(rzut.indexOf(bok) + 1) % rzut.length] ? 0.2 : 0.8), 180, 1.6),
+      cel: pkt(glowna, glowna.sciana.dlugoscMM * 0.45, 600, 1.0),
+      fov: 84,
+    },
     {
       id: "zabudowa",
       tytul: `Zabudowa — ${glowna.sciana.nazwa}`,
@@ -1113,30 +1128,20 @@ function ujeciaBezOkna(analiza: Analiza, pom: Analiza["projekt"]["pomieszczenia"
       cel: pkt(glowna, glowna.sciana.dlugoscMM * 0.4, 0, 1.3),
       fov: 84,
     },
-    {
-      id: "skos",
-      tytul: "Widok z wejścia",
-      kamera: pkt(naprzeciw, naprzeciw.sciana.dlugoscMM * 0.12, odNaprzeciw, 1.6),
-      cel: pkt(glowna, glowna.sciana.dlugoscMM * 0.35, 0, 1.1),
-      fov: 70,
-    },
   ];
   if (druga) {
-    const zDrugiej = rzut.find((w) => Math.abs(w.nx + druga.nx) < 0.1 && Math.abs(w.ny + druga.ny) < 0.1) ?? glowna;
-    // stań przed wolnym odcinkiem przeciwległej ściany (bez zabudowy), jeśli jest
-    const zajete = analiza.zbudowane.filter((z) => z.modul.scianaId === zDrugiej.sciana.id).map((z) => [z.modul.pozycjaXMM, z.modul.pozycjaXMM + z.modul.szerokoscMM]);
-    const wolne = [0.8, 0.5, 0.2].map((f) => zDrugiej.sciana.dlugoscMM * f).find((a) => !zajete.some(([a0, a1]) => a >= a0 - 200 && a <= a1 + 200));
+    // Druga zabudowa (np. szafki pod umywalki) widziana ukosem z narożnika przy ścianie bez mebli
     ujecia.push({
       id: "druga",
-      tytul: `${druga.sciana.nazwa}`,
-      kamera: pkt(zDrugiej, wolne ?? zDrugiej.sciana.dlugoscMM * 0.5, wolne !== undefined ? 250 : glebokosc(zDrugiej) + 150, 1.55),
-      cel: pkt(druga, druga.sciana.dlugoscMM * 0.5, 0, 0.9),
-      fov: 72,
+      tytul: druga.sciana.nazwa,
+      kamera: pkt(bok, bok.sciana.dlugoscMM * (druga === zBoku ? 0.5 : 0.85), 250, 1.55),
+      cel: pkt(druga, druga.sciana.dlugoscMM * 0.5, 300, 0.75),
+      fov: 80,
     });
   }
-  const g = granice(rzut, 0);
-  const [mx, , mz] = pkt(naprzeciw, naprzeciw.sciana.dlugoscMM / 2, -2600, 0);
-  ujecia.push({ id: "makieta", tytul: "Układ zabudowy", kamera: [mx, 5.2, mz], cel: [(g.x + g.w / 2) * M, 0.3, (g.y + g.h / 2) * M], fov: 42, makieta: true });
+  // Makieta: z góry zza ściany bez mebli — jak w widoku 3D projektu
+  const [mx, , mz] = pkt(bok, bok.sciana.dlugoscMM / 2, -2400, 0);
+  ujecia.push({ id: "makieta", tytul: "Układ zabudowy", kamera: [mx, 4.4, mz], cel: srodek, fov: 50, makieta: true });
   return ujecia;
 }
 
