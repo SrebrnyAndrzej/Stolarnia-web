@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 01.10.2026 — Codex: szuflady za drzwiami, baza eb75743
+Nowy brief: docs/okucia/ZAWIASY-szuflady-wewnetrzne-2026-10-01.md. Oficjalne historyczne źródło Blum opisuje ograniczniki 92° (70T7553.09) i 110° (70T7553) zachowujące zerowe wystawanie dla wskazanego CLIP top 155°. Nie rozszerzać na dowolny zawias o takim kącie. Zachować ZAWIAS_ZA_DRZWIAMI do potwierdzenia zestawu SKU/prowadnik/nałożenie i rzeczywistego prześwitu. Plan H01–H06 obejmuje listwy, obie strony drzwi i spójność 3D/BOM. Brak nowych commitów po fetch; kod bez zmian od e8dedfe. Następny temat: aktualna karta PL zawiasu i prowadnika, wariant pełny/połówkowy.
+
 (puste)
 
 ### 30.09.2026 — Codex, baza e8dedfe
