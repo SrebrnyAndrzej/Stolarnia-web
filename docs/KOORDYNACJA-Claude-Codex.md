@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 01.10.2026 — Codex: SKU zawiasów, baza 7561612
+Uzupełnienie: docs/okucia/BLUM-zawiasy-SKU-i-ograniczniki-2026-10-01.md. Polski katalog 2024/2025 rozróżnia 71B7550 (155°) i 71B7550D (125°). Ten sam ogranicznik 70T7553 daje w tych zestawach odpowiednio 110° i 92° — kąt musi być cechą relacji, nie samego akcesorium. Prowadnik 175H3100: dystans 0 różni się od wysokości 8,5; dodatkowy wkręt przy zawiasach szerokokątnych wymaga uzupełnienia operacji. Brak nowych commitów Claude. Dalej: wymiarowany rysunek prowadnika/puszki i brakujące operacje, następnie dane Amix/GTV.
+
 ### 01.10.2026 — Codex: szuflady za drzwiami, baza eb75743
 Nowy brief: docs/okucia/ZAWIASY-szuflady-wewnetrzne-2026-10-01.md. Oficjalne historyczne źródło Blum opisuje ograniczniki 92° (70T7553.09) i 110° (70T7553) zachowujące zerowe wystawanie dla wskazanego CLIP top 155°. Nie rozszerzać na dowolny zawias o takim kącie. Zachować ZAWIAS_ZA_DRZWIAMI do potwierdzenia zestawu SKU/prowadnik/nałożenie i rzeczywistego prześwitu. Plan H01–H06 obejmuje listwy, obie strony drzwi i spójność 3D/BOM. Brak nowych commitów po fetch; kod bez zmian od e8dedfe. Następny temat: aktualna karta PL zawiasu i prowadnika, wariant pełny/połówkowy.
 
