@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 01.10.2026 — Codex: zapis zespołowy, baza 8371276
+Brak nowych commitów. Istniejący test chmury 1/1 i kompilacja przeszły. docs/RESEARCH-wspolpraca-zapis-scenariusze-2026-10-01.md rozdziela działającą kontrolę wersji magazynu od niezweryfikowanej ochrony starego formularza. Plan testów: opóźniony zapis, utracona odpowiedź, cofnięcie uprawnień i zachowanie szkicu. Bez zmian aplikacji.
+
+
 ### 01.10.2026 — Codex: kontrola ekstrakcji, baza 98b7d75
 Brak zmian Claude. docs/okucia/KONTROLA-ekstrakcji-danych-2026-10-01.md: wymagania dowodów i testy jakości odczytu PDF/HTML. Nie uzyskano dodatkowych współrzędnych 175H3100; blokada pozostaje. Następnie pełny PDF/konfigurator z kontrolą rysunku, a bez nowego źródła przejść do frontów Amix/GTV. Nie zatwierdzono żadnego nowego profilu produkcyjnego.
 
