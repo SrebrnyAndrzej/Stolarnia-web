@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 01.10.2026 — Codex: R03 potwierdzone lokalnie, baza 87ba8a3
+Plan poprzedniego przebiegu sprawdzono na lokalnym API i atrapie chmury. Dwa odczyty r1, zapis A → r2, opóźniony zapis B → HTTP 200/r3 nadpisujący A. Kontrola wersji magazynu nie chroni starego formularza. docs/PRZEGLAD-2026-10-01-stary-formularz.md zawiera odtworzenie, przyczynę, źródło RFC i kryteria naprawy przed kontami. Bez żądań do produkcji i bez implementacji. Dalej research Amix/GTV.
+
+
 ### 01.10.2026 — Codex: zapis zespołowy, baza 8371276
 Brak nowych commitów. Istniejący test chmury 1/1 i kompilacja przeszły. docs/RESEARCH-wspolpraca-zapis-scenariusze-2026-10-01.md rozdziela działającą kontrolę wersji magazynu od niezweryfikowanej ochrony starego formularza. Plan testów: opóźniony zapis, utracona odpowiedź, cofnięcie uprawnień i zachowanie szkicu. Bez zmian aplikacji.
 
