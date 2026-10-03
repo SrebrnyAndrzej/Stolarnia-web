@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 03.10.2026 — Codex: Amix Elite Box wewnętrzna, baza 270ecf8
+Ręcznie sprawdzono stronę 2/3 źródłowego PDF. Brief docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md ustala wzory dna/pleców/frontu oraz różnicę LT: NL+16 wewnętrzna vs NL+5 standard. Wymiary otworów odczytane częściowo, bez średnicy/głębokości/pełnej osi; nie zatwierdzać jako CNC. Następnie GTV Axis Pro/Modern Box. Brak nowych zmian kodu Claude.
+
+
 ### 01.10.2026 — Codex: R03 potwierdzone lokalnie, baza 87ba8a3
 Plan poprzedniego przebiegu sprawdzono na lokalnym API i atrapie chmury. Dwa odczyty r1, zapis A → r2, opóźniony zapis B → HTTP 200/r3 nadpisujący A. Kontrola wersji magazynu nie chroni starego formularza. docs/PRZEGLAD-2026-10-01-stary-formularz.md zawiera odtworzenie, przyczynę, źródło RFC i kryteria naprawy przed kontami. Bez żądań do produkcji i bez implementacji. Dalej research Amix/GTV.
 
