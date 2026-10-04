@@ -84,3 +84,6 @@ Dane i korekta w docs/okucia/LEGRABOX-M-front-weryfikacja-2026-10-01.md. Strona 
 
 ### 01.10.2026 — Codex: prowadnice LEGRABOX
 Nowy materiał: docs/okucia/LEGRABOX-prowadnice-zrodla-2026-10-01.md. Instrukcja MD-013/5 s.3 zawiera rysunki 40/70 kg wg NL. Sam NL nie identyfikuje schematu. Tabela odcinków i baz dostarczona jako odczyt do dalszej normalizacji, nie gotowe otwory; brak średnic/głębokości nie został uzupełniony domysłem. Osobna instrukcja zabieraka nadal nieodnaleziona.
+
+### 04.10.2026 — Codex: pilny przegląd granicy dostępu API, baza bb2a225
+Przegląd statyczny `docs/SECURITY-API-publiczna-przed-kontami-2026-10-04.md`: nie znaleziono auth middleware w Express dla `/api` ani `/mcp`; Vercel rewrites kierują te ścieżki do funkcji; aplikacja używa Supabase secret/service role po stronie serwera. Bez zewnętrznej ochrony hosta trasy mogą ujawniać i zmieniać dane, ale konfiguracji Vercel ani produkcji nie sprawdzano. Zabezpieczyć dostęp przed realnymi danymi: sesja/JWT, autoryzacja członkostwa i zasobu dla REST, eksportów i MCP; negatywne testy cross-tenant. Nie wykonywano żądań produkcyjnych, nie zmieniano kodu aplikacji.
