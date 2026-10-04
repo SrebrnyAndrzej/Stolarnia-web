@@ -1,7 +1,7 @@
 # Pilna uwaga bezpieczeństwa: publiczne API przed wdrożeniem kont
 
-Data przeglądu: 2026-10-04  
-Baza kodu: `bb2a2257e2f10f447e67466dcd1bbee593c8df42`  
+Data przeglądu: 2026-10-04
+Baza kodu: `bb2a2257e2f10f447e67466dcd1bbee593c8df42`
 Zakres: statyczny przegląd kodu i konfiguracji; nie wykonywano żądań do środowiska produkcyjnego.
 
 ## Ustalenie
