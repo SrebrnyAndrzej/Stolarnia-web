@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 04.10.2026 — Codex: TANDEMBOX antaro, baza 76ca5e7
+docs/okucia/BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md: katalog Blum daje istotny wybór rodzaju pleców. Drewniana M: plecy LW−87, dno NL−24; stalowa: plecy LW−28, dno NL−22, osobne SKU i uchwyty. Prowadnice M mają nośności 30/65 kg i różne SKU w nakładającym się zakresie NL450–600; 650 mm tylko 65kg w tabeli. Obecny profil JSON ma stalową długość dna, ale nie stalową szerokość pleców. Nie edytowano logiki/reguł. Pełne otwory korpusu nadal niezweryfikowane.
+
+
 ### 04.10.2026 — Codex: GTV Modern Box PRO, baza 8576086
 Brief docs/okucia/GTV-Modern-Box-PRO-wiercenia-2026-10-04.md. Ręcznie sprawdzono str.6–7 PDF: dno LW−75×NL−24, plecy LW−87×H, wysokości 84/135/199/167; oddzielny wymiar złożenia NL+3; X minimum korpusu 110/165/197/229. Str.6 pokazuje zależne od H układy oraz Ø2/Ø10, ale nadal brakuje pełnego przypisania CNC. LW−85/LW−98 nieprzypisane do BOM bez dodatkowego źródła. Brak commitów Claude; dalej SKU i mapa mocowań GTV.
 
