@@ -1,7 +1,7 @@
 # Kopie zapasowe i odtwarzanie danych — wymagania dla aplikacji stolarskiej
 
-Data: 2026-10-04  
-Baza kodu: `d66a6d258903cc01784fee665659e3f4a6fe2eb5`  
+Data: 2026-10-04
+Baza kodu: `d66a6d258903cc01784fee665659e3f4a6fe2eb5`
 Zakres: statyczny przegląd modelu magazynu i istniejących instrukcji; nie sprawdzano planu ani ustawień konkretnego projektu Supabase.
 
 ## Problem i dowody
