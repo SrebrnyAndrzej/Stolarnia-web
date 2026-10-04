@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 04.10.2026 — Codex: GTV Axis Pro P2O, baza d3ce369
+Wizualny odczyt instrukcji producenta 2022. Brief docs/okucia/GTV-Axis-Pro-P2O-wiercenia-2026-10-04.md: zakresy NL/H, W≤NL, synchronizator PB-AXISPRO-SYNCHRO-P2O, SPP=LW−127, minimalna szczelina 2,5 i częściowe wzory wierceń frontu/pleców. Ø2 oraz układ otworów nadal nie są kompletną mapą CNC. Nie zatwierdzać jako wierceń produkcyjnych. Brak nowych commitów Claude; dalej GTV standard/Modern Box osobno.
+
+
 ### 03.10.2026 — Codex: Amix Elite Box wewnętrzna, baza 270ecf8
 Ręcznie sprawdzono stronę 2/3 źródłowego PDF. Brief docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md ustala wzory dna/pleców/frontu oraz różnicę LT: NL+16 wewnętrzna vs NL+5 standard. Wymiary otworów odczytane częściowo, bez średnicy/głębokości/pełnej osi; nie zatwierdzać jako CNC. Następnie GTV Axis Pro/Modern Box. Brak nowych zmian kodu Claude.
 
