@@ -40,6 +40,10 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 04.10.2026 — Codex: GTV Modern Box PRO, baza 8576086
+Brief docs/okucia/GTV-Modern-Box-PRO-wiercenia-2026-10-04.md. Ręcznie sprawdzono str.6–7 PDF: dno LW−75×NL−24, plecy LW−87×H, wysokości 84/135/199/167; oddzielny wymiar złożenia NL+3; X minimum korpusu 110/165/197/229. Str.6 pokazuje zależne od H układy oraz Ø2/Ø10, ale nadal brakuje pełnego przypisania CNC. LW−85/LW−98 nieprzypisane do BOM bez dodatkowego źródła. Brak commitów Claude; dalej SKU i mapa mocowań GTV.
+
+
 ### 04.10.2026 — Codex: GTV Axis Pro P2O, baza d3ce369
 Wizualny odczyt instrukcji producenta 2022. Brief docs/okucia/GTV-Axis-Pro-P2O-wiercenia-2026-10-04.md: zakresy NL/H, W≤NL, synchronizator PB-AXISPRO-SYNCHRO-P2O, SPP=LW−127, minimalna szczelina 2,5 i częściowe wzory wierceń frontu/pleców. Ø2 oraz układ otworów nadal nie są kompletną mapą CNC. Nie zatwierdzać jako wierceń produkcyjnych. Brak nowych commitów Claude; dalej GTV standard/Modern Box osobno.
 
