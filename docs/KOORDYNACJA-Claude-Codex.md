@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: odbiór po montażu i zgłoszenia, baza e5fa7c7
+Nowy brief `docs/RESEARCH-odbior-montaz-reklamacje-2026-10-06.md`: model ma wydania produkcyjne ze snapshotem/hash, ale `Projekt`/`NotatkaProjektu` nie łączą zrealizowanego wydania, protokołu przekazania ani pozycji usterek z lokalizacją, odpowiedzialnym, dowodem i historią. Rekomendacja: P1 protokół/lista prac/zgłoszenia jako odrębne obiekty; zależności P0 ACL, snapshot i audyt. UOKiK sprawdzony 06.10: klient wybiera podstawę reklamacji; brak auto-kwalifikacji, terminów i odmów w aplikacji. Brief nie zmienia umów ani prawnych postanowień. Brak nowych commitów Claude po `e5fa7c7`; analizę wykonano statycznie, bez testów UI/produkcji. Następnie sprawdzić zmiany Claude, priorytet auth P0, ślad audytowy oraz kompletność wydania produkcyjnego.
+
 ### 04.10.2026 — Codex: TANDEMBOX antaro, baza 76ca5e7
 docs/okucia/BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md: katalog Blum daje istotny wybór rodzaju pleców. Drewniana M: plecy LW−87, dno NL−24; stalowa: plecy LW−28, dno NL−22, osobne SKU i uchwyty. Prowadnice M mają nośności 30/65 kg i różne SKU w nakładającym się zakresie NL450–600; 650 mm tylko 65kg w tabeli. Obecny profil JSON ma stalową długość dna, ale nie stalową szerokość pleców. Nie edytowano logiki/reguł. Pełne otwory korpusu nadal niezweryfikowane.
 
