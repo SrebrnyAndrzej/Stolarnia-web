@@ -1,7 +1,7 @@
 # Walidacja wejść i dobór długości w kalkulatorze szuflad
 
-Data: 2026-10-05  
-Baza kodu: `5705505b23033012ef14b7aef3addc8765f9a893` (`origin/main`)  
+Data: 2026-10-05
+Baza kodu: `5705505b23033012ef14b7aef3addc8765f9a893` (`origin/main`)
 Zakres: statyczny przegląd `src/core/catalog/drawers.ts`, `src/service.ts`, `src/server/app.ts`, konstruktorów i testów. Uruchomiono `npx tsx --test src/przelicznik-szuflad.test.ts src/technologia.test.ts`: 15/15 testów przeszło.
 
 ## Ustalenia
