@@ -1,7 +1,7 @@
 # Macierz autoryzacji tras REST i MCP
 
-Data: 2026-10-05  
-Baza przeglądu: `55853865e51d35ff65a2b089aa83ce03db3c95e5` (`origin/main`)  
+Data: 2026-10-05
+Baza przeglądu: `55853865e51d35ff65a2b089aa83ce03db3c95e5` (`origin/main`)
 Zakres: statyczny przegląd `src/server/app.ts`; nie badano wdrożenia ani nie wykonywano żądań do środowiska produkcyjnego.
 
 ## Cel
