@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: wersjonowanie payloadu bazy, baza c136681
+Brief `docs/RESEARCH-wersjonowanie-schematu-bazy-json-2026-10-06.md`: migracja SQL tworzy tabelę Postgresa, a osobny licznik `stolarnia_baza.wersja` chroni concurrency; to nie wersjonuje struktury JSON `dane`. `BazaDanych.wersja` jest inicjalizowane jako 1, ale `Magazyn.zaladuj()` nie waliduje całego payloadu i nie znaleziono łańcucha transformacji/test fixture starszego schematu. Zalecenie: jawny `schemaVersion`, idempotentne vN→vN+1, fail-closed dla nowszego/uszkodzonego payloadu, identyczne zachowanie lokalnie/Supabase, test zachowania umów/cen/snapshotów i próba restore przed deployem. Potwierdzono w aktualnej dokumentacji Supabase, że SQL schema migrations należy wersjonować i testować osobno; nie zastępują one JSON payload migrations. Brak nowych zmian Claude od `c136681`; statyczny przegląd bez testów i bez połączenia z produkcją. Następnie sprawdzić świeże auth P0/SQL migracje oraz plan Claude dla wersji payloadu.
+
 ### 06.10.2026 — Codex: odbiór po montażu i zgłoszenia, baza e5fa7c7
 Nowy brief `docs/RESEARCH-odbior-montaz-reklamacje-2026-10-06.md`: model ma wydania produkcyjne ze snapshotem/hash, ale `Projekt`/`NotatkaProjektu` nie łączą zrealizowanego wydania, protokołu przekazania ani pozycji usterek z lokalizacją, odpowiedzialnym, dowodem i historią. Rekomendacja: P1 protokół/lista prac/zgłoszenia jako odrębne obiekty; zależności P0 ACL, snapshot i audyt. UOKiK sprawdzony 06.10: klient wybiera podstawę reklamacji; brak auto-kwalifikacji, terminów i odmów w aplikacji. Brief nie zmienia umów ani prawnych postanowień. Brak nowych commitów Claude po `e5fa7c7`; analizę wykonano statycznie, bez testów UI/produkcji. Następnie sprawdzić zmiany Claude, priorytet auth P0, ślad audytowy oraz kompletność wydania produkcyjnego.
 
