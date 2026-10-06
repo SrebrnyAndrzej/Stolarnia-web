@@ -11,14 +11,26 @@ import PDFDocument from "pdfkit";
 const require = createRequire(import.meta.url);
 const FONTY = join(dirname(require.resolve("dejavu-fonts-ttf/package.json")), "ttf");
 
-interface Front { kod: string; typ: "drzwi" | "szuflada" | "blenda"; x: number; y: number; szer: number; wys: number; material: string }
+/**
+ * Front: położenie względem korpusu (y może być ujemne — front schodzi na cokół do podłogi).
+ * Karta wymierzania: nr frontu, wzory szerokości i wysokości z pomiarów na budowie (np. „H1 − 12”), kod pomiaru.
+ */
+interface Front {
+  kod: string; typ: "drzwi" | "szuflada" | "blenda"; x: number; y: number; szer: number; wys: number; material: string;
+  nr?: string; wzorSzer?: string; wzorWys?: string; pomiar?: string; uwaga?: string;
+}
+/** Pomiar na budowie, od którego liczy się wymiar frontów (np. H1 = podłoga → górna krawędź wieńca górnego). */
+interface Pomiar { kod: string; opis: string; nominal: number; x?: number; yOd?: number }
 interface Wnetrze { typ: "polka" | "reling" | "szufladaWewn" | "blat" | "strefa"; y: number; wys?: number; x?: number; szer?: number; opis?: string }
 interface Element {
   kod: string; nazwa: string; typ?: "korpus" | "panel"; x: number; y: number; szer: number; wys: number; gl: number; material: string;
   fronty?: Front[]; wnetrze?: Wnetrze[]; formatki?: string[]; uwagi?: string[]; pewnosc?: string;
 }
-interface Sciana { id: string; pomieszczenie: string; nazwa: string; dlugosc: number; wysokosc: number; lewyKoniec: string; prawyKoniec: string; uwagi: string[]; elementy: Element[] }
-interface Model { tytul: string; zrodla: string[]; materialy: Record<string, { nazwa: string; kolor: string }>; sciany: Sciana[]; doPotwierdzenia: string[] }
+interface Sciana {
+  id: string; pomieszczenie: string; nazwa: string; dlugosc: number; wysokosc: number; lewyKoniec: string; prawyKoniec: string; uwagi: string[]; elementy: Element[];
+  pomiary?: Pomiar[]; zasadyFrontow?: string[];
+}
+interface Model { tytul: string; zrodla: string[]; materialy: Record<string, { nazwa: string; kolor: string }>; sciany: Sciana[]; doPotwierdzenia: string[]; tytulDokumentu?: string; tylkoFronty?: boolean }
 
 const TEKST = "#1f1c18";
 const SZARY = "#6b645b";
@@ -204,7 +216,7 @@ export function rysunkiMontazowe(model: Model, format: "A3" | "A4" = "A3"): Prom
           if (f.typ === "szuflada") {
             doc.moveTo(fx + 3, fy + f.wys * sk - 3).lineTo(fx + (f.szer * sk) / 2, fy + 3).lineTo(fx + f.szer * sk - 3, fy + f.wys * sk - 3).lineWidth(0.35).dash(2, { space: 1.5 }).strokeColor(SZARY).stroke().undash();
           }
-          doc.font("C").fontSize(6).fillColor(TEKST).text(`${f.kod.replace(/^N-0\d-/, "")}\n${f.szer}×${f.wys}`, fx, fy + (f.wys * sk) / 2 - 7, { width: f.szer * sk, align: "center" });
+          doc.font("C").fontSize(6).fillColor(TEKST).text(`${f.nr ?? f.kod.replace(/^N-0\d-/, "")}\n${f.szer}×${f.wys}`, fx, fy + (f.wys * sk) / 2 - 7, { width: f.szer * sk, align: "center" });
         }
       doc.font("B").fontSize(6.8).fillColor(TEKST).text(e.kod, x0, y0 - 9, { width: w, align: "center", lineBreak: false });
     }
@@ -257,10 +269,98 @@ export function rysunkiMontazowe(model: Model, format: "A3" | "A4" = "A3"): Prom
     doc.font("R").fontSize(7).fillColor(SZARY).text("RZUT (widok z góry) — ściana u góry, fronty na dole", ox, oy + gl * sk + 22, { lineBreak: false });
   }
 
+  // ---------- karta wymierzania frontów ----------
+  function wymierzanie(s: Sciana) {
+    const lista = s.elementy.flatMap((e) => (e.fronty ?? []).filter((f) => f.nr).map((f) => ({ e, f }))).sort((a, b) => a.f.nr!.localeCompare(b.f.nr!, "pl", { numeric: true }));
+    if (!lista.length) return;
+    strona();
+    const y0 = naglowek(`${s.pomieszczenie} — wymierzanie frontów`, `${s.nazwa} · wymiary w mm · nominalne z projektu; do cięcia liczyć wzorem z pomiaru na budowie`);
+    // Elewacja frontów z numerami i miejscami pomiarów
+    const bw = 560;
+    const bh = H - y0 - 200;
+    const marL = 70;
+    const sk = Math.min((bw - marL - 10) / s.dlugosc, (bh - 40) / s.wysokosc);
+    const ox = M + marL;
+    const oy = y0 + 14 + s.wysokosc * sk;
+    const X = (x: number) => ox + x * sk;
+    const Y = (y: number) => oy - y * sk;
+    doc.rect(X(0), Y(s.wysokosc), s.dlugosc * sk, s.wysokosc * sk).lineWidth(0.4).dash(3, { space: 2 }).strokeColor("#9c958a").stroke().undash();
+    doc.moveTo(X(-100), Y(0)).lineTo(X(s.dlugosc + 100), Y(0)).lineWidth(1.4).strokeColor(TEKST).stroke();
+    for (const e of s.elementy) {
+      doc.rect(X(e.x), Y(e.y + e.wys), e.szer * sk, e.wys * sk).lineWidth(0.5).fillAndStroke(e.material === "franklin" && !(e.fronty ?? []).length ? rozjasnij(kolor("franklin"), 0.5) : "#ffffff", "#8f887e");
+      if (!(e.fronty ?? []).length && e.typ !== "panel") {
+        for (const q of e.wnetrze ?? []) if (q.typ === "polka") doc.rect(X(e.x) + 18 * sk, Y(e.y + q.y + 18), (e.szer - 36) * sk, 18 * sk).lineWidth(0.2).fillAndStroke("#e6e1d8", "#6d675f");
+        doc.font("C").fontSize(6).fillColor(TEKST).text("otwarta", X(e.x), Y(e.y + e.wys / 2) - 3, { width: e.szer * sk, align: "center", lineBreak: false });
+      }
+    }
+    for (const { e, f } of lista) {
+      const fx = X(e.x + f.x);
+      const fy = Y(e.y + f.y + f.wys);
+      doc.rect(fx, fy, f.szer * sk, f.wys * sk).lineWidth(0.9).fillAndStroke(rozjasnij(kolor(f.material), 0.62), przyciemnij(kolor(f.material), 0.3));
+      if (f.typ === "szuflada") doc.moveTo(fx + 3, fy + f.wys * sk - 3).lineTo(fx + (f.szer * sk) / 2, fy + 3).lineTo(fx + f.szer * sk - 3, fy + f.wys * sk - 3).lineWidth(0.35).dash(2, { space: 1.5 }).strokeColor(SZARY).stroke().undash();
+      doc.font("B").fontSize(f.wys * sk > 30 ? 10 : 7).fillColor(TEKST).text(f.nr!, fx, fy + (f.wys * sk) / 2 - 6, { width: f.szer * sk, align: "center", lineBreak: false });
+    }
+    // Pomiary na budowie — strzałki z kodem
+    for (const p of s.pomiary ?? []) {
+      if (p.x === undefined) continue;
+      const od = p.yOd ?? 0;
+      const xx = X(p.x);
+      doc.lineWidth(0.9).strokeColor(UWAGA);
+      doc.moveTo(xx, Y(od)).lineTo(xx, Y(od + p.nominal)).dash(3, { space: 2 }).stroke().undash();
+      for (const [yy, d] of [[Y(od), 1], [Y(od + p.nominal), -1]] as const) doc.moveTo(xx - 3, yy - 5 * d).lineTo(xx, yy).lineTo(xx + 3, yy - 5 * d).stroke();
+      doc.circle(xx, Y(od + p.nominal / 2), 9).fillAndStroke("#ffffff", UWAGA);
+      doc.font("B").fontSize(7).fillColor(UWAGA).text(p.kod, xx - 9, Y(od + p.nominal / 2) - 4, { width: 18, align: "center", lineBreak: false });
+    }
+    // łańcuch szerokości korpusów
+    const rzad = [...s.elementy].filter((e, i, a) => a.findIndex((q) => q.x === e.x) === i).sort((a, b) => a.x - b.x);
+    let poprz = 0;
+    for (const e of rzad) {
+      if (e.x > poprz + 1) wymiarPoziomy(X(poprz), X(e.x), oy + 14, String(e.x - poprz), oy);
+      wymiarPoziomy(X(e.x), X(e.x + e.szer), oy + 14, String(e.szer), oy);
+      poprz = Math.max(poprz, e.x + e.szer);
+    }
+    wymiarPionowy(Y(s.wysokosc), Y(0), ox - 40, `${s.wysokosc} (ściana)`, ox);
+    // Pomiary i zasady pod rysunkiem
+    let ly = oy + 40;
+    doc.font("B").fontSize(9.5).fillColor(TEKST).text("Pomiary na budowie (zmierzyć w osi każdego frontu, wpisać do tabeli)", M, ly);
+    ly = doc.y + 3;
+    for (const p of s.pomiary ?? []) {
+      doc.font("B").fontSize(8.5).fillColor(UWAGA).text(p.kod, M, ly, { continued: true }).font("R").fillColor(TEKST).text(`  ${p.opis} — nominalnie ${p.nominal}`, { width: bw });
+      ly = doc.y + 2;
+    }
+    ly += 4;
+    for (const z of s.zasadyFrontow ?? []) {
+      doc.font("R").fontSize(8.2).fillColor(TEKST).text(`•  ${z}`, M, ly, { width: bw });
+      ly = doc.y + 2;
+    }
+    // Tabela frontów
+    const tx = M + bw + 24;
+    const kol = [tx, tx + 48, tx + 104, tx + 128, tx + 166, tx + 226, tx + 264, tx + 334, tx + 392, W - M];
+    const nagl = ["NR", "MODUŁ", "SZT.", "SZER. NOM.", "SZER. = ", "WYS. NOM.", "WYS. = ", "POMIAR", "DO CIĘCIA sz × wys"];
+    let ty = y0;
+    doc.font("B").fontSize(7).fillColor(SZARY);
+    nagl.forEach((t, i) => doc.text(t, kol[i], ty, { width: kol[i + 1] - kol[i] - 4, lineBreak: false }));
+    ty += 12;
+    lista.forEach(({ e, f }, i) => {
+      const wiersz = [f.nr!, e.kod.replace(/^N-0\d-/, ""), "1", String(f.szer), f.wzorSzer ?? "—", String(f.wys), f.wzorWys ?? "—", f.pomiar ? `${f.pomiar} = ____` : "—", "_____ × _____"];
+      const h = 17 + (f.uwaga ? doc.font("R").fontSize(6.5).heightOfString(f.uwaga, { width: kol[9] - kol[1] }) + 1 : 0);
+      if (ty + h > H - 40) {
+        strona();
+        ty = naglowek(`${s.pomieszczenie} — wymierzanie frontów (cd.)`);
+      }
+      if (i % 2 === 0) doc.rect(tx - 3, ty - 3, W - M - tx + 3, h).fill("#f4f1ec");
+      wiersz.forEach((t, j) => doc.font(j === 0 || j === 4 || j === 6 ? "B" : "R").fontSize(8).fillColor(j === 7 || j === 8 ? SZARY : TEKST).text(t, kol[j], ty, { width: kol[j + 1] - kol[j] - 4, lineBreak: false }));
+      if (f.uwaga) doc.font("R").fontSize(6.5).fillColor(UWAGA).text(f.uwaga, kol[1], ty + 11, { width: kol[9] - kol[1] });
+      ty += h;
+    });
+    ty += 8;
+    doc.font("R").fontSize(7.5).fillColor(SZARY).text("Szer./wys. nominalne = wymiar gotowego frontu (z obrzeżem) dla wymiarów z projektu. Do cięcia: wymiar ze wzoru po pomiarze. Grubość frontu 18 mm, obrzeże ABS 1 mm wliczone w wymiar.", tx, ty, { width: W - M - tx });
+  }
+
   // ---------- strona tytułowa ----------
   strona();
   doc.rect(0, 0, W, 10).fill("#9a6b3f");
-  doc.font("B").fontSize(30).fillColor(TEKST).text("Rysunki montażowe zabudowy", M, 60);
+  doc.font("B").fontSize(30).fillColor(TEKST).text(model.tytulDokumentu ?? "Rysunki montażowe zabudowy", M, 60);
   doc.font("R").fontSize(15).fillColor(SZARY).text(model.tytul, M, 100);
   let y = 140;
   doc.font("B").fontSize(11).fillColor(TEKST).text("Źródła", M, y);
@@ -345,7 +445,10 @@ export function rysunkiMontazowe(model: Model, format: "A3" | "A4" = "A3"): Prom
     widok(s, "fronty", M, y0 + 16, pw, H - y0 - 70);
     widok(s, "wnetrze", M + pw + 20, y0 + 16, pw, H - y0 - 70);
 
-    // 3) karta montażu
+    // 3) wymierzanie frontów (gdy fronty mają numery i wzory)
+    wymierzanie(s);
+
+    // 4) karta montażu
     strona();
     y0 = naglowek(`${s.pomieszczenie} — karta montażu`, `${s.nazwa} · kolejność montażu od lewej krawędzi ściany (${s.lewyKoniec})`);
     const kol = [M, M + 30, M + 150, M + 320, M + 450, M + 640, M + 820];

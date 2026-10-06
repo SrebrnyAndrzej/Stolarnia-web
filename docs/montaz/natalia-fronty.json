@@ -1,0 +1,1731 @@
+{
+ "tytul": "Natalia — dom ul. Główna 17, Kamień: pokoje chłopców i garderoba N-03/N-04",
+ "tytulDokumentu": "Rysunki dla montażystów — wymierzanie frontów",
+ "zrodla": [
+  "ARCH_KAMIEN_WN_26-09-30_out.dwg (MOOI Architekci, arch. Natalia Karoń) — widoki JANEK i STAŚ",
+  "ARCH_KAMIEN_WN_26-08-05 widok_pokoj_sypialnia_garderoba (PDF) i model montażowy garderoby z 24.09.2026",
+  "Ustawienia konstrukcji Stolarnia (MCP): szczelina frontów 2 mm, cokół 100 mm, front 18 mm",
+  "Decyzje 06.10.2026: garderoba — fronty od podłogi do wieńca górnego; pokoje — niski front na szufladzie z ukrytą; u Janka po lewej otwarta półka Franklin"
+ ],
+ "materialy": {
+  "biala": {
+   "nazwa": "biała uni 18 mm, obrzeże ABS-BIALY",
+   "kolor": "#f3f2ee"
+  },
+  "franklin": {
+   "nazwa": "Franklin Tobacco 18 mm, obrzeże ABS-FRANKLIN",
+   "kolor": "#8b5e3c"
+  }
+ },
+ "sciany": [
+  {
+   "id": "GAR-F",
+   "pomieszczenie": "Garderoba",
+   "nazwa": "Ściana lewa (F) — zabudowa N-03",
+   "dlugosc": 4160,
+   "wysokosc": 2700,
+   "lewyKoniec": "okno",
+   "prawyKoniec": "narożnik ze ścianą górną (A)",
+   "uwagi": [
+    "Kolejność od okna wg projektu architekta: biurko 71, 60 półki, 60 wieszaki, 60 półki, 50 + 50 (półki / pralka i suszarka), narożnik 65 — suma 4160 mm = długość ściany.",
+    "Blat biurka 1310 mm przechodzi nad korpusami 710 i 600 (strefa szuflad 720 mm pod blatem) — sposób osadzenia blatu przy boku środkowym do potwierdzenia.",
+    "Wysokość blatu przy korpusach na cokole 100 mm wynosi 838 mm — sprawdzić z inwestorem (typowo 750).",
+    "Fronty wysokie od podłogi do górnej krawędzi wieńca górnego (decyzja 06.10.2026) — zastępują drzwi 1996 z arkusza rozkroju."
+   ],
+   "elementy": [
+    {
+     "kod": "N-03-710",
+     "nazwa": "Biurko — szuflady + otwarte półki",
+     "x": 0,
+     "y": 100,
+     "szer": 710,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-FR-SZUF-01",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 2,
+       "szer": 706,
+       "wys": 358,
+       "material": "franklin",
+       "nr": "N03-1",
+       "wzorSzer": "S − 4",
+       "wzorWys": "358",
+       "uwaga": "Szuflada pod blatem biurka — wysokość wg arkusza, bez zmian (nie do podłogi)."
+      },
+      {
+       "kod": "N-03-FR-SZUF-01",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 362,
+       "szer": 706,
+       "wys": 358,
+       "material": "franklin",
+       "nr": "N03-2",
+       "wzorSzer": "S − 4",
+       "wzorWys": "358",
+       "uwaga": "Szuflada pod blatem biurka — wysokość wg arkusza, bez zmian (nie do podłogi)."
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "blat",
+       "y": 720,
+       "x": 0,
+       "szer": 1310,
+       "opis": "N-03-BLAT-BIURKO 1310×600"
+      },
+      {
+       "typ": "polka",
+       "y": 1050
+      },
+      {
+       "typ": "polka",
+       "y": 1360
+      },
+      {
+       "typ": "polka",
+       "y": 1670
+      },
+      {
+       "typ": "polka",
+       "y": 1980
+      },
+      {
+       "typ": "polka",
+       "y": 2290
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-674",
+      "N-03-WG-674",
+      "N-03-POL-710 ×5",
+      "N-03-DNO-SB-674 ×2",
+      "N-03-TYL-SB-674 ×2",
+      "N-03-FR-SZUF-01 ×2",
+      "N-03-BLAT-BIURKO (wspólny z N-03-600/1)"
+     ],
+     "uwagi": [
+      "Półki 710 rozstawione równo nad blatem — rozstaw do potwierdzenia."
+     ]
+    },
+    {
+     "kod": "N-03-600/1",
+     "nazwa": "Biurko cd. — szuflady + otwarte półki",
+     "x": 710,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-FR-SZUF-02",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 358,
+       "material": "franklin",
+       "nr": "N03-3",
+       "wzorSzer": "S − 4",
+       "wzorWys": "358",
+       "uwaga": "Szuflada pod blatem biurka — wysokość wg arkusza, bez zmian (nie do podłogi)."
+      },
+      {
+       "kod": "N-03-FR-SZUF-02",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 362,
+       "szer": 596,
+       "wys": 358,
+       "material": "franklin",
+       "nr": "N03-4",
+       "wzorSzer": "S − 4",
+       "wzorWys": "358",
+       "uwaga": "Szuflada pod blatem biurka — wysokość wg arkusza, bez zmian (nie do podłogi)."
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 1000
+      },
+      {
+       "typ": "polka",
+       "y": 1260
+      },
+      {
+       "typ": "polka",
+       "y": 1520
+      },
+      {
+       "typ": "polka",
+       "y": 1780
+      },
+      {
+       "typ": "polka",
+       "y": 2040
+      },
+      {
+       "typ": "polka",
+       "y": 2300
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-564",
+      "N-03-WG-564",
+      "N-03-POL-600 ×6 (rozdział do potw.)",
+      "N-03-DNO-SB-564 ×2",
+      "N-03-TYL-SB-564 ×2",
+      "N-03-FR-SZUF-02 ×2"
+     ],
+     "uwagi": [
+      "Architekt: strefy 43/32/32/36/38 — 36 i 38 = szuflady pod blatem. Liczba półek w tej kolumnie przyjęta z bilansu 12 szt. — do potwierdzenia."
+     ],
+     "pewnosc": "średnia"
+    },
+    {
+     "kod": "N-03-600/2",
+     "nazwa": "Szafa 60 — wieszaki",
+     "x": 1310,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-600/2-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N03-5",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 2030
+      },
+      {
+       "typ": "reling",
+       "y": 1960
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-564",
+      "N-03-WG-564",
+      "N-03-POL-600 ×1",
+      "N-03-FR-DRZWI"
+     ],
+     "uwagi": [
+      "Reling na wieszaki (architekt: 96) pod półką górną 57 — wysokość relingu do potwierdzenia."
+     ]
+    },
+    {
+     "kod": "N-03-600/3",
+     "nazwa": "Szafa 60 — półki",
+     "x": 1910,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-600/3-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N03-6",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 360
+      },
+      {
+       "typ": "polka",
+       "y": 800
+      },
+      {
+       "typ": "polka",
+       "y": 1240
+      },
+      {
+       "typ": "polka",
+       "y": 1660
+      },
+      {
+       "typ": "polka",
+       "y": 2030
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-564",
+      "N-03-WG-564",
+      "N-03-POL-600 ×5",
+      "N-03-FR-DRZWI"
+     ],
+     "uwagi": [
+      "Rozstaw półek wg architekta 47/47/42/44/44/46 (od góry) — półki nastawne."
+     ]
+    },
+    {
+     "kod": "N-03-500/1",
+     "nazwa": "Szafa 50 — pralka / suszarka",
+     "x": 2510,
+     "y": 100,
+     "szer": 500,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-500/1-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 496,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N03-7",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1",
+       "uwaga": "Front przed pralką i suszarką — sprawdzić otwieranie przy urządzeniach."
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "strefa",
+       "y": 18,
+       "wys": 850,
+       "opis": "pralka"
+      },
+      {
+       "typ": "strefa",
+       "y": 868,
+       "wys": 850,
+       "opis": "suszarka"
+      },
+      {
+       "typ": "polka",
+       "y": 1718
+      },
+      {
+       "typ": "polka",
+       "y": 2150
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-464",
+      "N-03-WG-464",
+      "N-03-POL-500 ×2"
+     ],
+     "uwagi": [],
+     "pewnosc": "niska"
+    },
+    {
+     "kod": "N-03-500/2",
+     "nazwa": "Szafa 50 — półki 40",
+     "x": 3010,
+     "y": 100,
+     "szer": 500,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-500/2-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 496,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N03-8",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 500
+      },
+      {
+       "typ": "polka",
+       "y": 900
+      },
+      {
+       "typ": "polka",
+       "y": 1300
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-464",
+      "N-03-WG-464",
+      "N-03-POL-500 ×3"
+     ],
+     "uwagi": [],
+     "pewnosc": "niska"
+    },
+    {
+     "kod": "N-03-650",
+     "nazwa": "Narożnik 65",
+     "x": 3510,
+     "y": 100,
+     "szer": 650,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-03-650-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N03-9",
+       "wzorSzer": "S − 54",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1",
+       "uwaga": "Pas 50 mm przy narożniku bez frontu (ślepy) — jak w projekcie; potwierdzić."
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "reling",
+       "y": 1960
+      }
+     ],
+     "formatki": [
+      "N-03-BOK ×2",
+      "N-03-WD-614",
+      "N-03-WG-614",
+      "N-03-FR-DRZWI"
+     ],
+     "uwagi": [
+      "Drzwi 596 na korpusie 650 — pas 50 mm przy narożniku zasłonięty/ślepy. Wyposażenie narożnika do potwierdzenia."
+     ],
+     "pewnosc": "średnia"
+    }
+   ],
+   "pomiary": [
+    {
+     "kod": "H1",
+     "opis": "podłoga → górna krawędź wieńca górnego korpusu (w osi frontu)",
+     "nominal": 2700,
+     "x": 1310,
+     "yOd": 0
+    }
+   ],
+   "zasadyFrontow": [
+    "Szczelina frontu 2 mm na każdej krawędzi (ustawienie silnika Stolarnia: szczelinaFrontowMM = 2) → szerokość frontu = S − 4, między sąsiednimi frontami 4 mm.",
+    "Front od podłogi do wieńca górnego: luz od podłogi 10 mm, góra frontu 2 mm poniżej górnej krawędzi wieńca → wysokość = H1 − 12.",
+    "H1 mierzyć po ustawieniu, wypoziomowaniu i skręceniu korpusów, w osi każdego frontu, od najwyższego punktu podłogi pod frontem.",
+    "Wszystkie fronty rzędu mają jedną linię górną: przy różnicy H1 do 3 mm tnij wg najmniejszego pomiaru; większą różnicę skoryguj nóżkami przed pomiarem.",
+    "Cokół (nóżki 100) jest za frontem — front zasłania go do podłogi; cokół cofnięty, aby nie kolidował z otwieraniem."
+   ]
+  },
+  {
+   "id": "GAR-A",
+   "pomieszczenie": "Garderoba",
+   "nazwa": "Ściana górna (A) — zabudowa N-04",
+   "dlugosc": 3210,
+   "wysokosc": 2700,
+   "lewyKoniec": "narożnik ze ścianą lewą (F)",
+   "prawyKoniec": "ściana / drzwi",
+   "uwagi": [
+    "Zabudowa zaczyna się 700 mm od ściany lewej (korpus narożny F ma głębokość 600 — 100 mm luzu w narożniku).",
+    "Strefy wnętrza z projektu (od podłogi): szuflady wewnętrzne 38 i 36, półki co 32/32/32/43, półka górna 57 — razem 270 cm.",
+    "Fronty wysokie od podłogi do górnej krawędzi wieńca górnego (decyzja 06.10.2026) — zastępują drzwi 1996 z arkusza rozkroju."
+   ],
+   "elementy": [
+    {
+     "kod": "N-04-710",
+     "nazwa": "Wieszaki 71",
+     "x": 700,
+     "y": 100,
+     "szer": 710,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-04-710-FR",
+       "typ": "drzwi",
+       "x": 112,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N04-1",
+       "wzorSzer": "596 (przy prawej krawędzi)",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1",
+       "uwaga": "Pas ~110 mm od strony narożnika bez frontu — ew. blenda; potwierdzić."
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "reling",
+       "y": 1960
+      }
+     ],
+     "formatki": [
+      "N-04-BOK ×2",
+      "N-04-WD-674",
+      "N-04-WG-674",
+      "N-04-FR-DRZWI"
+     ],
+     "uwagi": [
+      "Drzwi 596 przy prawej krawędzi, pas ~110 mm od strony narożnika bez frontu — do potwierdzenia (ew. blenda)."
+     ],
+     "pewnosc": "średnia"
+    },
+    {
+     "kod": "N-04-600/1",
+     "nazwa": "Półki + szuflady wewn. 60",
+     "x": 1410,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-04-600/1-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N04-2",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 30,
+       "wys": 250
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 330,
+       "wys": 250
+      },
+      {
+       "typ": "polka",
+       "y": 640
+      },
+      {
+       "typ": "polka",
+       "y": 960
+      },
+      {
+       "typ": "polka",
+       "y": 1280
+      },
+      {
+       "typ": "polka",
+       "y": 1600
+      },
+      {
+       "typ": "polka",
+       "y": 2030
+      }
+     ],
+     "formatki": [
+      "N-04-BOK ×2",
+      "N-04-WD-564",
+      "N-04-WG-564",
+      "N-04-POL ×5",
+      "N-04-DNO-SB ×2",
+      "N-04-TYL-SB ×2",
+      "N-04-FR-DRZWI"
+     ],
+     "uwagi": []
+    },
+    {
+     "kod": "N-04-600/2",
+     "nazwa": "Półki + szuflady wewn. 60",
+     "x": 2010,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-04-600/2-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N04-3",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 30,
+       "wys": 250
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 330,
+       "wys": 250
+      },
+      {
+       "typ": "polka",
+       "y": 640
+      },
+      {
+       "typ": "polka",
+       "y": 960
+      },
+      {
+       "typ": "polka",
+       "y": 1280
+      },
+      {
+       "typ": "polka",
+       "y": 1600
+      },
+      {
+       "typ": "polka",
+       "y": 2030
+      }
+     ],
+     "formatki": [
+      "N-04-BOK ×2",
+      "N-04-WD-564",
+      "N-04-WG-564",
+      "N-04-POL ×5",
+      "N-04-DNO-SB ×2",
+      "N-04-TYL-SB ×2",
+      "N-04-FR-DRZWI"
+     ],
+     "uwagi": []
+    },
+    {
+     "kod": "N-04-600/3",
+     "nazwa": "Półki + szuflady wewn. 60",
+     "x": 2610,
+     "y": 100,
+     "szer": 600,
+     "wys": 2600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "N-04-600/3-FR",
+       "typ": "drzwi",
+       "x": 2,
+       "y": -90,
+       "szer": 596,
+       "wys": 2688,
+       "material": "franklin",
+       "nr": "N04-4",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 30,
+       "wys": 250
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 330,
+       "wys": 250
+      },
+      {
+       "typ": "polka",
+       "y": 640
+      },
+      {
+       "typ": "polka",
+       "y": 960
+      },
+      {
+       "typ": "polka",
+       "y": 1280
+      },
+      {
+       "typ": "polka",
+       "y": 1600
+      },
+      {
+       "typ": "polka",
+       "y": 2030
+      }
+     ],
+     "formatki": [
+      "N-04-BOK ×2",
+      "N-04-WD-564",
+      "N-04-WG-564",
+      "N-04-POL ×5",
+      "N-04-DNO-SB ×2",
+      "N-04-TYL-SB ×2",
+      "N-04-FR-DRZWI"
+     ],
+     "uwagi": []
+    }
+   ],
+   "pomiary": [
+    {
+     "kod": "H1",
+     "opis": "podłoga → górna krawędź wieńca górnego korpusu (w osi frontu)",
+     "nominal": 2700,
+     "x": 700,
+     "yOd": 0
+    }
+   ],
+   "zasadyFrontow": [
+    "Szczelina frontu 2 mm na każdej krawędzi (ustawienie silnika Stolarnia: szczelinaFrontowMM = 2) → szerokość frontu = S − 4, między sąsiednimi frontami 4 mm.",
+    "Front od podłogi do wieńca górnego: luz od podłogi 10 mm, góra frontu 2 mm poniżej górnej krawędzi wieńca → wysokość = H1 − 12.",
+    "H1 mierzyć po ustawieniu, wypoziomowaniu i skręceniu korpusów, w osi każdego frontu, od najwyższego punktu podłogi pod frontem.",
+    "Wszystkie fronty rzędu mają jedną linię górną: przy różnicy H1 do 3 mm tnij wg najmniejszego pomiaru; większą różnicę skoryguj nóżkami przed pomiarem.",
+    "Cokół (nóżki 100) jest za frontem — front zasłania go do podłogi; cokół cofnięty, aby nie kolidował z otwieraniem."
+   ]
+  },
+  {
+   "id": "JAN-B",
+   "pomieszczenie": "Pokój Janka",
+   "nazwa": "Szafa na ścianie B (gł. 50)",
+   "dlugosc": 4790,
+   "wysokosc": 2700,
+   "lewyKoniec": "okno (maskownica karnisza 15)",
+   "prawyKoniec": "ścianka 12 + drzwi 92",
+   "uwagi": [
+    "Od okna: maskownica karnisza 15 cm (poza szafą), otwarta półka Franklin 60 po lewej, 5 kolumn po 60: dół niski front 60 na szufladzie z ukrytą, góra drzwi 210.",
+    "Za szafą ścianka 12 i drzwi do pokoju 80×205 (otwór 92) — zostawić wolne otwieranie.",
+    "Źródło: ARCH_KAMIEN_WN_26-09-30 (widoki JANEK, MOOI Architekci) + decyzje 06.10.2026."
+   ],
+   "elementy": [
+    {
+     "kod": "J-OTW",
+     "nazwa": "Otwarta półka — Franklin",
+     "x": 150,
+     "y": 0,
+     "szer": 600,
+     "wys": 2700,
+     "gl": 500,
+     "material": "franklin",
+     "fronty": [],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 600
+      },
+      {
+       "typ": "polka",
+       "y": 1010
+      },
+      {
+       "typ": "polka",
+       "y": 1430
+      },
+      {
+       "typ": "polka",
+       "y": 1850
+      },
+      {
+       "typ": "polka",
+       "y": 2270
+      }
+     ],
+     "uwagi": [
+      "Ostatni moduł po lewej — otwarte półki 41/42/42/42/43 nad dolną komorą 60.",
+      "Cały korpus z płyty Franklin Tobacco 18 mm, krawędzie widoczne obrzeże ABS Franklin; bez frontu."
+     ]
+    },
+    {
+     "kod": "J-2-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 750,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-2-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "J1",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "J-2-G",
+     "nazwa": "Góra — drzwi",
+     "x": 750,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-2-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "J2",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 420
+      },
+      {
+       "typ": "polka",
+       "y": 840
+      },
+      {
+       "typ": "polka",
+       "y": 1260
+      },
+      {
+       "typ": "polka",
+       "y": 1680
+      }
+     ]
+    },
+    {
+     "kod": "J-3-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 1350,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-3-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "J3",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "J-3-G",
+     "nazwa": "Góra — drzwi",
+     "x": 1350,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-3-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "J4",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 1510
+      },
+      {
+       "typ": "reling",
+       "y": 1450
+      },
+      {
+       "typ": "reling",
+       "y": 650
+      }
+     ],
+     "uwagi": [
+      "Reling na wieszaki (80 i 59 cm), półka górna 59."
+     ]
+    },
+    {
+     "kod": "J-4-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 1950,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-4-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "J5",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "J-4-G",
+     "nazwa": "Góra — drzwi",
+     "x": 1950,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-4-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "J6",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 1510
+      },
+      {
+       "typ": "reling",
+       "y": 1450
+      },
+      {
+       "typ": "reling",
+       "y": 650
+      }
+     ],
+     "uwagi": [
+      "Reling na wieszaki (80 i 59 cm), półka górna 59."
+     ]
+    },
+    {
+     "kod": "J-5-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 2550,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-5-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "J7",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "J-5-G",
+     "nazwa": "Góra — drzwi",
+     "x": 2550,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-5-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "J8",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 300
+      },
+      {
+       "typ": "polka",
+       "y": 600
+      },
+      {
+       "typ": "polka",
+       "y": 900
+      },
+      {
+       "typ": "polka",
+       "y": 1200
+      },
+      {
+       "typ": "polka",
+       "y": 1510
+      }
+     ]
+    },
+    {
+     "kod": "J-6-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 3150,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-6-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "J9",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "J-6-G",
+     "nazwa": "Góra — drzwi",
+     "x": 3150,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 500,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "J-6-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "J10",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 300
+      },
+      {
+       "typ": "polka",
+       "y": 600
+      },
+      {
+       "typ": "polka",
+       "y": 900
+      },
+      {
+       "typ": "polka",
+       "y": 1200
+      },
+      {
+       "typ": "polka",
+       "y": 1510
+      }
+     ]
+    }
+   ],
+   "pomiary": [
+    {
+     "kod": "H1",
+     "opis": "podłoga → górna krawędź korpusu dolnego (w osi frontu)",
+     "nominal": 600,
+     "x": 1350,
+     "yOd": 0
+    },
+    {
+     "kod": "H2",
+     "opis": "górna krawędź korpusu dolnego → górna krawędź wieńca szafy górnej",
+     "nominal": 2100,
+     "x": 1950,
+     "yOd": 600
+    }
+   ],
+   "zasadyFrontow": [
+    "Szczelina frontu 2 mm na każdej krawędzi (ustawienie silnika Stolarnia: szczelinaFrontowMM = 2) → szerokość frontu = S − 4; dwoje drzwi na korpusie 1200: (S − 8) / 2.",
+    "Dolny front wysuwany od podłogi: luz od podłogi 10 mm, góra 2 mm poniżej krawędzi korpusu dolnego → wysokość = H1 − 12.",
+    "Drzwi górne: H2 = od górnej krawędzi korpusu dolnego do górnej krawędzi wieńca szafy górnej → wysokość = H2 − 4.",
+    "Pomiary po wypoziomowaniu i skręceniu korpusów; mierzyć w osi każdego frontu. Linia podziału dół/góra musi być jedna na całej szafie.",
+    "Szuflada dolna: niski front 60 (front wysuwany) na wysokiej szufladzie, za frontem ukryta szuflada wewnętrzna (Amix, wysuwana osobno — bez zabieraka)."
+   ]
+  },
+  {
+   "id": "STA-B",
+   "pomieszczenie": "Pokój Stasia",
+   "nazwa": "Szafa na ścianie B (gł. 60)",
+   "dlugosc": 3750,
+   "wysokosc": 2700,
+   "lewyKoniec": "okno (maskownica karnisza 20)",
+   "prawyKoniec": "otwarta półka 55 / ściana",
+   "uwagi": [
+    "Od okna: maskownica 20, kolumna 60 (półki), strefa wieszaków 120 (2 drzwi), 2 × 60 półki co 30, otwarta półka Franklin 55 z pionową listwą LED we froncie sąsiedniej szafy.",
+    "Dół wszystkich kolumn: niski front 60 na szufladzie z ukrytą szufladą wewnętrzną.",
+    "Źródło: ARCH_KAMIEN_WN_26-09-30 (widoki STAŚ) i 26-08-05 widok_pokoj (MOOI Architekci) + decyzje 06.10.2026."
+   ],
+   "elementy": [
+    {
+     "kod": "S-1-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 200,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-1-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "S1",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "S-1-G",
+     "nazwa": "Góra — drzwi",
+     "x": 200,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-1-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "S2",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 430
+      },
+      {
+       "typ": "polka",
+       "y": 850
+      },
+      {
+       "typ": "polka",
+       "y": 1270
+      },
+      {
+       "typ": "polka",
+       "y": 1680
+      }
+     ]
+    },
+    {
+     "kod": "S-2a-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 800,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-2a-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "S3",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "S-2b-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 1400,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-2b-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "S5",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "S-2-G",
+     "nazwa": "Góra — drzwi",
+     "x": 800,
+     "y": 600,
+     "szer": 1200,
+     "wys": 2100,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-2-FR-G1",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "S4",
+       "wzorSzer": "(S − 8) / 2",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      },
+      {
+       "kod": "S-2-FR-G2",
+       "typ": "drzwi",
+       "x": 602,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "S6",
+       "wzorSzer": "(S − 8) / 2",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 1510
+      },
+      {
+       "typ": "reling",
+       "y": 1450
+      },
+      {
+       "typ": "reling",
+       "y": 650
+      }
+     ],
+     "uwagi": [
+      "Strefa wieszaków 120: reling 80 i 59 cm, półka górna 59."
+     ]
+    },
+    {
+     "kod": "S-3-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 2000,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-3-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "S7",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "S-3-G",
+     "nazwa": "Góra — drzwi",
+     "x": 2000,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-3-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "S8",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 300
+      },
+      {
+       "typ": "polka",
+       "y": 600
+      },
+      {
+       "typ": "polka",
+       "y": 900
+      },
+      {
+       "typ": "polka",
+       "y": 1200
+      },
+      {
+       "typ": "polka",
+       "y": 1510
+      }
+     ]
+    },
+    {
+     "kod": "S-4-D",
+     "nazwa": "Dół — niski front, szuflada z ukrytą",
+     "x": 2600,
+     "y": 0,
+     "szer": 600,
+     "wys": 600,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-4-FR-D",
+       "typ": "szuflada",
+       "x": 2,
+       "y": 10,
+       "szer": 596,
+       "wys": 588,
+       "material": "franklin",
+       "nr": "S9",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H1 − 12",
+       "pomiar": "H1"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "szufladaWewn",
+       "y": 570,
+       "wys": 200,
+       "opis": "ukryta"
+      },
+      {
+       "typ": "szufladaWewn",
+       "y": 350,
+       "wys": 320
+      }
+     ],
+     "uwagi": [
+      "Wysoka szuflada na froncie + ukryta szuflada wewnętrzna nad nią (Amix, osobno wysuwana)."
+     ]
+    },
+    {
+     "kod": "S-4-G",
+     "nazwa": "Góra — drzwi",
+     "x": 2600,
+     "y": 600,
+     "szer": 600,
+     "wys": 2100,
+     "gl": 600,
+     "material": "biala",
+     "fronty": [
+      {
+       "kod": "S-4-FR-G",
+       "typ": "drzwi",
+       "x": 2,
+       "y": 2,
+       "szer": 596,
+       "wys": 2096,
+       "material": "franklin",
+       "nr": "S10",
+       "wzorSzer": "S − 4",
+       "wzorWys": "H2 − 4",
+       "pomiar": "H2"
+      }
+     ],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 300
+      },
+      {
+       "typ": "polka",
+       "y": 600
+      },
+      {
+       "typ": "polka",
+       "y": 900
+      },
+      {
+       "typ": "polka",
+       "y": 1200
+      },
+      {
+       "typ": "polka",
+       "y": 1510
+      }
+     ]
+    },
+    {
+     "kod": "S-OTW",
+     "nazwa": "Otwarta półka — Franklin",
+     "x": 3200,
+     "y": 0,
+     "szer": 550,
+     "wys": 2700,
+     "gl": 600,
+     "material": "franklin",
+     "fronty": [],
+     "wnetrze": [
+      {
+       "typ": "polka",
+       "y": 310
+      },
+      {
+       "typ": "polka",
+       "y": 610
+      },
+      {
+       "typ": "polka",
+       "y": 910
+      },
+      {
+       "typ": "polka",
+       "y": 1210
+      },
+      {
+       "typ": "polka",
+       "y": 1510
+      },
+      {
+       "typ": "polka",
+       "y": 1810
+      },
+      {
+       "typ": "polka",
+       "y": 2110
+      },
+      {
+       "typ": "polka",
+       "y": 2410
+      }
+     ],
+     "uwagi": [
+      "Otwarta półka 55 — półki co 30 cm.",
+      "Cały korpus z płyty Franklin Tobacco 18 mm, krawędzie widoczne obrzeże ABS Franklin; bez frontu."
+     ]
+    }
+   ],
+   "pomiary": [
+    {
+     "kod": "H1",
+     "opis": "podłoga → górna krawędź korpusu dolnego (w osi frontu)",
+     "nominal": 600,
+     "x": 800,
+     "yOd": 0
+    },
+    {
+     "kod": "H2",
+     "opis": "górna krawędź korpusu dolnego → górna krawędź wieńca szafy górnej",
+     "nominal": 2100,
+     "x": 2000,
+     "yOd": 600
+    }
+   ],
+   "zasadyFrontow": [
+    "Szczelina frontu 2 mm na każdej krawędzi (ustawienie silnika Stolarnia: szczelinaFrontowMM = 2) → szerokość frontu = S − 4; dwoje drzwi na korpusie 1200: (S − 8) / 2.",
+    "Dolny front wysuwany od podłogi: luz od podłogi 10 mm, góra 2 mm poniżej krawędzi korpusu dolnego → wysokość = H1 − 12.",
+    "Drzwi górne: H2 = od górnej krawędzi korpusu dolnego do górnej krawędzi wieńca szafy górnej → wysokość = H2 − 4.",
+    "Pomiary po wypoziomowaniu i skręceniu korpusów; mierzyć w osi każdego frontu. Linia podziału dół/góra musi być jedna na całej szafie.",
+    "Szuflada dolna: niski front 60 (front wysuwany) na wysokiej szufladzie, za frontem ukryta szuflada wewnętrzna (Amix, wysuwana osobno — bez zabieraka)."
+   ]
+  }
+ ],
+ "doPotwierdzenia": [
+  "Luz frontów od podłogi 10 mm i 2 mm pod krawędzią wieńca górnego — przyjęte; potwierdzić przy wykończeniu podłogi (panele/wykładzina).",
+  "Garderoba: fronty wysokie zastępują drzwi 1996 × 596 z arkusza rozkroju — arkusz frontów Franklin do korekty po pomiarze (długość ~2688 mieści się w płycie 2800).",
+  "Garderoba N-03-650 i N-04-710: pasy bez frontu przy narożniku (50 i ~110 mm) — zostawić czy blenda?",
+  "Strona zawiasów i uchwyty krawędziowe 50 cm — brak w źródłach; u chłopców drzwi parami jak na widoku architekta (uchwyty przy osi pary).",
+  "Pokój Janka: kolumna otwarta Franklin po lewej przyjęta na całą wysokość (z komorą dolną 60) — potwierdzić, czy dół ma front wysuwany jak na widoku architekta.",
+  "Pokój Stasia: otwarta półka 55 przyjęta także z Franklina (na widoku architekta po prawej stronie szafy).",
+  "Szuflada z ukrytą: system Amix — wysokość boku i NL dobrać w silniku (dodaj_ukryta_szuflade, wysuwana osobno).",
+  "Wysokość pomieszczeń 2700 — nominalnie; korpusy górne do sufitu wymagają luzu montażowego — sprawdzić pomiarem przed cięciem korpusów."
+ ]
+}
