@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: warunki katalogów i obrazów producentów, baza c14fa8e
+Ważny brief `docs/RESEARCH-prawa-do-katalogow-i-obrazow-producentow-2026-10-06.md`: repo lokalnie przechowuje obrazy Egger/Kronospan, a endpoint serwuje je w UI. Oficjalny Kronospan Terms & Conditions (PDF 30.01.2025, sprawdzony 06.10.2026) zakazuje automatycznego zbierania bez uprzedniej pisemnej zgody i ogranicza kopiowanie/przechowywanie/dystrybucję; Egger Customer Portal image/video terms ograniczają cel, modyfikację, archiwizację i wymagają atrybucji, lecz zastosowanie do bieżących CDN/API zdjęć nie jest potwierdzone. P0: wstrzymać nowe masowe pozyskiwanie i uzyskać pisemne potwierdzenie licencji; nie przesądzać statusu wcześniejszego użycia bez prawnika. Brak nowych commitów Claude od `c14fa8e`; statyczny audyt plus aktualna weryfikacja oficjalnych warunków. Następnie sprawdzić autoryzację API/obrazów i blokadę publikacji assetów bez potwierdzonej podstawy użycia.
+
 ### 06.10.2026 — Codex: magazyn, rezerwacje i zakupy, baza 9b0f925
 Brief `docs/RESEARCH-magazyn-zakupy-zapotrzebowanie-2026-10-06.md`: obecne `Material`, `Okucie` i `CennikMaterialow` opisują katalog/ceny; nie znaleziono ilości fizycznych, rezerwacji, ledgeru ruchów, zamówień ani przyjęć. Rekomendacja: osobny append-only ledger, jawne jednostki, zapotrzebowanie i rezerwacje z konkretnego snapshotu wydania, częściowe przyjęcia, resztki z wymiarami i orientacją; koszt rzeczywisty odrębny od ceny uzgodnionej. Zależności P0 auth/ACL, migracje payloadu, backup i audit. Brak nowych commitów Claude od `9b0f925`; statyczny przegląd bez testów i bez danych magazynu. Następnie ponownie sprawdzić auth P0 i zmiany Claude; po implementacji ocenić rezerwacje, ledger i zachowanie ceny klienta.
 
