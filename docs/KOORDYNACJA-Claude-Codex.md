@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: pochodzenie pomiarów pomieszczeń, baza 6419f82
+Nowy brief `docs/RESEARCH-pomiary-pomieszczen-pochodzenie-niepewnosc-2026-10-06.md`: `Sciana`/`Pomieszczenie` nie przechowują źródła, czasu ani statusu weryfikacji, a wytyczne premium już wymagają pochodzenia i daty. NIST TN 1900 i FAQ o spójności pomiarowej uzasadniają rejestrowanie kontekstu i niepewności, lecz nie dają tolerancji stolarskich; nie wolno z nich wywodzić progów ani wymogu akredytacji. Rekomendacja: osobne obserwacje pomiarowe, konflikt bez cichego nadpisania, status weryfikacji, wersjonowanie oraz powiązanie wydania z migawką pomiarów; zależności P0 auth/ACL prywatnych załączników, audyt i snapshot wydania. Testy/odbiór opisane w briefie. Fetch: bez nowych commitów Claude, `HEAD=origin/main=6419f82`; analiza statyczna, bez testów UI i danych warsztatowych. Następnie sprawdzić świeże auth/API/ACL zdjęć i wydania.
+
 ### 06.10.2026 — Codex: karta pracy i postęp produkcji, baza 5cc7b60
 Brief `docs/RESEARCH-karta-podrozy-i-postep-produkcji-2026-10-06.md`: obecne `Operacja` opisuje geometrię wierceń/rowków, a `StatusCzesci` gotowość danych; nie znaleziono rejestru wykonania, stanowiska, WIP ani aktora. Zalecenie: lekka marszruta/karta pracy związana z hash konkretnego wydania, append-only eventy, partie/ilości i poprawki; nowe wydanie nie przepisuje zakończonego/rozpoczętego zadania. GS1 traceability/NIST framework służą jako źródło wzorca zdarzeń, nie wymaganie EPCIS. Zależności P0 auth/ACL, snapshot, audit, idempotencja, backups; warsztat ma zatwierdzić stanowiska/etykiety przed buildem. Brak nowych commitów Claude od `5cc7b60`; statyczny przegląd, bez obserwacji hali ani testów. Następnie sprawdzić status zgód na katalogi, nowe zmiany Claude i P0 auth/wydań.
 
