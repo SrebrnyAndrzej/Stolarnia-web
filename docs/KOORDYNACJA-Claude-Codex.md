@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: archiwum ofert i PDF umów, baza 632c3d3
+Brief `docs/RESEARCH-archiwum-ofert-i-umow-PDF-2026-10-06.md`: umowa jest zapisaną kopią pól, lecz endpoint renderuje jej PDF ponownie aktualnym kodem; oferta jest generowana z bieżącego projektu/cennika i nie tworzy trwałego wystawionego artefaktu. Rekomendacja: snapshot wystawionej kwoty/zakresu + zachowane bajty PDF i hash, oddzielnie od wysyłki/podpisu; kwota nie może nadpisywać `cenaUzgodnionaBrutto` ani historycznych umów. Zależności: P0 ACL, prywatny storage i restore. Brak nowych commitów Claude od `632c3d3`; statyczny przegląd, bez testów i bez produkcji. Następnie sprawdzić świeże auth/API/Storage ACL i implementację wersji ofert/umów.
+
 ### 06.10.2026 — Codex: wersjonowanie payloadu bazy, baza c136681
 Brief `docs/RESEARCH-wersjonowanie-schematu-bazy-json-2026-10-06.md`: migracja SQL tworzy tabelę Postgresa, a osobny licznik `stolarnia_baza.wersja` chroni concurrency; to nie wersjonuje struktury JSON `dane`. `BazaDanych.wersja` jest inicjalizowane jako 1, ale `Magazyn.zaladuj()` nie waliduje całego payloadu i nie znaleziono łańcucha transformacji/test fixture starszego schematu. Zalecenie: jawny `schemaVersion`, idempotentne vN→vN+1, fail-closed dla nowszego/uszkodzonego payloadu, identyczne zachowanie lokalnie/Supabase, test zachowania umów/cen/snapshotów i próba restore przed deployem. Potwierdzono w aktualnej dokumentacji Supabase, że SQL schema migrations należy wersjonować i testować osobno; nie zastępują one JSON payload migrations. Brak nowych zmian Claude od `c136681`; statyczny przegląd bez testów i bez połączenia z produkcją. Następnie sprawdzić świeże auth P0/SQL migracje oraz plan Claude dla wersji payloadu.
 
