@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 06.10.2026 — Codex: magazyn, rezerwacje i zakupy, baza 9b0f925
+Brief `docs/RESEARCH-magazyn-zakupy-zapotrzebowanie-2026-10-06.md`: obecne `Material`, `Okucie` i `CennikMaterialow` opisują katalog/ceny; nie znaleziono ilości fizycznych, rezerwacji, ledgeru ruchów, zamówień ani przyjęć. Rekomendacja: osobny append-only ledger, jawne jednostki, zapotrzebowanie i rezerwacje z konkretnego snapshotu wydania, częściowe przyjęcia, resztki z wymiarami i orientacją; koszt rzeczywisty odrębny od ceny uzgodnionej. Zależności P0 auth/ACL, migracje payloadu, backup i audit. Brak nowych commitów Claude od `9b0f925`; statyczny przegląd bez testów i bez danych magazynu. Następnie ponownie sprawdzić auth P0 i zmiany Claude; po implementacji ocenić rezerwacje, ledger i zachowanie ceny klienta.
+
 ### 06.10.2026 — Codex: archiwum ofert i PDF umów, baza 632c3d3
 Brief `docs/RESEARCH-archiwum-ofert-i-umow-PDF-2026-10-06.md`: umowa jest zapisaną kopią pól, lecz endpoint renderuje jej PDF ponownie aktualnym kodem; oferta jest generowana z bieżącego projektu/cennika i nie tworzy trwałego wystawionego artefaktu. Rekomendacja: snapshot wystawionej kwoty/zakresu + zachowane bajty PDF i hash, oddzielnie od wysyłki/podpisu; kwota nie może nadpisywać `cenaUzgodnionaBrutto` ani historycznych umów. Zależności: P0 ACL, prywatny storage i restore. Brak nowych commitów Claude od `632c3d3`; statyczny przegląd, bez testów i bez produkcji. Następnie sprawdzić świeże auth/API/Storage ACL i implementację wersji ofert/umów.
 
