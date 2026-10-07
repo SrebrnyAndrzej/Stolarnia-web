@@ -18,11 +18,15 @@ Arkusz pokazuje osobne widoki „Wymiary montażu frontu w wersji na wkręty” 
 
 SKU mocowań, strona 13 tego samego PDF: EXPANDO `ZF7M70E2`, EXPANDO T `ZF7M70T2`, mocowanie na wkręty `ZF7M7002` (po 2 szt.). Numery przepisano z tabeli zamówieniowej; nie utożsamiać ich z numerem wiertła ani z kompletną listą zakupową.
 
+### Aktualizacja tego odczytu — 07.10.2026
+
+Wizualnie sprawdzono dodatkowo oficjalny, regionalny arkusz Blum „LEGRABOX Drawer component preparation”. Dla wzoru obejmującego M/K/C/F podaje rozstaw pionowy 32 mm i położenie w poziomie `14 mm + side overlay`; jego tabela obejmuje wartości overlay. Rysunek opisuje przygotowanie EXPANDO jako `Ø10 × 12*`, a przypis podaje dla mocowania wkrętem nawiercenie `Ø2 × 2,5 mm`. To osobne źródło uzupełnia brakujący wymiar X z poprzedniego punktu — nie należy odczytywać X z samego wymiaru 14 mm na stronie 14 polskiej planszy. Pozostają ograniczenia dotyczące jednoznacznego powiązania otworów ze SKU, strony/rotacji, zakresu calloutu średnicy i głębokości, tolerancji i rynku. Pełny odczyt oraz sumy plików: `docs/okucia/BLUM-LEGRABOX-front-component-preparation-2026-10-07.md`.
+
 ## Znaczenie dla implementacji
 
 - To nowy, producentem opublikowany częściowy zestaw danych dla LEGRABOX standard M; otwór nie jest już całkowicie „brakiem źródła”. Odczytu nie rozszerzać automatycznie na N/K/C/F, szufladę wewnętrzną, zlewozmywakową, free z dodatkowymi elementami ani na MERIVOBOX/TANDEMBOX.
-- Można znormalizować wyłącznie potwierdzone parametry pionowe, minimum grubości dla dwóch wariantów EXPANDO i jawnie wskazaną Ø10 górnego otworu. Każdy wpis powinien wskazywać bazę `front_bottom_edge`, wariant mocowania, wysokość M, rewizję źródła i numer strony.
-- Nie generować pełnej operacji CNC dla frontu, dopóki nie są znane współrzędne poziome od jednoznacznej krawędzi/bazy, wszystkie średnice i głębokości, tolerancje oraz zależność od konkretnego zestawu mocującego. Alternatywą warsztatową pozostaje znacznik ZML.3710, który przenosi pozycje na zmontowanym i wsuniętym korpusie, ale nie dostarcza współrzędnych CNC.
+- Nowy arkusz regionalny dopuszcza zapis X jako `14 + side overlay`, lecz dane muszą zachować jawne wejście overlay, region źródła i powiązanie z konkretnym zestawem. Nie podstawiać stałego X=14.
+- Nie generować kompletnej operacji CNC, dopóki nie potwierdzono interpretacji calloutu dla każdego otworu i wybranego mocowania, strony/rotacji, rynku/SKU, tolerancji i próbnego montażu. Alternatywą warsztatową pozostaje znacznik ZML.3710, który przenosi pozycje na zmontowanym i wsuniętym korpusie.
 
 **Priorytet:** P0 zachować blokadę pełnego wiercenia do pozyskania pozostałych wymiarów; P1 uzupełnić bazę częściowych, wersjonowanych danych standard M.
 
