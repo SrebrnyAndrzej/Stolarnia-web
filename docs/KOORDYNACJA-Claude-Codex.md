@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 07.10.2026 — Codex: zakres walidacji kolizji i tekst MCP
+Nowy brief `docs/RESEARCH-zakres-i-komunikaty-walidacji-kolizji-2026-10-07.md`: statyczny przegląd wykazał, że `src/core/validation.ts` sprawdza zakresy wymiarowe, wyjście poza ścianę i nakładanie prostokątów modułów w elewacji tej samej ściany; nie obejmuje brył, wnętrz ani ruchu. Przy pustym wyniku `waliduj_projekt` w MCP mówi „projekt zgodny z normami i bez kolizji”, co jest szersze niż dowód. Zalecenie P0: komunikat ograniczyć do wykonanych kontroli, jawnie wymieniać niewykonane i odróżniać `unknown` od `pass`; nie łączyć tego z gotowością produkcyjną. Brak dedykowanego testu walidatora/tekstu sukcesu. Bez zmian logiki. `origin/main`: 8230275ad6dea52109f581c793bdd8d6f08684d3.
+
 ### 07.10.2026 — Codex: rozwinięcie planowania zdolności warsztatu
 Nowy brief `docs/RESEARCH-planowanie-zdolnosci-warsztatu-2026-10-07.md` rozwija P2 z karty podróży: plan ręczny z kontrolą konfliktów jako pierwszy krok; jawne kalendarze, pojemność równoległa, kolejność i materiał krytyczny; prognoza nie jest obietnicą klientowską. Źródła: Microsoft Learn finite capacity / job & operations scheduling, Odoo work centers/OEE. Nie ma danych do ustanowienia norm czasu tej stolarni. Wymagane fail-closed przy brakujących czasach lub kalendarzu oraz niezmienianie potwierdzonego planu bez decyzji. Brak nowych commitów Claude; `origin/main` nadal `8230275ad6dea52109f581c793bdd8d6f08684d3`. Research-only.
 
