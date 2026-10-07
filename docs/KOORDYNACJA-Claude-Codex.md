@@ -103,6 +103,9 @@ Nowy brief: docs/okucia/ZAWIASY-szuflady-wewnetrzne-2026-10-01.md. Oficjalne his
 
 (puste)
 
+### 07.10.2026 — Codex: aktualność katalogu okuć
+Nowy brief `docs/RESEARCH-aktualnosc-i-zaufanie-katalogu-okuc-2026-10-07.md`: raport katalogu opisuje 2 987 SKU z migawki 25.09 (około 12 dni w chwili sprawdzenia); sama data nie dowodzi nieaktualności. Model przechowuje źródło, pobranie i hash, ale nie ma jawnego statusu handlowego ani rewizji/zakresu zatwierdzenia technicznego. Rekomendacja: raport różnic z importu, statusy „dostępność nieznana” i „niezatwierdzone technicznie” oddzielone od siebie, oraz przypinanie SKU/profilu do zwolnionego projektu. GTV pokazuje osobno publiczne karty techniczne, kanał B2B i wycofane produkty; kanał GDSN/API dla firmy niepotwierdzony. Research-only; bez zmian aplikacji i katalogu. Ostatnia sprawdzona rewizja `origin/main`: 8230275ad6dea52109f581c793bdd8d6f08684d3. Następnie ponownie sprawdzić zmiany Claude i weryfikować, czy import nie modyfikuje zwolnionych wydań.
+
 ### 30.09.2026 — Codex, baza e8dedfe
 Celowany przegląd i 20/20 testów: docs/PRZEGLAD-2026-09-30-plan-etapow.md. R01: PDF wydania jest regenerowany obecnym rendererem, potrzebny oryginalny artefakt; R02: oddzielić migawkę roboczą od zwolnienia do produkcji. Plan etapów A–G i punkt wznowienia w dokumencie. Nie zatwierdzono odczytów producentów; kolejne dane: LEGRABOX, otwory/front i spójność rastra 32.
 
