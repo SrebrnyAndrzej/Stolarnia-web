@@ -11,6 +11,12 @@ Oficjalna [strona pobrań LEGRABOX Blum USA](https://www.blum.com/us/en/products
 
 Oba PDF-y pobrano z oficjalnej strony, następnie strony wyrenderowano i sprawdzono wizualnie. Drugi arkusz jest ogólnym przygotowaniem komponentów, pierwszy — wzorem dla przyrządu wiertarskiego MZK.8000.US. Źródła amerykańskie; kody części i dostępność należy traktować jako rynek USA, dopóki nie zostaną potwierdzone w polskim katalogu/dystrybucji.
 
+### Weryfikacja lokalnego katalogu Blum Polska (katalog 2027/2028)
+
+Po sprawdzeniu PDF-ów zweryfikowano indeksowane plansze najnowszego polskiego katalogu producenta: [LEGRABOX standard M, drukowana strona 199](https://publications.blum.com/2026/catalogue/pl/199/), [standard K, s.203](https://publications.blum.com/2026/catalogue/pl/203/), [zamawianie standard C, s.206](https://publications.blum.com/2026/catalogue/pl/206/) i [planowanie standard C, s.207](https://publications.blum.com/2026/catalogue/pl/207/). Katalog podaje standardowe, polskie SKU dla C: `ZF7C70E2`, `ZF7C70T2`, `ZF7C7002` po 2 sztuki oraz alternatywę `ZF7M70E2`, `ZF7M70T2`, `ZF7M7002` po 4 sztuki. Potwierdza też wymiary drewnianych pleców: M 63 mm, K 101 mm, C 148 mm; szerokość `LW−38 mm`, dno `NL−10 mm` × `LW−35 mm`. Polskie źródło rozstrzyga, jakie kody SKU należy pokazywać/zamawiać na polskim rynku; kody skrócone z amerykańskiego arkusza pozostają identyfikatorami tego źródła, nie automatycznymi zamiennikami w BOM.
+
+Indeks tekstowy bieżącego katalogu pokazuje także osobne plansze geometrii frontu M/K/C, ale spłaszcza rysunek i nie zastępuje jego kontroli wizualnej. Do szczegółowego pozycjonowania otworów nadal używać tabel i zweryfikowanych rysunków opisanych wyżej, a przed produkcyjnym C/F obejrzeć stronę katalogu w docelowym PDF.
+
 ## Co daje arkusz „Drawer component preparation”
 
 ### Dno i drewniane plecy
