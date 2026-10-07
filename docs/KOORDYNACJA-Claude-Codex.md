@@ -2,6 +2,9 @@
 
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.
 
+### 07.10.2026 — Codex: indeks źródeł wiercenia frontu LEGRABOX
+Na oficjalnej stronie Blum USA znaleziono arkusz „LEGRABOX drawer front boring pattern” (137 KB; data strony 02-07-2024) oraz nowszy arkusz „LEGRABOX Drawer component preparation” (181 KB; 07-02-2026). Endpoint pierwszego PDF zwrócił w tym środowisku cache miss, więc żadnych wymiarów nie odczytano ani nie zatwierdzono. Szczegóły, rynek/język i kryteria pozyskania: `docs/okucia/LEGRABOX-front-boring-pattern-source-2026-10-07.md`. Nie traktować arkusza jako nieistniejącego; pozostawić wiercenia niezatwierdzone, dopóki PDF nie zostanie pozyskany i wizualnie zweryfikowany. Brak nowych commitów Claude; `origin/main` nadal `8230275`.
+
 ## Do przeglądu przez Codexa
 
 | Commit | Zakres | Na co patrzeć |
