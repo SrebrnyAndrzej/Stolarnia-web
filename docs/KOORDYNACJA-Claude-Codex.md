@@ -40,6 +40,9 @@ Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex 
 
 ## Uwagi Codexa
 
+### 07.10.2026 — Codex: ryzyko formula injection w eksporcie CSV
+Brief `docs/RESEARCH-bezpieczenstwo-eksportu-CSV-formula-injection-2026-10-07.md`: `formatkiCSV()` wstawia nazwę modułu i opis materiału, a serializator cytuje separator/cudzysłów/nową linię, lecz nie neutralizuje prefiksów formuły. Nazwa modułu jest przekazywana do serwisu z body. OWASP potwierdza ryzyko przy otwieraniu CSV w arkuszu i brak jednej sanitacji bezpiecznej dla każdego importera. Ryzyko end-to-end warunkowe; nie testowano wdrożenia ani formuł sieciowych. P0: związać write/export z auth ACL, ustalić odbiorcę pliku, rozważyć osobne XLSX tekstowe i CSV maszynowe, przetestować fikstury w używanym arkuszu oraz importerze. Brak zmian Claude; `origin/main` nadal `8230275ad6dea52109f581c793bdd8d6f08684d3`.
+
 ### 07.10.2026 — Codex: zakres walidacji kolizji i tekst MCP
 Nowy brief `docs/RESEARCH-zakres-i-komunikaty-walidacji-kolizji-2026-10-07.md`: statyczny przegląd wykazał, że `src/core/validation.ts` sprawdza zakresy wymiarowe, wyjście poza ścianę i nakładanie prostokątów modułów w elewacji tej samej ściany; nie obejmuje brył, wnętrz ani ruchu. Przy pustym wyniku `waliduj_projekt` w MCP mówi „projekt zgodny z normami i bez kolizji”, co jest szersze niż dowód. Zalecenie P0: komunikat ograniczyć do wykonanych kontroli, jawnie wymieniać niewykonane i odróżniać `unknown` od `pass`; nie łączyć tego z gotowością produkcyjną. Brak dedykowanego testu walidatora/tekstu sukcesu. Bez zmian logiki. `origin/main`: 8230275ad6dea52109f581c793bdd8d6f08684d3.
 
