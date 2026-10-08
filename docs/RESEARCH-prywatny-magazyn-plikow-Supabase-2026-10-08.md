@@ -41,3 +41,27 @@ Problem użytkownika: projekty zawierają pliki o różnej wrażliwości. Błęd
 ## Czego nie potwierdzono
 
 Nie sprawdzono ustawień produkcyjnego projektu Supabase, Vercel, secretów, polityk storage, użycia klientowskich plików ani retencji. Obecna gałąź main nie zawierała implementacji Storage w sprawdzonym wyszukiwaniu. Rekomendacja nie oznacza, że można zacząć przechowywać dane klientów — wymagane jest wdrożenie i testy z osobnym przeglądem bezpieczeństwa.
+
+## Uzupełnienie: spójność metadanych, plików i odtworzenia
+
+### Problem i dowód
+
+W aktualnym projekcie cała baza domenowa jest utrwalana jako pojedynczy rekord JSON w `stolarnia_baza`. Pliki binarne — jeśli zostaną przeniesione do Storage — będą osobnym obiektem poza tym rekordem. Supabase potwierdza, że metadane Storage w Postgres i pliki u dostawcy są rozdzielone; backup bazy nie obejmuje samych obiektów. Zatem transakcja obejmująca jednocześnie rekord projektu i plik nie powstaje automatycznie przez zapis JSON ani przez kopię bazy. Źródła: [Storage schema](https://supabase.com/docs/guides/storage/schema/design), [Database backups](https://supabase.com/docs/guides/platform/backups).
+
+### Proponowane zachowanie
+
+**P1 — jawny stan operacji plikowej.** Wprowadzić manifest metadanych z `pending_upload`, `ready`, `pending_delete`, `failed`/`orphaned`, obok niezmiennego object key, rozmiaru, deklarowanego i wykrytego MIME, SHA-256, właściciela/warsztatu/projektu, rewizji dokumentu, autora i dat. Nie publikować linku i nie dołączać pliku do wydania/umowy, dopóki stan nie jest `ready` i hash nie zgadza się z zawartością.
+
+Proponowana kolejność uploadu: utworzyć prywatny rekord pending i losowy object key; przesłać do prywatnego bucketu; zweryfikować odpowiedź, typ, rozmiar i hash; dopiero potem ustawić ready. Awaria pomiędzy krokami pozostawia rozpoznawalny stan do ponowienia, a nie „ukończony” dokument. Okresowy reconciliation job powinien wykrywać pending/orphaned rekordy i obiekty bez referencji; usunięcie obiektu wyłącznie przez Storage API.
+
+Proponowana kolejność kasowania: oznaczyć pending_delete i zablokować nowe downloady; wykonać usunięcie przez Storage API; po potwierdzeniu zapisać deleted/tombstone i audyt. Jeśli wymagane jest odtwarzanie historycznej rewizji, obiekt pozostaje w retencji jawnie zatwierdzonej przez właściciela — nie należy po cichu nadpisywać pliku o tym samym kluczu.
+
+### Kryteria odbioru
+
+1. Awaria testowa po każdym kroku uploadu nie ujawnia pliku jako gotowego; retry jest idempotentny i prowadzi do dokładnie jednego gotowego obiektu albo jawnego błędu.
+2. Niezgodność SHA-256, rozmiaru lub rzeczywistego typu MIME blokuje `ready` i wydanie dokumentu.
+3. Usunięcie projektu, obiektu lub retencji nie pozostawia niewykrytych orphanów; raport reconciliation pokazuje identyfikatory wewnętrzne i status, bez nazwisk/adresów.
+4. Test odtworzenia kopii bazy plus osobnej kopii obiektów przywraca manifest i binarium do tego samego stanu; wszystkie hash'e weryfikują się, a brak obiektu blokuje jego wydanie. Mierzyć RPO/RTO na testowym, odizolowanym środowisku.
+5. Snapshot wydania, dokument PDF i pliki załączone mają wspólny identyfikator rewizji i hash manifestu; późniejsza zmiana nie podmienia artefaktu już zaakceptowanego.
+
+**Priorytet:** P1 przed wiązaniem załączników z umową, akceptacją lub wydaniem produkcyjnym. **Zależności:** prywatny bucket i ACL P0, model manifestu/revizji, strategia osobnych kopii binariów i bazy, zaakceptowana retencja. **Status:** wymagania projektowe; Storage i job reconciliation nie są obecnie wdrożone ani zweryfikowane.
