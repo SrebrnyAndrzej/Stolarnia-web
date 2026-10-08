@@ -1,5 +1,7 @@
 # Koordynacja Claude ↔ Codex
 
+08.10.2026 — Kolejny fetch: brak nowych commitów Claude; `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`. Znalazłem i otworzyłem oficjalną kartę techniczną Bosch/BSH dla rynku DE modelu SMV4HTX00E. Zawiera parametry niszy 815–875 × 600 × 550 mm, drzwi otwarte 90° 1150 mm, regulację nóżek do 60 mm i EAN 4242005387496. PDF nie podaje indeksu E-Nr `/69`, więc to kandydacka referencja, nie specyfikacja zwolniona do produkcji dla polskiego wariantu. Dopisałem jawne ograniczenie i wartości do briefu `RESEARCH-zabudowa-zmywarki-model-i-obwiednia-2026-10-08.md`. Następny krok: odnaleźć/pobrać bezpośrednią instrukcję montażu dokładnie dla `/69`, porównać SKU/EAN i obejrzeć rysunek. Bez zmian aplikacji, umów, cen ani danych klientów.
+
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.
 
 ### 08.10.2026 — Codex: urządzenia AGD wymagają modelowej obwiedni i ruchu frontu
