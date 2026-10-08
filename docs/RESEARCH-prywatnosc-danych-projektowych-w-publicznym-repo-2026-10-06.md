@@ -46,6 +46,32 @@ Commit `537cdc0` dodaje kartę pomiaru/wymiarowania frontów. Lokalnie `npm test
 
 Zakres testów: build/typy i obecne testy ogólne przeszły, ale brak testu regresji samej nowej karty (wzory, łamanie stron i wartości z danych modelu). Odbiór wymaga testowego modelu syntetycznego z długą listą frontów i sprawdzenia, czy strona kontynuacji ponawia nagłówki tabeli oraz zachowuje przypisanie numeru frontu do wzoru.
 
+## 08.10.2026 — kontrolki zapobiegające ponownej publikacji danych
+
+### Ustalenia ze źródeł GitHub
+
+- **Fakt:** rulesety mogą wymagać PR przed scaleniem, zatwierdzonego review oraz zatwierdzenia przez code ownera; można też wymagać nowego review po zmianie diffu. Reguły ścieżek dla wymaganych zespołów obejmują określone pliki, ale wymagane zespoły w tej funkcji nie są dostępne dla repozytoriów należących do pojedynczego użytkownika. [Dostępne reguły rulesetów](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets), [Code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
+- **Fakt:** GitHub Secret Scanning wykrywa wzorce sekretów; publiczne repozytoria mają skanowanie sekretów automatycznie. Push protection blokuje tylko obsługiwany podzbiór wzorców i ma opisane ograniczenia. Własne wzorce regex służą wykrywaniu sekretów specyficznych dla organizacji. Nie ma podstaw, by traktować te mechanizmy jako ogólny skaner danych osobowych lub dokumentów klientów. [Zakres Secret Scanning](https://docs.github.com/en/code-security/reference/secret-security/secret-scanning-scope), [Własne wzorce](https://docs.github.com/en/code-security/concepts/secret-security/custom-patterns).
+- **Fakt:** ruleset może ograniczyć wskazane ścieżki, lecz taka reguła chroni nazwane wzorce ścieżek, a nie wykrywa identyfikujących treści ukrytych w pliku pod inną nazwą. Funkcje i dostępność zależą od typu repozytorium oraz planu GitHub; ustawienia konkretnego repozytorium Stolarnia-web nie zostały sprawdzone.
+
+### Rekomendacja dla właściciela i Claude
+
+**P0 — repozytorium kodu nie jest magazynem dokumentów klientów.** Utrzymać rysunki, umowy, oferty, zdjęcia i źródła projektów poza publicznym Git; przechowywać tam wyłącznie sztuczne, jawnie syntetyczne fixture'y. GitHub zaznacza, że ustawienia i automatyzacje repo nie zastępują kontroli dostępu do prywatnych plików.
+
+**P1 — bramka zmian na główną gałąź.** Włączyć ruleset wymagający PR i co najmniej jednego review dla `main`, odrzucania nieaktualnej akceptacji po zmianie diffu oraz zatwierdzenia code ownera dla ścieżek fixture'ów/dokumentacji testowej. W repozytorium użytkownika CODEOWNERS może wskazywać uprawnioną osobę; funkcja „required reviewers” kierowana do zespołu wymaga organizacji. Zachować jawnie ograniczony bypass dla awaryjnych zmian administracyjnych.
+
+**P1 — kontrola zawartości niezależna od nazwy/ścieżki.** Dodać wymagany check CI dla nowych/zmienionych fixture'ów, który sprawdza tekst, OCR PDF i metadane przykładowych artefaktów pod kątem przypadkowych danych identyfikujących. Skan należy traktować jako alarm do weryfikacji, nie gwarancję anonimizacji: dane semantyczne lub nietypowe formaty mogą ominąć wzorce. Sekret Scanning i push protection pozostawić jako warstwę ochrony tokenów, nie jako zabezpieczenie PII.
+
+### Kryteria odbioru i zależności
+
+1. Próba bezpośredniego pushu do `main` jest odrzucona; PR bez wymaganej akceptacji nie może być scalony; zmiana diffu po review wymaga ponownej akceptacji.
+2. Plik dodany do chronionej ścieżki wymaga akceptacji wskazanego code ownera. Sprawdzić, że wskazana osoba ma write access i może faktycznie zatwierdzić PR.
+3. W CI umieścić wyłącznie sztuczne przypadki testowe: kontroler zatrzymuje fikcyjny adres/telefon w treści PDF lub fixture'u, a nieszkodliwe sztuczne rekordy przechodzą. Ręcznie sprawdzić OCR/metadane PDF na tych samych przypadkach.
+4. Udokumentować, kto może użyć bypass, jak zgłosić fałszywy alarm i że przejście checku nie stanowi potwierdzenia anonimizacji.
+5. Przed konfiguracją właściciel potwierdza model repo (konto osobiste lub organizacja), plan GitHub, aktualne reguły/bypass oraz to, czy Claude może tworzyć PR. W tym heartbeatzie ustawień GitHub nie zmieniono.
+
+**Priorytet:** P0 — separacja prywatnych artefaktów od publicznego repo; P1 — blokada PR/code-owner i kontrola syntetycznych fixture'ów. **Zależności:** uprawnienia administratora repo, dostępność rulesetów w bieżącym planie, rzeczywisty proces publikacji Claude i zgoda właściciela na zmianę workflow. **Ograniczenie:** reguła ścieżek/CODEOWNERS nie ochroni przed PII umieszczonym poza chronionym katalogiem; skaner treści nie jest pełnym DLP. Żadne dane klienta nie zostały dodane do testów ani briefu.
+
 ## Punkt wznowienia
 
 Ostatnia sprawdzona rewizja: commit dodający nową kartę wymiarowania frontów (06.10.2026). Ponowny odczyt publicznego GitHub API 08.10.2026 potwierdza `visibility=public`; rewizja raportu bezpieczeństwa `8d39dcd` pozostaje osiągalna z aktualnie pobranego `origin/main` (`8230275`). Nie znaleziono późniejszego commita naprawczego po wyszukaniu historii pod kątem prywatności, anonimizacji i usuwania danych. Raport wcześniejszy dokumentuje, że poprzedzający go commit opublikował plik projektu zawierający dane identyfikujące klienta i wzmianki o dzieciach. Nie potwierdzono w tej kontroli, czy plik nadal jest w bieżącym drzewie, kto go pobrał, jakie istnieją kopie ani czy doszło do incydentu w rozumieniu prawa; nie pobierano ani nie powielano danych. Nie zmieniano widoczności repozytorium ani historii. Następny krok wymaga pilnej decyzji właściciela/osoby odpowiedzialnej za dane: containment, zakres, ewentualne kontrolowane oczyszczenie historii i sprawdzenie kopii, z konsultacją właściwej osoby prawnej. Zwykłe usunięcie w nowym commicie nie usuwa publicznej historii. Dalszy research: wzorce prywatnego magazynu plików klientów, autoryzacja zasobowa i audyt dostępu, po rozwiązaniu P0 API.
