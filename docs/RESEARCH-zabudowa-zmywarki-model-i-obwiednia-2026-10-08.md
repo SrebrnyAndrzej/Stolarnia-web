@@ -38,6 +38,14 @@ Oficjalna [karta techniczna Bosch/BSH dla rynku niemieckiego](https://media3.bsh
 | P0 przed zwolnieniem | Wnęka, otwory oraz przyłącza mogą być poprawne dla typowego urządzenia, ale nie dla wybranego wariantu. | Generować rysunek wykonawczy ze źródłem, rynkiem/rewizją i oznaczonymi wymaganiami; blokować release krytycznych wymiarów, gdy źródło lub parametr jest nieznany. | Manual modelu, dane pomiarowe pomieszczenia/przyłączy oraz potwierdzenie przez właściwego wykonawcę instalacji. | Każdy wymiar niszy, wiercenie, wentylacja lub odległość ma źródło i status; wpis „typowe 600 mm” nigdy nie przechodzi walidacji jako wymiar producenta. |
 | P1 | Zmiana modelu zmywarki po akceptacji może unieważnić front i niszę, nie zmieniając geometrii pozostałej kuchni. | Przypiąć specyfikację do rewizji projektu i oznaczać akceptacje/zwolnienia urządzenia jako nieaktualne po zmianie E-Nr lub dokumentu. | System rewizji, snapshoty i audyt. | Zmiana modelu unieważnia tylko zależne zatwierdzenia, zachowuje poprzednie i pokazuje dokładne przyczyny oraz wymagane ponowne sprawdzenia. |
 
+### Front dzielony i dodatkowy zawias
+
+Karta techniczna SMV4HTX00E wymienia m.in. akcesoria `SMZ5003` (zawias składany dla wysokiego korpusu) oraz `SGZ8BI00` (szyna łączeniowa dla frontu dzielonego). Bosch PL opisuje SGZ8BI00 jako zestaw do dzielonych frontów, z wariantem szerokości 60 cm i zastosowaniem dla urządzeń 81,5/86,5 cm, z zawiasem Vario lub bez. Strona Bosch DE dla SMZ5003 opisuje zawias przy cokole dla dolnej części frontu, niszę do 92 cm oraz warunki kompatybilności: urządzenia 45/60 cm bez zawiasu Vario; wskazuje wysokość górnego, większego frontu 650–675 mm dla zmywarki 81,5 cm oraz 700–725 mm dla zmywarki 86,5 cm. Karta SMV4HTX00E jedynie wymienia akcesoria; przed przypisaniem ich do konkretnego egzemplarza trzeba użyć sprawdzarki Bosch dla jego pełnego E-Nr i zweryfikować aktualną instrukcję zestawu.
+
+**Wniosek dla kreatora:** system frontu urządzenia powinien być jawnie rozróżniony (fabryczny mechanizm drzwi, szyna do frontu dzielonego, zawias dodatkowy). Wybór zestawu zmienia podział i ruch frontów; nie wolno potraktować go jako samego SKU w BOM. Nie zatwierdzać kombinacji SGZ8BI00 + SMZ5003 ani nie kopiować zakresów jednego zestawu do drugiego bez potwierdzenia producenta. Test kolizji musi korzystać z geometrii i instrukcji wybranego zestawu, a nie wyłącznie z modelu zmywarki.
+
+Źródła producenta: [Bosch PL — SGZ8BI00](https://www.bosch-home.pl/pl/mkt-product/17006709), [Bosch PL — SMZ5003](https://www.bosch-home.pl/pl/mkt-product/00648174), [Bosch DE — szczegóły SMZ5003](https://www.bosch-home.com/de/de/product/SMZ5003).
+
 ## Założenia i ograniczenia
 
 - Zakres dotyczy zmywarki; nie wyznacza wspólnych wymiarów dla Bosch, Siemens, innych marek, wariantów XXL, modeli z drzwiami przesuwnymi ani podblatowych.
