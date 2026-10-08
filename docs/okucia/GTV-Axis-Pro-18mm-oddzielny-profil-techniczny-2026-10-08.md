@@ -5,6 +5,7 @@ Data sprawdzenia: 08.10.2026. Research dotyczy szuflad GTV Axis Pro z oznaczenie
 ## Źródła producenta
 
 - [GTV — Axis Pro, zestaw 18 mm, PB-AXISPRO18-KPL500C1](https://gtv.com.pl/en/produkt/PB-AXISPRO18-KPL500C1/): karta SKU jawnie podaje „Appliance panel [mm]: 18”, długość 500 mm, wysokość boku 168 mm, Soft Close, obciążenie 40 kg, prowadnice/boki i łączniki pleców/frontu w zestawie; oferuje do pobrania osobną instrukcję oraz model STEP.
+- Wskazany z poziomu sklepu GTV załącznik instrukcji ma 4,9 MB. Indeksowane wyniki strony sprzedawcy wskazują bezpośredni zasób hostowany w domenie GTV: [AXIS_PRO18__instrukcja_1.pdf](https://assets.gtv.com.pl/assets/attachments/instrukcja/AXIS_PRO18__instrukcja_1.pdf) dla wariantu A/300 oraz analogiczny plik `AXIS_PRO18__instrukcja_3.pdf` dla SKU 500/C1. Sam PDF nie otworzył się w narzędziu badawczym, więc treść, hash i rewizja są **niezweryfikowane**. Strona GTV 18 mm potwierdza obecność pobieralnej instrukcji, ale jej tekstowy widok nie ujawnia bezpośredniego URL.
 - [GTV — Axis Pro 18 mm bez frezowania](https://gtv.com.pl/sk/novinky/axis-pro-soft-close-18-mm-zasuvkovy-system-pre-dosku-18-mm-bez-frezovania-biela-a-siva/): producent opisuje system jako przeznaczony do płyty 18 mm i montażu bez frezowania. To informacja o kompatybilności systemu, nie formuła na wymiary dna/pleców.
 - [GTV — karta techniczna Axis Pro 16 mm](https://assets.gtv.com.pl/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_3.pdf): osobna karta ma jawny nagłówek wymiarów elementów z płyty 16 mm i formuły dla tej grubości.
 
@@ -24,4 +25,4 @@ Data sprawdzenia: 08.10.2026. Research dotyczy szuflad GTV Axis Pro z oznaczenie
 
 ## Następny krok
 
-Pozyskać i wizualnie zweryfikować załączoną instrukcję Axis Pro 18 mm dla konkretnego wariantu, porównać formatki i otwory do 16 mm oraz sprawdzić tabelę SKU/długości P2O kontra Soft Close. Do tego czasu w aplikacji/research data ma być jawny brak profilu 18 mm, a nie skopiowane parametry wariantu 16 mm. Dokumentacja-only; bez zmian aplikacji i testów logiki.
+Pozyskać plik producenta `AXIS_PRO18__instrukcja_3.pdf` lub równoważny dla dokładnego SKU 18 mm, zarchiwizować hash i zweryfikować plansze wizualnie; porównać formatki i otwory do 16 mm oraz tabelę SKU/długości P2O kontra Soft Close. Próba odczytu wskazanego PDF w narzędziu badawczym była niedostępna, więc nie wpisywać formuł na podstawie nazwy pliku, opisu handlowego ani 3D. Do czasu weryfikacji ma być jawny brak profilu CNC 18 mm, a nie skopiowane parametry 16 mm. Dokumentacja-only; bez zmian aplikacji i testów logiki.
