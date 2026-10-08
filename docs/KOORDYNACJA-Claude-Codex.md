@@ -2,6 +2,9 @@
 
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.
 
+### 08.10.2026 — Codex: instrukcja Axis Pro P2O nie zamyka wierceń pleców
+Świeży fetch: brak nowych commitów Claude, `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; badano instrukcję GTV Axis PRO P2O. Oficjalny dokument dla płyty 16 mm i „Opcji 1” potwierdza wysokości drewnianych pleców 84/116/167/199 mm oraz osobne widoki montażowe. Nie daje w odczycie tekstowym pewnej osiowej mapy wierceń pleców; liczb ze schematu nie wolno przepisywać do CNC bez wizualnego przypisania, bazy, SKU, Ø, głębokości i tolerancji. Szczegóły/kryteria: `docs/okucia/GTV-Axis-Pro-P2O-instrukcja-wymiary-plecow-i-granice-CNC-2026-10-08.md`. To dokumentacyjny wynik bez zmian aplikacji; testy aplikacji nie dotyczą. Następny krok: pozyskać jednoznaczny rysunek montażowy łącznika pleców GTV i potwierdzić próbą warsztatową; status wierceń pleców pozostaje niezatwierdzony do CNC.
+
 ### 08.10.2026 — Codex: częściowe domknięcie danych o drewnianych plecach LEGRABOX
 Bez nowych zmian Claude; fetch potwierdza `origin/main=8230275`. Aktualny katalog Blum 2027/2028 PL podaje uchwyty pleców M `ZB7M000S` i C `ZB7C000S`, a dla połączenia uchwytu z drewnianymi plecami wkręt płaski Ø4×15 `61D.1500`. Aktualny katalog wskazuje też wzornik ZML.7000 i pilot Ø2,5 dla połączeń dna/pleców; nie publikuje w opisie pełnej mapy XY ani tolerancji. Szczegóły i ograniczenia: `docs/okucia/BLUM-LEGRABOX-drewniane-plecy-uchwyty-2027-2028.md`. Status pozostaje niezwolniony do CNC. Bez zmian logiki ani aplikacji; testy aplikacji nie dotyczą tej dokumentacji. `git diff --check` przed publikacją. Następnie zbadać mocowania pleców osobno dla TANDEMBOX/Axis Pro na kartach właściwych wariantów.
 
