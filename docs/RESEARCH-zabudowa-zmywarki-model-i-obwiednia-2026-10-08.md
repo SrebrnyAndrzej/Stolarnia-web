@@ -1,0 +1,41 @@
+# Zabudowa zmywarki — dane modelowe, ruch frontu i gotowość produkcyjna
+
+Data: 08.10.2026. Zakres: rekomendacje dla konstruktora kuchni i dokumentacji wykonawczej. To brief produktowo-techniczny; nie wyznacza parametrów instalacji i nie zastępuje instrukcji konkretnego sprzętu ani fachowca.
+
+## Problem
+
+Określenie „zmywarka 60 cm” nie dostarcza wymiarów wnęki, zakresu regulacji nóżek, wymaganej szczeliny/wentylacji, wzoru mocowania frontu ani danych o kinematyce drzwi. Jeśli konstruktor traktuje typowy moduł jak potwierdzony szablon, rysunek może wyglądać poprawnie, a urządzenie nie zmieści się, front zahaczy o cokół albo nie da się podłączyć i później serwisować urządzenia. Wspólny brief AGD w `RESEARCH-okucia-kuchenne-autodobor.md` już stwierdza potrzebę danych konkretnego modelu; niniejszy dokument przekłada ten wymóg na przepływ projektowania i kryteria zwolnienia zmywarki.
+
+## Dowody od producenta
+
+- [Bosch Polska — Zmywarki do zabudowy: montaż](https://www.bosch-home.pl/produkty/zmywanie/zmywarki-do-zabudowy/montaz) rozróżnia modele 45/60 cm, w pełni zintegrowane i z widocznym panelem; opisuje mocowanie frontu urządzenia oraz podkreśla, że zakres instalacji należy odczytać ze specyfikacji/instrukcji danego modelu (np. odpływ). Bosch opisuje też przygotowanie i sprawdzenie przyłączy przed zamocowaniem frontu. Są to wskazówki Bosch, nie uniwersalne normy dla wszystkich marek i modeli.
+- [Bosch — pomoc serwisowa dla SMV4HTX00E/69](https://www.bosch-home.pl/pl/productservice/SMV4HTX00E-69) identyfikuje konkretną, w pełni zintegrowaną zmywarkę 60 cm i udostępnia instrukcję montażu. Strona jest bazą wejściową do modelowej dokumentacji; w tym researchu nie pobrano ani nie zweryfikowano wizualnie samego PDF, dlatego nie cytujemy żadnych liczbowych wymiarów wnęki, frontu lub przyłączy z tego urządzenia.
+- Katalog wsparcia producenta publikuje oddzielne strony dla innych modeli i typów urządzeń, np. [SMI4ECS28E/72 z panelem](https://www.bosch-home.pl/pl/productservice/SMI4ECS28E-72) i [SBD6ECX21E/75 w wysokości XXL](https://www.bosch-home.pl/pl/productservice/SBD6ECX21E-75). To potwierdza potrzebę identyfikowania wariantu i wersji modelu; nie dowodzi, że ich wymagania montażowe są takie same.
+
+## Zalecany model danych i przebieg
+
+1. **Najpierw wybór urządzenia.** Zapisz producenta, dokładne oznaczenie modelu/E-Nr wraz z indeksem po ukośniku (jeśli producent go używa), rynek/wersję, typ (w pełni zintegrowana, z widocznym panelem, podblatowa/XXL) i długość prowadzenia źródła. Sama nazwa handlowa, szerokość nominalna lub rodzina nie oznacza zgodności wnęki.
+2. **Migawka źródła.** Do projektu dołącz prywatny odnośnik do aktualnej instrukcji montażu/karty producenta, datę pobrania, język/rynek, numer rewizji albo hash, a do obróbki również stronę/rysunek. Aktualizacja pliku źródłowego nie może po cichu zmieniać zwolnionego projektu.
+3. **Rozdziel typy geometrii.** Przechowuj osobno obrys urządzenia, dozwolone wymiary wnęki (minimum/maksimum), wymagane luzy i strefy wentylacyjne, geometrię mocowania frontu, zakres grubości/wysokości/masy frontu gdy producent je określa, obwiednię otwierania drzwi oraz strefę prowadzenia węży/przewodu. Nie zastępuj brakujących danych wymiarem z sąsiedniego modelu.
+4. **Weryfikacja kolizji w ruchu.** Sprawdź pełny ruch drzwi/frontu względem cokołu, uchwytów, frontów sąsiednich szafek, podłogi i wyposażenia; uwzględnij elementy wystające i wysokość montażu. Wynik statycznego testu zamkniętej bryły nie jest wynikiem testu ruchu. Nieznana trajektoria powinna pozostać „niezweryfikowana”.
+5. **Instalacje jako rezerwacje i zależności.** Zaznacz zaprojektowane miejsce wody, odpływu i zasilania jako chronione strefy kolizji, z pochodzeniem pomiaru i statusem potwierdzenia. Konstruktor wskazuje dostępność i konflikt; nie instruuje użytkownika, jak przerabiać instalację. Szczegóły podłączeń i wymagane odległości wynikają z instrukcji modelu oraz uzgodnienia osoby uprawnionej.
+6. **Oddzielać zatwierdzenia.** Wizualna akceptacja kuchni, zgodność modelu i dokumentacji urządzenia, zwolnienie formatek/CNC oraz gotowość przyłączy to różne stany. Brak modelu lub instrukcji może pozwolić na szkic koncepcyjny z widocznym ostrzeżeniem, ale nie na certyfikowanie niszy i otworów jako gotowych do produkcji/montażu.
+
+## Kryteria dla Claude
+
+| Priorytet | Problem / dowód | Proponowane zachowanie | Zależności | Mierzalne kryterium odbioru |
+|---|---|---|---|---|
+| P0 | Nazwa „60 cm” nie identyfikuje instrukcji ani typu frontu; producent publikuje osobną dokumentację po dokładnym modelu. | Związać urządzenie ze SKU/E-Nr i snapshotem dokumentu producenta. | Załączniki prywatne, uprawnienia, hash/revision oraz model appliance. | Dwa testowe E-Nr o tej samej nominalnej szerokości nie współdzielą zatwierdzonych parametrów bez jawnego potwierdzenia producenta. Brak instrukcji ustawia geometrię i obróbkę jako niezweryfikowane. |
+| P0 | Front urządzenia jest częścią ruchomą; statyczny prostokąt nie wykrywa zaczepiania o cokół lub sąsiednie fronty. | Modelować obwiednię ruchu/zakres regulacji tylko z dokumentacji konkretnego modelu i testować kolizje w położeniach krytycznych. | Rysunek montażowy producenta, rzeczywista wysokość cokołu, podłogi, frontu, uchwytów i zabudowy sąsiedniej. | Walidacja odróżnia `pass`, `collision` i `unknown`; brak zakresu ruchu nie może zwrócić „brak kolizji”. Test pokazuje konflikt ujawniający się dopiero przy otwieraniu. |
+| P0 przed zwolnieniem | Wnęka, otwory oraz przyłącza mogą być poprawne dla typowego urządzenia, ale nie dla wybranego wariantu. | Generować rysunek wykonawczy ze źródłem, rynkiem/rewizją i oznaczonymi wymaganiami; blokować release krytycznych wymiarów, gdy źródło lub parametr jest nieznany. | Manual modelu, dane pomiarowe pomieszczenia/przyłączy oraz potwierdzenie przez właściwego wykonawcę instalacji. | Każdy wymiar niszy, wiercenie, wentylacja lub odległość ma źródło i status; wpis „typowe 600 mm” nigdy nie przechodzi walidacji jako wymiar producenta. |
+| P1 | Zmiana modelu zmywarki po akceptacji może unieważnić front i niszę, nie zmieniając geometrii pozostałej kuchni. | Przypiąć specyfikację do rewizji projektu i oznaczać akceptacje/zwolnienia urządzenia jako nieaktualne po zmianie E-Nr lub dokumentu. | System rewizji, snapshoty i audyt. | Zmiana modelu unieważnia tylko zależne zatwierdzenia, zachowuje poprzednie i pokazuje dokładne przyczyny oraz wymagane ponowne sprawdzenia. |
+
+## Założenia i ograniczenia
+
+- Zakres dotyczy zmywarki; nie wyznacza wspólnych wymiarów dla Bosch, Siemens, innych marek, wariantów XXL, modeli z drzwiami przesuwnymi ani podblatowych.
+- Strony wsparcia producenta dowodzą dostępności instrukcji modelowej, ale nie zastępują odczytu PDF. W tym briefie żadna liczba montażowa ani CNC nie jest zwolniona do użycia.
+- Hipoteza do sprawdzenia po wdrożeniu: wykrywanie obwiedni otwierania i przechowywanie migawki modelu ograniczy przeróbki na montażu. Mierzyć liczbę konfliktów, zmian po akceptacji i poprawek przypisanych do niedopasowania urządzenia; nie przedstawiać tego efektu jako faktu przed zebraniem danych.
+
+## Punkt wznowienia
+
+Świeże `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; w tej kontroli brak nowych commitów Claude. Następny krok: w izolowanym środowisku pobrać jedną aktualną, modelową instrukcję Bosch z wybranym E-Nr, zapisać hash, zweryfikować ręcznie stronę instalacji i wypisać pola geometrii wraz z jednostkami/bazami. Dopiero wtedy rozważyć tabelę testową dla obwiedni i frontu. Nie modyfikować danych klientów ani zapisanych cen/ofert/umów.
