@@ -42,3 +42,31 @@ Import rysunku jest celowo potrzebny do pomiaru pomieszczeń, ale jest kosztown�
 - Lokalny kod: `src/server/app.ts`, `src/service.ts`, `src/core/dxf.ts`, `src/core/dwg.ts`, `vercel.json`.
 
 Brak zmian w implementacji. Najpierw P0 autoryzacja; progi techniczne wymagają benchmarku, nie zgadywania.
+
+## Uzupełnienie 08.10.2026 — izolacja zewnętrznego konwertera DWG
+
+### Fakt z kodu i źródła wykonawczego
+
+`src/core/dwg.ts` wywołuje `promisify(execFile)` dla wybranego ODA/LibreDWG z plikiem przesłanym przez użytkownika. Użycie `execFile` bez `shell: true` nie uruchamia domyślnie shella, co ogranicza ryzyko klasycznego shell injection przez argumenty. Nie tworzy jednak sandboxa procesu. Oficjalna dokumentacja Node stwierdza, że zmienna środowiskowa procesu potomnego domyślnie jest ustawiana na `process.env`; bieżące wywołanie nie podaje własnego `env`. [Node.js child_process](https://nodejs.org/api/child_process.html)
+
+W efekcie, jeśli podatność w dekoderze/konwerterze zostanie wyzwolona przez spreparowany DWG, konwerter działa w granicach systemowych serwera i dziedziczy jego zmienne środowiskowe, potencjalnie także sekrety aplikacji. To **warunkowy wektor ryzyka**, nie dowód podatności konkretnej wersji ODA/LibreDWG ani eksploatacji. Nie potwierdzono, czy Vercel/środowisko produkcyjne ma konwerter dostępny, czy trasę można wywołać publicznie ani jakie sekrety są ustawione. Sama istniejąca linia kodu wystarcza jednak, by wymagać izolacji przed wdrożeniem CAD z prawdziwymi sekretami.
+
+### Wymagane zachowanie i priorytet
+
+**P0 przed włączeniem zewnętrznego DWG convertera w środowisku z sekretami:** proces potomny dostaje jawnie minimalne `env` (bez kluczy Supabase/Vercel, tokenów, haseł i sekretów sesji). Uruchamiać go z tymczasowym katalogiem wejścia/wyjścia i minimalnym użytkownikiem/systemowymi uprawnieniami. Preferować odrębną, izolowaną usługę/worker z limitem CPU/pamięci/czasu/dysku i blokadą niepotrzebnego ruchu sieciowego; samo usunięcie zmiennych env nie chroni odczytu plików, sieci ani innych uprawnień procesu.
+
+`execFile` i argumenty przekazywane jako tablica powinny zostać zachowane; nie przełączać na `exec` ani `shell: true`. Ścieżka programu konwertera ma pochodzić wyłącznie z zaufanej konfiguracji administratora, nigdy z żądania użytkownika. Ograniczyć maksymalny stdout/stderr (`maxBuffer`) oraz sprawdzić zachowanie przy timeout i przerwaniu funkcji. Proces konwertera nie może publikować wejściowego ani wyjściowego pliku bez dalszej walidacji DXF i limitów encji/wierzchołków opisanych powyżej.
+
+**P0 niezależnie:** auth i limity `POST /api/cad/analiza` oraz `/api/projekty/:id/import-cad` są warunkiem publikacji tych tras. Wysłanie przez API nie powinno pozwalać anonimowemu klientowi wykonywać kosztownej pracy konwertera.
+
+### Testy akceptacyjne
+
+1. Test używa nieszkodliwego fake convertera, który zapisuje widoczne mu nazwy env do pliku tymczasowego; w wariancie serwerowym nie otrzymuje żadnego testowego sekretu ani zmiennych aplikacji, a ma tylko jawnie dozwolone zmienne potrzebne konwerterowi.
+2. Test potwierdza, że argumenty zawierające spacje/metaznaki pozostają pojedynczymi argumentami i proces uruchamia się bez shell; ścieżka programu nie może być przekazana przez payload HTTP.
+3. Test symuluje wyjście ponad `maxBuffer`, timeout, przerwanie i niezerowy exit code; proces zostaje zakończony, prywatne temp files usunięte, szczegóły/zmienne/treść CAD nie trafiają do odpowiedzi ani logów.
+4. Integracyjny negatywny test dla anonimowego i nieuprawnionego członka potwierdza odmowę przed uruchomieniem convertera; licznik fake convertera pozostaje na zero.
+5. W środowisku testowym dokumentuje się sandboxowe limity i brak dostępu do sieci/sekretów. Nie testować atakujących plików na produkcyjnym konwerterze.
+
+**Zależności:** wybór deploy/runtime i wersji ODA/LibreDWG; administrator kontroluje ścieżkę programu; P0 auth API/MCP; osobna konfiguracja izolowanego worker-a. **Pozostaje niezweryfikowane:** aktywność DWG konwertera w produkcji, aktualne wersje binariów i ich znane CVE, dostęp publiczny do tras, logi i sekrety Vercel. Nie uruchamiano DWG ani convertera podczas tego researchu.
+
+Źródło ogólnej zasady kontroli plików wejściowych, skanowania, bezpiecznego przechowywania i izolacji: [OWASP File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html). Jest to uzupełnienie istniejących limitów zasobowych, nie zastąpienie ich.
