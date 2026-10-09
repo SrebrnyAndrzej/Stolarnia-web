@@ -163,3 +163,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Wizualnie zweryfikowano oficjalną stronę Blum 2027/2028, s.345: osobne tabele mocowań 578/30 kg i 576/65 kg oraz legenda A Ø4×15, B Ø6×14,5 mm; `**` oznacza opcjonalną pozycję stabilizującą. Dopisano ograniczenia odczytu do `docs/okucia/BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md`.
 - Nie zapisano współrzędnych do reguł CNC: strona nadal wymaga zdefiniowania baz, przypisania każdego punktu i parametrów otworu oraz potwierdzenia próbą montażową. Następny krok: zachować oficjalny PDF/identyfikator/rynek/hash, a potem dokończyć weryfikację mapy względem szablonu i próbnego montażu.
 - Nie zmieniono logiki aplikacji, katalogu, danych klienta, ceny ani umów. Przegląd dotyczył dokumentacji; test aplikacji nie dotyczy.
+
+## 2026-10-09 15:29 — Punkt wznowienia Codex
+
+- `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, brak nowych commitów Claude; gałąź izolowana `codex/research-zmiany-projektu-2026-10-07`.
+- Wizualnie przejrzano strony 1–3 oficjalnej instrukcji Amix Elite Box wewnętrznej. Str.1 pokazuje 2 grupy mocowań dla przykładowych NL250–350 i 3 dla NL400–550, ale nie wiąże grup z identyfikatorami części; pozycje mocowania frontu: 14=H84, 15=H116, 16=H167, 17=H199 (numery rysunkowe, nie SKU). Szczegóły i P0 dla BOM per NL/H dopisano do `docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md`.
+- Następny krok: odszukać producentową legendę/listę elementów lub wzornik dla tych mocowań, przypisać elementy do exact SKU, a dopiero potem zweryfikować w warsztacie. Nie generować CNC ze schematu nieoznaczonych grup; brak SKU, osi i parametrów otworów pozostaje `unknown`.
+- Bez zmian logiki, cen, danych klienta i umów. Wykonano kontrolę dokumentacji i `git diff --check`; testy aplikacji nie dotyczą.
