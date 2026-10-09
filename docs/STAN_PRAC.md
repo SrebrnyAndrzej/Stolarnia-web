@@ -137,3 +137,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Dodany research: `docs/okucia/GTV-AXIS-PRO-vs-MODERN-BOX-PRO-elementy-16mm-2026-10-09.md`. Oficjalne źródła GTV różnią środkowe elementy pleców z płyty 16 mm (AXIS PRO H=116 mm, MODERN BOX PRO H=135 mm), a MBPRO rozdziela ponadto C=199 i D=167. Z OCR nie zatwierdzono formuł wycięć; należy sprawdzić rysunki i zrobić próbny montaż.
 - Następny temat: pozyskać zweryfikowane wymiarowe karty/rysunki na formatek dla konkretnych GTV SKU albo wybrać kolejny niedublujący się priorytet researchu. Przy nowym commicie Claude najpierw przegląd i adekwatne testy.
 - Nie zmieniano logiki aplikacji, katalogu, danych klienta, ceny ani umów.
+
+## 2026-10-09 11:27 — Punkt wznowienia Codex
+
+- Ostatnia sprawdzona rewizja `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3`; świeży fetch bez commitów Claude.
+- Zaktualizowano `docs/okucia/GTV-AXIS-PRO-vs-MODERN-BOX-PRO-elementy-16mm-2026-10-09.md`: oba niezależne źródła GTV potwierdzają przy 16 mm wspólne relacje dna `(LW−75)×(NL−24)` i szerokości pleców `LW−87`; wysokości pleców pozostają profile-specific (średni Axis Pro 116 vs MBPRO 135 mm; MBPRO C=199, D=167). Model powinien zachować osobną provenance/rewizję źródła dla każdego profilu, nawet gdy matematyka jest wspólna.
+- Próba otwarcia oficjalnej instrukcji Axis Pro 18 mm w narzędziu web pozostała niedostępna; bez nowych danych w tym obszarze. Następny temat: kolejny niezależny brak wierceń/formatek do zamknięcia z kolejki źródeł producenta; nie tworzyć formuł z niedostępnego PDF.
+- Bez zmian logiki aplikacji, katalogu, danych klienta, ceny i umów.
