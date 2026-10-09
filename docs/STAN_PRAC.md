@@ -178,6 +178,13 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Następnie odtworzyć stronę 345 w lokalnym artefakcie przez dozwoloną ścieżkę pobierania pojedynczej strony lub przerzucić ją do kolejnego niezależnego, niezdublowanego ryzyka w kolejce. Do czasu odczytu baz, symboli i wymiarów otworów oraz walidacji fizycznej, TANDEMBOX CNC pozostaje niezatwierdzone.
 - Bez zmian logiki, katalogu, danych klienta, ceny uzgodnionej 29 227,60 zł brutto ani umów.
 
+## 2026-10-09 21:32 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Gałąź izolowana `codex/research-zmiany-projektu-2026-10-07`.
+- Wizualnie sprawdzono drukowaną s.10 oficjalnej karty GTV Axis Pro: sekcja szuflady wewnętrznej określa `LW` jako światło wewnętrzne korpusu, `R` jako wysokość panelu i pokazuje dwa osobne wymiary elementów `LW−80` oraz `LW−100`. Zaktualizowano lukę danych: GTV ma częściowe adnotacje wymiarowe, lecz nie pełną konfigurację szuflady wewnętrznej. Szczegóły, granice i kryteria dla Claude: `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md`.
+- Następny temat: odnaleźć producentową listę części/instrukcję dla exact Axis Pro internal-drawer SKU, aby przypisać callouty do elementów oraz ustalić `R`, materiał, grubość i zakresy. Do tego czasu niepełny profil nie może generować kompletnego BOM/CNC; jeśli pojawi się commit Claude, najpierw review i adekwatne testy.
+- Research-only; bez zmian logiki, danych klienta, ceny uzgodnionej 29 227,60 zł brutto ani umów. Wykonać `git diff --check` przed publikacją.
+
 ## 2026-10-09 20:31 — Punkt wznowienia Codex
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Gałąź izolowana `codex/research-zmiany-projektu-2026-10-07`.
