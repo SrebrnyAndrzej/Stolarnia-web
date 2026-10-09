@@ -130,3 +130,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Zmiana do opublikowania: źródłowa rozbieżność zakresu przyrządów GTV `PB-SZABLON-AXIS-MB` vs MBPRO w briefie `docs/okucia/GTV-AXIS-PRO-szablony-wiercen-korpusu-2026-10-09.md` i dzienniku koordynacji. `unknown` pozostaje obowiązujące dla nierozstrzygniętych kombinacji; mapowanie ręcznego przyrządu nie jest mapą CNC.
 - Następny temat: źródłowo zweryfikować wariantowe mocowania pleców GTV, bez wnioskowania z nazw rodziny; jeśli pojawi się nowa zmiana Claude, najpierw wykonać review/testy według głównego briefu.
 - Nie zmieniano logiki aplikacji, danych klienta, ceny ani umów.
+
+## 2026-10-09 10:27 — Punkt wznowienia Codex
+
+- Ostatnia sprawdzona rewizja `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3`; świeży fetch bez nowych commitów Claude.
+- Dodany research: `docs/okucia/GTV-AXIS-PRO-vs-MODERN-BOX-PRO-elementy-16mm-2026-10-09.md`. Oficjalne źródła GTV różnią środkowe elementy pleców z płyty 16 mm (AXIS PRO H=116 mm, MODERN BOX PRO H=135 mm), a MBPRO rozdziela ponadto C=199 i D=167. Z OCR nie zatwierdzono formuł wycięć; należy sprawdzić rysunki i zrobić próbny montaż.
+- Następny temat: pozyskać zweryfikowane wymiarowe karty/rysunki na formatek dla konkretnych GTV SKU albo wybrać kolejny niedublujący się priorytet researchu. Przy nowym commicie Claude najpierw przegląd i adekwatne testy.
+- Nie zmieniano logiki aplikacji, katalogu, danych klienta, ceny ani umów.
