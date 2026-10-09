@@ -30,3 +30,19 @@ Proponowana kolejność: test starego formularza → zachowanie szkicu → proje
 ## Punkt wznowienia
 
 Sprawdzono origin/main 8371276 i dodatkowo istniejący test chmury 1/1. Brak nowych zmian Claude. Następny przegląd: test API starego formularza i utraconej odpowiedzi na środowisku testowym, bez dotykania danych klientów. Research produkcyjny pozostaje P0: konkretne mocowania Amix/GTV i brakujące operacje Blum; temat zawiasu nie został zatwierdzony. Ceny i historyczne umowy pozostają bez zmian.
+
+## Doprecyzowanie 09.10.2026 — cofnięcie może przywrócić starą pełną migawkę
+
+Na świeżym `origin/main` `8230275ad6dea52109f581c793bdd8d6f08684d3` potwierdzono konkretną ścieżkę starego stanu poza zwykłym, częściowym PATCH-em:
+
+- `web/src/views/Designer.tsx` trzyma stos `wstecz`/`naprzod` w lokalnym `useState`. Każdy wpis jest migawką całych `pomieszczenia` i `moduly`. Polling w nadrzędnym `web/src/App.tsx` odświeża analizę projektu co 4 sekundy; odświeżenie propsów nie resetuje lokalnego stosu historii projektanta.
+- Cofnięcie/ponowienie wywołuje `api.przywrocStan(p.id, snapshot)`; `web/src/api.ts` wysyła do `PUT /api/projekty/:id/stan` tylko te dwie tablice, bez rewizji, na której migawka powstała.
+- `src/server/app.ts` przekazuje body do `Stolarnia.przywrocStan()`. `src/service.ts` sprawdza jedynie, czy tablice są tablicami, a potem zastępuje nimi pełne aktualne tablice projektu przez `edytuj()` i zwiększa rewizję. Nie ma porównania oczekiwanej rewizji klienta z bieżącą.
+
+Wniosek: jeśli inny pracownik lub MCP zmieni projekt po zapisaniu lokalnej migawki, a użytkownik następnie kliknie Cofnij/Ponów w nadal otwartym projektancie, ta operacja może zastąpić bieżące pomieszczenia i moduły starą migawką, jednocześnie poprawnie zwiększając rewizję. To wynika ze statycznego przepływu kodu; nie wykonano testu dwóch użytkowników ani nie potwierdzono produkcyjnego wystąpienia. Mechanizm `wersja` w Supabase nie wystarczy, bo żądanie starej migawki po odczycie aktualnej bazy jest nowym, poprawnym zapisem z bieżącą wersją magazynu.
+
+**P0 przed wspólną edycją:** do pełnostanowego przywrócenia dołączyć oczekiwaną rewizję projektu, sprawdzać ją atomowo względem aktualnego projektu i odrzucać starą migawkę jako konflikt bez modyfikacji. Po konflikcie zachować lokalny stos/migawkę do skopiowania albo ponownego porównania; nie wykonywać ślepego retry ani nie zastępować nowego stanu. Rozważyć ograniczenie cofania do operacji/patcha lub zakresu dotkniętego przez tę kartę, lecz nie scalać automatycznie konstrukcji bez reguł domenowych.
+
+**Kryterium odbioru:** A i B otwierają rewizję r. A zmienia moduł i zapisuje r+1. B, mając wcześniejszy wpis undo, klika Cofnij po otrzymaniu świeżej analizy r+1. Serwer zwraca konflikt, pozostawia pomieszczenia/moduły r+1 bez zmian, a UI nie pokazuje „Cofnięto”; lokalna migawka B jest nadal dostępna do jawnego rozstrzygnięcia. Pokryć analogicznie Redo oraz cofnięcie bez konfliktu (które ma działać normalnie).
+
+Źródła dowodu lokalnego: `web/src/views/Designer.tsx`, `web/src/views/Temat.tsx` (ten plik nie jest historią projektanta), `web/src/App.tsx`, `web/src/api.ts`, `src/server/app.ts`, `src/service.ts`. Podstawa kontroli rewizji i wcześniejsze scenariusze: powyższa sekcja oraz [PostgreSQL transaction isolation](https://www.postgresql.org/docs/current/transaction-iso.html). Bez zmian aplikacji i bez testów runtime.
