@@ -178,6 +178,13 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Następnie odtworzyć stronę 345 w lokalnym artefakcie przez dozwoloną ścieżkę pobierania pojedynczej strony lub przerzucić ją do kolejnego niezależnego, niezdublowanego ryzyka w kolejce. Do czasu odczytu baz, symboli i wymiarów otworów oraz walidacji fizycznej, TANDEMBOX CNC pozostaje niezatwierdzone.
 - Bez zmian logiki, katalogu, danych klienta, ceny uzgodnionej 29 227,60 zł brutto ani umów.
 
+## 2026-10-09 22:34 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Gałąź izolowana `codex/research-zmiany-projektu-2026-10-07` (ostatni research opublikowany jako `d7f0d57`).
+- Indeksowane oficjalne karty GTV Axis Pro GLASS 2023/2024 wskazują wariantowe dane szuflady wewnętrznej: standardowe `R` A/B/C=110/95/110, szklane `S` A/B/C=56/88/139 oraz callouty `LW−80`/`LW−100`. Bezpośredni PDF zwrócił HTTP 502; to niezweryfikowany trop, bez zastosowania produkcyjnego. Szczegóły, rozbieżność SKU i kryteria: `docs/okucia/GTV-AXIS-PRO-GLASS-szuflady-wewnetrzne-profile-2023-2024-2026-10-09.md`.
+- Następny temat: pozyskać lokalne, czytelne PDF-y GTV GLASS do wizualnego porównania rewizji i potwierdzenia wartości/SKU A/B/C; nie dopisywać kandydackich wymiarów `R`/`S` do aktywnych reguł. Jeśli pojawi się commit Claude, najpierw review i adekwatne testy.
+- Research-only; bez zmian logiki, danych klienta, ceny uzgodnionej 29 227,60 zł brutto ani umów. Po zmianach wykonać `git diff --check`.
+
 ## 2026-10-09 21:32 — Punkt wznowienia Codex
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Gałąź izolowana `codex/research-zmiany-projektu-2026-10-07`.
