@@ -122,3 +122,11 @@ Braki danych oznaczają wydanie jako robocze; `tylkoKompletne` blokuje takie wyd
 
 ## 2026-09-25 - Widok 3D: studyjne HDRI (Claude)
 Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska generowana w przeglądarce (cyklorama i softboxy HDR przez PMREM) z tone mappingiem ACES i cieniem od głównego softboxu. Nie wymaga pobierania plików. Prawdziwy plik HDRI (np. Poly Haven, CC0) można dodać później, po zgodzie na pobranie. Kamera startowa stoi ponad najwyższą szafką.
+
+## 2026-10-09 09:26 — Punkt wznowienia Codex
+
+- Repozytorium: `SrebrnyAndrzej/Stolarnia-web`, izolowana gałąź `codex/research-zmiany-projektu-2026-10-07`.
+- Ostatnia sprawdzona rewizja `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Zmiana do opublikowania: źródłowa rozbieżność zakresu przyrządów GTV `PB-SZABLON-AXIS-MB` vs MBPRO w briefie `docs/okucia/GTV-AXIS-PRO-szablony-wiercen-korpusu-2026-10-09.md` i dzienniku koordynacji. `unknown` pozostaje obowiązujące dla nierozstrzygniętych kombinacji; mapowanie ręcznego przyrządu nie jest mapą CNC.
+- Następny temat: źródłowo zweryfikować wariantowe mocowania pleców GTV, bez wnioskowania z nazw rodziny; jeśli pojawi się nowa zmiana Claude, najpierw wykonać review/testy według głównego briefu.
+- Nie zmieniano logiki aplikacji, danych klienta, ceny ani umów.

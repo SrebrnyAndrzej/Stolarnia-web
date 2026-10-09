@@ -27,9 +27,15 @@ Instrukcja podstawowego MB przedstawia szablon o długości 720 mm i opisuje po�
 
 **Mierzalne kryteria odbioru:** testy rozróżniają oba SKU; dla `2×284+140` wynik serii podstawowej to `1,3,5`, a MBPRO `1,3,6`; dla `5×140` podstawowy to `1–5`, a MBPRO `1,2,3,5,6`. Brak SKU przyrządu lub nierozpoznany układ nie zwraca wzoru. Test eksportu potwierdza, że same serie szablonu nie otrzymują statusu operacji CNC z Ø/głębokością/tolerancją.
 
+## Niezgodność zakresu między kartą i instrukcją — wymaga potwierdzenia
+
+Strona produktu GTV dla `PB-SZABLON-AXIS-MB` w języku EN deklaruje kompatybilność z Axis Pro, Modern Box Pro i Modern Box. Otwarta instrukcja producenta nosi tytuł „Szablon do szuflad Axis Pro i Modern Box” i pokazuje serie tylko dla Axis Pro oraz Modern Box. Równocześnie osobna karta `PB-SZABLON-AXIS-MBPRO` podaje własne, odmienne serie dla układów frontów. Są to rozbieżne deklaracje zakresu, a nie dowód, że warianty MB i MBPRO można zastępować.
+
+Karta produktu Axis Pro 18 mm (`PB-AXISPRO18-KPL500C1`) wymienia jako pomoc `PB-SZABLON-AXIS-MB`, ale nie zawiera wymiarowego potwierdzenia dla nakładania frontu, dokładnego profilu 18 mm ani wiercenia CNC. **Nie łączyć** tego SKU przyrządu z listą serii MBPRO tylko dlatego, że produktowa strona podstawowego szablonu wspomina Modern Box Pro. Kryterium przed wdrożeniem reguły: GTV potwierdza pisemnie, której rewizji przyrządu dotyczy instrukcja oraz czy MB-profil produktu obejmuje MBPRO; do tego czasu niekompletne przecięcia pozostają `unknown`.
+
 ## Granice dowodu
 
-Różne serie są podane na aktualnych stronach produktów GTV, a wymiary podstawowego przyrządu w jego instrukcji PDF. Nie sprawdzono fizycznych egzemplarzy przyrządów, warunków zgodności Basic/MBPRO z każdym SKU szuflady, ani rzeczywistej bazy i tolerancji na konkretnych korpusach. Tekst instrukcji wspomina fronty/nałożenie 16 mm; nie należy automatycznie stosować tego ustawienia do każdej grubości lub konstrukcji frontu. Zapis nie zatwierdza wierceń seryjnych.
+Różne serie są podane na aktualnych stronach produktów GTV, a wymiary podstawowego przyrządu w jego instrukcji PDF. Nie sprawdzono fizycznych egzemplarzy przyrządów, warunków zgodności Basic/MBPRO z każdym SKU szuflady, ani rzeczywistej bazy i tolerancji na konkretnych korpusach. Deklaracja Modern Box Pro na karcie `MB` nie została uzgodniona z zakresem instrukcji ani odrębną kartą `MBPRO`. Tekst instrukcji wspomina fronty/nałożenie 16 mm; nie należy automatycznie stosować tego ustawienia do każdej grubości lub konstrukcji frontu. Zapis nie zatwierdza wierceń seryjnych.
 
 ## Punkt wznowienia
 
