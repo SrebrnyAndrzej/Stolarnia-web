@@ -144,3 +144,9 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Zaktualizowano `docs/okucia/GTV-AXIS-PRO-vs-MODERN-BOX-PRO-elementy-16mm-2026-10-09.md`: oba niezależne źródła GTV potwierdzają przy 16 mm wspólne relacje dna `(LW−75)×(NL−24)` i szerokości pleców `LW−87`; wysokości pleców pozostają profile-specific (średni Axis Pro 116 vs MBPRO 135 mm; MBPRO C=199, D=167). Model powinien zachować osobną provenance/rewizję źródła dla każdego profilu, nawet gdy matematyka jest wspólna.
 - Próba otwarcia oficjalnej instrukcji Axis Pro 18 mm w narzędziu web pozostała niedostępna; bez nowych danych w tym obszarze. Następny temat: kolejny niezależny brak wierceń/formatek do zamknięcia z kolejki źródeł producenta; nie tworzyć formuł z niedostępnego PDF.
 - Bez zmian logiki aplikacji, katalogu, danych klienta, ceny i umów.
+## 2026-10-09 12:28 — Punkt wznowienia Codex
+
+- Świeży `origin/main` nadal `8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Pracuję na gałęzi izolowanej `codex/research-zmiany-projektu-2026-10-07`.
+- Dodano `docs/okucia/GTV-AXIS-PRO-GLASS-rozbieznosc-wysokosci-dokumentacji-2023-2024-2026-10-09.md`. Oficjalne instrukcje GTV opisane jako 2023/2024 różnią się wartościami H dla Low/Medium/High (86/120/168 vs 84/116/167 mm). Nieznane jest przypisanie rewizji do SKU ani przyczyna różnicy; nie należy automatycznie stosować wartości do starego zakupu ani zatwierdzać CNC.
+- Następnie sprawdzić źródłowe zmiany Claude. Jeśli brak, przejść do kolejnego niepowielającego się ryzyka technologicznego okuć; wymagać jawnego SKU/revizji i pozostawiać niewiadome jako `unknown`.
+- Nie zmieniano logiki aplikacji, katalogu produktów, danych klienta, ceny ani umów. PDF-y weryfikowano online; nie zapisano ich lokalnej kopii ani checksumy.

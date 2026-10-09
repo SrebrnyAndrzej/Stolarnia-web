@@ -63,6 +63,7 @@ Dla Amix i GTV otwory prowadnic są operacjami w bokach. Średnica i głębokoś
 
 - Amix: instrukcja standardowa i wewnętrzna mają różne wartości L1 (100 i 95 dla wskazanych długości). Nie łączyć ich schematów wierceń. Wariant i rewizję trzeba rozstrzygnąć przy przypisaniu do SKU. Instrukcja wewnętrzna jest załączona, ale nie dostała osobnego zatwierdzonego profilu.
 - Axis Pro: pliki nazwane `_3` i `_4` są identyczne bajtowo. Numer w nazwie nie dowodzi nowej rewizji. Nie rozszerzać reguły na Axis Pro Glass lub niezweryfikowane wysokości.
+- Axis Pro Glass: publiczne instrukcje opisane jako 2023 i 2024 podają inne wysokości Low/Medium/High (86/120/168 vs 84/116/167 mm). Przyczyna i mapowanie do SKU pozostają nieznane; patrz `GTV-AXIS-PRO-GLASS-rozbieznosc-wysokosci-dokumentacji-2023-2024-2026-10-09.md`. Nie wybierać wartości bez dopasowania do wersji zamówienia.
 - Modern Box PRO: C=199, D=167; kolejność liter nie oznacza rosnącej wysokości.
 - Blum: zweryfikowano tu tylko wskazane warianty M z drewnianymi plecami. Pozostałe warianty są w załączonych katalogach i wymagają odrębnej normalizacji.
 - Wymiary prostokątów nie zastępują frezowania, otworów, tolerancji, odsadzeń prowadnic i wymagań montażowych. Brakujące dane mają blokować wydanie produkcyjne, nie samo projektowanie.
