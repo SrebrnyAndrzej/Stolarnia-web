@@ -170,3 +170,17 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Wizualnie przejrzano strony 1–3 oficjalnej instrukcji Amix Elite Box wewnętrznej. Str.1 pokazuje 2 grupy mocowań dla przykładowych NL250–350 i 3 dla NL400–550, ale nie wiąże grup z identyfikatorami części; pozycje mocowania frontu: 14=H84, 15=H116, 16=H167, 17=H199 (numery rysunkowe, nie SKU). Szczegóły i P0 dla BOM per NL/H dopisano do `docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md`.
 - Następny krok: odszukać producentową legendę/listę elementów lub wzornik dla tych mocowań, przypisać elementy do exact SKU, a dopiero potem zweryfikować w warsztacie. Nie generować CNC ze schematu nieoznaczonych grup; brak SKU, osi i parametrów otworów pozostaje `unknown`.
 - Bez zmian logiki, cen, danych klienta i umów. Wykonano kontrolę dokumentacji i `git diff --check`; testy aplikacji nie dotyczą.
+## 2026-10-09 17:29 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchu `codex/research-zmiany-projektu-2026-10-07` jest czysta przed tym wpisem.
+- Ponownie sprawdzono oficjalny katalog Blum 2027/2028, drukowaną s.345. Widok potwierdza dwie osobne tabele mocowania 578/30 kg i 576/65 kg oraz legendę A/B/`**`; tekst indeksowanej strony podaje A: wkręt do płyty Ø4×15 mm, B: systemowy Ø6×14,5 mm, kod 661.1450.HG, a `**` jako opcjonalne mocowanie zwiększające stabilność, zastępowalne A. To potwierdza istniejący brief, nie dodaje geometrii CNC; żadnych współrzędnych nie zatwierdzono.
+- Próba zebrania widocznych plików wektorowych/rastrowych strony przez mechanizm zasobów przeglądarki nie powiodła się: środowisko odmówiło utworzenia katalogu tymczasowego `C:\Users\Komp\AppData\Local\Temp\browser-use` (`EPERM`). Nie pobrano ani nie zapisano PDF/obrazu lokalnie; nie kontynuowano przez obejście poza dozwolonym katalogiem.
+- Następnie odtworzyć stronę 345 w lokalnym artefakcie przez dozwoloną ścieżkę pobierania pojedynczej strony lub przerzucić ją do kolejnego niezależnego, niezdublowanego ryzyka w kolejce. Do czasu odczytu baz, symboli i wymiarów otworów oraz walidacji fizycznej, TANDEMBOX CNC pozostaje niezatwierdzone.
+- Bez zmian logiki, katalogu, danych klienta, ceny uzgodnionej 29 227,60 zł brutto ani umów.
+
+## 2026-10-09 20:31 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Gałąź izolowana `codex/research-zmiany-projektu-2026-10-07`.
+- Dalszy odczyt z powiększonego widoku oficjalnej strony Blum 2027/2028, drukowana s.345, czytelnie odsłonił etykiety pozycji w oddzielnych tabelach: dla 578 / 30 kg `19**`, 37, 115, 133, 165, 229, 261, 293; dla 576 / 65 kg `19**`, 28, 37, 115, 165, 261, 293, 357, 453, 517, 549. Uzupełniono istniejący brief TANDEMBOX. Odczyt nadal nie rozstrzyga baz/stron odniesienia ani geometrii otworów, więc lista nie jest mapą CNC i nie zmienia blokady zwolnienia.
+- Dla pozyskania trwałego obrazu/pliku strona nie pozwoliła zapisać tymczasowego bundle z powodu `EPERM` dla katalogu poza workspace; nie obchodzono ograniczenia. Następny temat: spróbować jednorazowo pobrania wyłącznie bieżącej strony przez oficjalny interfejs Blum, jeśli istnieje zapisywalne miejsce docelowe; w przeciwnym razie przejść do niezależnego źródłowego ryzyka GTV, a brak mapy CNC utrzymać `unknown`.
+- Bez zmian logiki, katalogu, danych klienta, ceny uzgodnionej ani umów; kontrola `git diff --check` do wykonania po aktualizacji.
