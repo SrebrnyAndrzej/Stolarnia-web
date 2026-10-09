@@ -150,3 +150,9 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Dodano `docs/okucia/GTV-AXIS-PRO-GLASS-rozbieznosc-wysokosci-dokumentacji-2023-2024-2026-10-09.md`. Oficjalne instrukcje GTV opisane jako 2023/2024 różnią się wartościami H dla Low/Medium/High (86/120/168 vs 84/116/167 mm). Nieznane jest przypisanie rewizji do SKU ani przyczyna różnicy; nie należy automatycznie stosować wartości do starego zakupu ani zatwierdzać CNC.
 - Następnie sprawdzić źródłowe zmiany Claude. Jeśli brak, przejść do kolejnego niepowielającego się ryzyka technologicznego okuć; wymagać jawnego SKU/revizji i pozostawiać niewiadome jako `unknown`.
 - Nie zmieniano logiki aplikacji, katalogu produktów, danych klienta, ceny ani umów. PDF-y weryfikowano online; nie zapisano ich lokalnej kopii ani checksumy.
+## 2026-10-09 13:28 — Punkt wznowienia Codex
+
+- Świeży `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchu `codex/research-zmiany-projektu-2026-10-07`.
+- Uzupełniono brief TANDEMBOX i README źródłem Blum 2027/2028, s.345: osobne diagramy mocowania korpusu dla prowadnic 578/30 kg i 576/65 kg zależne od NL; SKU 578.4501M jest wskazany w bieżącej karcie jako obsługujący wiercenie liniowe. Ekstrakcja tekstowa nie wystarcza do mapy współrzędnych, więc profili wierceń nie zmieniono, a CNC pozostaje zablokowane do wizualnego odczytu i próby.
+- Następnie ręcznie sprawdzić rysunek o wysokiej rozdzielczości i określić każdą pozycję, jej bazę, typ, wymagany wkręt A/B i opcjonalność; dopiero po mapowaniu dokładnych SKU/NL i fizycznej walidacji rozważyć regułę produkcyjną.
+- Bez zmian logiki, katalogu produktów, danych klienta, ceny i umów. Katalog 2027/2028 przeglądano publicznie; nie zapisano lokalnej kopii ani checksumy.

@@ -47,11 +47,13 @@ Wynik: dno i plecy dla wszystkich sześciu systemów obok siebie, ze wzorem, str
 | Amix Elite Box | min. 33 | 37, 69 + tylna para wg NL (165/197, 229/261, 261/293) | AMIX-Elite-Box-standardowe s.2 |
 | GTV Axis Pro | 32 | 37 + tylny wg NL (+96/+128/+192/+224; 600: +224 i +352) | GTV-Axis-Pro-karta s.6–7 |
 | GTV Modern Box PRO | 33 | 37 + tylny +192 (NL 300–400) / +224 (450–550) | GTV-Modern-Box-Pro-instrukcja s.6 |
-| Blum TANDEMBOX antaro | min. 33 (nad osią 65,5) | brak w karcie | planowanie s.7 |
+| Blum TANDEMBOX antaro | min. 33 (nad osią 65,5) | diagramy 578/30 kg i 576/65 kg wg NL istnieją w katalogu 2027/2028; punkty nieznormalizowane | planowanie s.7; aktualny katalog s.345 |
 | Blum LEGRABOX | min. 38 (+1 przy montażu przed korpusem; nad osią 68) | brak w karcie | planowanie s.14 |
 | Blum MERIVOBOX | min. 54 (+1 przy montażu przed korpusem; nad osią 54) | brak w karcie | planowanie s.14 |
 
 Dokumentacja (`technologia.ts → wysokosciProwadnic`): najniższa prowadnica = płyta pod szufladą + wymiar z karty (kotwica rastra). Każda wyższa zachowuje położenie względem swojego frontu i jest dociągana w górę do wielokrotności 32 mm nad kotwicą. Wszystkie prowadnice leżą więc w jednej linii otworów systemu 32.
+
+Aktualny [katalog Blum 2027/2028, s.345](https://publications.blum.com/2026/catalogue/en/345/) zawiera mapy mocowania prowadnic 578 i 576 zależne od NL. Nie zostały jeszcze zweryfikowane graficznie ani wpisane jako pełna mapa CNC; patrz `BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md`.
 
 Podniesienie (do 31 mm) oznacza, że skrzynka siedzi wyżej względem frontu. Wymiary mocowania frontu w kartach są minimalne, więc to dopuszczalne; uwaga trafia do dokumentacji. Wynik jest w `DokumentacjaProjektu.prowadnice`, na karcie szafki (linie na przekroju i wiersz „Prowadnice”) oraz na rysunku boku.
 
