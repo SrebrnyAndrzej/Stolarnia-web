@@ -47,6 +47,12 @@ Karta aktualnego wariantu TANDEMBOX potwierdza dodatkowo, że wiercenie liniowe 
 
 Odczyt tekstowy strony 345 zawiera etykiety wymiarów i grup NL, lecz ich kolejność w ekstrakcji nie wystarcza do odwzorowania wszystkich punktów, ich baz i oznaczeń A/B na części. Nie zapisano więc żadnej nowej liczbowej listy `holes_from_front_mm`. Przed implementacją należy obejrzeć oryginalny rysunek o wysokiej rozdzielczości i powiązać każdą pozycję z typem otworu, średnicą/głębokością, sposobem mocowania, opcjonalnością i dokładnym SKU. W międzyczasie `unknown` oraz blokada zwolnienia CNC pozostają prawidłowe.
 
+### Kontrola graficzna strony 345 — 09.10.2026
+
+Otworzyłem stronę 345 bieżącego interaktywnego katalogu Blum 2027/2028 w wysokim powiększeniu. Obraz potwierdza, że to dwie osobne tabele „Cabinet profile fixing positions”: 578 / 30 kg i 576 / 65 kg, z odmiennymi zakresami NL, kolumnami pozycji oraz układami symboli. Legenda rozróżnia wkręt do płyty A (Ø4 × 15 mm) i wkręt systemowy B (Ø6 × 14,5 mm, 661.1450.HG); oznaczenie `**` opisuje pozycję opcjonalną dla większej stabilności, którą można zastąpić wkrętem do płyty A. [Strona Blum 345](https://publications.blum.com/2026/catalogue/en/345/).
+
+To wizualne potwierdzenie legendy i rozdzielenia tabel, nie kompletna geometria obróbki płyty. Diagram nie podaje w tej tabeli jawnej średnicy/głębokości wstępnego nawiercenia ani tolerancji; same symbole wkrętów nie wystarczają do wygenerowania bezpiecznej operacji CNC. Nie przepisuję z obrazu współrzędnych do `reguly-szuflad.json`. Do zwolnienia produkcyjnego nadal wymagane są jawny początek/strona odniesienia dla każdego wymiaru, przypisanie symbolu do punktu, parametry otworu i potwierdzenie próbą montażową na właściwym profilu/SKU.
+
 ## Rekomendacje dla Claude
 
 | Priorytet | Problem i dowód | Zachowanie | Zależności | Kryterium odbioru |

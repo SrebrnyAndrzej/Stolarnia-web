@@ -156,3 +156,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Uzupełniono brief TANDEMBOX i README źródłem Blum 2027/2028, s.345: osobne diagramy mocowania korpusu dla prowadnic 578/30 kg i 576/65 kg zależne od NL; SKU 578.4501M jest wskazany w bieżącej karcie jako obsługujący wiercenie liniowe. Ekstrakcja tekstowa nie wystarcza do mapy współrzędnych, więc profili wierceń nie zmieniono, a CNC pozostaje zablokowane do wizualnego odczytu i próby.
 - Następnie ręcznie sprawdzić rysunek o wysokiej rozdzielczości i określić każdą pozycję, jej bazę, typ, wymagany wkręt A/B i opcjonalność; dopiero po mapowaniu dokładnych SKU/NL i fizycznej walidacji rozważyć regułę produkcyjną.
 - Bez zmian logiki, katalogu produktów, danych klienta, ceny i umów. Katalog 2027/2028 przeglądano publicznie; nie zapisano lokalnej kopii ani checksumy.
+
+## 2026-10-09 14:29 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź: `codex/research-zmiany-projektu-2026-10-07`.
+- Wizualnie zweryfikowano oficjalną stronę Blum 2027/2028, s.345: osobne tabele mocowań 578/30 kg i 576/65 kg oraz legenda A Ø4×15, B Ø6×14,5 mm; `**` oznacza opcjonalną pozycję stabilizującą. Dopisano ograniczenia odczytu do `docs/okucia/BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md`.
+- Nie zapisano współrzędnych do reguł CNC: strona nadal wymaga zdefiniowania baz, przypisania każdego punktu i parametrów otworu oraz potwierdzenia próbą montażową. Następny krok: zachować oficjalny PDF/identyfikator/rynek/hash, a potem dokończyć weryfikację mapy względem szablonu i próbnego montażu.
+- Nie zmieniono logiki aplikacji, katalogu, danych klienta, ceny ani umów. Przegląd dotyczył dokumentacji; test aplikacji nie dotyczy.
