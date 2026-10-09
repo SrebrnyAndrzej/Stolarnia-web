@@ -54,3 +54,26 @@ Ten brief nie zmienia żadnej umowy, ceny, warunków ani statusu dokumentu klien
 ## Punkt wznowienia
 
 Po publikacji pobrać świeży `origin/main`; sprawdzić P0 API/Storage ACL i ewentualne zmiany Claude w `umovy`, rendererze ofert/umów oraz `cenaUzgodnionaBrutto`. Kolejny etap ma potwierdzić testami, że konkretna wystawiona kwota i PDF są odtwarzalne po aktualizacji projektu i kodu.
+
+## Aktualizacja 2026-10-09 — konkretne punkty ponawiania REST/MCP
+
+Ponowny fetch pokazał, że `origin/main` nadal wskazuje `8230275ad6dea52109f581c793bdd8d6f08684d3`. Ta aktualizacja rozwija wymaganie idempotencji z punktu 5 oraz kryterium 5 powyżej przez mapowanie na obecne ścieżki kodu:
+
+- REST `POST /api/projekty` i MCP `utworz_projekt` wywołują `s.utworzProjekt()`, które generuje nowe ID projektu/pomieszczenia i dopisuje rekord. Ponowienie po utracie odpowiedzi tworzy nowy projekt.
+- REST `POST /api/projekty/:id/wydania` i MCP `utworz_wydanie_produkcyjne` wywołują `s.utworzWydanie()`, które dopisuje wydanie z kolejnym numerem i nowym ID. Ponowienie po tym, jak pierwszy zapis już się utrwalił, tworzy kolejne wydanie tej samej bieżącej rewizji. Obecne `tylkoKompletne` waliduje gotowość, nie deduplikuje.
+- `Magazyn.utrwal()` porównuje oczekiwaną wersję dokumentu Supabase i może odrzucić niektóre równoległe zapisy; kolejka aplikacji serializuje żądania tylko w jednej instancji procesu. Żaden z tych mechanizmów nie odtwarza odpowiedzi udanego, wcześniejszego wywołania po odrębnym, sekwencyjnym ponowieniu.
+- Nie znaleziono klucza operacji w wejściu tych narzędzi/tras ani trwałego rejestru rezultatów. Nie badano retry wykonywanych przez konkretne klienty; brak odpowiedzi może wynikać także z przerwania połączenia po zatwierdzonym zapisie.
+
+RFC 9110 §9.2.2 mówi, że klient nie powinien automatycznie ponawiać żądania metodą nieidempotentną, chyba że może ustalić semantykę idempotentną albo wykryć, że pierwsze żądanie nie zostało zastosowane. Specyfikacja MCP 2025-11-25 dopuszcza przekazywanie błędów wykonania modelowi do samokorekty, ale nie definiuje trwałej deduplikacji operacji ani gwarancji retry.
+
+**Doprecyzowanie odbioru:** dla utworzenia projektu i wydania klient przekazuje stabilny identyfikator operacji; serwer zapisuje identyfikator i wynik atomowo z mutacją. Ten sam identyfikator/payload zwraca ten sam wynik, ten sam identyfikator z innym payloadem daje konflikt, nowy identyfikator tworzy nowe zamierzone działanie. Wydanie musi po retry zachować ten sam numer, ID, rewizję i hash. Testy obejmują utratę odpowiedzi po trwałym zapisie, ponowienie po restarcie procesu oraz dwa procesy; transportowe ID JSON-RPC nie jest trwałym kluczem biznesowym.
+
+To jest weryfikacja implementacyjnych punktów do istniejącego zalecenia idempotencji, a nie nowa ogólna propozycja retry. Nie wykonano zapisów, testów awarii ani wywołań produkcyjnych. Następnie sprawdzić świeże commity Claude oraz ewentualne klucze operacji w REST/MCP; po ich dodaniu wykonać scenariusze powyżej.
+
+Źródła aktualizacji:
+
+- IETF, RFC 9110 §9.2.2: https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2
+- IETF, RFC 9110 §9.3.3: https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.3
+- MCP Tools, wersja `2025-11-25`: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+
+Pliki ponownie sprawdzone: `src/service.ts`, `src/mcp/server.ts`, `src/server/app.ts`, `src/store/store.ts` i `src/wydania.test.ts`.
