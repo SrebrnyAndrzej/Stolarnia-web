@@ -1,5 +1,25 @@
 # GTV Axis Pro GLASS — dane szuflad wewnętrznych z indeksowanych kart 2023/2024
 
+## Aktualizacja źródeł: oficjalne strony kart produktów, 09.10.2026 23:34
+
+Bezpośrednie oficjalne karty produktów GTV doprecyzowują metadane trzech szklanych paneli:
+
+| SKU GTV | Wysokość × długość podana przez GTV | Materiał podany przez GTV | Stan dowodu |
+|---|---:|---|---|
+| `PB-AXISPRO-GLASS-PAWEW-A1` | 56 × 1100 mm | szkło niehartowane | potwierdzone na [karcie GTV A1](https://gtv.com.pl/produkt/PB-AXISPRO-GLASS-PAWEW-A1/) |
+| `PB-AXISPRO-GLASS-PAWEW-B1` | 88 × 1100 mm | szkło niehartowane | potwierdzone na [karcie GTV B1](https://gtv.com.pl/en/produkt/PB-AXISPRO-GLASS-PAWEW-B1/) |
+| `PB-AXISPRO-GLASS-PAWEW-C1` | 139 × 1100 mm | szkło niehartowane | potwierdzone na [karcie GTV C1](https://gtv.com.pl/produkt/PB-AXISPRO-GLASS-PAWEW-C1/) |
+
+Karty opisują możliwość przycięcia do wymaganej długości. Jest to potwierdzenie danych katalogowych elementu przez producenta, ale nie rysunek gotowego wymiaru dla konkretnego mebla: nie ustalono tolerancji, obróbki krawędzi, bazy pomiaru ani zasad bezpiecznego cięcia szkła. „Niehartowane” to literalna klasyfikacja materiału na stronie; aplikacja nie powinna z tego wywodzić dodatkowych twierdzeń o bezpieczeństwie.
+
+### Konflikt w oficjalnym zbiorze dokumentów
+
+Oficjalne strony A1/B1/C1 oraz plik [AXIS PRO ONLINE EN/PL](https://gtv.com.pl/wp-content/uploads/2025/04/AXIS_PRO_ONLINE_EN_PL-1.pdf) są zgodne co do długości 1100 mm i szkła. Podobne wartości indeksuje też oficjalny katalog kwartalny 2025 Q1/Q2. Natomiast [Drawer System AXIS PRO EN/PL](https://gtv.com.pl/wp-content/uploads/2025/04/drawer-system-AXIS-PRO-EN_PL.pdf) oraz jego EN/RU wariant w indeksie podają dla tych samych identyfikatorów 1200 mm i materiał stalowy. Bezpośrednie otwarcie PDF-ów w tym środowisku nie powiodło się (błąd HTTP 502/ograniczenie pobrania), zatem treść tego konfliktującego źródła znam tylko z indeksowanego podglądu. Konflikt należy zachować jako rozbieżność źródłową, a nie uśredniać ani nadpisywać po cichu.
+
+Wniosek roboczy: dla zakupowego BOM można pokazać katalogowo potwierdzone A1/B1/C1 wraz z linkiem do dokładnej karty, statusem źródła i uwagą o konflikcie PDF. Nie zwalniać długości cięcia do CNC ani nie uznawać calloutu `S` za ostatecznie przypisany do SKU, dopóki nie porównano zachowanych grafik instrukcji z fizycznym elementem/próbą warsztatową. Odczyty `S={A:56,B:88,C:139}` z indeksu są spójne z wysokościami trzech kart produktu, lecz utożsamienie tabelarycznego `S` z wysokością konkretnych SKU pozostaje wnioskiem, a nie odczytem graficznego rysunku.
+
+**Priorytet:** P1 dla odrębnego modelu wariantów, statusu źródeł i kompletacji zakupowej; P0 przed produkcyjnym CNC szkła. **Zależności:** zachować wizualne kopie/identyfikatory rewizji oficjalnych PDF, porównać rysunki A/B/C, potwierdzić bazę i tolerancję u producenta/dostawcy oraz wykonać próbę z właściwym szkłem. **Kryterium odbioru:** testy katalogu mapują dokładne SKU A1/B1/C1 na 56/88/139 × 1100 mm oraz `niehartowane`, ale pozostawiają formatkę/CNC w stanie `unverified` do jawnego potwierdzenia długości, bazy i obróbki; równocześnie pokazują konflikt 1200/steel z nazwanym dokumentem i nie wybierają go automatycznie.
+
 09.10.2026. Wyszukiwanie oficjalnych materiałów GTV ujawniło osobne tabele dla standardowego panelu szuflady wewnętrznej oraz wariantu z panelem szklanym. Poniższe liczby odczytano z indeksowanych fragmentów/strukturalnego podglądu PDF, którego nie udało się otworzyć ani pobrać w tym środowisku (HTTP 502). **Status: trop źródłowy, niezweryfikowany wizualnie; nie używać jeszcze jako profilu produkcyjnego.**
 
 ## Źródła producenta
