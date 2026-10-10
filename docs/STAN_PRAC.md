@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 03:37
+
+- Świeży fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; nowy względem poprzedniego punktu jest wyłącznie commit dokumentacyjny Codexa o narzucie/marży, bez nowych commitów Claude.
+- Korekta GTV: `GLASS-PAWEW` to panel szklany; `GLASS-ZEWEW` to osobny zestaw do frontu szklanego (aluminiowy panel + złączki, bez szyby); `ZESWEW` bez `GLASS` to standardowy zestaw panelu/złączek, a reling zależy od wariantu. Nie utożsamiać rodzin po wspólnym fragmencie kodu. Karty potwierdzają konkretne składy; dokładne warianty i ceny wymagają źródła dostawcy.
+- Bieżący `katalog.json` nie ma żadnej z rodzin PAWEW/ZEWEW/ZESWEW. Rekomendacja P1: test danych modeluje je oddzielnie z pełnym SKU, źródłem i flagą zawartości; CNC szkła pozostaje niezatwierdzone. W nocie GTV skorygowano poprzedni skrót materiałowy oraz zachowano konflikt 1100/szkło vs 1200/stal z PDF jako nierozstrzygnięty.
+- Następnie przygotować dokładne fixture SKU potwierdzonych kartami i rozwiązać z dostawcą warianty/kolory. Odczytywanie rysunków/wymiarów technologicznych szkła i próba warsztatowa są osobnym warunkiem CNC.
+- Research-only; zachować 29 227,60 zł brutto Pieszczyńskich, historyczne umowy i prywatność danych.
+
 ## Punkt wznowienia — 10.10.2026 02:36
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
