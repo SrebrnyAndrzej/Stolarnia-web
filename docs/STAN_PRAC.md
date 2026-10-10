@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 11:43
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research-only na odizolowanej gałęzi.
+- Oficjalny polski Blum CAD/CAM Data Service deklaruje dostęp do rysunków produkcyjnych 2D i makr CAM/WOP; polskie strony potwierdzają, że E-Services wymaga aktywowanego dostępu. To konkretna ścieżka pozyskania danych wierceń, ale nie potwierdza, że rysunek/makro istnieje dla nieustalonego SKU MERIVOBOX.
+- W nocie MERIVOBOX zapisano źródła, zależności oraz kryterium odbioru: exact SKU/konfiguracja, rysunek z bazą/XY/Ø/głębokością/tolerancją, zgodność z CAM i próbą fizyczną. Do tego czasu X z plan-booka nie zwalnia CNC.
+- Następny krok: warsztat ustala kod kupionego artykułu, a uprawniony użytkownik sprawdza rysunek dla SKU w aktywowanym E-Service; bez automatycznego kontaktu z producentem. Jeżeli brak danych lub SKU, utrzymać `unknown` i nie emitować operacji CNC.
+- Zachowano rozdział research/implementacja; nie zmieniano logiki, danych klienta, ceny 29 227,60 zł brutto ani umów historycznych. `git diff --check` przed publikacją.
+
 ## Punkt wznowienia — 10.10.2026 10:41
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research wykonany na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.

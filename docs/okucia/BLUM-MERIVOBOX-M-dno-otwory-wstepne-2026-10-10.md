@@ -32,3 +32,29 @@ Przed normalizacją profilu: przyjąć plan-book EP-530/5 PL-PL/12.24 jako bież
 ## Granice
 
 Tabela pochodzi z aktualnej pomocy planistycznej Blum EP-530/5 PL-PL/12.24, ale to nie potwierdza, że konkretna część jest aktualnie kupowana przez warsztat ani że profil w istniejącym kodzie jest zgodny. Nie wykonano testu fizycznego ani zmiany katalogu/logiki aplikacji.
+
+## Oficjalna ścieżka weryfikacji CAD/CAM — 2026-10-10
+
+### Problem
+
+Plan-book pozostawia nieznane parametry otworów, a ręczne przenoszenie punktów z ilustracji nie wystarcza do bezpiecznego zwolnienia operacji CNC. Trzeba sprawdzić, czy producent publikuje zwymiarowany rysunek produkcyjny dla dokładnego artykułu i konfiguracji.
+
+### Potwierdzone fakty producenta
+
+- [Polski Serwis danych CAD/CAM Blum](https://www.blum.com/pl/pl/services/industrial-production/cad-cam-dataservice/) opisuje dostęp do pojedynczych komponentów 3D, skonfigurowanych zespołów 3D, rysunków produkcyjnych 2D, sytuacji konstrukcyjnych 2D i pakietów CAD. Producent deklaruje aktualne, sprawdzone dane oraz pobieralne makra CAM i formaty WOP dla popularnych maszyn CNC.
+- [Polski Serwis danych o produktach](https://www.blum.com/pl/pl/services/planning-construction-product-selection/productdata-service/) opisuje aktualizowane pakiety danych produktów dla partnerów oprogramowania; strona wskazuje, że dostęp do bazy produktów jest częścią E-Services.
+- [Polska Baza danych o produktach](https://www.blum.com/pl/pl/services/planning-construction-product-selection/product-database/) wymienia szczegóły i cechy techniczne produktów, rysunki produktowe oraz pliki CAD; pełna baza wymaga dostępu do E-Services.
+- [Polski Konfigurator produktów](https://www.blum.com/pl/pl/services/planning-construction-product-selection/product-configurator/) opisuje wyszukiwanie list artykułów, danych CAD i informacji planistycznych, konfigurację i przekazywanie kompletnych list do dystrybutora. Pełny zakres wymaga konta/uprawnień.
+- [Oficjalne FAQ E-Services](https://www.blum.com/pl/pl/services/faq/) wskazuje aktywację dostępu przez przedstawiciela Blum. Nie znaleziono publicznego, anonimowego eksportu danych CAM dla konkretnego MERIVOBOX SKU.
+
+### Wniosek dla warsztatu i Claude
+
+**P1 — traktować CAD/CAM Service jako pierwszą ścieżkę pozyskania wymiarowego rysunku produkcyjnego, nie jako dowód, że eksport istnieje dla nieustalonego SKU.** Najpierw potrzebne są dokładny kod artykułu, długość nominalna, wysokość/typ boku, grubość dna, sposób mocowania oraz rynek. Następnie uprawniony użytkownik sprawdza, czy dla tego artykułu E-Service udostępnia 2D production drawing lub właściwe makro CAM. Do czasu udokumentowanego wyniku pozycje `X` z plan-booka pozostają kandydackie i nieprodukcyjne.
+
+Z zapisanego pliku producenta należy zachować jego kod/revizję, datę pobrania, SKU i konfigurację, jednostki, bazę pomiarową, współrzędne osi otworu, Ø, głębokość i tolerancję (jeśli są podane), oraz format/wersję CAM. Porównać rysunek z plan-bookiem i fizyczną próbką. Brak dowolnego krytycznego parametru oznacza `unknown` i blokadę wiercenia CNC; format WOP sam w sobie nie potwierdza prawidłowej konfiguracji maszyny ani mocowania.
+
+**Zależności:** dokładny SKU i konfiguracja kupowane w Polsce; legalny, aktywowany dostęp E-Services; właściwy rysunek lub makro producenta; identyfikacja maszyny/sterownika/CAM warsztatu; próba na rzeczywistym detalu.
+
+**Mierzalny odbiór:** dla wybranego SKU istnieje zarchiwizowane źródło Blum z rewizją i sumą kontrolną; współrzędne, baza, średnica i głębokość wiercenia są jawnie przypisane do wskazanych krawędzi; rezultat montuje się bez kolizji, mieści się w zatwierdzonej tolerancji zakładu, a CAM przechodzi symulację dla konkretnej maszyny. Jeśli E-Service nie publikuje dokładnego wariantu lub danych otworów, profil pozostaje niezwolniony, bez fallbacku do innego NL.
+
+**Niezweryfikowane:** dostępność pliku dla zakupionego MERIVOBOX, wymagania/zakres eksportu dla konkretnego konta, licencja na przechowywanie i redystrybucję danych w aplikacji warsztatu, zgodność dowolnego makra z maszyną zakładu oraz fizyczna interpretacja `X` ze strony 15 plan-booka. Nie wysyłano zapytania do producenta ani nie uzyskiwano dostępu do prywatnego konta.
