@@ -1,7 +1,7 @@
 # MERIVOBOX M: wymiar dna i kandydackie pozycje nawiercenia
 
 Data weryfikacji: 2026-10-10
-Zakres: wizualny odczyt jednej strony (drukowana s.15) archiwalnego, producentowego PDF planowania; nie jest to zatwierdzenie operacji CNC ani kompletna tabela SKU.
+Zakres: wizualny odczyt strony 15 producentowego PDF planowania; nie jest to zatwierdzenie operacji CNC ani kompletna tabela SKU.
 
 ## Problem
 
@@ -10,17 +10,17 @@ Profil `blum-merivobox-m-wood` przechowuje potwierdzone wymiary cięcia, ale `dr
 ## Dowód i fakty
 
 - Lokalna kopia źródła `docs/okucia/pdf/BLUM-Merivobox-planowanie.pdf` jest zarejestrowana w `sources.json`: bezpośredni adres producenta `https://www.blum.com/file/me25532842_ep_dok_bau?country=pl&language=pl`, końcowy plik `me25532842_ep_dok_bau_$spl-pl_$aof_$v5.pdf`, data pobrania 2026-09-23 i SHA-256 `3361fffd4689454b5f21fe6740dd1ea106ea610bcd15697864dba61eb3a4ece7`.
-- Wydruk strony 15 oznacza „Wymiary przycięcia dla płyty wiórowej 16 mm”. Tabela podaje drewnianą ściankę tylną H=83 mm, długość dna `Z = NL−26 mm` i elementy `A`/`B` o szerokości `LW−51 mm`.
+- Wydruk strony 15, zatytułowanej „MERIVOBOX | Szuflada standardowa – wysokość M”, oznacza „Wymiary przycięcia dla płyty wiórowej 16 mm”. Tabela podaje drewnianą ściankę tylną H=83 mm, długość dna `Z = NL−26 mm` i elementy `A`/`B` o szerokości `LW−51 mm`.
 - Tabela „Pozycja otworu w dnie szuflady” podaje możliwość nawiercenia z użyciem wkrętu z łbem talerzykowym oraz pary `NL → X`: 270→128 mm, 300→128 mm, `>350`→256 mm. Rysunek lokalizacji oznacza ponadto wartości 9 i 16 mm.
-- W powiększonym obrazie rysunku wymiar `X` biegnie wzdłuż elementu A, ale strona nie nazywa wprost krawędzi, od której należy go bazować. Nie określa też średnicy, głębokości ani tolerancji nawiercenia. Wiersz `>350` nie wyjaśnia wprost długości 350 mm ani wszystkich dostępnych nominalnych długości.
-- Oficjalna polska strona pobrań Blum obecnie wymienia plik „MERIVOBOX PDF” z datą 2026-05-20 w sekcji „Instrukcja montażu”, a osobno „Pomoc w zamawianiu MERIVOBOX i AMBIA-LINE PDF” z datą 2025-07-11 w sekcji „Prospekt”: https://www.blum.com/pl/pl/products/boxsystems/merivobox/downloads-videos/ . Bezpośredni odczyt nowego pliku z 2026-05-20 nie powiódł się. Klasyfikacja na stronie rozstrzyga wcześniejszą niepewność katalogową: dokument z 2026 r. jest przedstawiany jako instrukcja montażu, a nie jako następca pomocy w zamawianiu; nie dowodzi to jednak, czy rysunek planowania z 2023 r. nadal jest technicznie aktualny.
-- Oficjalna strona Blum udostępnia także pozycję „E-Service Serwis danych o produktach” oraz „Interfejs oprogramowania CAD/CAM” w sekcji planowania/produkcji. Nie zweryfikowano dostępności ani warunków danych dla tego projektu; to potencjalna droga pozyskania wersjonowanych danych producenta, nie źródło już zastosowane do profilu.
+- Na rysunku `X` jest zwymiarowane od przedniej krawędzi dna do osi oznaczonego miejsca nawiercenia; identyfikacja przedniej krawędzi wynika z widoku izometrycznego i orientacji rzutu, a nie z tekstowej etykiety bazy. To odczyt geometrii rysunku wymagający sprawdzenia na próbce przed użyciem produkcyjnym. Rysunek nie określa średnicy, głębokości ani tolerancji otworu. Wiersz `>350` nie przypisuje wartości długości NL=350 mm ani wszystkim innym długościom.
+- Potwierdzono, że lokalna kopia jest aktualną pomocą planistyczną wskazaną na [oficjalnej polskiej stronie pobrań Blum](https://www.blum.com/pl/pl/products/boxsystems/merivobox/downloads-videos/), a nie nieopisaną kopią „z 2023 r.”: sekcja „Prospekt” podaje „Pomoc w zamawianiu MERIVOBOX i AMBIA-LINE PDF | 18 MB | 07-11-2025”, a kliknięcie prowadzi do identyfikatora `me25532842`; lokalny `sources.json` zapisuje ten sam identyfikator, polską wersję `...$spl-pl...$v5.pdf` i SHA-256 `3361fffd4689454b5f21fe6740dd1ea106ea610bcd15697864dba61eb3a4ece7`. Lokalna strona tytułowa mówi „Informacje o zamawianiu i planowaniu”, stopka drukuje `EP-530/5 PL-PL/12.24`, a metadane PDF podają utworzenie 2024-10-21 i modyfikację 2025-06-24. Wniosek: to producentowy plan-book rewizji 12.24 aktualnie udostępniany jako pomoc w zamawianiu (stan strony sprawdzony 2026-10-10). Strona osobno wymienia dokument „MERIVOBOX PDF” z 2026-05-20 w sekcji „Instrukcja montażu”; nie jest on katalogowo przedstawiany jako następca plan-booka. Sam plik z 2026-05-20 nie został odczytany.
+- Oficjalna strona Blum wymienia ponadto E-Service „Serwis danych o produktach” i „Interfejs oprogramowania CAD/CAM”. Oficjalny opis E-Services mówi o dostępnych w Product Configurator listach komponentów i danych CAM dla MERIVOBOX, ale dotyczy publikacji Blum USA z 2024 r. (`https://d2.blum.com/services/BEC003/merivobox_ep_dok_bus_$sen-us_$aof_$v2.pdf`). Dostępność tych eksportów dla polskiego konta/SKU i warunki użycia pozostają niezweryfikowane.
 
 ## Proponowane zachowanie
 
 **P1 dla kompletności dokumentacji; brak zgody na produkcyjne użycie wartości X.** Zachować te trzy pozycje jako dowód-kandydat przypięty do źródła, strony, hasha, grubości 16 mm i wariantu drewnianego, nie jako aktywną mapę wierceń. Nie rozszerzać ich na inne wysokości MERIVOBOX, dno 21 mm, stalową ściankę tylną, inne długości, TIP-ON ani SKU bez odrębnego źródła.
 
-Przed normalizacją profilu: sprawdzić przede wszystkim oficjalną „Pomoc w zamawianiu” z 2025-07-11 jako dokument planowania; instrukcję montażu z 2026-05-20 porównać pomocniczo dla wymagań montażowych, bez założenia, że zastępuje arkusz planowania. Potwierdzić u Blum/dostawcy, czy `X` liczy się od frontu czy od pleców, do jakiego dokładnego punktu i dla jakich NL obowiązuje. Ustalić rzeczywiste wymiary/typ nawiercenia z instrukcji lub montażu próbnego, a nie wyprowadzać go z oznaczenia wkrętu. Sprawdzić, czy E-Service udostępnia dla dokładnego SKU wersjonowany eksport CAD/CAM, i udokumentować jego zakres/licencję przed użyciem. Dopiero kompletna, zatwierdzona karta wariantu może zasilić osobny profil CAM.
+Przed normalizacją profilu: przyjąć plan-book EP-530/5 PL-PL/12.24 jako bieżące źródło Blum dla tych wymiarów (jest wymieniony na aktualnej stronie producenta), ale potwierdzić próbą warsztatową interpretację bazy `X` oraz rzeczywistą średnicę, głębokość i tolerancję otworu. Nie przypisywać automatycznie `X` do długości NL=350 ani do innych niewymienionych NL. Instrukcję montażu z 2026-05-20 stosować jako odrębne źródło wymagań montażowych, bez założenia, że zastępuje plan-book. Sprawdzić dostępność eksportu i jego warunki dla polskiego konta i dokładnego SKU w E-Service; nie przenosić informacji z rynku USA bez potwierdzenia. Dopiero kompletna karta wariantu i test montażowy mogą zasilić osobny profil CAM.
 
 ## Zależności i mierzalne kryteria odbioru
 
@@ -31,4 +31,4 @@ Przed normalizacją profilu: sprawdzić przede wszystkim oficjalną „Pomoc w z
 
 ## Granice
 
-To nowy odczyt strony archiwalnego pliku już przechowywanego w repozytorium, nie potwierdzenie aktualności jego wymiarów, sprzedaży SKU, montażu ani zgodności istniejącego kodu. Nie wykonano testu fizycznego, zmiany katalogu ani logiki aplikacji.
+Tabela pochodzi z aktualnej pomocy planistycznej Blum EP-530/5 PL-PL/12.24, ale to nie potwierdza, że konkretna część jest aktualnie kupowana przez warsztat ani że profil w istniejącym kodzie jest zgodny. Nie wykonano testu fizycznego ani zmiany katalogu/logiki aplikacji.

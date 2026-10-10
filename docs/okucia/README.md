@@ -17,9 +17,9 @@ Poniższe wzory odczytano i porównano wizualnie z rysunkami. Są materiałem do
 
 Przykład: korpus zewnętrzny 600, dwa boki po 18, bez dodatkowych elementów zmniejszających światło: LW=564. Dla NL=500 dna wynoszą odpowiednio: Amix 489×474, Axis/Modern 489×476, MERIVOBOX 513×474, LEGRABOX 529×490, TANDEMBOX 489×476. Grubość dna wynika z profilu okucia, a nie automatycznie z grubości boków korpusu. LEGRABOX wymaga dodatkowej obróbki zgodnej z diagramem.
 
-Na drukowanej s.15 PDF MERIVOBOX planowania znajduje się także tabela kandydackiego nawiercenia dna M (NL 270→X128, 300→X128, >350→X256) oraz lokalny detal 9/16 mm. Baza X, brakująca granica NL=350 i parametry otworu nie są rozstrzygnięte; nie jest to zatwierdzony profil CNC. Szczegóły: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
+Aktualna na stronie Blum „Pomoc w zamawianiu MERIVOBOX i AMBIA-LINE” wskazuje lokalny plan-book EP-530/5 PL-PL/12.24. Na drukowanej s.15 jest tabela nawiercenia dna M (NL 270→X128, 300→X128, >350→X256) i detal 9/16 mm. Rysunek wskazuje X od przedniej krawędzi do osi otworu, ale bez tekstowej nazwy bazy; średnica, głębokość i tolerancja wymagają próby, a NL=350 i niewymienione długości pozostają bez danych. Nie jest to zatwierdzony profil CNC. Szczegóły i źródła: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
 
-Aktualna polska strona Blum rozdziela dokument „MERIVOBOX” z 2026-05-20 jako instrukcję montażu od „Pomocy w zamawianiu MERIVOBOX i AMBIA-LINE” z 2025-07-11 jako prospektu. Nie należy traktować nowszej daty instrukcji jako dowodu zastąpienia materiału planowania. Szczegóły i następne kroki: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
+Ta sama strona oddzielnie wymienia instrukcję montażu MERIVOBOX z 2026-05-20; jej nowsza data nie oznacza zastąpienia plan-booka. Szczegóły źródeł, metadanych rewizji oraz granic wiercenia: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
 
 ### Wysokości pleców Blum według wariantu boku (25.09.2026)
 

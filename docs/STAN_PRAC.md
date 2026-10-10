@@ -1,11 +1,11 @@
 # Stan prac — 23.09.2026
 
-## Punkt wznowienia — 10.10.2026 09:41
+## Punkt wznowienia — 10.10.2026 10:41
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research wykonany na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.
-- Obejrzano w wysokiej rozdzielczości oficjalny, zarchiwizowany PDF Blum MERIVOBOX, drukowaną s.15. Poza wymiarami cięcia jest tam tabela nawiercenia dna M: NL270→X128, NL300→X128, NL>350→X256 mm oraz detal 9/16 mm. Nie ustalono jednoznacznie bazy X, wszystkich obsługiwanych NL ani parametrów otworu; oznaczenia nie są gotowe do CNC. Strona Blum klasyfikuje plik 2026-05-20 jako instrukcję montażu, oddzielnie wymienia pomoc w zamawianiu z 2025-07-11. To koryguje hipotezę o prostym zastąpieniu dokumentu planowania, ale aktualność tabeli 2023 nadal niepotwierdzona, bo obu PDF-ów planistycznych nie otwarto.
-- Opublikowano notę `docs/okucia/BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md` i odsyłacz w README. Profil pozostaje `not_normalized` i nieprodukcyjny. Oficjalna strona Blum obecnie wymienia też plik MERIVOBOX z 2026-05-20, którego wpływu na starszy arkusz planowania nie zweryfikowano.
-- Następny temat: spróbować odczytać oficjalną pomoc w zamawianiu z 2025-07-11 albo pozyskać potwierdzenie Blum/dostawcy dla bazy X, zakresu NL i parametrów otworu; przy braku dostępu utrzymać `unknown` i przejść do następnego niezdublowanego P0/P1. Wskazać jako dodatkową ścieżkę weryfikacji E-Service / CAD-CAM, bez zakładania, że eksport jest dostępny lub licencjonowany.
+- Lokalny PDF jest aktualną, producentową pomocą planistyczną wskazaną przez stronę Blum: ID `me25532842`, wersja `EP-530/5 PL-PL/12.24`, metadane utworzenia 2024-10-21 i modyfikacji 2025-06-24; strona Blum podaje listing 2025-07-11. Str.15 wizualnie pokazuje dla dna M z płyty 16 mm `NL270→X128`, `NL300→X128`, `NL>350→X256` oraz detale 9/16. Rysunek wskazuje X od przedniej krawędzi do osi otworu, ale bez tekstowej nazwy bazy; wymaga to potwierdzenia próbą. NL=350, pozostałe długości i parametry wiercenia nadal nieznane; CNC niezatwierdzone.
+- Opublikowano notę `docs/okucia/BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md` i odsyłacz w README. Rewizję istniejącej kopii potwierdzono jako aktualny plan-book. Profil pozostaje `not_normalized` i nieprodukcyjny do próby konkretnego SKU.
+- Następny temat: warsztatowo potwierdzić bazę X i geometrię wiercenia na zakupionym wariancie; sprawdzić z polskiego E-Service, czy dostępny jest dokładny SKU/CAM. NL=350 i inne niewymienione długości pozostają `unknown`.
 - Research-only; nie zmieniono logiki aplikacji, katalogu aktywnego, danych klienta, uzgodnionej ceny 29 227,60 zł brutto ani umów historycznych.
 
 ## Punkt wznowienia — 10.10.2026 04:37
