@@ -1,10 +1,10 @@
 # Stan prac — 23.09.2026
 
-## Punkt wznowienia — 10.10.2026 22:50
+## Punkt wznowienia — 10.10.2026 23:51
 
 - Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchowa.
-- Oficjalna karta techniczna Axis Pro oraz karty GTV potwierdzają czarne zestawy wewnętrzne A2–D2 i skład panel+łącznik. Panel 95/110 mm i wysokość łącznika 120/168/200 mm to odrębne wymiary; A2 zawiera nieobjaśniony identyfikator `INVIGO`. Szczegóły i mierzalne kryterium dopisano do `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md`. To dane zakupowego BOM, nie geometria: nadal nie wiadomo, który komponent odpowiada `LW−80`/`LW−100`, więc CNC pozostaje zablokowane.
-- Następnie pozyskać czytelną instrukcję dokładnego zestawu i rozstrzygnąć `INVIGO` oraz mapowanie wymiarów przez wizualny odczyt i próbę montażową. Przy nowym commicie Claude najpierw wykonać review i adekwatne testy.
+- Starszy oficjalny PDF GTV `Axis_Pro_karta techniczna 06_24_44.pdf`, druk. s.4, podaje panelowe `R`: A=110, B=95, C=110, D=110 mm; osobne H profili/łączników to 86/120/168/200 mm. Zapisano, że ten historyczny wymiar nie jest jeszcze przypięty do aktualnych SKU A2–D2. Szczegóły i kryteria w `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md`.
+- Następnie porównać rewizję bieżącej instrukcji exact SKU i próbkę fizyczną z wartościami `R` 06_24; rozstrzygnąć skład A2 (`INVIGO`/`WEWMOCA`) oraz mapę `LW−80`/`LW−100`. Bez tego nadal nie emitować CNC. Przy nowym commicie Claude najpierw review i odpowiednie testy.
 - Tylko dokumentacja researchowa; zachowano logikę, aktywny katalog, dane klientów, uzgodnioną cenę 29 227,60 zł brutto i historyczne umowy.
 
 ## Punkt wznowienia — 10.10.2026 18:48
