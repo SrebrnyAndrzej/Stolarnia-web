@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 18:48
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; nie ma nowych commitów Claude. Pracuję na izolowanej gałęzi researchowej.
+- Oficjalna karta GTV dla `PB-AXISPRO18-KPL500C1` wymienia zawartość zestawu okuć, lecz nie dno ani drewniane plecy. Dopisano do noty Axis Pro 18 mm wymóg rozdzielenia zakupionego zestawu od formatek do wykonania; ich wymiary pozostają `unknown`, dopóki nie zostanie zweryfikowana instrukcja producenta dla exact SKU.
+- Następnie pozyskać/odczytać instrukcję 18 mm dla exact SKU, sprawdzić listę formatek i komplet danych wierceń. Do tego czasu bez profilu CNC 18 mm; nie kopiować reguł wariantu 16 mm.
+- Research-only; bez zmian logiki, aktywnego katalogu, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów.
+
 ## Punkt wznowienia — 10.10.2026 15:44
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research-only na odizolowanej gałęzi.
