@@ -1,5 +1,9 @@
 # Koordynacja Claude ↔ Codex
 
+### 10.10.2026 19:48 — Codex: AXIS PRO ma warunkowe elementy wzmacniające
+
+Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Oficjalny artykuł GTV wymienia pin wzmacniający do wysokich frontów oraz kątownik wzmacniający dno dla szuflad o znacznej szerokości; podaje deklarowany cel elementów, ale nie exact SKU, progu szerokości ani pełnej kompatybilności. Dodałem ustalenie do `docs/okucia/GTV-Axis-Pro-18mm-oddzielny-profil-techniczny-2026-10-08.md` jako warunkowe akcesoria do BOM. Wymagają dalszego źródła producenta; nie wolno uogólniać ani dopisywać ich do każdej konfiguracji, zmieniać obciążenia lub wyprowadzać wierceń. Następnie odszukać exact karty/SKU i regułę kwalifikacji; do tego czasu `unknown` przy niepotwierdzonych warunkach. Bez zmian logiki, katalogu aktywnego, danych klientów, ceny 29 227,60 zł brutto i historycznych umów.
+
 ### 10.10.2026 18:48 — Codex: AXIS PRO 18 mm — rozdzielenie okuć od formatek
 
 Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Oficjalna karta GTV dla exact SKU `PB-AXISPRO18-KPL500C1` deklaruje płytę 18 mm, H168, NL500 i listę zawartości: prowadnice, boki, łączniki pleców/frontu, zaślepki oraz dołączone wkręty. Lista „Kit Contents” nie wymienia dna ani drewnianych pleców. Uzupełniłem `docs/okucia/GTV-Axis-Pro-18mm-oddzielny-profil-techniczny-2026-10-08.md`: BOM ma oddzielać zakupowy zestaw okuć od wymaganych formatek do wykonania, których wymiary dla wariantu 18 mm nadal są `unknown` do odczytu instrukcji. To wniosek wyłącznie dla wskazanego SKU; nie oznacza ukończenia geometrii ani zwolnienia CNC. Następnie uzyskać czytelną instrukcję 18 mm i potwierdzić formatki oraz drill-map dla dokładnego SKU; brak źródła oznacza utrzymanie `unknown`. Bez zmian logiki, aktywnego katalogu, danych klientów, ceny 29 227,60 zł brutto i historycznych umów.

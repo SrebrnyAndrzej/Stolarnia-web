@@ -31,6 +31,14 @@ Ponowne otwarcie oficjalnej karty exact SKU [`PB-AXISPRO18-KPL500C1`](https://gt
 
 **Zależności:** wybrany exact SKU, wymiary szafki i grubość/rodzaj formatki; pełne formuły cięcia nadal wymagają odczytu instrukcji 18 mm. **Mierzalne kryterium odbioru:** test BOM dla `PB-AXISPRO18-KPL500C1` pokazuje osobno zestaw okuć i co najmniej osobne wiersze dna oraz drewnianych pleców jako części do wykonania; wymiary tych części pozostają `unknown` do czasu zweryfikowania instrukcji, a sam zestaw SKU nie może zaspokoić wymaganej ilości formatek. Bez wpływu na wygenerowanie CNC, które pozostaje zablokowane.
 
+## Uzupełnienie 2026-10-10: akcesoria wzmacniające — kandydat do BOM
+
+Oficjalny [artykuł GTV o nowych elementach AXIS PRO](https://gtv.com.pl/nowosci/axis-pro-nowoczesny-system-szuflad/) wymienia dwa dodatki konstrukcyjne: pin wzmacniający do wysokich frontów (opisany jako zwiększający sztywność i dokładność pracy) oraz kątownik wzmacniający dno, przeznaczony do szuflad o znacznej szerokości i wspierający rozkład obciążenia. To potwierdza istnienie zastosowań wymagających odrębnych elementów, ale artykuł nie podaje dokładnych SKU, limitu szerokości, dopuszczalnego obciążenia ani kompatybilności z każdą wysokością, kolorem lub profilem 18 mm.
+
+**Problem:** reguła BOM oparta wyłącznie na standardowym komplecie może pominąć element potrzebny dla szerokiego dna lub wysokiego frontu, natomiast automatyczne dodanie go do wszystkich szuflad także nie ma źródłowego uzasadnienia. **Proponowane zachowanie, P1:** modelować pin i kątownik jako warunkowe akcesoria z dokładnym SKU, źródłem, zakresem kompatybilności i regułą doboru; gdy próg szerokości albo SKU nie jest potwierdzony, oznaczyć rekomendację `unknown` i wymagać przeglądu technologa. Nie zmieniać automatycznie deklarowanego obciążenia zestawu.
+
+**Zależności:** karta produktu/SKU obu dodatków, instrukcja montażu, dokładne warianty okuć i koloru oraz wartość graniczna szerokości/warunek wysokiego frontu potwierdzony przez GTV. **Mierzalne kryterium odbioru:** test BOM dla zestawu w wąskiej konfiguracji nie dodaje wzmacniaczy bez reguły; przypadek przekraczający potwierdzony próg lub stosujący potwierdzony wysoki front pokazuje wymagane akcesorium i źródło; brak exact SKU/próg pozostawia wybór nierozstrzygnięty, bez wpływu na liczbę i geometrię formatek albo status CNC.
+
 ## Następny krok
 
 Pozyskać plik producenta `AXIS_PRO18__instrukcja_3.pdf` lub równoważny dla dokładnego SKU 18 mm, zarchiwizować hash i zweryfikować plansze wizualnie; porównać formatki i otwory do 16 mm oraz tabelę SKU/długości P2O kontra Soft Close. Próba odczytu wskazanego PDF w narzędziu badawczym była niedostępna, więc nie wpisywać formuł na podstawie nazwy pliku, opisu handlowego ani 3D. Do czasu weryfikacji ma być jawny brak profilu CNC 18 mm, a nie skopiowane parametry 16 mm. Dokumentacja-only; bez zmian aplikacji i testów logiki.

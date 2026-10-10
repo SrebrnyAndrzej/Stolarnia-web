@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 19:48
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchowa.
+- Oficjalny artykuł GTV potwierdza dwa dodatki AXIS PRO: pin dla wysokich frontów oraz kątownik wzmacniający dno przy dużej szerokości. Brakuje exact SKU, progu, limitów i pełnej tabeli kompatybilności. Zapisano warunkową obsługę BOM w `docs/okucia/GTV-Axis-Pro-18mm-oddzielny-profil-techniczny-2026-10-08.md`; nie zmienia to obciążenia, geometrii ani CNC.
+- Następnie znaleźć karty produktu/instrukcje i kryteria zastosowania tych dodatków; przy braku potwierdzenia wariant pozostaje `unknown`. Świeże zmiany Claude nadal przeglądać jako pierwsze w kolejnym uruchomieniu.
+- Tylko dokumentacja researchowa; zachowano logikę, aktywny katalog, dane klientów, uzgodnioną cenę 29 227,60 zł brutto i historyczne umowy.
+
 ## Punkt wznowienia — 10.10.2026 18:48
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; nie ma nowych commitów Claude. Pracuję na izolowanej gałęzi researchowej.
