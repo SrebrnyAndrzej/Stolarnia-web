@@ -1,6 +1,6 @@
 # Stan prac — 23.09.2026
 
-## Punkt wznowienia — 10.10.2026 07:39
+## Punkt wznowienia — 10.10.2026 08:46
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research wykonany na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.
 - Obejrzano w wysokiej rozdzielczości oficjalny, zarchiwizowany PDF Blum MERIVOBOX, drukowaną s.15. Poza wymiarami cięcia jest tam tabela nawiercenia dna M: NL270→X128, NL300→X128, NL>350→X256 mm oraz detal 9/16 mm. Nie ustalono jednoznacznie bazy X, wszystkich obsługiwanych NL ani parametrów otworu; oznaczenia nie są gotowe do CNC.
