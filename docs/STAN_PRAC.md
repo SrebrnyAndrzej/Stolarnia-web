@@ -281,3 +281,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Zaktualizowano `docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md`: oficjalne karty AMIX wiążą wysokości H116/H167/H199 z EAN 5904208179870/5904208179894/5904208179917. H84 pozostaje bez zweryfikowanego EAN; karty mają selektor koloru, ale publiczny widok nie mapuje EAN na wybraną opcję. Jedna karta detalisty dla H199 podaje sprzeczny symbol `ELITE-167/ANTR-1`, więc nie może zastępować identyfikatora producenta. Zalecono rozdzielać numer pozycji rysunku, EAN, SKU, kolor i status potwierdzenia; CNC/otwory nie zostały zmienione ani zatwierdzone.
 - Następny krok: potwierdzić H84 i EAN↔kolor na rzeczywistym wyborze AMIX lub etykiecie opakowania; mapować pełny zestaw tylko po exact zakupowym wariancie. Po świeżym sprawdzeniu zmian Claude zweryfikować, czy BOM rozdziela zakup od geometrii/CNC i utrzymuje `unknown` dla nierozstrzygniętego wariantu.
 - Research-only, bez zmian aplikacji, katalogu aktywnego, danych klientów, ceny 29 227,60 zł brutto ani umów. Wykonać `git diff --check` przed publikacją.
+
+## 2026-10-10 16:46 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Gałąź researchowa `codex/research-zmiany-projektu-2026-10-07`.
+- Bezpośrednia karta producenta AMIX H84 (otwarta przez link z listy produktów) publikuje EAN `5904208179924`. Tabela AMIX Elite Box mocowań frontu ma teraz EAN-y H84/H116/H167/H199: `5904208179924`, `5904208179870`, `5904208179894`, `5904208179917`. Zapisano źródło i ograniczenie w `docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md` oraz w dzienniku koordynacji.
+- Następny krok: rozstrzygnąć EAN↔kolor/SKU przez wybór wariantu zamówienia lub etykietę. Do tego czasu kolor i producentowy indeks zamówieniowy pozostają `unknown`; wynik nie zatwierdza BOM zakupowego ani żadnych wierceń/CNC.
+- Bez zmian logiki, aktywnego katalogu, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów. Następny heartbeat: świeżo sprawdzić zmiany Claude, a przy ich braku kontynuować niezależny research okuć według otwartych ryzyk.
