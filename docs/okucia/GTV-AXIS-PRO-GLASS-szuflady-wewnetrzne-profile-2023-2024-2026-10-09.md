@@ -1,5 +1,15 @@
 # GTV Axis Pro GLASS — dane szuflad wewnętrznych z indeksowanych kart 2023/2024
 
+## Aktualizacja: katalog Q2 2026 i brak SKU w migawce aplikacji — 10.10.2026 02:36
+
+Najnowszy znaleziony oficjalny [katalog GTV Q1+Q2 2026](https://gtv.com.pl/wp-content/uploads/2026/05/EN-Kwartalnik_AM_Q2.pdf) ponownie wymienia PAWEW jako „Glass panel for internal front” z długością 1100 mm i wysokościami A=56, B=88, C=139 mm. To dodatkowo wspiera karty produktów i katalog ONLINE, a odróżnia go od 1200-milimetrowego zestawu ZEWEW/komponentów szuflady. Bezpośrednie otwarcie dużego PDF (ok. 38 MB) nie powiodło się w tym środowisku, więc odczyt jest z indeksowanej ekstrakcji/struktury katalogu, nie kontroli obrazu.
+
+**Fakt z repozytorium:** wyszukanie dokładnych ciągów `PAWEW`, `ZEWEW` i `AXISPRO-GLASS` w `docs/okucia/produkty/katalog.json` (migawka katalogu) nie zwraca żadnego produktu. To oznacza, że sprawdzone SKU paneli i zestawów nie są obecnie reprezentowane w tej migawce zakupowej. Nie dowodzi to ich braku na rynku ani w dynamicznym źródle producenta.
+
+**Problem dla użytkownika:** projektant nie może z tej migawki dodać dokładnego szklanego frontu i zestawu do BOM/zakupów; nazwy podobne do `ZEWEW`/`ZESWEW` lub ogólne „Axis Pro Glass” grożą pomieszaniem szkła, metalowych paneli/złączek i kompletów. **Zalecane zachowanie:** dodać osobne rekordy kandydujące PAWEW-A1/B1/C1 (szkło; H=56/88/139; stock L=1100; producent deklaruje możliwość przycięcia) i ZEWEW (zestaw/komponenty do szuflady; własne kody i atrybuty wg karty), zachowując URL, kod, wersję/rynek, czas sprawdzenia i konflikty. Nie używać cen ani dostępności bez potwierdzenia dostawcy; nie przypisywać produkcyjnej geometrii lub reguł cięcia z samych metadanych katalogowych.
+
+**Priorytet:** P1 dla kompletności wyboru i BOM zakupowego; P0 przed zwolnieniem do CNC szkła. **Zależności:** dokładne karty wariantów/kolorów, rozstrzygnięcie nazwy SKU `ZEWEW`/`ZESWEW`, aktualna oferta dystrybutora, etykieta kupionego indeksu, osobna weryfikacja wymiaru cięcia i próba. **Kryterium odbioru:** kontrola katalogu zawiera oddzielne, źródłowe rekordy co najmniej dla potwierdzonych PAWEW-A1/B1/C1 i dokładnie tych wariantów ZEWEW, dla których karta potwierdza indeks; nie tworzy nieudowodnionych kolorów/SKU. Brak ceny/dostępności oznacza „niepotwierdzone”; test nie tworzy formatki CNC bez osobnej zweryfikowanej technologii i zatwierdzenia.
+
 ## Aktualizacja: rozdzielenie SKU panelu szklanego i zestawu — 10.10.2026 01:35
 
 Porównanie oficjalnej instrukcji Glass 2024 z katalogiem AXIS PRO EN/PL i kartami produktów wyjaśnia najpewniej, skąd powstała rozbieżność:

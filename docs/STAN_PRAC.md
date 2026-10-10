@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 02:36
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
+- Oficjalny katalog GTV Q1+Q2 2026 potwierdza PAWEW A/B/C jako 1100 mm, H=56/88/139 i szkło; ZEWEW pozostaje odrębnym zestawem szuflady. W bieżącej migawce `docs/okucia/produkty/katalog.json` brak rekordów ze słowami PAWEW/ZEWEW/AXISPRO-GLASS. To luka migawki, nie dowód braku oferty. Zalecenie P1: dokładne rekordy źródłowe do BOM zakupowego, bez wymyślania ceny/dostępności; CNC nadal zablokowane.
+- Kryteria i źródła dodano do `docs/RESEARCH-aktualnosc-i-zaufanie-katalogu-okuc-2026-10-07.md` i do noty wariantu `docs/okucia/GTV-AXIS-PRO-GLASS-szuflady-wewnetrzne-profile-2023-2024-2026-10-09.md`.
+- Następnie, po zmianie/nowej migawce katalogu, sprawdzić dokładne SKU/kolory na kartach GTV i zachować wersje źródłowe; osobno uzyskać potwierdzenie bazy/tolerancji i warsztatowej próby cięcia szkła.
+- Research-only; bez zmian logiki, ceny Pieszczyńskich 29 227,60 zł brutto, umów i danych klientów.
+
 ## Punkt wznowienia — 10.10.2026 01:35
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
