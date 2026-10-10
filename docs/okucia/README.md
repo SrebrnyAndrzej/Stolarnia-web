@@ -19,6 +19,8 @@ Przykład: korpus zewnętrzny 600, dwa boki po 18, bez dodatkowych elementów zm
 
 Na drukowanej s.15 PDF MERIVOBOX planowania znajduje się także tabela kandydackiego nawiercenia dna M (NL 270→X128, 300→X128, >350→X256) oraz lokalny detal 9/16 mm. Baza X, brakująca granica NL=350 i parametry otworu nie są rozstrzygnięte; nie jest to zatwierdzony profil CNC. Szczegóły: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
 
+Aktualna polska strona Blum rozdziela dokument „MERIVOBOX” z 2026-05-20 jako instrukcję montażu od „Pomocy w zamawianiu MERIVOBOX i AMBIA-LINE” z 2025-07-11 jako prospektu. Nie należy traktować nowszej daty instrukcji jako dowodu zastąpienia materiału planowania. Szczegóły i następne kroki: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
+
 ### Wysokości pleców Blum według wariantu boku (25.09.2026)
 
 Z tych samych PDF, strona dla każdego wariantu (`variant_sources` w `reguly-szuflad.json`). Wzory dna i szerokości pleców są takie same dla wszystkich wariantów danego systemu.
