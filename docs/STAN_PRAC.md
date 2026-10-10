@@ -1,10 +1,10 @@
 # Stan prac — 23.09.2026
 
-## Punkt wznowienia — 10.10.2026 19:48
+## Punkt wznowienia — 10.10.2026 22:50
 
 - Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchowa.
-- Oficjalny artykuł GTV potwierdza dwa dodatki AXIS PRO: pin dla wysokich frontów oraz kątownik wzmacniający dno przy dużej szerokości. Brakuje exact SKU, progu, limitów i pełnej tabeli kompatybilności. Zapisano warunkową obsługę BOM w `docs/okucia/GTV-Axis-Pro-18mm-oddzielny-profil-techniczny-2026-10-08.md`; nie zmienia to obciążenia, geometrii ani CNC.
-- Następnie znaleźć karty produktu/instrukcje i kryteria zastosowania tych dodatków; przy braku potwierdzenia wariant pozostaje `unknown`. Świeże zmiany Claude nadal przeglądać jako pierwsze w kolejnym uruchomieniu.
+- Oficjalna karta techniczna Axis Pro oraz karty GTV potwierdzają czarne zestawy wewnętrzne A2–D2 i skład panel+łącznik. Panel 95/110 mm i wysokość łącznika 120/168/200 mm to odrębne wymiary; A2 zawiera nieobjaśniony identyfikator `INVIGO`. Szczegóły i mierzalne kryterium dopisano do `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md`. To dane zakupowego BOM, nie geometria: nadal nie wiadomo, który komponent odpowiada `LW−80`/`LW−100`, więc CNC pozostaje zablokowane.
+- Następnie pozyskać czytelną instrukcję dokładnego zestawu i rozstrzygnąć `INVIGO` oraz mapowanie wymiarów przez wizualny odczyt i próbę montażową. Przy nowym commicie Claude najpierw wykonać review i adekwatne testy.
 - Tylko dokumentacja researchowa; zachowano logikę, aktywny katalog, dane klientów, uzgodnioną cenę 29 227,60 zł brutto i historyczne umowy.
 
 ## Punkt wznowienia — 10.10.2026 18:48
