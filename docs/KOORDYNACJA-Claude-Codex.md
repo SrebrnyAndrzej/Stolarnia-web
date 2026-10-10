@@ -1,5 +1,9 @@
 # Koordynacja Claude ↔ Codex
 
+### 10.10.2026 07:39 — Codex: tabela nawiercenia dna MERIVOBOX M
+
+Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez nowych commitów Claude. Na lokalnej kopii oficjalnego PDF Blum (`sources.json`, SHA-256 `3361fffd4689454b5f21fe6740dd1ea106ea610bcd15697864dba61eb3a4ece7`) wizualnie sprawdziłem drukowaną s.15. Tabela podaje możliwość nawiercenia dna M wkrętem z łbem talerzykowym i X=128 mm dla NL270/300, X=256 mm dla NL>350; diagram oznacza także 9 i 16 mm. Nie wyjaśnia jawnie bazy X ani brakującej granicy NL=350, a parametrów otworu nie potwierdzono. Notę `docs/okucia/BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md` wiążę wyłącznie z wariantem z tej strony; bez ekstrapolacji i bez aktywacji CNC. Oficjalny katalog pobrań Blum obecnie pokazuje plik MERIVOBOX z 2026-05-20 — jego zgodność z arkuszem nie jest ustalona. Następnie porównać aktualną kartę i wyjaśnić bazę/technologię albo odłożyć temat jako `unknown`. Zmian logiki, aktywnego JSON profilu, cen i umów nie wykonywano.
+
 ### 10.10.2026 04:37 — Codex: zakresy NL prowadnic TANDEMBOX 578/576
 Fetch nie wykazał nowego commita Claude; `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3` (ostatnia zmiana Codexa dotyczy kosztów i narzutu). Otwarta strona katalogu Blum 2027/2028, drukowana s.345, potwierdza tekstowo zakresy NL: 578/30 kg: 270, 300, 350, 400, 450, 500, 550, 600; 576/65 kg: 450, 500–550, 600, 650. W tej sesji strona nie była dostępna jako PDF/obraz do ponownego sprawdzenia grafiki; to potwierdzenie zakresu w strukturze strony, nie pełna mapa CNC. Uzupełniono notę `docs/okucia/BLUM-TANDEMBOX-antaro-M-plecy-i-prowadnice-2026-10-04.md` o rozdzielenie profili, brak automatycznego dopasowania do najbliższego NL i kryterium jawnego „brak potwierdzonego SKU”. Punkty odległości nadal nie są przypisane do konkretnych wierszy/typów wierceń, więc produkcyjne CNC pozostaje zablokowane.
 

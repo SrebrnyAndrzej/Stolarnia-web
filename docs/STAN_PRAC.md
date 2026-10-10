@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 07:39
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research wykonany na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.
+- Obejrzano w wysokiej rozdzielczości oficjalny, zarchiwizowany PDF Blum MERIVOBOX, drukowaną s.15. Poza wymiarami cięcia jest tam tabela nawiercenia dna M: NL270→X128, NL300→X128, NL>350→X256 mm oraz detal 9/16 mm. Nie ustalono jednoznacznie bazy X, wszystkich obsługiwanych NL ani parametrów otworu; oznaczenia nie są gotowe do CNC.
+- Opublikowano notę `docs/okucia/BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md` i odsyłacz w README. Profil pozostaje `not_normalized` i nieprodukcyjny. Oficjalna strona Blum obecnie wymienia też plik MERIVOBOX z 2026-05-20, którego wpływu na starszy arkusz planowania nie zweryfikowano.
+- Następny temat: porównać aktualną instrukcję 2026-05-20 z archiwalną tabelą wierceń i uzyskać jednoznaczną bazę X oraz wymagane średnicę/głębokość dla konkretnego wariantu; jeśli podgląd pozostanie niedostępny, przejść do następnej pozycji P0/P1 z briefu bez wyprowadzania CNC z domysłów.
+- Research-only; nie zmieniono logiki aplikacji, katalogu aktywnego, danych klienta, uzgodnionej ceny 29 227,60 zł brutto ani umów historycznych.
+
 ## Punkt wznowienia — 10.10.2026 04:37
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.

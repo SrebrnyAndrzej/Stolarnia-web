@@ -17,6 +17,8 @@ Poniższe wzory odczytano i porównano wizualnie z rysunkami. Są materiałem do
 
 Przykład: korpus zewnętrzny 600, dwa boki po 18, bez dodatkowych elementów zmniejszających światło: LW=564. Dla NL=500 dna wynoszą odpowiednio: Amix 489×474, Axis/Modern 489×476, MERIVOBOX 513×474, LEGRABOX 529×490, TANDEMBOX 489×476. Grubość dna wynika z profilu okucia, a nie automatycznie z grubości boków korpusu. LEGRABOX wymaga dodatkowej obróbki zgodnej z diagramem.
 
+Na drukowanej s.15 PDF MERIVOBOX planowania znajduje się także tabela kandydackiego nawiercenia dna M (NL 270→X128, 300→X128, >350→X256) oraz lokalny detal 9/16 mm. Baza X, brakująca granica NL=350 i parametry otworu nie są rozstrzygnięte; nie jest to zatwierdzony profil CNC. Szczegóły: `BLUM-MERIVOBOX-M-dno-otwory-wstepne-2026-10-10.md`.
+
 ### Wysokości pleców Blum według wariantu boku (25.09.2026)
 
 Z tych samych PDF, strona dla każdego wariantu (`variant_sources` w `reguly-szuflad.json`). Wzory dna i szerokości pleców są takie same dla wszystkich wariantów danego systemu.
