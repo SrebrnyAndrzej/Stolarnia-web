@@ -40,3 +40,22 @@ Przykład wymiarów powyżej zakłada LW564 jako wejściowe światło po uwzglę
 ## Punkt wznowienia
 
 Baza origin/main na wejściu 270ecf8, bez nowych commitów Claude. Ta rewizja dodaje ręcznie zweryfikowany odczyt wymiarów Amix Elite Box wewnętrznej, ale nie komplet produkcyjnego drill-map. Następnie pozyskać/odczytać rysunek mocowań GTV Axis Pro i Modern Box z rozdzieleniem wariantów, po czym wrócić do pełnych otworów Blum. Nie zmieniono aplikacji, cen ani umów.
+
+## Uzupełnienie 2026-10-10: identyfikacja zakupowa mocowań frontu
+
+W bieżących publicznych kartach producenta AMIX dla mocowań frontu wewnętrznego Elite Box producent publikuje wysokość i EAN. Wartości widoczne podczas weryfikacji 2026-10-10:
+
+| Wysokość z karty | EAN pokazany przez AMIX | Strona producenta | Co pozostaje niepotwierdzone |
+|---:|---|---|---|
+| H84 | `unknown` | [karta w katalogu AMIX](https://amix.pl/pl/361-szuflady) | karta wyświetla rodzinę na liście, ale bez odczytanego EAN |
+| H116 | `5904208179870` | [AMIX, mocowanie H116](https://amix.pl/en/elite-box/2287-elite-mocowanie-frontu-do-szuflady-wewnetrznej-h-116-mm) | brak producentowego indeksu artykułu; powiązanie EAN z wybranym kolorem na selektorze |
+| H167 | `5904208179894` | [AMIX, mocowanie H167](https://amix.pl/en/elite-box/2288-elite-mocowanie-frontu-do-szuflady-wew-h-167-mm) | brak producentowego indeksu artykułu; powiązanie EAN z wybranym kolorem na selektorze |
+| H199 | `5904208179917` | [AMIX, mocowanie H199](https://amix.pl/en/elite-box/2289-elite-mocowanie-frontu-do-szuflady-wew-h-199-mm) | brak producentowego indeksu artykułu; powiązanie EAN z wybranym kolorem na selektorze |
+
+Karty AMIX pokazują wybór koloru obok jednego widocznego pola EAN. Publiczny widok nie wyjaśnia, czy ten EAN jest przypisany do wariantu domyślnego, czy zmienia się po wyborze koloru; dlatego nie przypisuję go do białego/antracytowego wariantu bez sprawdzenia konkretnej opcji zamówienia lub etykiety towaru. Nie udało się odczytać pełnej karty H84 przez źródło przeglądarki; sama pozycja H84 na liście producenta nie daje EAN.
+
+Zewnętrzna karta detalisty dla produktu opisanego jako H199 pokazuje jednocześnie symbol `ELITE-167/ANTR-1` ([strona detalisty](https://www.wyposazeniemebli.pl/Mocowanie-H-199mm-frontu-wewnetrznego-ELITE-BOX-Antracyt-p7043)); jest to konflikt opisu i symbolu sprzedawcy, nie korekta danych producenta. Nie używać symbolu sprzedawcy jako potwierdzonego indeksu AMIX.
+
+**Rekomendacja dla Claude — P1, część zakupowa BOM:** rozdzielić numer pozycji z rysunku (14–17), wysokość, EAN z konkretnej karty, producentowy SKU (jeśli producent go publikuje), kolor oraz status potwierdzenia zamawianego wariantu. W modelu nie wymuszać jednego pola `sku`: EAN nie zastępuje indeksu ani potwierdzenia koloru. Utrzymać oddzielne identyfikatory wysokościowe; nie mapować h199 do symbolu `167` z karty detalisty.
+
+**Zależności:** exact kolor zamawianego mocowania, potwierdzenie EAN na stronie zamówienia/etykiecie opakowania i ustalenie, czy AMIX udostępnia osobny indeks artykułu. **Kryteria odbioru:** (1) h116/h167/h199 zachowują trzy różne EAN-y przypisane do źródłowych kart i ich rewizji; (2) H84 pozostaje `unknown`, dopóki nie odczytano EAN; (3) zmiana wysokości/koloru nie dziedziczy identyfikatora innego wariantu; (4) niekompletny kolor lub SKU blokuje zakupowy BOM jako pozycję zamówieniową, ale nie zmienia geometrii ani nie zwalnia CNC; (5) rozbieżny kod sprzedawcy pozostaje konfliktem źródła, dopóki producent lub etykieta towaru go nie rozstrzygnie. Te dane dotyczą identyfikacji części do zakupu, nie pełnej listy zestawu ani mapy wierceń.
