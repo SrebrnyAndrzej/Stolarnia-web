@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 00:35
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych zmian Claude. Research prowadzony na `codex/research-zmiany-projektu-2026-10-07`.
+- Nowy dowód: ekstrakcja tabeli z oficjalnego `drawer-system-AXIS-PRO-EN_PL.pdf`, drukowana s.21, podaje dla Glass PAWEW A1/B1/C1 długości 1200 mm i materiał stal; oficjalne karty produktu i inny katalog podają dla identycznych SKU długości 1100 mm i szkło (karty produktów: niehartowane). Konflikt publikacji producenta potwierdzony; rzeczywista rewizja towaru pozostaje nieznana. CNC zablokowane do potwierdzenia SKU/rewizji i właściwej obróbki.
+- Aktualizacja i kryteria: `docs/okucia/GTV-AXIS-PRO-GLASS-szuflady-wewnetrzne-profile-2023-2024-2026-10-09.md`; następny temat: odzyskać wizualną kopię tabeli/egzemplarz fizyczny oraz pozyskać pisemne wyjaśnienie GTV lub dostawcy, potem odrębnie zatwierdzić bazę/tolerancję i próbę cięcia.
+- Research-only; bez zmian kodu aplikacji, ceny uzgodnionej 29 227,60 zł brutto, umów i danych klientów.
+
 ## Punkt wznowienia — 09.10.2026 23:34
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude do przeglądu. Bieżący research na gałęzi `codex/research-zmiany-projektu-2026-10-07`.

@@ -1,5 +1,15 @@
 # GTV Axis Pro GLASS — dane szuflad wewnętrznych z indeksowanych kart 2023/2024
 
+## Aktualizacja: odczyt konfliktującego oficjalnego katalogu — 10.10.2026 00:35
+
+Oficjalny [Drawer System AXIS PRO EN/PL (PDF)](https://gtv.com.pl/wp-content/uploads/2025/04/drawer-system-AXIS-PRO-EN_PL.pdf) jest już dostępny w indeksie dokumentów z ekstrakcją tekstu i struktur tabel. Na drukowanej s. 21, w tabeli „Glass panel for internal front”, ten sam kod `PB-AXISPRO-GLASS-PAWEW-A1` widnieje jako H=56, L=1200 mm, materiał `steel/stal`; kody B1 i C1 analogicznie podają H=88/139, L=1200 mm, `steel/stal`. To nie jest już tylko fragment podglądu wyszukiwarki: ekstrakcja indeksu PDF wskazuje stronę i tabelę. Nie udało się jednak pobrać zrzutu strony PDF (błąd cache przy screenshot), więc obrazu tabeli nie zweryfikowano pikselowo.
+
+To pozostaje w bezpośrednim konflikcie z aktualnymi [kartami produktów GTV A1](https://gtv.com.pl/produkt/PB-AXISPRO-GLASS-PAWEW-A1/), [B1](https://gtv.com.pl/produkt/PB-AXISPRO-GLASS-PAWEW-B1/) i [C1](https://gtv.com.pl/produkt/PB-AXISPRO-GLASS-PAWEW-C1/) oraz z katalogiem [AXIS PRO ONLINE EN/PL](https://gtv.com.pl/wp-content/uploads/2025/04/AXIS_PRO_ONLINE_EN_PL-1.pdf): wszystkie te źródła podają odpowiednio 56/88/139 × 1100 mm i szkło (karty produktu: szkło niehartowane). Oba katalogi pochodzą z oficjalnej domeny GTV; z samej treści publicznej nie da się ustalić, czy to omyłka składu, rewizja produktu, czy inne znaczenie SKU. Nie wybierać wersji na podstawie nazwy pliku ani daty publikacji.
+
+**Nowy status:** konflikt źródeł producenta potwierdzony jako konflikt zapisanych publikacji (pewność wysoka); nie ustalono, który parametr odpowiada towarowi obecnie dostarczanemu pod danym SKU. W zakupowym BOM należy zachować dokładne źródło i wyświetlić sprzeczność. Nie generować długości formatek ani CNC z 1100 lub 1200 mm bez identyfikacji partii/sku na opakowaniu i pisemnego wyjaśnienia GTV/dostawcy. Strona produktu dopuszcza przycięcie szkła, ale nie podaje tolerancji, krawędzi, bazy ani procesu obróbki.
+
+**Priorytet:** P1 dla jakości źródeł i katalogu; P0 przed cięciem szkła/CNC. **Zależności:** zachować odpowiednie wydania PDF, porównać graficzną tabelę stron 20–21 obu katalogów, pozyskać od GTV/dostawcy potwierdzenie wersji dla dokładnego indeksu i fizycznego opakowania; następnie potwierdzić bazę/tolerancję i wykonać próbę. **Kryterium odbioru:** testy źródeł reprezentują obie oficjalne wartości i nie redukują ich do jednego pola; konfiguracja wyświetla konflikt i pozostaje bez wymiaru produkcyjnego do potwierdzenia dokładnego SKU/rewizji. Test nie może dopuścić do CNC z konfliktem `source_conflict`.
+
 ## Aktualizacja źródeł: oficjalne strony kart produktów, 09.10.2026 23:34
 
 Bezpośrednie oficjalne karty produktów GTV doprecyzowują metadane trzech szklanych paneli:
