@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 01:35
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
+- Oficjalna instrukcja GLASS 2024, karty produktów i katalog AXIS PRO ONLINE wspierają rozróżnienie `PAWEW` (szklany panel, H 56/88/139, L 1100, niehartowane szkło) vs `ZEWEW` (stalowy zestaw szuflady, L=1200). Strona 21 innego oficjalnego katalogu przypisuje 1200/stal do tabeli PAWEW, lecz to pokrywa się z ZEWEW na poprzedniej stronie; prawdopodobny błąd publikacji, nadal hipoteza bez sprostowania GTV.
+- Aktualizacja wymagań i źródeł: `docs/okucia/GTV-AXIS-PRO-GLASS-szuflady-wewnetrzne-profile-2023-2024-2026-10-09.md`; wiersz konstruktora zaktualizowany w `docs/RESEARCH-konstruktor-mebli-niestandardowych.md`.
+- Następnie sprawdzić etykiety/fizyczny towar PAWEW i ZEWEW oraz pozyskać tolerancję/bazę obróbki od warsztatu lub producenta; nie zwalniać CNC szkła bez zatwierdzonej próby.
+- Research-only; nie zmieniano aplikacji, ceny Pieszczyńskich 29 227,60 zł brutto, umów ani danych klientów.
+
 ## Punkt wznowienia — 10.10.2026 00:35
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych zmian Claude. Research prowadzony na `codex/research-zmiany-projektu-2026-10-07`.

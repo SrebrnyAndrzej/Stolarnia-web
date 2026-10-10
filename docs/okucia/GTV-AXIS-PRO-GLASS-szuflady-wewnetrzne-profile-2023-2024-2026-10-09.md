@@ -1,5 +1,21 @@
 # GTV Axis Pro GLASS — dane szuflad wewnętrznych z indeksowanych kart 2023/2024
 
+## Aktualizacja: rozdzielenie SKU panelu szklanego i zestawu — 10.10.2026 01:35
+
+Porównanie oficjalnej instrukcji Glass 2024 z katalogiem AXIS PRO EN/PL i kartami produktów wyjaśnia najpewniej, skąd powstała rozbieżność:
+
+- `PB-AXISPRO-GLASS-PAWEW-A1/B1/C1` to **same panele szklane frontu wewnętrznego**. Karty produktu GTV oraz katalog `AXIS_PRO_ONLINE_EN_PL-1.pdf` podają dla nich H=56/88/139 mm, długość wejściową 1100 mm i materiał szkło (na kartach produktu: szkło niehartowane); producent deklaruje możliwość przycięcia na wymaganą długość.
+- `PB-AXISPRO-GLASS-ZEWEW-A1/B1/C1` to **zestawy do szuflady wewnętrznej**, osobna pozycja katalogowa. Instrukcja Glass 2024 oraz drukowana s.20 katalogu `drawer-system-AXIS-PRO-EN_PL.pdf` podają dla nich L=1200 mm, stalowe elementy zestawu.
+- Instrukcja Glass 2024 osobno pokazuje rysunek szklanego frontu z calloutem `S` oraz tabelą A/B/C = 56/88/139 mm; to mocno wspiera przypisanie `S` do wysokości PAWEW, choć grafika nie została obejrzana pikselowo. Dwa callouty `LW−80` i `LW−100` pozostają wymiarami różnych elementów rysunku — nie przypisywać ich do konkretnych części bez graficznego odczytu.
+
+### Ocena konfliktu i rekomendacja katalogowa
+
+Drukowana s.21 katalogu `drawer-system-AXIS-PRO-EN_PL.pdf` powtarza w tabeli nazwanej „Glass panel for internal front” te same PAWEW A1/B1/C1, lecz podaje L=1200 mm i `steel/stal`. Są to właśnie parametry zgodne z zestawami ZEWEW pokazanymi na poprzedniej stronie. Karty produktu GTV, katalog `AXIS_PRO_ONLINE_EN_PL-1.pdf` i instrukcja Glass 2024 rozdzielają role SKU i zgodnie wspierają 1100 mm/szkło dla PAWEW. **Hipoteza o błędzie składu/kopiowania tabeli s.21 jest silna, ale nadal niepotwierdzona przez GTV**; nie twierdzić, że producent oficjalnie sprostował dokument.
+
+**Zachowanie:** katalog aplikacji ma modelować PAWEW (szklany panel) i ZEWEW (stalowy zestaw szuflady) jako odrębne SKU/pozycje BOM, nawet gdy litera wariantu A/B/C jest ta sama. Dla PAWEW można użyć metadanych 1100 mm, szkła i wysokości 56/88/139 w doborze zakupowym, z odnośnikami do kart producenta. Wartości cięcia pozostają `unverified`: „można przyciąć” nie podaje tolerancji, krawędzi, bazy ani technologii zakładu. Rozbieżność katalogu EN/PL musi być widoczna w pochodzeniu danych jako konflikt publikacji, ale nie może unieważnić identyfikacji dwóch różnych SKU.
+
+**Priorytet:** P1 dla prawidłowego wyboru zakupowego/BOM i pochodzenia; P0 przed emisją formatek CNC szkła. **Zależności:** zachować identyfikatory/revizje PDF i kart produktów; warsztat potwierdza zakupione PAWEW/ZEWEW z etykietami; do formatek pozyskać tolerancję i bazę cięcia od producenta/dostawcy oraz zatwierdzić próbę. **Mierzalne kryterium odbioru:** testy A/B/C nie mieszają PAWEW z ZEWEW, sprawdzają PAWEW=1100 mm + szkło + S=56/88/139, a ZEWEW=1200 mm + stalowy zestaw; źródło EN/PL strony 21 pozostaje oznaczone jako konflikt dla PAWEW. Żaden przypadek nie może wygenerować zwolnionej formatki CNC bez osobno zweryfikowanej bazy/tolerancji i akceptacji próbki.
+
 ## Aktualizacja: odczyt konfliktującego oficjalnego katalogu — 10.10.2026 00:35
 
 Oficjalny [Drawer System AXIS PRO EN/PL (PDF)](https://gtv.com.pl/wp-content/uploads/2025/04/drawer-system-AXIS-PRO-EN_PL.pdf) jest już dostępny w indeksie dokumentów z ekstrakcją tekstu i struktur tabel. Na drukowanej s. 21, w tabeli „Glass panel for internal front”, ten sam kod `PB-AXISPRO-GLASS-PAWEW-A1` widnieje jako H=56, L=1200 mm, materiał `steel/stal`; kody B1 i C1 analogicznie podają H=88/139, L=1200 mm, `steel/stal`. To nie jest już tylko fragment podglądu wyszukiwarki: ekstrakcja indeksu PDF wskazuje stronę i tabelę. Nie udało się jednak pobrać zrzutu strony PDF (błąd cache przy screenshot), więc obrazu tabeli nie zweryfikowano pikselowo.
