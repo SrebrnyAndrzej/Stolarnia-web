@@ -1,5 +1,13 @@
 # Blum TANDEMBOX antaro M — dobór prowadnicy i plecy drewniane/stalowe
 
+## Aktualizacja źródła 2027/2028: jawne zakresy długości profili — 10.10.2026
+
+Otwarta ponownie oficjalna [strona katalogu Blum 2027/2028, drukowana s.345](https://publications.blum.com/2026/catalogue/en/345/) pokazuje w strukturze strony tabelę „Cabinet profile fixing positions” rozdzieloną na profil **578 / 30 kg** i **576 / 65 kg**. Tekst źródłowy wylicza długości nominalne 578 jako `270, 300, 350, 400, 450, 500, 550, 600 mm`, a dla 576 pokazuje `450, 500–550, 600, 650 mm`. Potwierdza też legendę A = wkręt do płyty Ø4 × 15 mm, B = wkręt systemowy Ø6 × 14,5 mm (661.1450.HG), `**` = punkt opcjonalny dla większej stabilności, zastępowalny wkrętem A. Jest to tekst/struktura oficjalnej strony, nie nowy odczyt grafiki: przeglądarka nie udostępniła obrazu strony jako PDF, więc nie ustalam przypisania symboli do konkretnych NL ani wymiarów do bazy.
+
+**Problem:** tabela wierceń jest łatwa do błędnego spłaszczenia do wspólnego profilu lub wspólnego zbioru NL, mimo różnych mas/nośności i zakresów. **Zalecenie P0:** profil/wariant zawiera typ 578/576 i dokładne obsługiwane NL z tego źródła; spoza tabeli dobór prowadnicy i wiercenie zwracają „brak potwierdzonego wariantu”, bez aproksymowania do najbliższej długości. Pozycje wymiarowe pozostają nieprodukcyjne, dopóki każde oznaczenie nie jest graficznie przypisane do konkretnego rzędu NL, punktu bazowego, typu otworu i mocowania oraz zweryfikowane próbą.
+
+**Mierzalne kryterium odbioru:** test danych oddziela `578/30 kg` (270–600 w wymienionych skokach) od `576/65 kg` (450–650, zakres 500–550 dokładnie jak w katalogu); np. brak `578/650` daje „brak potwierdzonego SKU”, a nie 576/65 kg ani najbliższy wariant. Testy nie emitują produkcyjnego drill-map z samej listy odległości; opcjonalne `**` pozostaje osobnym atrybutem. Źródło zapisuje katalog/stronę oraz status odczytu `tekst potwierdzony, geometria niezweryfikowana`.
+
 04.10.2026. Ręczna kontrola katalogu Blum 2024/2025 PL, plik w repozytorium `docs/okucia/pdf/BLUM-Tandembox-antaro-planowanie.pdf` (48 stron; SHA-256 rejestru sources.json: `c59a7c22f74f557b5f91d39ff173db04663311dc1eadf0607392a7db69a6f671`; pobrany 23.09.2026). Odczyt wizualny: strony PDF 7, 8, 43, 44; odczyt treści w polskim katalogu źródłowym. Baza origin/main na wejściu 76ca5e7; brak nowych commitów Claude.
 
 ## Rozstrzygnięcie wariantu pleców

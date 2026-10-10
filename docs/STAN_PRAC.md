@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 04:37
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Oficjalny Blum 2027/2028, drukowana s.345, potwierdza tekstowo nominalne NL profilu 578/30 kg (`270, 300, 350, 400, 450, 500, 550, 600`) i 576/65 kg (`450, 500–550, 600, 650`). Przeglądarka nie zwróciła obrazu/PDF tej strony, więc nie dopisano żadnej współrzędnej/relacji NL→otwór.
+- W nocie TANDEMBOX opisano zależność od typu profilu/nośności i kryterium: NL poza jawnym zakresem zwraca brak potwierdzonego wariantu, bez fallbacku. Wiercenia CNC nadal blokowane, aż punkty będą przypisane do rzędu, bazy, typu mocowania i potwierdzone próbą.
+- Następnie pozyskać/obejrzeć obraz tabeli strony 345 i powiązać symbole z konkretnymi długościami, pozycją, wkrętem oraz bazą; równolegle nie mieszać wyniku z GTV ani ZML.7000 LEGRABOX.
+- Research-only; nie zmieniać logiki, ceny 29 227,60 zł brutto Pieszczyńskich ani historycznych umów.
+
 ## Punkt wznowienia — 10.10.2026 03:37
 
 - Świeży fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; nowy względem poprzedniego punktu jest wyłącznie commit dokumentacyjny Codexa o narzucie/marży, bez nowych commitów Claude.
