@@ -58,3 +58,17 @@ Z zapisanego pliku producenta należy zachować jego kod/revizję, datę pobrani
 **Mierzalny odbiór:** dla wybranego SKU istnieje zarchiwizowane źródło Blum z rewizją i sumą kontrolną; współrzędne, baza, średnica i głębokość wiercenia są jawnie przypisane do wskazanych krawędzi; rezultat montuje się bez kolizji, mieści się w zatwierdzonej tolerancji zakładu, a CAM przechodzi symulację dla konkretnej maszyny. Jeśli E-Service nie publikuje dokładnego wariantu lub danych otworów, profil pozostaje niezwolniony, bez fallbacku do innego NL.
 
 **Niezweryfikowane:** dostępność pliku dla zakupionego MERIVOBOX, wymagania/zakres eksportu dla konkretnego konta, licencja na przechowywanie i redystrybucję danych w aplikacji warsztatu, zgodność dowolnego makra z maszyną zakładu oraz fizyczna interpretacja `X` ze strony 15 plan-booka. Nie wysyłano zapytania do producenta ani nie uzyskiwano dostępu do prywatnego konta.
+
+## BXF jako dodatkowa ścieżka do danych wierceń — 2026-10-10
+
+### Nowy dowód producenta
+
+Polskie [FAQ Blum, pytanie „Czym jest plik w formacie BXF?”](https://www.blum.com/pl/pl/services/faq/) stwierdza, że BXF (Blum eXchange Format) zawiera dane okuć oraz dane montażowe formatek, między innymi ich wymiary i pozycje wiercenia. FAQ podaje, że plik można uzyskać z Konfiguratora produktów lub Konfiguratora korpusów, a następnie edytować w zgodnym CAD albo wykorzystać do produkcji na MINIPRESS z EASYSTICK. Osobna polska strona [interfejsu CAD/CAM](https://www.blum.com/pl/pl/services/industrial-production/cad-cam-interface/) opisuje BXF jako sposób przenoszenia wyników planowania z konfiguratorów do CAD.
+
+### Wniosek i ograniczenia
+
+To bardziej bezpośrednia ścieżka sprawdzenia współrzędnych niż ręczny odczyt `X` z obrazka, **jeśli** producentowy konfigurator pozwala zbudować dokładny wariant MERIVOBOX. Nie dowodzi, że każdy wariant/SKU można wyeksportować, że dowolny CAD/CAM poprawnie interpretuje plik, ani że istnieje publiczne API. Dostęp do wybranego E-Service wymaga aktywacji; konto i uprawnienia warsztatu pozostają do sprawdzenia. Nie wpisywać do aplikacji wyprowadzonych z BXF otworów, dopóki nie wiadomo, że konfiguracja źródłowa odpowiada faktycznie zamawianemu SKU, grubości dna, długości i typowi szuflady.
+
+**P1 — następny eksperyment warsztatowy:** na koncie z właściwym uprawnieniem zbudować konfigurację dokładnego, kupowanego SKU; zachować niezmieniony plik BXF, nazwę usługi/konfiguratora, datę pobrania i podsumowanie konfiguracji. Odczytać geometrię w zgodnym narzędziu, porównać z plan-bookiem oraz próbką detalu, a następnie zasymulować ją w rzeczywistym CAD/CAM/sterowniku zakładu. W razie braku dokładnego artykułu, niejednoznaczności konfiguracji lub niezgodności współrzędnych wynik pozostaje `unknown`, a CNC nie jest zwalniane.
+
+**Mierzalny odbiór:** źródłowy BXF da się powiązać z dokładnym SKU/konfiguracją i rewizją usługi; każda pozycja otworu ma zrozumiałą bazę i jednostkę; po imporcie nie zmieniają się geometria i orientacja części; wynik symulacji i próbny montaż potwierdzają zgodność w tolerancji zatwierdzonej przez warsztat. Zachować hash źródłowego pliku i log przekształcenia/importu. Nie uznawać samego udanego parsowania pliku za zatwierdzenie produkcyjne.

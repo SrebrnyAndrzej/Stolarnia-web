@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 10.10.2026 15:44
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research-only na odizolowanej gałęzi.
+- Dodatkowe polskie źródło Blum potwierdza, że BXF może zawierać wymiary formatek i pozycje wierceń, jest eksportowany z Konfiguratora produktów/korpusów i służy do dalszej pracy w CAD lub MINIPRESS z EASYSTICK. Zaktualizowano notę MERIVOBOX z warunkami testu, bez założenia, że dokładny SKU jest dostępny albo że istnieje publiczne API.
+- Następny krok: po ustaleniu przez warsztat SKU i dostępu do konfiguratora sprawdzić eksport BXF dla dokładnej konfiguracji oraz porównać bazę/otwory z plan-bookiem, CAM i próbką fizyczną. Do tego czasu status pozostaje `unknown`, CNC niezwolnione.
+- Bez zmian logiki, katalogu aktywnego, danych klienta, ceny 29 227,60 zł brutto ani umów. `git diff --check` przed publikacją.
+
 ## Punkt wznowienia — 10.10.2026 11:43
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research-only na odizolowanej gałęzi.
