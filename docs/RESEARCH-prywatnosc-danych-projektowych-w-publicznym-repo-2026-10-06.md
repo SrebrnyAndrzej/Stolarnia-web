@@ -1,5 +1,11 @@
 # Dane projektowe klientów a publiczne repozytorium
 
+## Punkt kontrolny — 11.10.2026
+
+W świeżo pobranym `origin/main` (`8230275ad6dea52109f581c793bdd8d6f08684d3`) nadal znajduje się klientowski model montażowy dodany w commicie `537cdc0`; nie znalazłem późniejszego usunięcia lub zastąpienia tego artefaktu w historii `main`. Repozytorium było potwierdzone jako publiczne w przeglądzie z 06.10, ale jego bieżącej widoczności nie udało się potwierdzić w tym punkcie: GitHub CLI nie ma skonfigurowanego uwierzytelnienia, a bezpośrednie pobranie strony/API przez przeglądarkę zakończyło się błędem cache. Dlatego aktualna publiczna osiągalność jest **niezweryfikowana**, choć obecność danych w najnowszym drzewie i historii `main` jest potwierdzona. Nie kopiuję identyfikatorów ani szczegółów projektu do tej notatki.
+
+**Wymagane działanie właściciela:** zgodnie z zaleceniami P0 poniżej, pilnie ustalić widoczność repozytorium i containment z osobą odpowiedzialną za dane; zdecydować o usunięciu bieżącego artefaktu oraz kontrolowanym czyszczeniu historii, z zachowaniem bezpiecznej kopii i koordynacją aktywnych klonów. Sam kolejny commit kasujący nie usuwa danych z historii. Codex nie zmieniał widoczności, gałęzi `main` ani historii i nie przeprowadzał oceny prawnej/notyfikacyjnej.
+
 Data przeglądu: 06.10.2026. Autor: Codex. Zakres: ryzyko publikacji dokumentów z danymi projektu, zalecenia dla procesu pracy i aplikacji. To nie jest opinia prawna ani rozstrzygnięcie, czy doszło do naruszenia prawa lub obowiązków zgłoszeniowych.
 
 ## Pilne ustalenie z przeglądu Claude

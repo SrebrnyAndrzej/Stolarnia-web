@@ -1,5 +1,13 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 11.10.2026 01:53
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez zmian od poprzedniego punktu. Na `main` nadal obecny jest klientowski artefakt montażowy z commita `537cdc0`, bez późniejszego usunięcia/zastąpienia. Nie powielono danych osobowych.
+- Poprzedni przegląd z 06.10 potwierdzał publiczną widoczność repozytorium. Dzisiejsza aktualna widoczność pozostała **niezweryfikowana**: brak `gh` auth, bezpośredni web/API niedostępny. Uzupełniono punkt kontrolny w `docs/RESEARCH-prywatnosc-danych-projektowych-w-publicznym-repo-2026-10-06.md` oraz koordynację.
+- To wymaga pilnej decyzji właściciela/osoby odpowiedzialnej za dane: containment, aktualna widoczność oraz bezpieczny plan czyszczenia historii i koordynacji klonów. Codex nie zmieniał main, widoczności ani historii i nie formułował wniosku prawnego.
+- Następnie sprawdzić świeże zmiany Claude. W tym obszarze dalsza praca zależy od wymaganej decyzji i działania właściciela; niezależnie kontynuować kolejny niepowielony przegląd produkcyjny bez powielania danych klienta.
+- Tylko dokumentacja badawcza; `git diff --check` przed publikacją. Cena uzgodniona 29 227,60 zł brutto i historyczne umowy niezmienione.
+
 ## Punkt wznowienia — 11.10.2026 00:52
 
 - Świeży `origin/main` bez nowych commitów Claude: `8230275ad6dea52109f581c793bdd8d6f08684d3`; research na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.
