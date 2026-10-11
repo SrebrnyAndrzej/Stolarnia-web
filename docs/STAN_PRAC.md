@@ -317,3 +317,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Bezpośrednia karta producenta AMIX H84 (otwarta przez link z listy produktów) publikuje EAN `5904208179924`. Tabela AMIX Elite Box mocowań frontu ma teraz EAN-y H84/H116/H167/H199: `5904208179924`, `5904208179870`, `5904208179894`, `5904208179917`. Zapisano źródło i ograniczenie w `docs/okucia/AMIX-Elite-Box-wewnetrzne-wiercenia-2026-10-03.md` oraz w dzienniku koordynacji.
 - Następny krok: rozstrzygnąć EAN↔kolor/SKU przez wybór wariantu zamówienia lub etykietę. Do tego czasu kolor i producentowy indeks zamówieniowy pozostają `unknown`; wynik nie zatwierdza BOM zakupowego ani żadnych wierceń/CNC.
 - Bez zmian logiki, aktywnego katalogu, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów. Następny heartbeat: świeżo sprawdzić zmiany Claude, a przy ich braku kontynuować niezależny research okuć według otwartych ryzyk.
+
+## 2026-10-11 04:58 — Punkt wznowienia Codex
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Gałąź researchowa `codex/research-zmiany-projektu-2026-10-07`.
+- W aktualnej karcie Axis Pro GTV `_7`, drukowana s.11, znaleziono callout „Stabilizator dna szuflady” / “Drawer bottom stabilizer” w montażu szuflad wewnętrznych. Exact SKU, ilość, kryterium stosowania i zawartość zestawów A2–D2 pozostają `unknown`; nie wolno mylić z kątownikiem/kołkiem wzmacniającym wspomnianym w artykule GTV. Zapisano problem BOM, źródło i kryterium odbioru w `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md`.
+- Następny temat: odnaleźć aktualną, dokładną instrukcję/wykaz części GTV dla szuflad wewnętrznych albo wiarygodne potwierdzenie z opakowania/próby; ustalić SKU, ilość i kiedy stosować stabilizator. W międzyczasie zachować `unknown` i blokować automatyczne zamawianie/zwalnianie BOM-u wariantu, którego kompletność zależy od tej pozycji. Przy nowych commitach Claude najpierw review i testy.
+- Research-only, bez zmian logiki, katalogu, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów. `git diff --check` przed publikacją.

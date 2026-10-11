@@ -66,3 +66,15 @@ W starszym pliku producenta [Axis_Pro_karta techniczna 06_24_44.pdf](https://api
 ## Granice i następny krok
 
 Odczyt wizualny potwierdza nagłówek, definicje zmiennych i obydwa callouty. Karty produktowe potwierdzają wybrane czarne indeksy zakupowe A2–D2 i ich deklarowane składowe; starszy arkusz podaje `R`, ale nie potwierdza stosowalności jego rewizji do obecnych SKU. Nie ustalono przypisania `LW−80`/`LW−100` do części ani nie rozstrzygnięto konfliktu `INVIGO`/`WEWMOCA`. Następnie porównać właściwą instrukcję/current product revision z kartą 06_24 i zestawem warsztatowym, przypisać elementy i potwierdzić próbą. Do tego czasu GTV Axis Pro szuflada wewnętrzna pozostaje częściowo opisana i niezatwierdzona do produkcji.
+
+## Dodatkowy callout: stabilizator dna w montażu szuflady wewnętrznej (11.10.2026)
+
+W aktualnej [karcie technicznej Axis Pro GTV, rewizja pliku `_7`](https://api2.gtv.com.pl/pimcore/assets/attachments/karta_techniczna/Axis_Pro_karta%20techniczna_7.pdf), na drukowanej s.11 (PDF s.11) w rysunkach montażowych szuflad wewnętrznych pojawia się etykieta „Stabilizator dna szuflady” / „Drawer bottom stabilizer”. Analogiczny podpis występuje w starszych oficjalnych kartach Axis Pro; nie jest to nowy rodzaj wymiaru formatek. Rysunki wskazują element w kontekście montażu, ale tekst i publiczne karty przejrzane w tym researchu nie podają jego dokładnego SKU, ilości na szufladę, warunku użycia ani tego, czy jest częścią zestawu A2–D2.
+
+Nie utożsamiać tego stabilizatora z kątownikiem wzmacniającym i kołkiem opisanymi w [artykule GTV o systemie Axis Pro](https://gtv.com.pl/nowosci/axis-pro-nowoczesny-system-szuflad/). Dostępne źródła nie potwierdzają, czy to ten sam komponent, element zawarty w zestawie, czy osobna część dobrana dla konkretnego dna/konfiguracji. Tożsamość i kryterium montażowe pozostają `unknown`.
+
+**Problem:** nawet gdy wymiary części są poprawne, lista montażowa/BOM może pominąć element pokazany w instrukcji albo automatycznie dodać go do każdego wariantu bez podstawy. Oba błędy wpływają na kompletność produkcji i zakupy.
+
+**Proponowane zachowanie:** zachować stabilizator jako odrębną, nierozstrzygniętą obserwację źródłową; nie łączyć go z artykułem/kątownikiem wzmacniającym i nie dopisywać do produkcyjnego BOM-u, dopóki exact SKU, skład zestawu i reguła stosowania nie zostaną potwierdzone aktualną instrukcją producenta, opakowaniem lub próbą warsztatową.
+
+**Priorytet:** P1 dla kompletności checklisty montażowej; P0 przed automatycznym zakupem lub zwolnieniem BOM-u dla wariantu, który od niego zależy. **Zależności:** dokładny SKU/nazwa części, liczba sztuk, relacja do zestawu A2–D2 i wariantu wysokości/dna oraz warunek montażu. **Mierzalny odbiór:** dla każdej konfiguracji test danych wskazuje źródło i status tej pozycji; brak potwierdzonej reguły nie powoduje ani cichego pominięcia w checklistach, ani automatycznego zamówienia. Zatwierdzenie następuje dopiero po wskazaniu jednoznacznej instrukcji/etykiety i porównaniu z próbnym zestawem.
