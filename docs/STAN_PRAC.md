@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 11.10.2026 00:52
+
+- Świeży `origin/main` bez nowych commitów Claude: `8230275ad6dea52109f581c793bdd8d6f08684d3`; research na izolowanej gałęzi `codex/research-zmiany-projektu-2026-10-07`.
+- Oficjalne karty GTV dla czarnego Axis Pro A2 nie zgadzają się co do kodu złączki: karta PL podaje `WEWMOCA`, EN `INVIGO`, a karta osobnej czarnej złączki i kwartalnik 2026 wskazują `WEWMOCA2`. Starszy katalog 2020 używa `WEWMOCA` dla antracytu; nie potwierdza aliasu ani relacji komponentowej do czarnego zestawu. Uzupełniono `docs/okucia/GTV-Axis-Pro-szuflada-wewnetrzna-wymiary-elementow-2026-10-09.md` oraz koordynację.
+- Następny krok: uzyskać od GTV albo z etykiety dokładnego zestawu A2 potwierdzenie komponentu i aliasu; zachować `unknown` w relacji BOM do potwierdzenia. Niezależnie, pozostałe callouty `LW−80`/`LW−100` są nadal nieprzypisane, a profile pozostają niezatwierdzone do CNC.
+- Dokumentacja researchowa only; bez zmian logiki, katalogu aktywnego, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów. Przed publikacją sprawdzić `git diff --check` i świeży stan gałęzi.
+
 ## Punkt wznowienia — 10.10.2026 23:51
 
 - Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Izolowana gałąź researchowa.
