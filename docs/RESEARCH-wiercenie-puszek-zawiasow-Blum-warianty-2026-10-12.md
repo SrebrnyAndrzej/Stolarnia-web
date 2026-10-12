@@ -29,3 +29,20 @@ Data sprawdzenia źródeł: 12.10.2026. Zakres: głębokość otworu puszki fron
 4. Zmiana SKU/artykułu unieważnia zależne zatwierdzenie wierceń i wymusza ponowną walidację; regresja testowa wykrywa przypadkowe użycie profilu siostrzanego.
 
 **Granice:** źródła potwierdzają opisane wartości dla wskazanych materiałów producenta. Nie weryfikują pozostałych wariantów Blum, dokładnych współrzędnych CNC dla danego zakładu ani tego, jaki zawias jest aktualnie wybrany w projekcie. Nie wpisywać współrzędnych otworów na podstawie samej tej notatki; sprawdzić właściwy rysunek artykułu i maszynę.
+
+## Przegląd implementacji na `origin/main` 8230275a (2026-10-12)
+
+**Fakty z kodu:** `src/core/settings.ts:70-78` ustawia domyślnie puszkę Ø35 × 13 mm, oś 22,5 mm od krawędzi i jedno pole `zawiasyZatwierdzone=false`. `src/core/technologia.ts:132-142` publikuje stałe identyfikatory `zawias.puszka35@1` i `zawias.prowadnik.s32@1`; pierwsza reguła nazywa Blum jedynie przykładem i zastrzega weryfikację, druga mówi o weryfikacji karty producenta. Status obu reguł jest jednak sterowany przez to samo pole zakładu. Wiercenia frontu w `src/core/technologia.ts:332-347` są generowane wyłącznie z tych ogólnych parametrów; związek z konkretnym numerem zawiasu nie jest widoczny w tym przebiegu.
+
+**Znaczenie:** przy pozostawionych ustawieniach otwory frontu są geometrycznie określone, ale mają status roboczy. Włączenie jednego zakładowego zatwierdzenia zmieni jednocześnie status puszki oraz wierceń prowadnika, mimo że to dwa różne interfejsy/źródła. Nie ma w tej ścieżce udokumentowanego wyboru dokładnego SKU, który odróżnia źródłowe 13 mm rodziny od konkretnego wariantu 107° z 11,5 mm. To ryzyko błędnego zwolnienia po zatwierdzeniu profilu ogólnego; nie przesądza, czy użytkownik faktycznie włączył tę opcję ani czy wygenerowane pliki zostały użyte.
+
+**Weryfikacja:** `npx tsx --test src/technologia.test.ts` zaliczył 8/8 testów, a `npm run typecheck` zakończył się poprawnie. Obecne testy obejmują m.in. stronę zawiasów i pozycje produkcyjne, ale nie testują rozróżnienia 13/11,5 mm, minimalnej grubości frontu ani zachowania zatwierdzenia po zmianie wariantu. Testy potwierdzają aktualne zachowanie objęte zestawem, nie poprawność profilu producenta.
+
+**Rekomendacja dla Claude — P0 przed zwalnianiem wierceń frontów do produkcji:**
+
+1. Wymagać wyboru dokładnego SKU/artykułu i wersji źródła producenta przed nadaniem regule statusu zatwierdzonego. Nieznany lub ogólny profil Ø35 nie może samodzielnie uzyskać produkcyjnej akceptacji.
+2. Oddzielić zatwierdzenie geometrii puszki frontowej od prowadnika/płytki korpusowej; zatwierdzenie jednego nie może zatwierdzać drugiego.
+3. Dodać test wariantu 107°: głębokość 11,5 mm i front min. 15 mm; test profilu o źródłowo potwierdzonych 13 mm; oraz test „brak SKU/zmiana SKU ⇒ status roboczy i blokada wydania”. Nie podstawiać 13 mm dla nieznanego SKU.
+4. Na karcie frontu i eksporcie CNC pokazać SKU, średnicę, głębokość, odległość od krawędzi, ograniczenia frontu oraz identyfikator/rewizję rysunku źródłowego.
+
+**Kryterium odbioru:** bez wskazanego, zatwierdzonego wariantu nie da się wydać wierceń do CNC; zatwierdzenie dokładnego profilu 107° generuje 11,5 mm i blokuje front <15 mm; zmiana SKU unieważnia akceptację puszki, lecz nie zmienia niezależnego statusu prowadnika.
