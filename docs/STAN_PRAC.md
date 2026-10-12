@@ -382,3 +382,9 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 
 - Po świeżym fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez commitów Claude. Oficjalna lista producenta ma dziewięć E-Nr HBA534BB3, w tym `/97`. Otwarta szczegółowa strona `/97` nie pokazuje jawnej „Instrukcji montażu” ani identyfikatora/revizji PDF (w przeciwieństwie do wcześniejszego fragmentu wyniku wyszukiwania); ogólna strona bazowa wymienia instrukcję, ale nie wiąże jej z sufiksem. Skorygowano brief i dziennik koordynacji: dokładny załącznik /97 nadal niepotwierdzony, parametry bazowego HBA534BB3 niezatwierdzone do CNC dla /97.
 - Następnie sprawdzić oficjalny portal E-Nr i dostępne załączniki (nie tylko tekst wyszukiwarki), zapisać ID/rynek/rewizję i wizualnie zweryfikować rysunek. `git diff --check`; research-only, cena 29 227,60 zł brutto i umowy bez zmian.
+
+## 2026-10-12 06:42Z — Punkt wznowienia piekarnik Bosch
+
+- Świeży fetch potwierdził `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez nowych commitów Claude. Znaleziono oficjalny polski PDF Bosch HBA534B.3 nr 9001910274_B, rodzinny i z warunkami instalacji (tylne otwory, pełna ściana wyspy, wentylacja przegród i cokołu, narożnik); w PDF brak pełnego E-Nr `/97` i strona wsparcia nie wskazuje go jawnie. Ustalenia w briefie i dzienniku koordynacji.
+- Następny krok: uzyskać producentowe potwierdzenie przypisania rewizji B do HBA534BB3/97 albo dokładny załącznik z E-Nr; nie zwalniać CNC ani nie kopiować geometrii do innego wariantu.
+- `git diff --check`; dokumentacja-only. Bez zmian aplikacji, klientów, kwoty 29 227,60 zł brutto ani historycznych umów.
