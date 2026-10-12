@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 12.10.2026 07:45
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research w izolowanej gałęzi.
+- Bosch PDF `9001910274_B` opisuje rodzinę `HBA534B.3`, lecz nie znaleziono publicznego indeksowanego powiązania tego dokumentu z pełnym E-Nr `HBA534BB3/97`; wyszukiwanie ograniczone do oficjalnych domen/nazwy modelu. To wynik negatywnego wyszukania, nie dowód braku związku w systemie producenta. Szczegóły i źródła w `docs/RESEARCH-piekarnik-zabudowa-modelowa-obwiednia-i-zwolnienie-2026-10-12.md`.
+- P0: nie zatwierdzać geometrii, rezerwy przyłącza, otworów wentylacyjnych ani tylnej osłony do CNC dla `/97` na podstawie samego rodzinnego PDF. Następnie uzyskać potwierdzenie Bosch albo dokument jawnie przypisany do E-Nr. Odczyt PDF był tekstowy, bez wizualnego zatwierdzenia rysunków.
+- `git diff --check`; dokumentacja researchowa only. Nie zmieniono logiki, danych klientów, ceny 29 227,60 zł ani historycznych umów.
+
 ## Punkt wznowienia — 11.10.2026 01:53
 
 - Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez zmian od poprzedniego punktu. Na `main` nadal obecny jest klientowski artefakt montażowy z commita `537cdc0`, bez późniejszego usunięcia/zastąpienia. Nie powielono danych osobowych.
