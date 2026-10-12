@@ -474,3 +474,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Dodatkowy przegląd oficjalnego katalogu Blum nie rozstrzygnął głębokości wiercenia dla 173H9100: wartości katalogowe dotyczą artykułu/mocowania i wysokości prowadnika, nie potwierdzają głębokości otworu. Nie zmieniono statusu `unknown` ani rekomendacji blokady CNC.
 - Następnie: po świeżym fetch wznowić oczekującą weryfikację rysunku Bosch dla dokładnego E-Nr `HBA534BB3/97` wyłącznie w viewerze z renderowaniem; jeśli nadal brak czytelnego rysunku, odnotować ograniczenie i wybrać nowy, niepowielony temat z kolejki dokumentacji.
 - Kontrola dokumentów only; bez zmian logiki, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów.
+
+## Punkt wznowienia — 12.10.2026 22:56
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Gałąź researchowa po checkpoint `04e84af6cf09507c1bccbf4287fd697fc1e4bc26` była czysta przed wpisem.
+- Próba uruchomienia przeglądarkowego viewer'a przez CUA zakończyła się błędem transportu (`Transport closed`), więc nie odczytano ani nie zatwierdzono wymiarów z Bosch `9001910272_C.pdf`; niezweryfikowane wartości nadal nie mogą trafić do CNC.
+- Wyszukanie GTV `AXIS_PRO18__instrukcja_3.pdf` potwierdziło jedynie wtórne strony sprzedawców wskazujące załącznik hostowany w domenie GTV oraz exact SKU wariantów 18 mm. Nie udało się odczytać zawartości PDF ani potwierdzić rewizji/rysunków; brak nowego dowodu wymiarowego. Pozostaje następny temat z istniejącej kolejki: uzyskać renderowalny egzemplarz oficjalnej instrukcji dla Axis Pro 18 mm, zweryfikować strony wymiarowe i porównać z profilem 16 mm, bez ekstrapolacji.
+- Dokumentacja-only; `git diff --check`. Bez zmian logiki, danych klientów, kwoty 29 227,60 zł brutto ani historycznych umów.
