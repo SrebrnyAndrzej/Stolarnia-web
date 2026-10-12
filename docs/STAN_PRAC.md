@@ -444,3 +444,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Testy po powtórzeniu poza ograniczeniem systemowego Temp: `npx tsx --test src/technologia.test.ts` 8/8 zaliczone; `npm run typecheck` zaliczone. Istniejące testy nie obejmują selekcji SKU, 11,5/13 mm, minimalnej grubości frontu ani niezależności zatwierdzeń.
 - Następny krok: przy nowym `origin/main` ponownie sprawdzić, czy Claude rozdzielił profile i bramkę CNC; jeśli nie, kontynuować źródłową weryfikację dokładnych Blum SKU/rysunków i przygotować fixture rekomendowany w briefie — bez zmian logiki po stronie Codex.
 - Research-only: nie zmieniono aplikacji, aktywnego katalogu, danych klientów, kwoty 29 227,60 zł brutto ani historycznych umów. `git diff --check`; commit/push tylko gałęzi research.
+
+## 2026-10-12 16:47Z — Punkt wznowienia Codex: warianty mocowania prowadnika Blum
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Gałąź researchowa `codex/research-zmiany-projektu-2026-10-07`, kod technologii zgodny z `origin/main`.
+- Nowy, producentowo potwierdzony wymiar researchu: katalog Blum PL 2024/2025 rozróżnia prowadniki proste 20/32 i krzyżakowe 37/32, a w ramach rodziny wskazuje odrębne SKU/mocowanie wkrętowe, INSERTA oraz EXPANDO. Aktualny model kodu ma jeden ogólny profil 37/32, Ø5 × 13 mm, bez wyboru artykułu/metody. Nie potwierdzono, że Ø5 × 13 pasuje do każdego SKU; jawnie nie wyprowadzono nieudokumentowanych głębokości/średnic. Rozszerzenie briefu Blum zawiera źródła, problem, P0, zależności i testy akceptacyjne.
+- Testy kodu z poprzedniej weryfikacji tego heartbeat'a: technologia 8/8 i typecheck przechodzą; ten pakiet jest dokumentacyjny.
+- Następny temat: po świeżym fetch sprawdzić zmiany Claude. Bez zmian — znaleźć rysunek obróbki/instalacji dla jednego konkretnego wariantu mocowania Blum (najpierw 175H3100 lub 173H7100) i zweryfikować wymiary w nim, bez ekstrapolacji między płytkami.
+- Research-only; bez zmian logiki, aktywnego katalogu, danych klientów, uzgodnionej kwoty 29 227,60 zł brutto ani historycznych umów. Przed publikacją `git diff --check`; publikować wyłącznie na gałęzi research.
