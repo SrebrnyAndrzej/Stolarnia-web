@@ -59,3 +59,7 @@ Następnie wizualnie odczytać strony z rysunkami wymiarowymi i porównać je z 
 ### 2026-10-12 10:42 — próba zrzutu strony PDF niedostępna
 
 Próba pobrania renderu strony PDF z oficjalnego źródła Bosch przez narzędzie podglądu dokumentów zwróciła `Cache miss`. Nie można więc w tej sesji poświadczyć wizualnego odczytu wymiarów ani rysunku z PDF `9001910272_C`; ekstrakcja tekstowa i łańcuch strony E-Nr → plik pozostają dostępne. Nie użyto wartości geometrycznych z obrazu i nie zwolniono CNC. Następny krok bez zmian: otworzyć plik w przeglądarce/PDF viewerze, zweryfikować strony wymiarowe, a następnie porównać z dokumentem PL `9001910274_B` i potwierdzić lokalną przydatność.
+
+### 2026-10-12 11:41 — potwierdzenie limitu ekstrakcji liczb z rysunku
+
+Wyszukanie w tym samym oficjalnym PDF `9001910272_C` typowych oznaczeń liczbowych `594`, `560`, `600` i `550` nie zwróciło dopasowań, mimo że spis/tekst obejmuje sekcję „Afmetingen van het apparaat” oraz rysunek na s. PDF 24. To potwierdza, że dostępna ekstrakcja tekstowa nie dostarcza wymiarowanych wartości do bezpiecznego przepisu; brak dopasowania nie oznacza, że wartości nie są narysowane w PDF. Screenshot strony PDF nadal zwraca `Cache miss`. Nie zgadywać ani nie przepisywać wymiarów ze specyfikacji bazowej jako wartości z instrukcji. Następnie sprawdzić rysunek w viewerze z renderowaniem i porównać wersję NL `9001910272_C` z PL `9001910274_B`.

@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 12.10.2026 11:41
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Wymiarowane rysunki instrukcji Bosch NL `9001910272_C` nie są czytelne w ekstrakcji: wyszukiwanie `594`, `560`, `600`, `550` nie znajduje wartości; screenshot PDF zwraca `Cache miss`. Nie wnioskuj, że ich brak w dokumencie; nie przepisuj niezweryfikowanych wartości do CNC.
+- Następnie otworzyć PDF w renderującym viewerze, wizualnie odczytać i porównać z PL `9001910274_B`; źródło exact-E-Nr do instrukcji NL jest zapisane w briefie.
+- `git diff --check`; tylko dokumentacja researchowa, bez zmian logiki, klientów, ceny ani umów.
+
 ## Punkt wznowienia — 12.10.2026 10:42
 
 - Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.

@@ -440,3 +440,7 @@ Po świeżym fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez n
 ### 2026-10-12 10:42 — blokada podglądu renderu PDF
 
 Świeży `origin/main` nadal `8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Próba wykonania podglądu strony wymiarowej `9001910272_C.pdf` oficjalnego Bosch nie powiodła się: narzędzie zrzutu zwróciło `Cache miss`. W związku z tym żadne wymiary z rysunku nie zostały odczytane wizualnie ani przeniesione do CNC. Punkt wznowienia w briefie odnotowuje ograniczenie i kolejny krok: lokalny/obsługujący PDF viewer oraz porównanie dokumentu NL z polskim `9001910274_B`. Brak zmian logiki i katalogu; cena i umowy bez zmian.
+
+### 2026-10-12 11:41 — ekstrakcja tekstowa nie pokazuje liczb z rysunku
+
+Na świeżym `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3` brak zmian Claude. W instrukcji NL `9001910272_C.pdf` wyszukanie `594`, `560`, `600`, `550` nie znalazło dopasowań; sekcja wymiarów istnieje, ale dane z rysunku nie zostały zindeksowane tekstowo. Screenshot nadal zwraca `Cache miss`. To brak dostępnej ekstrakcji, nie brak wymiarów na obrazie; pozostaje bezpieczny status „nieodczytane”, bez zwolnienia CNC. Brief odnotowuje następny krok: viewer renderujący PDF i porównanie z PL `9001910274_B`. Bez zmian aplikacji/danych/ceny/umów.
