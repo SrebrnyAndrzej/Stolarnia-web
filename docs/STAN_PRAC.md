@@ -452,3 +452,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Testy kodu z poprzedniej weryfikacji tego heartbeat'a: technologia 8/8 i typecheck przechodzą; ten pakiet jest dokumentacyjny.
 - Następny temat: po świeżym fetch sprawdzić zmiany Claude. Bez zmian — znaleźć rysunek obróbki/instalacji dla jednego konkretnego wariantu mocowania Blum (najpierw 175H3100 lub 173H7100) i zweryfikować wymiary w nim, bez ekstrapolacji między płytkami.
 - Research-only; bez zmian logiki, aktywnego katalogu, danych klientów, uzgodnionej kwoty 29 227,60 zł brutto ani historycznych umów. Przed publikacją `git diff --check`; publikować wyłącznie na gałęzi research.
+
+## 2026-10-12 17:52Z — Punkt wznowienia Codex: długość wkrętu to nie potwierdzona głębokość otworu
+
+- Fetch `origin/main` nadal `8230275ad6dea52109f581c793bdd8d6f08684d3`, bez nowych commitów Claude. Gałąź researchowa `codex/research-zmiany-projektu-2026-10-07`, kod powiązany z wierceniami zgodny z main.
+- Nowe źródło oficjalne Blum: karta CLIP Mounting Plates (US, edycja 2025) przypisuje prowadnikowi 173H9100 mocowanie wkrętem systemowym Ø5 × 13 mm. To specyfikacja wkrętu, nie potwierdzenie głębokości otworu 13 mm. Polska karta/katalog dla innego SKU 173H7100 wskazuje wkręt Ø3,5 lub Ø4 mm. Bieżący model aplikacji przekazuje `prowadnikGlebokoscMM=13` do operacji wiercenia; dlatego potrzebne jest jawne źródłowe potwierdzenie, a nie utożsamienie z długością wkrętu. Pełna interpretacja i kryterium fail-closed dodane do briefu Blum.
+- Brak potwierdzonej głębokości wiercenia dla 173H9100 pozostaje `unknown`; nie skorygowałem jej arbitralnie ani nie wygenerowałem mapy CNC.
+- Następnie: pobrać/odczytać bezpośredni rysunek montażowy lub obróbki dla 173H9100 i sprawdzić, czy producent podaje średnicę/głębokość wiercenia osobno od wymiaru mocującego; ewentualnie potwierdzić testem warsztatowym i zaakceptowanym postprocesorem. Przedtem świeżo sprawdzić `origin/main` i zmiany Claude.
+- Research-only; bez zmian logiki, katalogu aktywnego, danych klientów, kwoty 29 227,60 zł brutto ani historycznych umów. `git diff --check`, commit/push wyłącznie gałęzi research.
