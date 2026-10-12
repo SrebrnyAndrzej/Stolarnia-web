@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 12.10.2026 09:45
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Ważny ślad producenta: oficjalna strona Bosch NL dla exact E-Nr `HBA534BB3/97` bezpośrednio linkuje instrukcję instalacji `9001910272_C.pdf` (rodzina HBA534B.3). Ekstrakcja tekstowa potwierdza wytyczne wentylacji, tylnej bariery wyspy, lokalizacji gniazda i kolizji narożnej; nie sprawdzono wizualnie wymiarów/rysunków, a rynek NL wymaga oceny dla realizacji PL. Szczegóły w briefie piekarnika.
+- Następnie odczytać rysunki wymiarowe i porównać PDF NL `9001910272_C` z PL `9001910274_B`; do tej weryfikacji nie zwalniać geometrii CNC.
+- `git diff --check`; research-only, bez zmian logiki, danych klientów, kwoty 29 227,60 zł ani historycznych umów.
+
 ## Punkt wznowienia — 12.10.2026 08:43
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
