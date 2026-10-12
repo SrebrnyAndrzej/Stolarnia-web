@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 12.10.2026 10:42
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
+- Próba renderu rysunku wymiarowego z Bosch `9001910272_C.pdf` nie powiodła się (`Cache miss` narzędzia). Nie odczytano wymiarów z rysunku; nie zwolniono CNC. Łańcuch dokładnej strony E-Nr do instrukcji jest już udokumentowany w briefie.
+- Następnie otworzyć oficjalny PDF w viewerze z renderowaniem, porównać rysunki z polskim `9001910274_B` i potwierdzić rynek/warunki PL.
+- `git diff --check`; dokumentacja researchowa only, bez zmian logiki, danych klientów, ceny ani umów.
+
 ## Punkt wznowienia — 12.10.2026 09:45
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
