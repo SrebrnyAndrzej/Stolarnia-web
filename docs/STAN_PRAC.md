@@ -467,3 +467,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Uzupełniono ślad wyszukiwania rysunku 173H9100 w oficjalnych materiałach Blum. Karta producenta z 2025 r. potwierdza SKU i wkręt systemowy Ø5 × 13 mm, lecz nie potwierdza jawnej głębokości wiercenia. Otworzenie 20 MB PDF zwróciło błąd ograniczenia rozmiaru, a zrzut strony nie był dostępny, więc rysunek nie został zweryfikowany wizualnie. Status głębokości zostaje `unknown`; blokada CNC pozostaje rekomendacją do momentu właściwego rysunku lub zaakceptowanej próby warsztatowej.
 - Następny temat po tej nierozstrzygniętej gałęzi: przejść do innego, jeszcze niepokrytego ryzyka części/wierceń albo BOM-u, wybierając je po ponownej inspekcji aktualnego indeksu dokumentacji i kodu. Nie próbować omijać blokady podglądu przez pobieranie materiałów producenta do lokalnych plików.
 - Research-only; nie zmieniono aplikacji, katalogu, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów. `git diff --check`; publikować wyłącznie na gałęzi research.
+
+## Punkt wznowienia — 12.10.2026 20:54
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. W tym przebiegu przejrzano ostatni commit `8230275` — publikuje wyłącznie brief wyceny i wpis koordynacyjny, bez zmian aplikacji. Jego główne ustalenia (narzut vs marża kalkulacyjna oraz koszt plan/actual) są jawnie warunkowe i zachowują uzgodnioną cenę oraz umowy.
+- Dodatkowy przegląd oficjalnego katalogu Blum nie rozstrzygnął głębokości wiercenia dla 173H9100: wartości katalogowe dotyczą artykułu/mocowania i wysokości prowadnika, nie potwierdzają głębokości otworu. Nie zmieniono statusu `unknown` ani rekomendacji blokady CNC.
+- Następnie: po świeżym fetch wznowić oczekującą weryfikację rysunku Bosch dla dokładnego E-Nr `HBA534BB3/97` wyłącznie w viewerze z renderowaniem; jeśli nadal brak czytelnego rysunku, odnotować ograniczenie i wybrać nowy, niepowielony temat z kolejki dokumentacji.
+- Kontrola dokumentów only; bez zmian logiki, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów.
