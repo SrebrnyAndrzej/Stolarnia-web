@@ -460,3 +460,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Brak potwierdzonej głębokości wiercenia dla 173H9100 pozostaje `unknown`; nie skorygowałem jej arbitralnie ani nie wygenerowałem mapy CNC.
 - Następnie: pobrać/odczytać bezpośredni rysunek montażowy lub obróbki dla 173H9100 i sprawdzić, czy producent podaje średnicę/głębokość wiercenia osobno od wymiaru mocującego; ewentualnie potwierdzić testem warsztatowym i zaakceptowanym postprocesorem. Przedtem świeżo sprawdzić `origin/main` i zmiany Claude.
 - Research-only; bez zmian logiki, katalogu aktywnego, danych klientów, kwoty 29 227,60 zł brutto ani historycznych umów. `git diff --check`, commit/push wyłącznie gałęzi research.
+
+## 2026-10-12 18:47Z — Punkt wznowienia Codex: brak wizualnego potwierdzenia głębokości
+
+- Świeży fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Gałąź researchowa `codex/research-zmiany-projektu-2026-10-07`.
+- Uzupełniono ślad wyszukiwania rysunku 173H9100 w oficjalnych materiałach Blum. Karta producenta z 2025 r. potwierdza SKU i wkręt systemowy Ø5 × 13 mm, lecz nie potwierdza jawnej głębokości wiercenia. Otworzenie 20 MB PDF zwróciło błąd ograniczenia rozmiaru, a zrzut strony nie był dostępny, więc rysunek nie został zweryfikowany wizualnie. Status głębokości zostaje `unknown`; blokada CNC pozostaje rekomendacją do momentu właściwego rysunku lub zaakceptowanej próby warsztatowej.
+- Następny temat po tej nierozstrzygniętej gałęzi: przejść do innego, jeszcze niepokrytego ryzyka części/wierceń albo BOM-u, wybierając je po ponownej inspekcji aktualnego indeksu dokumentacji i kodu. Nie próbować omijać blokady podglądu przez pobieranie materiałów producenta do lokalnych plików.
+- Research-only; nie zmieniono aplikacji, katalogu, danych klientów, ceny 29 227,60 zł brutto ani historycznych umów. `git diff --check`; publikować wyłącznie na gałęzi research.
