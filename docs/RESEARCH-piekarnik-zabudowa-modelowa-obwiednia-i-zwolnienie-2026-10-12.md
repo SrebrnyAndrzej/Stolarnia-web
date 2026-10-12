@@ -1,0 +1,33 @@
+# Piekarnik do zabudowy: dokładny model, wnęka i obwiednia ruchu
+
+Data: 12.10.2026. Zakres: źródłowe wymagania do projektowania i zwalniania zabudowy piekarnika. Dokument jest rekomendacją produktową, nie instrukcją montażową ani opinią elektryczną.
+
+## Problem i stan repozytorium
+
+W modelu projektu AGD może dziś mieć rodzaj, swobodny tekst `model`, wymiary obrysu, tekstowe `nisza` i uwagi (`src/core/types.ts`, `UrzadzenieAGD`). Konstruktor generuje jednak standardową niszę piekarnika wysokości 595 mm, progi szerokości 560 mm i głębokości 550 mm oraz usuwa plecy za niszą. To może służyć jako szkic typowego modułu, lecz nie potwierdza zgodności z konkretnym urządzeniem, prawidłowej wentylacji, miejsca przyłącza ani braku kolizji przy otwieraniu. W istniejących briefach AGD wspólny wymóg dokładnego modelu już występuje; ten materiał zawęża go do piekarnika i dowodzi, dlaczego same gabaryty/nisza nie opisują pełnej instalacji.
+
+## Zweryfikowane fakty źródłowe
+
+- Producent Bosch dla konkretnego modelu `HBA5570S0B` publikuje kartę techniczną z wymiarem urządzenia 595 × 594 × 548 mm (wys. × szer. × gł.) i wymaganą wnęką 585–595 × 560–568 × 550 mm. Ta sama karta wyraźnie odsyła po wymagania instalacji i wentylacji do instrukcji montażu. Źródło: [Bosch/BSH, oficjalna specyfikacja HBA5570S0B, rynek en-GB](https://media3.bosch-home.com/Documents/specsheet/en-GB/HBA5570S0B.pdf), s. 1–2. Liczb tych nie wolno rozszerzać na inne modele ani traktować karty jako kompletnej instrukcji wentylacji.
+- Oficjalna strona Gaggenau dla innego, konkretnego modelu `BOP250131` (strona GB oznacza produkt jako niedostępny) rozróżnia obrys od interfejsów użytkowych: drzwi otwierane z boku do 110°, powierzchnia drzwi 21 mm przed wnęką, krawędź uchwytu 72 mm przed wnęką, wymagane minimum 5 mm bocznej szczeliny, uwzględnienie występu przy szufladach obok i narożniku, a także wymagania zależne od montażu pod płytą oraz prowadzenia przewodu/położenia gniazda. Źródło: [Gaggenau GB, BOP250131](https://www.gaggenau.com/gb/en/mkt-product/BOP250131), sekcja Additional information. Są to dane tej strony/modelu, nie przenośne wymiary projektowe; strona wskazuje, że model jest wycofany.
+- Dwa źródła pokazują, że znamionowa nisza i gabaryt nie kodują automatycznie wentylacji, miejsca instalacji, projekcji frontu/uchwytu ani ruchu drzwi. Nie ustanawiają uniwersalnej normy dla piekarników.
+
+## Rekomendowane zachowanie i priorytety
+
+| Priorytet | Problem / dowód | Proponowane zachowanie | Zależności | Mierzalne kryterium odbioru |
+|---|---|---|---|---|
+| P0 przed wydaniem CNC | Model zawiera tekstowe wymiary, a konstruktor korzysta z typowej wnęki; Bosch HBA5570S0B ma własny zakres wnęki i odsyła po wentylację do instrukcji. | Rozdziel szkic standardowego modułu od zatwierdzonego wariantu urządzenia. Wymiary/otwory/ wentylacja piekarnika mogą dostać status „zweryfikowane” tylko przy wskazaniu dokładnego modelu/indeksu, rynku oraz instrukcji montażu producenta i konkretnego rysunku/rewizji. | Załącznik dostępny dla projektu, pełny identyfikator urządzenia, migawka wersji źródła. | Fixture z HBA5570S0B odczytuje zakres wnęki z przypisanego źródła; projekt bez instrukcji pozostaje koncepcyjny i nie może wydać CNC jako zweryfikowanego. Zmiana modelu/źródła unieważnia zależne zatwierdzenie, nie historyczny zapis. |
+| P1 | Drzwi/uchwyt oraz ich ruch kolidują z szufladą obok, uchwytem, cokołem lub narożnikiem, mimo że bryła zamknięta mieści się. Gaggenau wymienia 110° i występ uchwytu jako warunki planowania. | Utrzymuj osobno obrys zamknięty, projekcję elementów wystających oraz obwiednię ruchu/stronę zawiasu. Kolizja ma stany `pass`, `collision`, `unknown`; brak danych ruchu nie oznacza braku kolizji. | Dokumentacja konkretnego modelu, wysokość montażu, sąsiednie fronty i uchwyty, cokół/podłoga, narożnik. | Test scenariusza otwarcia wykrywa kolizję mimo poprawnego dopasowania bryły zamkniętej; gdy producent nie podaje ruchu, wynik jest `unknown`, nie `pass`. |
+| P1 | Zasilanie/przewód i montaż pod płytą zależą od rysunków urządzenia oraz płyty; brak pleców za piekarnikiem nie opisuje wszystkich wymaganych prześwitów. | Modeluj rezerwację przyłącza i wentylacji jako osobne strefy ze źródłem i statusem. Dla zestawu piekarnik+płyta wymagaj dokumentacji obu urządzeń oraz sprawdzenia ich wzajemnych warunków; nie wyprowadzaj parametrów z jednego urządzenia. | Instrukcje modelowe piekarnika i płyty; projekt instalacji potwierdzony przez właściwego wykonawcę. | Każda strefa wentylacji/połączenia ma odnośnik do źródła lub jawne `unknown`; zestaw urządzeń nie może odziedziczyć zatwierdzenia po samym piekarniku. |
+| P2 | Po akceptacji wymiana piekarnika lub aktualizacja dokumentacji może zmienić wymiar, wentylację lub kolizje. | Zachowaj zatwierdzoną migawkę producenta z datą, rynkiem/językiem, numerem/revizją lub sumą kontrolną; pokaż porównanie i jawnie wymagaj ponownej kontroli zależnych elementów po zmianie. | Wersjonowanie projektu, przechowywanie dokumentu w kontrolowanym dostępie. | Aktualizacja lub podmiana modelu pokazuje poprzednie źródło i unieważnia wyłącznie zależne zatwierdzenia z przyczyną; nie zmienia po cichu historycznego wydania. |
+
+## Zakres sprawdzenia i niepewności
+
+- W `src/core/types.ts` aktualny `UrzadzenieAGD` przechowuje `model`, gabaryty, swobodny tekst niszy/uwag oraz wybrane odstępy dla lodówki; nie ma tu jawnej struktury rewizji instrukcji, otwierania drzwi ani strefy przyłącza. W `src/core/builder.ts` są wspólne domyślne reguły piekarnika. To obserwacja statyczna istniejącego kodu, nie audyt wszystkich możliwych ekranów.
+- Nie pobierano ani nie sprawdzano instalacyjnych PDF-ów dla wymienionych piekarników. Bosch specyfikacja sama odsyła do instrukcji; więc żaden szczegół wentylacji, mocowania czy obróbki nie został tu zwolniony do użycia produkcyjnego.
+- Różne marki, modele, rynki, generacje i sposób zabudowy mogą mieć odmienne warunki. Nieznana wartość pozostaje nieznana; nie kopiować liczb ze źródła porównawczego.
+- Hipoteza do późniejszej walidacji: exact-model snapshot + test obwiedni ograniczy przeróbki na montażu. Mierzyć liczbę kolizji i poprawek oznaczonych jako niedopasowanie piekarnika; obecnie brak danych potwierdzających efekt.
+
+## Punkt wznowienia
+
+Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; w tej kontroli nie znaleziono nowego commita Claude. Następny krok: po świeżym fetch porównać zmiany w modelu AGD i wydaniu CNC z kryteriami P0/P1 powyżej; jeśli nadal brak zmian, zweryfikować dokładną polską instrukcję montażu jednego wybranego aktualnego piekarnika i osobno stronę/ruch drzwi. Nie wpisywać żadnych nowych domyślnych wymiarów/otworów ani nie zmieniać logiki bez wyraźnej potrzeby implementacyjnej.
