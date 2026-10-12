@@ -423,3 +423,9 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Świeży fetch potwierdził `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez nowych commitów Claude. Znaleziono oficjalny polski PDF Bosch HBA534B.3 nr 9001910274_B, rodzinny i z warunkami instalacji (tylne otwory, pełna ściana wyspy, wentylacja przegród i cokołu, narożnik); w PDF brak pełnego E-Nr `/97` i strona wsparcia nie wskazuje go jawnie. Ustalenia w briefie i dzienniku koordynacji.
 - Następny krok: uzyskać producentowe potwierdzenie przypisania rewizji B do HBA534BB3/97 albo dokładny załącznik z E-Nr; nie zwalniać CNC ani nie kopiować geometrii do innego wariantu.
 - `git diff --check`; dokumentacja-only. Bez zmian aplikacji, klientów, kwoty 29 227,60 zł brutto ani historycznych umów.
+
+## 2026-10-12 12:43Z — Zgodność tekstu instrukcji Bosch PL/NL
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Porównałem oficjalne rodzinne instrukcje Bosch `9001910272_C` (NL) i `9001910274_B` (PL). W tekście obu są te same warunki wentylacji przegród, min. 200 cm² w cokole dla urządzeń piętrowych, zamkniętej ściany tylnej wyspy/niedostępności otworów oraz zależności prześwitu narożnego od frontu i uchwytu. Potwierdza to zgodność tych wymagań tekstowych, ale nie wiąże PL rewizji B z E-Nr `/97`, nie stanowi oceny zgodności rynkowej ani nie odsłania geometrii z rysunków. Brief `docs/RESEARCH-piekarnik-zabudowa-modelowa-obwiednia-i-zwolnienie-2026-10-12.md` zawiera źródła i kryteria acceptance CNC.
+- Następnie: przegląd nowych commitów po odświeżeniu `origin/main`; bez zmian kontynuować weryfikację dokumentu dokładnego E-Nr / lokalnej przydatności, ewentualnie wizualny odczyt rysunków. Nadal blokować geometrię CNC bez weryfikacji rysunku.
+- Research-only. Nie zmieniono logiki, danych klientów, katalogu aktywnego, ceny 29 227,60 zł brutto ani umów. Zweryfikować `git diff --check`; publikować wyłącznie gałąź research.
