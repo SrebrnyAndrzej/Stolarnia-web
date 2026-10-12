@@ -49,3 +49,13 @@ Raport wyniku powinien rozróżniać: cenę zaakceptowaną netto/brutto i VAT, b
 ## Punkt wznowienia
 
 Świeży fetch nadal wskazywał `origin/main=8d39dcdd06c40b09de742c034d8898414b4ccd75`; brak nowych commitów od poprzedniej kontroli, a status publiczności repozytorium pozostał `public`. Ten brief dotyczy semantyki kosztu i cen, nie modyfikuje danych ani polityki sklepu. Następnie sprawdzić decyzję właściciela w sprawie nazwy/podstawy procentu oraz zmiany w magazynie i kosztach rzeczywistych; do tej pory zachować obecne ceny i umowy.
+
+## 2026-10-12 — Weryfikacja briefu na świeżym `origin/main`
+
+**Baza:** `8230275ad6dea52109f581c793bdd8d6f08684d3` (commit dodaje brief i wpis koordynacyjny; kod aplikacji nie zmienił się względem `8d39dcd`). Bez nowych commitów Claude.
+
+**Potwierdzone w aktualnym kodzie:** `src/core/pricing.ts` mnoży `marzaProcent` przez bazę po zapasie i narzucie; ekran Settings opisuje pole „Marża [%]”, a Quote pokazuje kwotę „Marża”. Obecny `src/service.test.ts` sprawdza wynik zgodny z tym mnożeniem, ale nie nazywa mianownika wprost ani nie pokrywa przykładów 11 550→14 437,50/15 400 zł, granic target-margin lub migracji semantyki. To brak jawnych regresyjnych testów względem kryteriów briefu, nie dowód błędnego wyboru biznesowego. Źródła ACCA nadal wyraźnie odróżniają koszt-plus/narzut od target costing i ostrzegają, że cena kosztowa sama nie uwzględnia gotowości klienta ani konkurencji: [Pricing 2](https://www.accaglobal.com/middle-east/en/student/exam-support-resources/fundamentals-exams-study-resources/f5/technical-articles/pricing-2.html), [Target costing](https://www.accaglobal.com/an/en/student/exam-support-resources/fundamentals-exams-study-resources/f5/technical-articles/target-lifestyle.html). Stan źródeł sprawdzono 12.10.2026.
+
+**Rekomendacja dla Claude:** przed zmianą znaczenia ustawienia lub raportem kosztu rzeczywistego najpierw uzyskać decyzję właściciela o mianowniku; dodać testy-kryteria z sekcji wyżej, w tym wartości graniczne i ochronę historycznych artefaktów. Żadne badanie ani test nie uprawnia aplikacji do automatycznego przeliczenia `cenaUzgodnionaBrutto`, zapisanych ofert/umów ani historycznej ceny **29 227,60 zł brutto**.
+
+**Walidacja:** `src/agreed-price.test.ts` + `src/contracts.test.ts`: 3/3 zaliczone; `npm run typecheck`: zaliczony. Pełne `npm test`: 55/56 zaliczonych; jedyny błąd w `src/store.chmura.test.ts` wynikał z odmowy sandboxa dla lokalnego połączenia testowego (`connect EACCES 127.0.0.1`), a nie z asercji wyceny. Nie zmieniano logiki, danych klientów, ustawień ani umów.
