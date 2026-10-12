@@ -78,9 +78,11 @@ Dla Amix i GTV otwory prowadnic są operacjami w bokach. Średnica i głębokoś
 
 Pobrano model `cad/GTV-PB-AXISPRO-P2O-KPL350A.stp` z [karty GTV](https://gtv.com.pl/produkt/PB-AXISPRO-P2O-KPL350A/). Zweryfikowano nagłówek formatu i integralność pliku; nie zweryfikowano geometrii, jednostek i zgodności montażowej w CAD. Model dotyczy konkretnego produktu, nie wszystkich długości rodziny.
 
+**Ograniczenie dystrybucji:** [Regulamin brył 3D GTV](https://gtv.com.pl/regulamin-korzystania-z-bryl-trojwymiarowych/) wiąże licencję z użytkownikiem pobierającym, zabrania modyfikacji/sublicencji/publicznego samodzielnego udostępniania i określa bryły jako poglądowe, których wymiary mogą odbiegać od rzeczywistych. Ponieważ plik znajduje się w śledzonym repozytorium osiągalnym anonimowo, jego obecna dystrybucja wymaga pilnej oceny właściciela i weryfikacji zakresu zgody. Nie konwertować ani nie serwować go z aplikacji, dopóki licencja nie potwierdzi dokładnego przepływu. Szczegóły: `docs/RESEARCH-GTV-STEP-w-repozytorium-publicznym-2026-10-12.md`. Obecny renderer aplikacji buduje własne bryły i nie wczytuje tego STEP — ryzyko dotyczy dostępności w repo oraz przyszłej dystrybucji.
+
 [Serwis CAD/CAM Blum](https://www.blum.com/pl/pl/services/industrial-production/cad-cam-dataservice/) jest kolejnym źródłem modeli i danych produkcyjnych. Nie pobrano stamtąd modeli CAD ani nie potwierdzono publicznego API. Na sprawdzonych stronach Amix nie znaleziono modelu STEP; nie oznacza to braku takiego modelu u producenta.
 
-Do renderowania w aplikacji konwertować zweryfikowane modele do glTF/GLB, zachowując osobno oryginalny STEP. Kontrolować jednostki, orientację osi, punkt montażu, lewą/prawą stronę i ograniczenia ruchu. Geometria renderowania nie jest źródłem pozycji wierceń. Sprawdzić warunki wykorzystania modeli przed ich publiczną dystrybucją.
+Konwersja do glTF/GLB jest dopuszczalną decyzją techniczną wyłącznie po uprzednim potwierdzeniu praw do konwersji, magazynowania i dystrybucji. Po zatwierdzeniu kontrolować jednostki, orientację osi, punkt montażu, lewą/prawą stronę i ograniczenia ruchu. Geometria renderowania nie jest źródłem pozycji wierceń.
 
 ## Kolejność dalszego wdrożenia
 

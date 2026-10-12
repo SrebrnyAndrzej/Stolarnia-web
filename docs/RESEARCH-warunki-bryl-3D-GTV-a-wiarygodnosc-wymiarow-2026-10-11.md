@@ -7,6 +7,8 @@ Zakres: producentowe bryły 3D okuć GTV i ich użycie w aplikacji stolarskiej. 
 
 Oficjalny [Regulamin korzystania z brył trójwymiarowych GTV](https://gtv.com.pl/regulamin-korzystania-z-bryl-trojwymiarowych/) stanowi, że pobranie wymaga rejestracji użytkownika, jest bezpłatne, a licencja jest niewyłączna i udzielana temu użytkownikowi. Wymienia użycie w kompatybilnych programach/projektach wizualizacyjnych lub obliczeniowych, także w działalności gospodarczej, i użycie modelu jako elementu składowego przedstawianego artykułu meblowego. Jednocześnie zabrania publicznego samodzielnego udostępniania bryły, sublicencji i modyfikowania jej; nie wolno też prezentować bryły jako produktu innej marki niż GTV. Regulamin mówi wprost, że modele są materiałem poglądowym, a rzeczywiste wymiary przedmiotów mogą się różnić od wymiarów udostępnionych brył. GTV zastrzega możliwość zmiany regulaminu.
 
+**Uzupełnienie 2026-10-12:** świeży przegląd wskazał, że jeden STEP GTV jest śledzony w aktualnym `origin/main` i repozytorium nadal osiągalne anonimowo. Nie otwierano pliku. Szczegóły containment i różnicy względem aktualnego renderera opisano w `docs/RESEARCH-GTV-STEP-w-repozytorium-publicznym-2026-10-12.md`.
+
 Oficjalna strona [brył 3D GTV](https://gtv.com.pl/baza-wiedzy/bryly-3d/) wymaga zaznaczenia akceptacji tego regulaminu przy dostępie do pobierania. Karty produktów GTV również zawierają wymagane pole akceptacji, w tym karta [stabilizatora MBSTAB](https://gtv.com.pl/produkt/PB-D-MBSTAB-00/).
 
 ## Problem dla aplikacji
