@@ -1,5 +1,12 @@
 # Stan prac — 23.09.2026
 
+## Punkt wznowienia — 12.10.2026 08:43
+
+- Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Indeks wyszukiwarki dla oficjalnej strony Bosch HBA534BB3/97 wymienia kategorię „Instrukcja montażu”, ale bieżąca ekstrakcja strony nie pokazuje linku ani ID/revizji. Skorygowano zbyt szerokie sformułowanie z 07:45. Nie wiadomo, czy plik jest przypisany do `/97` ani czy to rodzinny `9001910274_B`; szczegóły w briefie piekarnika.
+- Następnie otworzyć dynamiczny link w przeglądarce lub uzyskać ID/rewizję od Bosch; do sprawdzenia źródła i rysunku CNC dla `/97` nadal niezatwierdzone.
+- `git diff --check`; tylko dokumentacja, bez zmian logiki, danych klientów, ceny 29 227,60 zł ani historycznych umów.
+
 ## Punkt wznowienia — 12.10.2026 07:45
 
 - Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude. Research w izolowanej gałęzi.
