@@ -519,3 +519,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Opis, granice pewności, zależności i kryteria dla Claude: `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md`. Priorytet P1 dla precyzyjnego planu cięcia, P2 dla orientacyjnego podglądu.
 - Następnie: świeżo sprawdzić `origin/main`; jeśli brak zmian, przekazać brief i poszukać kolejnej odrębnej luki w wyjściach produkcyjnych. Nie zmieniać domyślnego rozmiaru na arbitralny „lepszy” wymiar.
 - Dokumentacja-only; test z syntetycznymi danymi, plik testowy usunięty. Bez zmian logiki, katalogu, danych klientów, ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 06:01Z
+
+- Zdalny `HEAD` i `refs/heads/main` ponownie odczytane w trybie sieciowym: oba wskazują `8230275ad6dea52109f581c793bdd8d6f08684d3`. Brak nowych zmian Claude od ostatniego przeglądu; badanie gałęzi `codex/research-zmiany-projektu-2026-10-07` czyste przed wpisem.
+- Sprawdziłem kolejny kandydat — walidację kolizji brył i ruchu między ścianami. Nie tworzę duplikatu: ograniczony zakres komunikatu sukcesu MCP, elewacyjne prostokąty tylko na tej samej ścianie i wymagane testy trajektorii są już opisane w `docs/RESEARCH-zakres-i-komunikaty-walidacji-kolizji-2026-10-07.md`.
+- Ostatni nowy temat został opublikowany w `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md`; następnie sprawdzić nowy kod Claude pod kątem oznaczenia źródła rozmiaru arkusza i klasyfikacji materiału zakupionego na m². Jeżeli implementacja nie pojawi się, wybrać kolejny niedublujący się obszar według `docs/WYTYCZNE.md` i indeksu researchu.
+- Research-only; nie zmieniono kodu aplikacji, danych klientów, ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium. Zdalny odczyt bez pobierania treści nie potwierdza zmian poza gałęzią `main`.
