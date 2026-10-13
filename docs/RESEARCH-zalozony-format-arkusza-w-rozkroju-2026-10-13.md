@@ -15,6 +15,20 @@ Rozkrój wylicza dokładne wymiary arkusza i liczbę arkuszy także wtedy, gdy w
 - **Reprodukcja runtime 13.10.2026:** dla katalogowego modułu z frontem `front-mdf-folia` analiza zwróciła arkusz 2070 × 2800 mm z elementem FRONT-D01, choć dane materiału mają `0 × 0` i jednostkę `metrKwadratowy`. Nie było diagnostyki o użyciu formatu zastępczego. Dokumentacja miała inne braki okuć (`UCHWYT`, `ZAWIASY_LICZBA`) i `gotowaDoProdukcji=false`; ta próba **nie** dowodzi, że cały projekt można oznaczyć jako gotowy ani że ktoś użył planu do CNC.
 - `docs/WYTYCZNE.md` wymaga uwzględnienia formatu i ilości arkuszy oraz walidacji granic, materiału i kompletności optymalizacji (sekcja 12). `docs/RESEARCH_SILNIKI_ROZKROJU.md` opisuje wyjścia zakupowo-produkcyjne, ale nie znalazłem tam jawnego rozróżnienia między potwierdzonym formatem materiału i formatem zastępczym zakładu.
 
+### Uzupełnienie: częściowo wypełniony format materiału (13.10.2026)
+
+- **Fakt z kodu:** fallback jest wybierany niezależnie dla długości i szerokości. Długość materiału jest używana, gdy `szerokoscArkuszaMM > 0`; szerokość materiału jest używana, gdy `wysokoscArkuszaMM > 0`. Walidacja `Material` nie wymaga, aby oba wymiary były podane razem.
+- **Reprodukcja runtime na syntetycznej formatce 700 × 500 mm, ustawienia zakładu 2800 × 2070 mm:** materiał z wymiarami `[1000, 0]` dał jeden arkusz raportowany jako `2070 × 1000 mm`, bez nierozmieszczonych formatek. Jest to hybryda wymiaru z karty materiału i ustawienia ogólnego. Materiał `[0, 1500]` dał zerową liczbę arkuszy i jedną nierozmieszczoną formatkę, bo raportowany wymiar poprzeczny wynosił zero. Kontrole `[0,0]` i `[1000,1500]` zachowały odpowiednio pełny fallback zakładu i pełny format materiału.
+- Ta reprodukcja potwierdza asymetrię zachowania dla niekompletnej pary wymiarów. Nie dowodzi użycia takiego planu przez operatora ani błędnego wydania CNC.
+
+**Doprecyzowanie rekomendacji — P1 dla dokładnego rozkroju:** szerokość i wysokość arkusza muszą być walidowane jako kompletna para. Nie wolno składać formatu z połowy danych materiału i połowy ustawień zakładu. Przy braku któregokolwiek wymiaru cały format powinien być jawnie: (a) wzięty w całości z zatwierdzonego fallbacku i oznaczony jako założenie, albo (b) uznany za nieokreślony i wstrzymany z dokładnego planu — zgodnie z decyzją procesu. Dla ujemnych, nie-liczbowych lub nieskończonych wartości potrzebna jest odrębna walidacja danych.
+
+Kryteria regresji do briefu:
+
+5. Test `[1000,0]`: raport nie może łączyć wymiaru 1000 mm z formatem zakładu 2070 mm; cała para musi pochodzić z jednego jawnego źródła.
+6. Test `[0,1500]`: raport nie może zwracać zerowej szerokości bez diagnostyki źródła/wymiarów ani po cichu przedstawiać zwykłego wyniku rozkroju.
+7. Testy kontrolne `[0,0]` i `[1000,1500]` potwierdzają zachowanie dla kompletnego fallbacku i kompletnego formatu materiału.
+
 ## Rekomendacja dla Claude
 
 **Priorytet: P1 dla dokładnego planu produkcyjnego; P2 dla podglądu orientacyjnego.** Zachować możliwość podglądu na formacie ogólnym, ale przenosić źródło wymiaru arkusza do wyniku. Wyraźnie oznaczyć podgląd jako orientacyjny, gdy format pochodzi z ustawień zakładu. Materiał rozliczany w m² bez wymiaru/źródła arkusza wymaga decyzji procesu: kupowany na wymiar, przypisany do zatwierdzonego formatu płytowego albo wstrzymany z dokładnego rozkroju. Nie wyprowadzać rzeczywistej liczby arkuszy ani instrukcji cięcia wyłącznie z domyślnego formatu bez widocznego statusu założenia.
