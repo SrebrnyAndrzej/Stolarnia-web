@@ -448,3 +448,7 @@ Po świeżym fetch `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez n
 ### 2026-10-12 11:41 — ekstrakcja tekstowa nie pokazuje liczb z rysunku
 
 Na świeżym `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3` brak zmian Claude. W instrukcji NL `9001910272_C.pdf` wyszukanie `594`, `560`, `600`, `550` nie znalazło dopasowań; sekcja wymiarów istnieje, ale dane z rysunku nie zostały zindeksowane tekstowo. Screenshot nadal zwraca `Cache miss`. To brak dostępnej ekstrakcji, nie brak wymiarów na obrazie; pozostaje bezpieczny status „nieodczytane”, bez zwolnienia CNC. Brief odnotowuje następny krok: viewer renderujący PDF i porównanie z PL `9001910274_B`. Bez zmian aplikacji/danych/ceny/umów.
+
+### 2026-10-13 08:04 — nierozmieszczona formatka pomija się w kalkulacji cięcia
+
+Świeży odczyt HTTPS nadal wskazuje `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Rozszerzyłem reprodukcję przez `Stolarnia.analiza()`: przy niekompletnym formacie arkusza `[0,1500]` jedna frontowa formatka pozostała nierozmieszczona, a standardowa kalkulacja „Cięcie płyt” uwzględniła jedynie dwa rozmieszczone arkusze (140 zł przy stawce 70 zł/arkusz). Osobne braki okuć utrzymały `gotowaDoProdukcji=false`, zatem nie jest to dowód błędnej wydanej oferty ani zwolnienia produkcji. Brief rozkroju doprecyzowuje test: przy nierozmieszczonych formatach koszt i plan nie mogą wyglądać na kompletne bez jawnej diagnostyki.

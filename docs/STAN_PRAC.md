@@ -534,3 +534,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Wniosek dla Claude: walidować format jako parę i nigdy nie łączyć połowy wymiarów materiału z połową ustawień zakładu. Dodałem mierzalne testy do `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md`; wymagany wybór procesu między jawnym, w całości użytym fallbackiem a zablokowaniem dokładnego rozkroju pozostaje decyzją biznesową.
 - Następnie: po świeżym fetch sprawdzić zmiany i testy Claude dotyczące źródła formatu arkusza; jeśli luka pozostaje, skontrolować czy brief wszedł w kolejkę. Potem przejść do kolejnego niezdublowanego problemu z kompletnością wyjść produkcyjnych.
 - `git diff --check`; wyłącznie dokumentacja. Bez zmian logiki, danych klientów, ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 08:04Z
+
+- Świeży pobrany tip `main`: `8230275ad6dea52109f581c793bdd8d6f08684d3` („docs: research markup margin and actual job costs”). Nie pojawiły się nowe commity Claude.
+- Dalsza reprodukcja wyjść kosztowych: niedopasowana frontowa formatka przy materiale z niekompletnym formatem `[0,1500]` nie pojawia się w żadnym z dwóch zaplanowanych arkuszy. Pozycja cięcia w wariancie standard liczy 2 × 70 zł = 140 zł; nie stwierdzono diagnostyki kosztowej wskazującej, że formatka pozostała nierozmieszczona. Gotowość produkcyjna tej syntetycznej kuchni nadal była `false` z dwóch osobnych braków okuć, więc nie jest to dowód błędnego zatwierdzenia klientowi.
+- Zaktualizowano kryterium odbioru briefu `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md` i wpis koordynacyjny: brakujące formatki muszą jawnie oznaczać niekompletność planu oraz powiązanej pozycji kosztowej.
+- Następnie: świeżo sprawdzić kod Claude pod kątem pełnej walidacji pary wymiarów, statusu nierozmieszczonych formatek i niekompletności wyceny. Jeśli bez zmian, wybierać kolejny oddzielny temat produkcyjny.
+- Research-only; dane syntetyczne, bez zmian logiki/katalogu, klientów, ceny 29 227,60 zł brutto, umów lub widoczności repozytorium.

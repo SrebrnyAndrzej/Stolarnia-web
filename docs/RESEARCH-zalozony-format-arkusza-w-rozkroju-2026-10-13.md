@@ -20,6 +20,7 @@ Rozkrój wylicza dokładne wymiary arkusza i liczbę arkuszy także wtedy, gdy w
 - **Fakt z kodu:** fallback jest wybierany niezależnie dla długości i szerokości. Długość materiału jest używana, gdy `szerokoscArkuszaMM > 0`; szerokość materiału jest używana, gdy `wysokoscArkuszaMM > 0`. Walidacja `Material` nie wymaga, aby oba wymiary były podane razem.
 - **Reprodukcja runtime na syntetycznej formatce 700 × 500 mm, ustawienia zakładu 2800 × 2070 mm:** materiał z wymiarami `[1000, 0]` dał jeden arkusz raportowany jako `2070 × 1000 mm`, bez nierozmieszczonych formatek. Jest to hybryda wymiaru z karty materiału i ustawienia ogólnego. Materiał `[0, 1500]` dał zerową liczbę arkuszy i jedną nierozmieszczoną formatkę, bo raportowany wymiar poprzeczny wynosił zero. Kontrole `[0,0]` i `[1000,1500]` zachowały odpowiednio pełny fallback zakładu i pełny format materiału.
 - Ta reprodukcja potwierdza asymetrię zachowania dla niekompletnej pary wymiarów. Nie dowodzi użycia takiego planu przez operatora ani błędnego wydania CNC.
+- **Skutek dla kalkulacji (reprodukcja runtime przez `Stolarnia.analiza()`):** przy formacie materiału `[0,1500]` jedna frontowa formatka została nierozmieszczona. Wycena standard nadal zwróciła pozycję „Cięcie płyt” tylko dla dwóch rozmieszczonych arkuszy (140 zł przy domyślnej stawce 70 zł/arkusz); nie wliczyła brakującego frontu i w tej pozycji nie wyjaśniła związku z nierozmieszczonym elementem. `gotowaDoProdukcji` w tym projekcie wynosiła `false` z powodu osobnych braków uchwytu i liczby zawiasów — nie ustalono, czy sama nierozmieszczona formatka ją blokuje. Wynik potwierdza niekompletność pozycji kosztowej dla tego syntetycznego rozkroju, nie dowodzi błędnej oferty przekazanej klientowi.
 
 **Doprecyzowanie rekomendacji — P1 dla dokładnego rozkroju:** szerokość i wysokość arkusza muszą być walidowane jako kompletna para. Nie wolno składać formatu z połowy danych materiału i połowy ustawień zakładu. Przy braku któregokolwiek wymiaru cały format powinien być jawnie: (a) wzięty w całości z zatwierdzonego fallbacku i oznaczony jako założenie, albo (b) uznany za nieokreślony i wstrzymany z dokładnego planu — zgodnie z decyzją procesu. Dla ujemnych, nie-liczbowych lub nieskończonych wartości potrzebna jest odrębna walidacja danych.
 
@@ -28,6 +29,7 @@ Kryteria regresji do briefu:
 5. Test `[1000,0]`: raport nie może łączyć wymiaru 1000 mm z formatem zakładu 2070 mm; cała para musi pochodzić z jednego jawnego źródła.
 6. Test `[0,1500]`: raport nie może zwracać zerowej szerokości bez diagnostyki źródła/wymiarów ani po cichu przedstawiać zwykłego wyniku rozkroju.
 7. Testy kontrolne `[0,0]` i `[1000,1500]` potwierdzają zachowanie dla kompletnego fallbacku i kompletnego formatu materiału.
+8. Gdy dowolna formatka pozostaje nierozmieszczona, kalkulacja nie może prezentować usługi cięcia jako pełnej, potwierdzonej kwoty bez jawnej diagnostyki brakujących elementów; test ma zweryfikować liczbę rozmieszczonych i nierozmieszczonych formatek oraz ich wpływ na pozycję kosztową.
 
 ## Rekomendacja dla Claude
 
