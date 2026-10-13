@@ -452,3 +452,7 @@ Na świeżym `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3` brak zmian C
 ### 2026-10-13 08:04 — nierozmieszczona formatka pomija się w kalkulacji cięcia
 
 Świeży odczyt HTTPS nadal wskazuje `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Rozszerzyłem reprodukcję przez `Stolarnia.analiza()`: przy niekompletnym formacie arkusza `[0,1500]` jedna frontowa formatka pozostała nierozmieszczona, a standardowa kalkulacja „Cięcie płyt” uwzględniła jedynie dwa rozmieszczone arkusze (140 zł przy stawce 70 zł/arkusz). Osobne braki okuć utrzymały `gotowaDoProdukcji=false`, zatem nie jest to dowód błędnej wydanej oferty ani zwolnienia produkcji. Brief rozkroju doprecyzowuje test: przy nierozmieszczonych formatach koszt i plan nie mogą wyglądać na kompletne bez jawnej diagnostyki.
+
+### 2026-10-13 09:02 — ostrzeżenie w rozkroju istnieje, ale nie towarzyszy wycenie
+
+Świeży fetch: `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`, bez nowych commitów Claude. Inspekcja widoku produkcji i narzędzia MCP wykazała, że nierozmieszczone formatki są już pokazywane jako błąd w `web/src/views/Production.tsx` i zwracane przez `rozkroj_plyt`; poprzedni wniosek nie powinien sugerować całkowitego ukrycia problemu. Syntetyczna wycena nadal liczy jednak usługę „Cięcie płyt” tylko z arkuszy rozmieszczonych, bez jawnego stanu niekompletności w tej pozycji. Zakres briefu zawężono do spójnego przeniesienia statusu rozkroju na kalkulację/ofertę. Nie jest to dowód błędnej ceny pokazanej klientowi ani produkcyjnego wydania.

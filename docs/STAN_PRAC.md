@@ -542,3 +542,10 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Zaktualizowano kryterium odbioru briefu `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md` i wpis koordynacyjny: brakujące formatki muszą jawnie oznaczać niekompletność planu oraz powiązanej pozycji kosztowej.
 - Następnie: świeżo sprawdzić kod Claude pod kątem pełnej walidacji pary wymiarów, statusu nierozmieszczonych formatek i niekompletności wyceny. Jeśli bez zmian, wybierać kolejny oddzielny temat produkcyjny.
 - Research-only; dane syntetyczne, bez zmian logiki/katalogu, klientów, ceny 29 227,60 zł brutto, umów lub widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 09:02Z
+
+- Świeży HTTPS fetch potwierdził `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych zmian Claude. Gałąź researchowa była czysta przed tym heartbeat.
+- Dokładniejsze sprawdzenie ostrzeżeń ujawniło istniejącą mitigację: widok produkcji renderuje każdą nierozmieszczoną formatkę jako alert, a MCP `rozkroj_plyt` zwraca te pozycje w odpowiedzi. Wniosek nie dotyczy zatem ogólnego ukrycia nierozmieszczonych części. Niezależnie, kalkulacja pozycji cięcia w tej reprodukcji opiera kwotę wyłącznie na liczbie rozmieszczonych arkuszy i nie przenosi jawnie stanu niekompletności; brief i wpis koordynacyjny zawężają problem do spójności kosztu/wyceny.
+- Ostatnia sprawdzona rewizja upstream: `8230275ad6dea52109f581c793bdd8d6f08684d3`. Następnie: sprawdzić, czy Claude publikuje źródło formatu oraz status niekompletności kalkulacji; po zmianach przetestować również renderowaną ofertę. Jeśli upstream nie zmieni się, wrócić do kolejki badań i wybrać odrębny brak.
+- Dokumentacja-only; brak zmian logiki, danych klientów, ceny 29 227,60 zł brutto, historycznych umów i widoczności repozytorium.
