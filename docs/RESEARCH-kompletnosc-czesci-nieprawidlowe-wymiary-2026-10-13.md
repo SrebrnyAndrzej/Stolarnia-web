@@ -1,7 +1,7 @@
 # Research: nie pomijaj części o nieprawidłowych wymiarach
 
 Data: 13.10.2026
-Status: potwierdzona luka w przepływie kodu; scenariusz wymaga testu regresyjnego przed zamknięciem.
+Status: potwierdzona reprodukcją w uruchomionym kodzie; wymaga trwałego testu regresyjnego i naprawy.
 Zakres: kompletność listy części i blokada wydania produkcyjnego. Bez zmian logiki aplikacji.
 
 ## Problem
@@ -14,7 +14,7 @@ Nieprawidłowa geometria może zniknąć z listy formatek i dokumentacji zamiast
 - **Fakt z kodu:** `src/core/technologia.ts`, `dokumentacjaProjektu`, pomija element bez odpowiadającej formatki (`if (!f) continue`). `gotowaDoProdukcji` sprawdza niepustą listę utworzonych części, ich status oraz diagnostykę, ale nie porównuje jej z `zbudowane[].elementy`.
 - **Fakt z kodu:** `src/core/builder.ts` wykrywa część błędnych parametrów korpusu przez `ostrzezenia` i zwraca pustą listę elementów. Te ostrzeżenia są na `ZbudowanyModul`; analiza w `src/service.ts` przekazuje do walidacji projekt, formatki i zbudowane moduły, ale nie przekazuje `ostrzezenia` buildera do `dokumentacjaProjektu`.
 - **Fakt z kodu:** `NowyModul` w `src/service.ts` przyjmuje wymiary, a `nowyModul` przypisuje je bez lokalnej walidacji dodatniości/finitości. Trasy HTTP i MCP wołają tę usługę. Walidator projektu nie sprawdza dodatniości wymiarów modułu.
-- **Konsekwencja wyprowadzona z kodu, jeszcze niepotwierdzona testem:** w projekcie z jednym poprawnym modułem i drugim modułem o wymiarze powodującym pustą/odrzuconą geometrię, brakujący moduł/części mogą nie dać diagnostyki blokującej, a dokumentacja może pozostać gotowa, jeśli reszta spełnia warunki. To należy odtworzyć testem integracyjnym przed traktowaniem jako runtime-confirmed.
+- **Reprodukcja runtime 13.10.2026:** przez usługę utworzono dwa moduły bez frontów, oba o szerokości 600 i wysokości 720 mm; jeden miał prawidłową głębokość 560 mm, drugi głębokość −1 mm. Dla wadliwego modułu konstruktor zwrócił pięć elementów, lecz dokumentacja zawierała tylko jego `BLAT` — boki i oba wieńce zniknęły. `diagnostyka` nie zawierała żadnego wpisu dla modułu, a `gotowaDoProdukcji` wyniosło **true**. Próbę wykonano na bieżącym kodzie gałęzi researchowej przez `tsx`; plik danych testowych usunięto. To potwierdza konkretny scenariusz, nie wszystkie możliwe uszkodzenia geometrii.
 - `docs/WYTYCZNE.md` wymaga, aby żadna szafka ani wykonywana część nie została pominięta (sekcja 2), błędy wskazywały obiekt i przyczynę (sekcja 10), a testy zapewniały kompletność sztuk i brak ujemnych wymiarów (sekcja 14). Obecne T08 obejmuje elementy nierozmieszczone po rozkroju; niniejsza luka występuje wcześniej, przy konwersji konstrukcji na formatki.
 
 ## Rekomendacja dla Claude
@@ -30,7 +30,7 @@ Nieprawidłowa geometria może zniknąć z listy formatek i dokumentacji zamiast
 
 ## Kryteria odbioru
 
-1. Test integracyjny: projekt z jednym prawidłowym modułem i jednym modułem z szerokością, wysokością lub głębokością równą zero/ujemną nie gubi wadliwego modułu bez śladu; jego diagnostyka zawiera ID/nazwę i przyczynę.
+1. Trwały test integracyjny odtwarzający powyższy przypadek: projekt z jednym prawidłowym i jednym wadliwym modułem nie pomija jego części bez śladu; diagnostyka zawiera ID/nazwę i przyczynę, a `gotowaDoProdukcji` jest `false`.
 2. Test integracyjny: element konstruktora z niepoprawnym wymiarem (w tym `NaN` w danych legacy, jeśli może wystąpić po odczycie) jest jawnie zgłoszony; żaden artefakt produkcyjny nie zostaje oznaczony jako kompletny.
 3. Dla poprawnego projektu liczba i kody produkowanych części w konstrukcji, formatkach, dokumentacji i wydaniu są zgodne; T08 dla części nierozmieszczonych nadal działa niezależnie.
 4. `gotowaDoProdukcji` pozostaje `false` przy każdej rozbieżności lub błędzie geometrii, także gdy w projekcie są inne poprawne moduły.
@@ -43,8 +43,8 @@ Nieprawidłowa geometria może zniknąć z listy formatek i dokumentacji zamiast
 
 ## Punkt wznowienia
 
-Ostatnia sprawdzona rewizja `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3` (brak nowych commitów Claude). Analiza opiera się na kodzie gałęzi researchowej i wytycznych; nie uruchamiano jeszcze reprodukcji testowej. Następny krok: sprawdzić `origin/main`, a jeśli bez zmian, przekazać brief Claude przez dokumentację i w kolejnym przeglądzie zweryfikować regresję po implementacji.
+Ostatnia znana rewizja `origin/main`: `8230275ad6dea52109f581c793bdd8d6f08684d3`; ponowne pobranie zarówno przez SSH, jak i HTTPS nie wykazało nowszego commita. Na gałęzi researchowej reprodukcja runtime potwierdziła pominięcie czterech części i fałszywy status gotowości w opisanym przypadku. Testy sąsiednich ścieżek: `npx tsx --test src/service.test.ts src/technologia.test.ts` — 19/19 zaliczone po przekierowaniu katalogu tymczasowego do workspace; nie zawierają jeszcze trwałego testu reprodukującego tę lukę. Następny krok: przekazać brief Claude przez dokumentację i w kolejnym przeglądzie sprawdzić trwały test oraz naprawę.
 
 ## Ochrona danych i zakres zmian
 
-Research-only. Nie zmieniono logiki aplikacji, widoczności repozytorium, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów. Nie przepisano ani nie opublikowano żadnych danych osobowych.
+Research-only. Nie zmieniono logiki aplikacji, widoczności repozytorium, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów. Reprodukcja użyła wyłącznie syntetycznych danych i plik testowy został usunięty; nie przepisano ani nie opublikowano żadnych danych osobowych.
