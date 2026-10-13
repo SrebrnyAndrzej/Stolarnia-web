@@ -503,3 +503,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - **Wymagane działanie właściciela / osoby odpowiedzialnej za dane:** pilnie ocenić containment ekspozycji, widoczność repozytorium i kontrolowane usunięcie artefaktu także z historii, z zachowaniem kopii dowodowej i koordynacją klonów. Nie zmieniałem widoczności ani historii, nie wykonywałem force-pusha i nie wyciągam wniosku prawnego o incydencie.
 - Następnie: świeżo sprawdzić `origin/main`; kontynuować review przy nowym commicie, a przy braku zmian wrócić do jednego niepowielonego tematu produkcyjnego. Dalszy odczyt Bosch/GTV nadal ograniczony brakiem renderu ekstrakcji.
 - Dokumentacja-only; `git diff --check`. Bez zmian logiki, danych klientów w publikowanym researchu, ceny 29 227,60 zł brutto ani historycznych umów.
+
+## Punkt wznowienia — 13.10.2026 02:54Z
+
+- Świeże `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude. Kontynuowałem przegląd kompletności produkcyjnej poza już udokumentowanymi ograniczeniami źródeł okuć.
+- W kodzie zidentyfikowano lukę: `listaFormatek` pomija elementy z niedodatnim/nieprawidłowym wymiarem bez diagnostyki, generator dokumentacji pomija element bez formatki, a status gotowości nie porównuje części wynikowych z elementami konstrukcji. Ostrzeżenia buildera nie są przekazywane do diagnostyki dokumentacji; usługa nie waliduje dodatniości wymiarów nowego modułu. To jest dowód statyczny; scenariusz mieszany (jeden dobry i jeden wadliwy moduł) wymaga testu integracyjnego i nie jest jeszcze potwierdzony runtime.
+- Zapisano rekomendację i mierzalne testy regresyjne w `docs/RESEARCH-kompletnosc-czesci-nieprawidlowe-wymiary-2026-10-13.md`. Priorytet P1, bo brak części nie może pozostać niewidoczny ani przejść do statusu „gotowa do produkcji”. Nie zmieniano logiki aplikacji.
+- Następnie: odświeżyć `origin/main`; jeśli nie ma nowych zmian, zweryfikować testem na gałęzi implementacyjnej, że wadliwy drugi moduł w projekcie uniemożliwia gotowość i daje diagnostykę z identyfikatorem. Do czasu naprawy traktować to jako ryzyko produkcyjne, nie jako udowodniony incydent.
+- Dokumentacja-only; `git diff --check`. Bez zmian danych klientów, uzgodnionej ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
