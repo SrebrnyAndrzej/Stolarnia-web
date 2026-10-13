@@ -565,3 +565,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Istniejące `src/wydania.test.ts`/`src/service.test.ts` potwierdzają niezmienność dokumentacji i przeszły 12/12, ale nie testują odtworzenia rozkroju ze starego wydania. Nie jest to dowód, że plan cięcia został utracony w rzeczywistym zleceniu; to stwierdzona luka w archiwizowanym kształcie danych.
 - Następnie: po świeżym fetch sprawdzić nowy snapshot bramki wydania i raportu rozkroju; gdy brak, przekazać brief oraz dodać w kolejnej rundzie weryfikację odtworzenia historycznego raportu po zmianie globalnych ustawień (bez implementacji przez Codex).
 - Badanie docs-only; bez zmian logiki, klientów, katalogu, ceny 29 227,60 zł brutto, historycznych umów ani bazy produkcyjnej.
+
+## Punkt wznowienia — 13.10.2026 13:08Z
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; gałąź researchowa `31fc339c2d4d15d36511cf3f00927aabfea2c135`. Żadna nie zawierała nowych zmian od poprzedniego sprawdzenia; bramka gotowości i snapshot wydania w `origin/main` są takie same.
+- Kolejny punkt weryfikacji w pakiecie produkcyjnym: odtwarzalność planu rozkroju z konkretnej rewizji wydania. `WYTYCZNE.md` §12 wymaga zachowania ustawień, wersji algorytmu i zaakceptowanego wyniku; aktualny JSON wydania ich nie obejmuje. Otwarty brief P1: `docs/RESEARCH-migawka-wydania-bez-raportu-rozkroju-2026-10-13.md`.
+- Testy `src/wydania.test.ts` i `src/service.test.ts`: 12/12 zaliczone; testują niezmienność dokumentacji wydania, nie rozkroju. Brak ustalenia o utracie rzeczywistego planu w produkcji.
+- Następnie: po świeżym pobraniu sprawdzić, czy zmiana Claude wiąże raport rozkroju i kompletność z wydaniem; jeśli nie, pogłębić niezależny obszar w kolejce jakości/akceptacji, nie duplikując snapshotu ofert ani release gate.
+- Research-only. Bez zmian kodu, bazy produkcyjnej, danych klientów, uzgodnionej ceny 29 227,60 zł brutto ani historycznych umów.
