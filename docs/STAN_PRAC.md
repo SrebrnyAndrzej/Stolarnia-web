@@ -549,3 +549,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Dokładniejsze sprawdzenie ostrzeżeń ujawniło istniejącą mitigację: widok produkcji renderuje każdą nierozmieszczoną formatkę jako alert, a MCP `rozkroj_plyt` zwraca te pozycje w odpowiedzi. Wniosek nie dotyczy zatem ogólnego ukrycia nierozmieszczonych części. Niezależnie, kalkulacja pozycji cięcia w tej reprodukcji opiera kwotę wyłącznie na liczbie rozmieszczonych arkuszy i nie przenosi jawnie stanu niekompletności; brief i wpis koordynacyjny zawężają problem do spójności kosztu/wyceny.
 - Ostatnia sprawdzona rewizja upstream: `8230275ad6dea52109f581c793bdd8d6f08684d3`. Następnie: sprawdzić, czy Claude publikuje źródło formatu oraz status niekompletności kalkulacji; po zmianach przetestować również renderowaną ofertę. Jeśli upstream nie zmieni się, wrócić do kolejki badań i wybrać odrębny brak.
 - Dokumentacja-only; brak zmian logiki, danych klientów, ceny 29 227,60 zł brutto, historycznych umów i widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 10:06Z
+
+- Świeży `origin/main=8230275ad6dea52109f581c793bdd8d6f08684d3`; brak nowych commitów Claude.
+- Nowy, odrębny błąd bramki wydania: syntetyczny projekt 100 × 100 mm wygenerował 4 wymagane formatki, żadnej nie dało się rozmieścić, ale `dokumentacja().gotowaDoProdukcji` zwróciła `true`; wywołanie `utworzWydanie(..., { tylkoKompletne: true })` zaakceptowało wydanie i oznaczyło je gotowym. Problem opisany w `docs/RESEARCH-wydanie-produkcyjne-bez-rozmieszczonych-czesci-2026-10-13.md`. To potwierdzenie zachowania na danych syntetycznych, nie dowód błędnego wydania rzeczywistego zlecenia.
+- Priorytet P1: bramka „tylko kompletne” powinna uwzględniać wszystkie wymagane nierozmieszczone formatki z tego samego snapshotu projektu/ustawień; test usługi ma odrzucać kompletne wydanie, a dopuścić je po prawidłowym rozkroju przy spełnieniu reszty wymagań.
+- Następnie: sprawdzić, czy Claude łączy gotowość dokumentacji z raportem rozkroju i dodaje regresję dla `tylkoKompletne=true`. Gdy brak zmian, kolejny temat wybierać z pozostałych braków przepływu akceptacji/wydań; nie powielać briefu o nieprawidłowych wymiarach części ani briefu o źródle wymiaru arkusza.
+- Reprodukcja izolowana i syntetyczna. Bez zmian logiki, danych klientów, kwoty 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
