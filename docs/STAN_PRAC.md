@@ -557,3 +557,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Priorytet P1: bramka „tylko kompletne” powinna uwzględniać wszystkie wymagane nierozmieszczone formatki z tego samego snapshotu projektu/ustawień; test usługi ma odrzucać kompletne wydanie, a dopuścić je po prawidłowym rozkroju przy spełnieniu reszty wymagań.
 - Następnie: sprawdzić, czy Claude łączy gotowość dokumentacji z raportem rozkroju i dodaje regresję dla `tylkoKompletne=true`. Gdy brak zmian, kolejny temat wybierać z pozostałych braków przepływu akceptacji/wydań; nie powielać briefu o nieprawidłowych wymiarach części ani briefu o źródle wymiaru arkusza.
 - Reprodukcja izolowana i syntetyczna. Bez zmian logiki, danych klientów, kwoty 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 12:04Z
+
+- Świeżo odczytane zdalne gałęzie: `main=8230275ad6dea52109f581c793bdd8d6f08684d3`, research `a61ae9438eecec2648871ac3129a2c6311e91b80`; brak nowych zmian Claude ani równoległych zmian w gałęzi dokumentacji.
+- Kolejna odrębna luka: migawka wydania zapisuje projekt, zbudowane moduły i dokumentację, ale pomija raport rozkroju, formatki/wejścia materiałowe, parametry oraz wersję algorytmu. `WYTYCZNE.md` sekcja 12 wymaga zapisu ustawień, wersji algorytmu i zatwierdzonego wyniku rozkroju. Bieżący raport pochodzi z `analiza(projektId)`, bez endpointu historycznego raportu powiązanego z numerem wydania. Brief: `docs/RESEARCH-migawka-wydania-bez-raportu-rozkroju-2026-10-13.md` (P1).
+- Istniejące `src/wydania.test.ts`/`src/service.test.ts` potwierdzają niezmienność dokumentacji i przeszły 12/12, ale nie testują odtworzenia rozkroju ze starego wydania. Nie jest to dowód, że plan cięcia został utracony w rzeczywistym zleceniu; to stwierdzona luka w archiwizowanym kształcie danych.
+- Następnie: po świeżym fetch sprawdzić nowy snapshot bramki wydania i raportu rozkroju; gdy brak, przekazać brief oraz dodać w kolejnej rundzie weryfikację odtworzenia historycznego raportu po zmianie globalnych ustawień (bez implementacji przez Codex).
+- Badanie docs-only; bez zmian logiki, klientów, katalogu, ceny 29 227,60 zł brutto, historycznych umów ani bazy produkcyjnej.
