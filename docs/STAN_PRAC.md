@@ -511,3 +511,11 @@ Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska
 - Brief `docs/RESEARCH-kompletnosc-czesci-nieprawidlowe-wymiary-2026-10-13.md` zaktualizowano o odtworzone dane i priorytet P1. Nie modyfikowano logiki aplikacji; testowe dane syntetyczne usunięto.
 - SSH zgłosiło błąd uprawnień podczas fetch; ponowienie bezpośrednio przez HTTPS pozostawiło `origin/main` bez zmian (`8230275ad6dea52109f581c793bdd8d6f08684d3`), więc w tym heartbeat nie było nowych commitów Claude. Testy sąsiednich obszarów `src/service.test.ts` i `src/technologia.test.ts` przeszły 19/19 po ustawieniu katalogu tymczasowego w workspace (pierwsza próba z domyślnym Windows Temp była zablokowana przez sandbox i nie jest wynikiem testu aplikacji). Brak trwałego testu regresyjnego tej luki pozostaje otwarty.
 - Dokumentacja-only; `git diff --check`. Bez zmian danych klientów, uzgodnionej ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
+
+## Punkt wznowienia — 13.10.2026 04:55Z
+
+- Zdalny `HEAD` oraz `origin/main` sprawdzono przez HTTPS: `8230275ad6dea52109f581c793bdd8d6f08684d3`; bez nowych commitów Claude.
+- Kolejny temat produkcyjny: format arkusza dla materiałów. Reprodukcja z materiałem startowym `front-mdf-folia` (jednostka `metrKwadratowy`, arkusz `0 × 0`) pokazała, że optimizer rozkroju bez komunikatu stosuje format ustawień zakładu 2070 × 2800 mm. Nie jest to dowód błędnego/zwolnionego wydania; dokumentacja testowego projektu pozostała `gotowaDoProdukcji=false` z niezależnych braków okuć. Problem polega na tym, że raport rozkroju nie ujawnia pochodzenia formatu i pokazuje liczbę/wykorzystanie arkuszy dla założenia.
+- Opis, granice pewności, zależności i kryteria dla Claude: `docs/RESEARCH-zalozony-format-arkusza-w-rozkroju-2026-10-13.md`. Priorytet P1 dla precyzyjnego planu cięcia, P2 dla orientacyjnego podglądu.
+- Następnie: świeżo sprawdzić `origin/main`; jeśli brak zmian, przekazać brief i poszukać kolejnej odrębnej luki w wyjściach produkcyjnych. Nie zmieniać domyślnego rozmiaru na arbitralny „lepszy” wymiar.
+- Dokumentacja-only; test z syntetycznymi danymi, plik testowy usunięty. Bez zmian logiki, katalogu, danych klientów, ceny 29 227,60 zł brutto, historycznych umów ani widoczności repozytorium.
