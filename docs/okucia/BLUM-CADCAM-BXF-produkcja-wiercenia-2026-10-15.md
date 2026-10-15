@@ -20,6 +20,14 @@ Oficjalny katalog Blum 2024/2025, drukowana s. 612, odrębnie wymienia w CAD/CAM
 
 ## Czego źródło jeszcze nie rozstrzyga
 
+### Rozróżnienie wpisu katalogowego od szablonu wierceń dla 175H3100
+
+Kontrola oficjalnego katalogu Blum 2027/2028 (strona internetowa, sekcja AVENTOS) pokazuje numer 175H3100 jako przykręcaną płytkę montażową o dystansie 0 mm. Występuje on w tabeli rekomendacji dla ramienia SERVO-DRIVE oraz osobno w tabeli AVENTOS HK-XS. Sąsiednie informacje o minimalnej głębokości korpusu i „special drilling position” opisują zastosowanie systemu podnośnika HK-XS, a nie wymiarowany wzór otworów samej płytki 175H3100. Wyszukiwanie katalogu nie dostarczyło dla tej płytki współrzędnych, średnic, głębokości ani bazy otworów.
+
+Źródła: [Blum, katalog 2027/2028 — strona AVENTOS](https://publications.blum.com/2026/catalogue/en/); [Blum, katalog 2027/2028 — AVENTOS HK-XS, drukowana s. 54](https://publications.blum.com/2026/catalogue/en/54/). Wynik wyszukiwania oficjalnego PDF montażowego AVENTOS HF również zawiera numer płytki w wykazie elementów, lecz rysunki wierceń w tym dokumencie dotyczą montażu podnośnika/frontu; nie użyto ich jako dowodu geometrii płyty. Nie należy przenosić atrybutu „special drilling position” ani wymiarów systemu HK-XS/HF na szablon korpusu dla 175H3100.
+
+**Wniosek:** katalogowa obecność SKU i zalecenie dystansu 0 mm pomagają wybrać wariant produktu, lecz nie zwalniają z pozyskania osobnego rysunku produkcyjnego/CAD-CAM dla konkretnej płytki oraz jej zastosowania. Do czasu takiego źródła profil wierceń 175H3100 pozostaje niezweryfikowany i nie może być podstawą zatwierdzenia CNC.
+
 - W niniejszym przeglądzie nie zalogowano się do usługi i nie sprawdzono, czy dla konkretnego SKU 175H3100, pary zawias–prowadnik i wybranej konfiguracji dostępny jest rysunek 2D, BXF lub plik CAM. Dostępność materiału, uprawnienia i zakres konfiguratora pozostają **niezweryfikowane**.
 - Potwierdzono publiczną procedurę wejścia do pełnego E-Service, lecz nie status konta warsztatu, rynku PL, przypisanych usług ani uprawnień użytkownika. Nie wysyłano zapytania do Blum w imieniu warsztatu.
 - Ogólny opis BXF nie potwierdza konkretnej geometrii otworów dla 175H3100 ani otworu dodatkowego. Nie wolno przenosić wierceń z innego SKU lub zestawienia na tę płytę.
