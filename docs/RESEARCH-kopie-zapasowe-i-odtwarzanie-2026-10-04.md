@@ -45,3 +45,23 @@ Odbiór procedury:
 - Supabase, Backup and Restore using the CLI: https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore — polecana ścieżka eksportu/odtwarzania i zachowanie migracji.
 
 Nie włączano PITR, nie zmieniano ustawień Supabase/Vercel i nie wykonywano operacji na danych produkcyjnych.
+
+## Aktualizacja oficjalnych warunków Supabase — 2026-10-15
+
+Ponownie sprawdzono dokumentację dostawcy, bez dostępu do konta/projektu warsztatu. Bieżąca strona Supabase potwierdza kopie dzienne dla planów Pro, Team i Enterprise z retencją 7/14/do 30 dni; projekty Free mają samodzielnie eksportować dane i utrzymywać kopię poza usługą. Dla nowszych wersji Postgresa (15.8.1.079+) standardem są kopie fizyczne. Nie można pobrać ich plików z dashboardu; po wyłączeniu PITR dalsze kopie również są tylko fizycznymi backupami, a ręczny pobieralny dump wymaga CLI/`pg_dump`.
+
+**Zmiany i szczegóły istotne dla planowania:**
+
+- Włączenie PITR zastępuje codzienne backupy dzienne (dostawca uznaje je za zbędne przy dokładniejszym PITR) i wymaga co najmniej dodatku compute Small. Oficjalna strona cennika backupów pokazuje orientacyjnie 7 dni za 0,137 USD/godz. (~100 USD/mies.), 14 dni ~200 USD/mies. i 28 dni ~400 USD/mies.; ostateczny koszt i stan konkretnego projektu należy sprawdzić w panelu przed decyzją. Nie włączono dodatku ani nie zakładamy, że warsztat używa wskazanego planu.
+- Restore backupu dziennego i PITR powoduje niedostępność projektu; czas zależy od rozmiaru bazy. Najnowszy punkt PITR może wyglądać na starszy, gdy nie było ostatnio transakcji, mimo że odzwierciedla aktualny stan. Odbiór operacyjny powinien więc opierać się na potwierdzonym punkcie/zakresie transakcji, nie tylko na etykiecie czasu.
+- Kopie fizyczne nie obejmują zawartości Storage API, tylko metadane. Jeśli aplikacja zacznie tam zapisywać umowy/załączniki, odrębny eksport obiektów jest konieczny. Usunięcie projektu kasuje również powiązane backupy.
+- Procedura logicznego dump/restore CLI wymienia osobne pliki dla ról, schematu i danych. Dokumentacja wskazuje dodatkowe działania dla niestandardowych obiektów w `auth`/`storage`, historii migracji, rozszerzeń, webhooków, publikacji Realtime oraz haseł własnych ról. Runbook musi najpierw zinwentaryzować, które z nich istnieją; nie kopiować automatycznie całego schematu zarządzanego dostawcy ani nie zakładać, że sam `data.sql` odtwarza konfigurację.
+
+**Uściślone kryterium odbioru:** przed określeniem backupu jako gotowego właściciel zapisuje plan/Postgres version i źródło potwierdzenia kopii w panelu; wybiera RPO/RTO; wybiera niezależny eksport o retencji odpowiadającej RPO (zawierający `stolarnia_baza.dane`, schemat/migracje i potrzebną konfigurację), a Storage kopiuje osobno, jeśli jest używany. Operator odtwarza go w pustym, oddzielnym projekcie; test potwierdza zgodność wersji/migracji, walidację kompletnego JSON, zachowanie uzgodnionej ceny 29 227,60 zł brutto i wszystkich historycznych umów oraz otwarcie zanonimizowanego przykładowego projektu. Runbook mierzy czas niedostępności i odtworzenia, liczbę utraconych transakcji względem ustalonego celu oraz wynik kontroli Storage. W razie nieudanego restore nie przełącza produkcji i nie nadpisuje jej automatycznie.
+
+Źródła pierwotne, sprawdzone 2026-10-15:
+
+- [Supabase — Database Backups](https://supabase.com/docs/guides/platform/backups): plany/retencja, rodzaje backupów, wyłączenie pobierania kopii fizycznych, Storage, restore downtime oraz PITR i koszt.
+- [Supabase — Backup and Restore using the CLI](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore): `db dump` dla ról/schematu/danych, restore w pustym projekcie, niestandardowe zmiany `auth`/`storage`, migracje, rozszerzenia, webhooki, realtime i reset haseł ról.
+
+Nie zweryfikowano dashboardu, planu, konfiguracji, rozmiaru ani rzeczywistego backupu projektu warsztatu. Nie wykonano eksportu, restore, odpytywania danych produkcyjnych ani zmian w Supabase. Nie są to podstawy do zakupu PITR; decyzja zależy od zaakceptowanego RPO/RTO i aktualnej wyceny.
