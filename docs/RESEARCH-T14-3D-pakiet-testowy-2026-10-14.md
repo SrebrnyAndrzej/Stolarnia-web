@@ -39,3 +39,22 @@ Zatwierdzić jeden mały, sztuczny fixture (bez danych klienta) obejmujący: pro
 ## Korekta pochodzenia wcześniejszej notatki
 
 Notatka robocza sporządzona wcześniej w starym checkout mówiła, że brief `RESEARCH-kreator-premium-dla-Claude.md` nie istnieje. To twierdzenie było błędne: stary lokalny `HEAD` był 81 commitów za bieżącym `origin/main`. Świeży checkout potwierdza istnienie briefu; powyższe ustalenia są ocenione względem jego faktycznych R01/R03/R04 i P01–P03. Nie przenosić dawnego stwierdzenia o braku briefu do kolejnych raportów.
+
+## Ręcznie policzony oracle dla lustrzanych boków
+
+**Cel:** zamienić ogólny warunek „odbicie nie zmienia fizycznego bazowania” na mały test liczbowy, który niezależnie sprawdza lokalną ramę części, stronę A/B oraz krawędzie. Wartości poniżej są syntetycznym oczekiwanym wynikiem obliczonym z konwencji `osieRoli`/`ukladCzesci` i definicji `Operacja` w `src/core/technologia.ts` oraz `src/core/types.ts`; nie zostały wygenerowane przez funkcję badaną i nie pochodzą od producenta.
+
+Przyjąć moduł 600 × 720 × 560 mm i płyty 18 mm. Lewy bok zajmuje globalny prostopadłościan X=[0,18], Y=[0,720], Z=[0,560]; prawy X=[582,600], Y=[0,720], Z=[0,560]. Dla roli `side`, osie długość/szerokość/grubość odpowiadają kolejno modułowym Y/Z/X.
+
+| Część | Początek lokalny `o` | Oś lokalna `x` (długość) | `y` (szerokość) | `n` (lico A) |
+|---|---|---|---|---|
+| lewy bok | (0, 0, 0) | (0, +1, 0) | (0, 0, +1) | (+1, 0, 0) |
+| prawy bok | (600, 720, 0) | (0, −1, 0) | (0, 0, +1) | (−1, 0, 0) |
+
+Lokalny rozmiar obu części wynosi 720 × 560 × 18 mm. Dla tej samej fizycznej wysokości Y=120 mm i głębokości Z=64 mm punkt lica A ma globalne współrzędne (18,120,64) po lewej i (582,120,64) po prawej. Oczekiwane współrzędne częściowe to odpowiednio (x=120,y=64,n=18) oraz (x=600,y=64,n=18); w obu przypadkach ponowne zastosowanie ramy daje wskazany punkt globalny. Na licu B analogiczne punkty mają n=0.
+
+Kontrolne operacje krawędziowe według kontraktu `Operacja`: punkt na DA dla lewej części globalnie (9,120,0) powinien dać (powierzchnia=DA, x=120, y=9); dla prawej część globalna (591,120,0) powinna dać (DA, x=600, y=9). Punkt na KA: globalnie (9,0,64) po lewej i (591,720,64) po prawej powinien dać w obu przypadkach (KA, x=64, y=9), gdzie `y=9` jest odległością od lica B w grubości. Przeliczenie tych punktów przez lokalną ramę z powrotem do modułu musi odtworzyć każdą współrzędną globalną z tolerancją 0,05 mm.
+
+**Mierzalne kryterium dla Claude:** fixture zawiera oczekiwane ramy, 4 punkty lica i 4 punkty krawędzi z tabeli/powyższego opisu; wynik porównuje bazę i osie, nazwę powierzchni, współrzędne oraz round-trip lokalny→globalny. Dodatkowo ten sam syntetyczny otwór bazowany 120 mm od fizycznego dołu musi po transformacji obu boków pozostać na tej samej wysokości Y=120 mm, mimo że lokalne `x` wynosi 120 mm po lewej i 600 mm po prawej. Test nie może wymagać równych współrzędnych lokalnych lustrzanych części. Błąd ramy, strony lub indeksu osi powinien zawieść co najmniej jeden punkt kontrolny.
+
+**Granica:** to oracle transformacji dla prostokątnego korpusu i roli `side`, nie walidacja konstrukcji, wierceń konkretnego okucia, tolerancji maszynowej ani renderera 3D. Pozostałe role i narożniki wymagają odrębnych, podobnie niezależnych fixture; fizyczny detal nadal wymaga pomiaru i próbnego wykonania.
