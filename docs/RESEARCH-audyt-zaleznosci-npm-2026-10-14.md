@@ -1,5 +1,18 @@
 # Audyt zależności npm — 14.10.2026
 
+## Reaudyt registry — 15.10.2026, origin/main bez zmian
+
+Ponownie pobrano `origin/main`; nadal wskazuje `8230275ad6dea52109f581c793bdd8d6f08684d3`. Bez modyfikowania manifestu ani lockfile uruchomiono `npm audit --json`, `npm audit --omit=dev --json` oraz `npm audit fix --dry-run --json` na zainstalowanym drzewie.
+
+- Pełny audyt nadal zwraca 4 pozycje (2 high, 2 critical) w 265 zainstalowanych pakietach; npm oznacza dostępne poprawki dla wszystkich.
+- Audyt bez devDependencies zwraca jedną pozycję high dla bezpośredniej zależności `@modelcontextprotocol/sdk` 1.30.0. Aktualny oficjalny advisory (GHSA-6qxp-vccf-f47h) wyjaśnia, że dotyczy to OAuth *klienta* HTTP w warunkach wskazanych w advisory, a serwery MCP zbudowane z SDK oraz klienci stdio są wyłączone. W aktualnym drzewie repo znaleziono importy transportów/serwera (`src/mcp/server.ts`, `src/mcp/stdio.ts`, `src/server/app.ts`); nie znaleziono użycia klienta OAuth/`authProvider`/`withOAuth` ani pakietu client. To uzasadnia kwalifikację jako alert wersji wymagający aktualizacji/higieny, nie potwierdzenie osiągalnej podatności aplikacji w tym SHA.
+- `npm audit fix --dry-run --json` przewiduje wyłącznie aktualizacje zgodne z obecnymi zakresami manifestu: SDK 1.30.0→1.32.1, `concurrently` 9.2.4→9.2.5, `shell-quote` 1.9.0→1.12.0 i `source-map-js` 1.2.1→1.2.2. Jest to symulacja npm, nie sprawdzona zmiana lockfile ani potwierdzenie kompatybilności.
+- Brak reachability dowodu dla `shell-quote` pozostaje: pozycja należy do drzewa developerskiego, a repo uruchamia przez `concurrently` wyłącznie dwa stałe skrypty. `source-map-js` pozostaje w developerskim grafie Vite/PostCSS; nie wykazano, że działający serwer przetwarza niezaufaną mapę źródłową.
+
+**Wniosek dla Claude:** można rozważyć wąską aktualizację lockfile do wersji przewidzianych w dry-run, po sprawdzeniu changelogów/kompatybilności; nie ma podstaw do masowego `npm audit fix` bez review. Po zmianie powtórzyć `npm ci`, pełny i produkcyjny audit oraz typecheck/test/build i minimalny start API/MCP. Obecny branch Codexa nie zmienia zależności ani logiki aplikacji.
+
+**Walidacja 15.10:** obydwa audyty i dry-run zakończyły się kodem 1, oczekiwanym przy znalezionych advisory; sam dry-run nie zmienił tracked files. Raport nie przesądza ekspozycji produkcyjnej ani ustawień hostingu/CI.
+
 **Zakres:** migawka `origin/main` `8230275ad6dea52109f581c793bdd8d6f08684d3`; analiza manifestu i lockfile oraz `npm audit` po czystym `npm ci`. Jest to ustalenie dotyczące deklarowanych/rozwiązanych pakietów, a nie dowód wykorzystania podatnej ścieżki w produkcji.
 
 ## Wynik sprawdzenia
