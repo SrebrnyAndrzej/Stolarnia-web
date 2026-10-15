@@ -1,5 +1,19 @@
 # Audyt zależności npm — 14.10.2026
 
+## Kontrola automatyzacji w repozytorium — 15.10.2026
+
+**Fakt w drzewie `origin/main`:** `git ls-tree` nie pokazuje `.github/`, workflows, `dependabot.yml` ani konfiguracji Dependency Review. To oznacza wyłącznie brak śledzonej konfiguracji w tym commicie. Nie sprawdzono ustawień GitHub repo/org; alerty Dependabot i security updates mogą być włączone niezależnie od pliku `dependabot.yml`, więc ich stan pozostaje **niezweryfikowany**.
+
+**Problem:** raport audytu jest dziś wynikiem ręcznego uruchomienia w checkout. Bez okresowego sygnału właściciel może nie zauważyć nowych advisory albo lockfile driftu. Jednocześnie obecny audyt zawiera false positive dla OAuth klienta mimo użycia MCP server-only, więc bezwarunkowy blocker dla każdego high może tworzyć fałszywy alarm.
+
+**Dowód i źródła:** GitHub opisuje `dependabot.yml` (wersja 2, ekosystem npm, katalog manifestu i wymagany harmonogram) jako konfigurację tygodniowych PR-ów aktualizujących zależności; osobno opisuje włączenie Dependabot security updates. Dependency Review action skanuje zmiany zależności w pull requestach i może zgłaszać znane podatności. Źródła pierwotne: [konfiguracja aktualizacji wersji](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configure-version-updates), [security updates](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configure-security-updates), [Dependency Review action](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/manage-your-dependency-security/configure-dependency-review-action).
+
+**Rekomendacja P2 dla właściciela/Claude:** najpierw sprawdzić w ustawieniach repozytorium/organizacji, czy alerty i security updates są aktywne; dopiero potem zdecydować o tygodniowych PR-ach npm (i GitHub Actions, jeśli workflows zostaną dodane) oraz przeglądzie każdej zmiany `package-lock.json`. W CI można raportować pełne `npm audit` i stosować Dependency Review dla nowych/zmienionych zależności, ale przed ustawieniem progu blokującego uzgodnić obsługę już ocenionych alertów warunkowych/nieosiągalnych. Żadnych aktualizacji automatycznie nie scalać bez build/test/typecheck.
+
+**Mierzalne kryteria odbioru:** (1) właściciel zapisuje w checklistach, czy alerts/security updates są włączone; (2) ewentualny workflow/config otwiera przeglądalny PR lub artefakt raportu co najmniej raz w tygodniu, bez auto-merge; (3) testowy PR ze zmienioną zależnością uruchamia Dependency Review; (4) zmiana lockfile przechodzi `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, `npm audit` i `npm audit --omit=dev`, a ręcznie uzasadnione alerty są opisane z datą ponownej oceny.
+
+**Zależności i ograniczenia:** decyzja właściciela o ustawieniach/CI oraz polityce progów; konfiguracji GitHub, branch protection i runów CI nie sprawdzano w panelu ani w produkcji. To rekomendacja, nie stwierdzenie, że powiadomienia obecnie nie działają. Zmiana wyłącznie dokumentacyjna, bez testów aplikacji.
+
 ## Reaudyt registry — 15.10.2026, origin/main bez zmian
 
 Ponownie pobrano `origin/main`; nadal wskazuje `8230275ad6dea52109f581c793bdd8d6f08684d3`. Bez modyfikowania manifestu ani lockfile uruchomiono `npm audit --json`, `npm audit --omit=dev --json` oraz `npm audit fix --dry-run --json` na zainstalowanym drzewie.
