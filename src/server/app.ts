@@ -158,12 +158,24 @@ app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
 // Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
-app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
+app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, mocowanieFrontuMinMM: p.front_mounting?.bottom_hole_min_from_front_bottom_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
 app.get("/api/przelicznik-szuflad", api((r) => {
   const n = (k: string) => (r.query[k] !== undefined && r.query[k] !== "" ? Number(r.query[k]) : undefined);
   const t = (k: string) => (typeof r.query[k] === "string" && r.query[k] ? String(r.query[k]) : undefined);
+  const b = (k: string) => {
+    if (r.query[k] === undefined) return undefined;
+    if (r.query[k] === "true") return true;
+    if (r.query[k] === "false") return false;
+    throw new BladUslugi(`Parametr ${k} musi mieć wartość true albo false.`);
+  };
   return s.przelicznikSzuflad({ LW: n("LW"), szerokoscKorpusu: n("szerokoscKorpusu"), gruboscBoku: n("gruboscBoku"), NL: n("NL"), glebokoscKorpusu: n("glebokoscKorpusu"),
-    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId") });
+    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId"),
+    liczbaSzuflad: n("liczbaSzuflad"), szczelinaFrontow: n("szczelinaFrontow"), dolnaProwadnica: n("dolnaProwadnica"),
+    wysokoscWewnetrzna: n("wysokoscWewnetrzna"), gruboscFrontu: n("gruboscFrontu"),
+    frontWewnetrzny: b("frontWewnetrzny"), szerokoscFrontu: n("szerokoscFrontu"), pierwszyOtworOdDolu: n("pierwszyOtworOdDolu"),
+    frontZaDrzwiami: b("frontZaDrzwiami"), stronaZawiasow: t("stronaZawiasow") as "lewa" | "prawa" | undefined,
+    dystansLewy: n("dystansLewy"), dystansPrawy: n("dystansPrawy"), przesuniecieFrontu: n("przesuniecieFrontu"),
+    wystawanieZawiasuLewe: n("wystawanieZawiasuLewe"), wystawanieZawiasuPrawe: n("wystawanieZawiasuPrawe"), luzOdZawiasu: n("luzOdZawiasu") });
 }));
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));
