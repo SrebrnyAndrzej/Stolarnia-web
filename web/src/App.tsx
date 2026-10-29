@@ -9,6 +9,7 @@ import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
 import { nazwaStatusu, Temat } from "./views/Temat";
+import { PrzelicznikSzuflad } from "./views/PrzelicznikSzuflad";
 
 type Zakladka = "temat" | "projekt" | "wycena" | "oferta" | "produkcja" | "umowy";
 
@@ -16,6 +17,7 @@ type Trasa =
   | { widok: "projekty" }
   | { widok: "projekt"; id: string; zakladka: Zakladka }
   | { widok: "materialy" }
+  | { widok: "szuflady" }
   | { widok: "ustawienia" };
 
 function czytajTrase(): Trasa {
@@ -25,6 +27,7 @@ function czytajTrase(): Trasa {
     return { widok: "projekt", id: cz[1], zakladka: z };
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
+  if (cz[0] === "szuflady") return { widok: "szuflady" };
   if (cz[0] === "ustawienia") return { widok: "ustawienia" };
   return { widok: "projekty" };
 }
@@ -36,15 +39,20 @@ export function App() {
     addEventListener("hashchange", f);
     return () => removeEventListener("hashchange", f);
   }, []);
+  useEffect(() => {
+    const tytuly = { projekty: "Projekty", projekt: "Projekt", materialy: "Materiały i okucia", szuflady: "Kalkulator szuflad", ustawienia: "Ustawienia" };
+    document.title = `${tytuly[trasa.widok]} · Stolarnia Online`;
+  }, [trasa.widok]);
 
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand" onClick={() => idz("#/")}>
+        <button className="brand" onClick={() => idz("#/")} aria-label="Stolarnia Online — projekty">
           <span className="brand-mark" aria-hidden /> Stolarnia Online
-        </div>
-        <nav className="nav">
+        </button>
+        <nav className="nav" aria-label="Menu główne">
           <button className={trasa.widok === "projekty" || trasa.widok === "projekt" ? "on" : ""} onClick={() => idz("#/")}>Projekty</button>
+          <button className={trasa.widok === "szuflady" ? "on" : ""} aria-current={trasa.widok === "szuflady" ? "page" : undefined} onClick={() => idz("#/szuflady")}>Kalkulator szuflad</button>
           <button className={trasa.widok === "materialy" ? "on" : ""} onClick={() => idz("#/materialy")}>Materiały i okucia</button>
           <button className={trasa.widok === "ustawienia" ? "on" : ""} onClick={() => idz("#/ustawienia")}>Ustawienia</button>
         </nav>
@@ -53,6 +61,7 @@ export function App() {
         {trasa.widok === "projekty" && <Projects />}
         {trasa.widok === "projekt" && <ProjektWidok id={trasa.id} zakladka={trasa.zakladka} />}
         {trasa.widok === "materialy" && <Materials />}
+        {trasa.widok === "szuflady" && <PrzelicznikSzuflad />}
         {trasa.widok === "ustawienia" && <Settings />}
       </main>
     </div>

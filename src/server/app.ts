@@ -158,7 +158,7 @@ app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
 // Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
-app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
+app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, mocowanieFrontuMinMM: p.front_mounting?.bottom_hole_min_from_front_bottom_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
 app.get("/api/przelicznik-szuflad", api((r) => {
   const n = (k: string) => (r.query[k] !== undefined && r.query[k] !== "" ? Number(r.query[k]) : undefined);
   const t = (k: string) => (typeof r.query[k] === "string" && r.query[k] ? String(r.query[k]) : undefined);

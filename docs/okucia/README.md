@@ -4,7 +4,7 @@ Kalkulator pokazuje także [pozycje zaczepów frontu Amix Elite Box](AMIX-Elite-
 
 ## Kalkulator rozstawu równych frontów (29.10.2026)
 
-W „Materiały i okucia → Przelicznik szuflad” można włączyć obliczanie rozstawu prowadnic. Ten sam wynik zwracają `GET /api/przelicznik-szuflad` i MCP `przelicznik_szuflad`.
+W głównym menu „Kalkulator szuflad” (`#/szuflady`) można włączyć obliczanie rozstawu prowadnic. Kalkulator ma osobne warianty frontu zewnętrznego i wewnętrznego, duże pola dotykowe, karty rozkroju i schemat tylnej strony frontu z osiami i listą wysokości otworów. Ten sam wynik zwracają `GET /api/przelicznik-szuflad` i MCP `przelicznik_szuflad`.
 
 Parametry opcjonalnej sekcji: `liczbaSzuflad` (1–20), `wysokoscFrontu`, `szczelinaFrontow` (domyślnie 3), `dolnaProwadnica` (domyślnie 3), `wysokoscWewnetrzna` (opcjonalnie), `frontWewnetrzny`, `gruboscFrontu` (wymagana dla frontu wewnętrznego). Wszystkie długości w mm. Wynik `montaz.prowadnice[].dolnaKrawedzMM` jest liczony od **górnej powierzchni wieńca dolnego do dolnej krawędzi prowadnicy**, nie do osi wkrętów.
 
@@ -47,7 +47,7 @@ Strony N i C LEGRABOX oraz M sprawdzono na rysunku. Pozostałe odczytano z tekst
 
 ### Przelicznik w aplikacji
 
-„Materiały i okucia → Przelicznik szuflad”, `GET /api/przelicznik-szuflad`, narzędzie MCP `przelicznik_szuflad`. Wejście:
+Główne menu „Kalkulator szuflad”, `GET /api/przelicznik-szuflad`, narzędzie MCP `przelicznik_szuflad`. Wejście:
 - LW albo szerokość korpusu i grubość boku;
 - NL albo głębokość korpusu, z której NL dobiera się automatycznie;
 - opcjonalnie wysokość frontu i wariant.
