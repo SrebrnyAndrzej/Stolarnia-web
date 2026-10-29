@@ -172,7 +172,7 @@ app.get("/api/przelicznik-szuflad", api((r) => {
     wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId"),
     liczbaSzuflad: n("liczbaSzuflad"), szczelinaFrontow: n("szczelinaFrontow"), dolnaProwadnica: n("dolnaProwadnica"),
     wysokoscWewnetrzna: n("wysokoscWewnetrzna"), gruboscFrontu: n("gruboscFrontu"),
-    frontWewnetrzny: b("frontWewnetrzny") });
+    frontWewnetrzny: b("frontWewnetrzny"), szerokoscFrontu: n("szerokoscFrontu"), pierwszyOtworOdDolu: n("pierwszyOtworOdDolu") });
 }));
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));

@@ -40,6 +40,8 @@ export function PrzelicznikSzuflad() {
   const [gruboscFrontu, setGruboscFrontu] = useState("18");
   const [liczenie, setLiczenie] = useState(true);
   const [ponow, setPonow] = useState(0);
+  const [szerokoscFrontu, setSzerokoscFrontu] = useState("");
+  const [pierwszyOtwor, setPierwszyOtwor] = useState("");
 
   const parametry = () => {
     const q = new URLSearchParams();
@@ -51,6 +53,8 @@ export function PrzelicznikSzuflad() {
     else q.set("glebokoscKorpusu", gl);
     if (front.trim()) q.set("wysokoscFrontu", front);
     q.set("sciankaTylna", scianka);
+    if (szerokoscFrontu.trim()) q.set("szerokoscFrontu", szerokoscFrontu);
+    if (pierwszyOtwor.trim()) q.set("pierwszyOtworOdDolu", pierwszyOtwor);
     if (liczMontaz) {
       q.set("liczbaSzuflad", liczba.trim() || "NaN");
       q.set("szczelinaFrontow", szczelina.trim() || "NaN");
@@ -92,7 +96,7 @@ export function PrzelicznikSzuflad() {
     }, 300);
     return () => { aktualne = false; controller.abort(); clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tryb, szer, bok, lw, gl, nl, front, scianka, wybrane, liczMontaz, liczba, szczelina, dolna, wysokosc, wewnetrzny, gruboscFrontu, ponow]);
+  }, [tryb, szer, bok, lw, gl, nl, front, scianka, wybrane, liczMontaz, liczba, szczelina, dolna, wysokosc, wewnetrzny, gruboscFrontu, ponow, szerokoscFrontu, pierwszyOtwor]);
 
   const pole = (etykieta: string, v: string, set: (x: string) => void, placeholder?: string) => (
     <label className="field" style={{ minWidth: 130 }}>
@@ -138,6 +142,14 @@ export function PrzelicznikSzuflad() {
           {wewnetrzny && pole("Grubość frontu [mm]", gruboscFrontu, setGruboscFrontu)}
         </>}
       </div>
+      <div className="card calculator-mount">
+        <h3>Wiercenia we froncie pod zaczepy — Amix Elite Box</h3>
+        <div className="row" style={{ flexWrap: "wrap", gap: 10 }}>
+          {pole("Szerokość frontu [mm]", szerokoscFrontu, setSzerokoscFrontu, "wpisz wymiar frontu")}
+          {pole("Pierwszy otwór od dołu frontu [mm]", pierwszyOtwor, setPierwszyOtwor, "minimum 49,5 — wpisz pozycję")}
+        </div>
+        <p className="muted">Front wyśrodkowany względem światła LW. Wyniki na tylnej stronie frontu: od lewej i prawej krawędzi oraz od dolnej krawędzi. Pozycję pierwszego otworu dobierz do nałożenia frontu i położenia skrzynki — 49,5 mm w instrukcji to minimum.</p>
+      </div>
       <div role="status" aria-live="polite" style={{ minHeight: 22 }}>{liczenie ? "Przeliczanie…" : blad ? "Popraw dane lub ponów obliczenia." : "Wyniki w mm."}</div>
       {blad && <div className="alert blad" role="alert">{blad} <button className="btn" onClick={() => setPonow((n) => n + 1)}>Przelicz ponownie</button></div>}
       {dane && !liczenie && !blad && (
@@ -149,6 +161,19 @@ export function PrzelicznikSzuflad() {
             <p>Rozstaw: <b className="num">{dane.montaz.skokMM} mm</b>. Dodatkowe cofnięcie prowadnic w głąb względem montażu standardowego: <b className="num">{dane.montaz.cofniecieMM} mm</b>.</p>
             {dane.montaz.uwagi.map((u) => <p className="muted" key={u}>{u}</p>)}
           </div>}
+          {dane.wyniki.map((bazowy) => {
+            const w = nadpisane[bazowy.profilId] ?? bazowy;
+            const f = w.mocowanieFrontu;
+            if (!f || f.status === "brakDanych") return null;
+            return <section className="card calculator-mount" key={w.profilId} aria-label={`Zaczepy frontu — ${w.producent === "AMIX" ? "Amix" : w.producent} ${w.system}`}>
+              <h3>Zaczepy frontu — {w.system}, H{w.wariant}</h3>
+              <p>Od lewej i prawej krawędzi: <b className="num">{f.odBocznejKrawedziMM === undefined ? "podaj szerokość frontu" : `${f.odBocznejKrawedziMM} mm`}</b></p>
+              {f.odDolnejKrawedziMM ? <p>Od dolnej krawędzi (na obu osiach): <b className="num">{f.odDolnejKrawedziMM.join(" / ")} mm</b></p> : <p>Minima od dolnej krawędzi: <span className="num">{f.minimalneOdDolnejKrawedziMM?.join(" / ")} mm</span>. Wpisz pozycję pierwszego otworu, aby otrzymać dokładne wysokości.</p>}
+              <p className="muted">{f.opis}</p>
+              <p className="muted">Ø i głębokość: brak danych w schemacie. Pozycje robocze, bez zatwierdzenia produkcyjnego.</p>
+              <p className="muted" style={{ fontSize: 12 }}>{f.zrodlo?.dokument}, s. {f.zrodlo?.strona}. Dla pozostałych systemów brak zweryfikowanego schematu zaczepów.</p>
+            </section>;
+          })}
           <div className="muted">
             LW = <b className="num">{dane.LW} mm</b> · NL = <b className="num">{dane.NL} mm</b>
             {dane.glebokoscUzytkowa !== undefined && !nl && <> (dobrane do głębokości użytkowej {dane.glebokoscUzytkowa} mm)</>}

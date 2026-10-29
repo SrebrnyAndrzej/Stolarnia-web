@@ -12,6 +12,7 @@ export const wejsciePrzelicznika = z.object({
   szczelinaFrontow: nieujemna.optional(), dolnaProwadnica: nieujemna.optional(),
   wysokoscWewnetrzna: dodatnia.optional(), gruboscFrontu: dodatnia.optional(),
   frontWewnetrzny: z.boolean().optional(),
+  szerokoscFrontu: dodatnia.optional(), pierwszyOtworOdDolu: nieujemna.optional(),
 });
 export type WejsciePrzelicznika = z.infer<typeof wejsciePrzelicznika>;
 

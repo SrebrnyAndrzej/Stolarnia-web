@@ -497,6 +497,8 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
         liczbaSzuflad: z.number().int().min(1).max(20).optional().describe("Rozstaw równych frontów: liczba szuflad"),
         szczelinaFrontow: z.number().nonnegative().optional(), dolnaProwadnica: z.number().nonnegative().optional().describe("Dolna krawędź dolnej prowadnicy nad wieńcem dolnym [mm]"),
         wysokoscWewnetrzna: z.number().positive().optional(), gruboscFrontu: z.number().positive().optional(), frontWewnetrzny: z.boolean().optional(),
+        szerokoscFrontu: z.number().positive().optional().describe("Szerokość frontu wyśrodkowanego względem LW [mm]"),
+        pierwszyOtworOdDolu: z.number().nonnegative().optional().describe("Odległość pierwszego otworu zaczepu od dolnej krawędzi frontu [mm]; Amix minimum 49,5, nie automatyczna pozycja"),
       },
       annotations: { readOnlyHint: true },
     },

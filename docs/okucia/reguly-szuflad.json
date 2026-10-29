@@ -11,6 +11,22 @@
       "manufacturer": "AMIX",
       "family": "Elite Box",
       "scope": "Standardowe; dno i plecy z płyty 18 mm",
+      "front_mounting": {
+        "axis_inward_from_cabinet_inner_side_mm": 14.5,
+        "bottom_hole_min_from_front_bottom_mm": 49.5,
+        "vertical_offsets_by_variant_mm": {
+          "84": [0, 32],
+          "116": [0, 32],
+          "167": [0, 32, 96, 128],
+          "199": [0, 32, 96, 128]
+        },
+        "source_id": "AMIX-Elite-Box-standardowe",
+        "pdf_page_1based": 2,
+        "verification": "visually_checked",
+        "diameter_mm": null,
+        "depth_mm": null,
+        "production_approved": false
+      },
       "units": "mm",
       "board_thickness_mm": 18,
       "bottom": {

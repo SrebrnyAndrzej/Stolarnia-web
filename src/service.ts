@@ -4,7 +4,7 @@ import type { ProduktOkucia } from "./core/hardware-products.js";
 import { createHash, randomUUID } from "node:crypto";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { zbudujModul } from "./core/builder.js";
-import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade } from "./core/catalog/drawers.js";
+import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade, mocowanieFrontu } from "./core/catalog/drawers.js";
 import { wejsciePrzelicznika, rozstawProwadnic, type WejsciePrzelicznika } from "./core/kalkulator-szuflad.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
@@ -627,7 +627,10 @@ export class Stolarnia {
     const wyniki = profile.map((p) => przeliczSzuflade(p, { LW, NL, wariant: q.wariant, wysokoscFrontuMM: q.wysokoscFrontu, sciankaTylna: q.sciankaTylna }));
     if (wyniki.some((w) => w.dno.szer <= 0 || w.dno.gl <= 0 || w.plecy.szer <= 0)) throw new BladUslugi("Światło LW lub długość NL są za małe — wymiary dna i pleców muszą być dodatnie.");
     let montaz;
-    try { montaz = rozstawProwadnic(q); } catch (e) { throw new BladUslugi((e as Error).message); }
+    try {
+      montaz = rozstawProwadnic(q);
+      for (let i = 0; i < wyniki.length; i++) wyniki[i].mocowanieFrontu = mocowanieFrontu(profile[i], LW, wyniki[i].wariant, q);
+    } catch (e) { throw new BladUslugi((e as Error).message); }
     return {
       LW,
       NL,

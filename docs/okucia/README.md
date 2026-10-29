@@ -1,5 +1,7 @@
 # Biblioteka okuć — Blum, GTV, Amix
 
+Kalkulator pokazuje także [pozycje zaczepów frontu Amix Elite Box](AMIX-Elite-Box-zaczepy-frontu.md). Podaj szerokość wyśrodkowanego frontu i odległość pierwszego otworu od dołu. Wymiary są mierzone od krawędzi frontu na jego tylnej stronie. Bez tych danych pokazujemy minima i opis baz, zamiast zgadywać pozycje; dla innych systemów pozostaje jawny brak zweryfikowanego schematu.
+
 ## Kalkulator rozstawu równych frontów (29.10.2026)
 
 W „Materiały i okucia → Przelicznik szuflad” można włączyć obliczanie rozstawu prowadnic. Ten sam wynik zwracają `GET /api/przelicznik-szuflad` i MCP `przelicznik_szuflad`.
