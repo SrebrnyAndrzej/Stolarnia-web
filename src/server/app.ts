@@ -162,8 +162,17 @@ app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id
 app.get("/api/przelicznik-szuflad", api((r) => {
   const n = (k: string) => (r.query[k] !== undefined && r.query[k] !== "" ? Number(r.query[k]) : undefined);
   const t = (k: string) => (typeof r.query[k] === "string" && r.query[k] ? String(r.query[k]) : undefined);
+  const b = (k: string) => {
+    if (r.query[k] === undefined) return undefined;
+    if (r.query[k] === "true") return true;
+    if (r.query[k] === "false") return false;
+    throw new BladUslugi(`Parametr ${k} musi mieć wartość true albo false.`);
+  };
   return s.przelicznikSzuflad({ LW: n("LW"), szerokoscKorpusu: n("szerokoscKorpusu"), gruboscBoku: n("gruboscBoku"), NL: n("NL"), glebokoscKorpusu: n("glebokoscKorpusu"),
-    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId") });
+    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId"),
+    liczbaSzuflad: n("liczbaSzuflad"), szczelinaFrontow: n("szczelinaFrontow"), dolnaProwadnica: n("dolnaProwadnica"),
+    wysokoscWewnetrzna: n("wysokoscWewnetrzna"), gruboscFrontu: n("gruboscFrontu"),
+    frontWewnetrzny: b("frontWewnetrzny") });
 }));
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));

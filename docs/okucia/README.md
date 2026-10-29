@@ -1,5 +1,19 @@
 # Biblioteka okuć — Blum, GTV, Amix
 
+## Kalkulator rozstawu równych frontów (29.10.2026)
+
+W „Materiały i okucia → Przelicznik szuflad” można włączyć obliczanie rozstawu prowadnic. Ten sam wynik zwracają `GET /api/przelicznik-szuflad` i MCP `przelicznik_szuflad`.
+
+Parametry opcjonalnej sekcji: `liczbaSzuflad` (1–20), `wysokoscFrontu`, `szczelinaFrontow` (domyślnie 3), `dolnaProwadnica` (domyślnie 3), `wysokoscWewnetrzna` (opcjonalnie), `frontWewnetrzny`, `gruboscFrontu` (wymagana dla frontu wewnętrznego). Wszystkie długości w mm. Wynik `montaz.prowadnice[].dolnaKrawedzMM` jest liczony od **górnej powierzchni wieńca dolnego do dolnej krawędzi prowadnicy**, nie do osi wkrętów.
+
+Reguła warsztatowa dla równych frontów i jednakowego położenia mocowań: dolna krawędź prowadnicy nr i = `dolnaProwadnica + (i−1) × (wysokoscFrontu + szczelinaFrontow)`. Przypadek użytkownika: 2 fronty po 357, szczelina 3, dolna prowadnica 3 → **3 i 363 mm**. Wysokość światła 698 kontroluje położenie prowadnic; nie wystarcza do zatwierdzenia nakładania frontów i kolizji skrzynek.
+
+Cofnięcie dla frontu z płyty zlicowanego z korpusem jest równe jego grubości, mierzone względem standardowego położenia prowadnicy. Nie przenosimy tej reguły na stalowy panel szuflady wewnętrznej ani na pełne wiercenia producenta. Kalkulator nie zmienia zapisanych modułów, rastra 32 ani statusów zatwierdzenia profili.
+
+Przykład REST: `?LW=528&NL=550&profilId=amix-elite-standard&wariant=199&liczbaSzuflad=2&wysokoscFrontu=357&szczelinaFrontow=3&dolnaProwadnica=3&wysokoscWewnetrzna=698` → dno 453×524, plecy 441×199, prowadnice 3/363.
+
+Serwis odrzuca niefinitywne i niedodatnie wymiary, niepoprawny typ pleców, nieistniejący jawny wariant i niedodatnie wymiary wynikowe. Zakresy NL/SKU nadal mają dotychczasowy status roboczy; nie zostały zatwierdzone tą zmianą.
+
 Stan zebrania: 23.09.2026. Dokumentacja źródłowa do kreatora mebli, wspólna dla Claude i Codex. Zawiera 12 plików PDF (11 różnych treści), jeden model STEP GTV i zapis sześciu stron producentów. Rejestr `sources.json` podaje adresy, daty pobrania, rozmiary i SHA256. Numery stron poniżej liczone są od pierwszej strony PDF, a nie według numeracji drukowanej katalogu.
 
 ## Sprawdzone wymiary elementów szuflad
