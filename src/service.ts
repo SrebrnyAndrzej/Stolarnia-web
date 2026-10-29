@@ -5,7 +5,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { zbudujModul } from "./core/builder.js";
 import { dobierzNL, PROFILE_SZUFLAD, przeliczSzuflade, mocowanieFrontu } from "./core/catalog/drawers.js";
-import { wejsciePrzelicznika, rozstawProwadnic, type WejsciePrzelicznika } from "./core/kalkulator-szuflad.js";
+import { wejsciePrzelicznika, rozstawProwadnic, frontZaZwyklymiZawiasami, type WejsciePrzelicznika } from "./core/kalkulator-szuflad.js";
 import { mebelZModulu } from "./core/silnik/adapter.js";
 import { zbudujMebel } from "./core/silnik/budowa.js";
 import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, podzielFront, podzielWnetrze, ustawRozmiarFrontu, zamienDrzwiNaSzuflady } from "./core/silnik/polecenia.js";
@@ -616,8 +616,12 @@ export class Stolarnia {
     if (!sprawdzone.success) throw new BladUslugi(`Niepoprawne dane: ${sprawdzone.error.issues.map((i) => i.path.join(".")).join(", ")}. Podaj skończone liczby w mm; liczba szuflad: 1–20.`);
     q = sprawdzone.data;
     const k = this.ustawienia().konstrukcja;
-    const LW = q.LW ?? (q.szerokoscKorpusu ? q.szerokoscKorpusu - 2 * (q.gruboscBoku ?? k.gruboscPlytyKorpusuMM) : undefined);
-    if (!LW || !Number.isFinite(LW) || LW <= 0) throw new BladUslugi("Podaj LW albo szerokość korpusu.");
+    const LWNominalne = q.LW ?? (q.szerokoscKorpusu ? q.szerokoscKorpusu - 2 * (q.gruboscBoku ?? k.gruboscPlytyKorpusuMM) : undefined);
+    if (!LWNominalne || !Number.isFinite(LWNominalne) || LWNominalne <= 0) throw new BladUslugi("Podaj LW albo szerokość korpusu.");
+    if (q.frontZaDrzwiami && q.frontWewnetrzny) throw new BladUslugi("Wybierz front za drzwiami albo front zlicowany z korpusem — są to osobne warianty montażu.");
+    let zaDrzwiami;
+    try { zaDrzwiami = frontZaZwyklymiZawiasami(q, LWNominalne); } catch (e) { throw new BladUslugi((e as Error).message); }
+    const LW = zaDrzwiami?.LWPoDystansach ?? LWNominalne;
     const glebokoscUzytkowa = q.glebokoscKorpusu ? q.glebokoscKorpusu - k.odsunieciePlecMM - k.gruboscPlecHDFMM : undefined;
     const NL = q.NL ?? (glebokoscUzytkowa ? dobierzNL(glebokoscUzytkowa) : undefined);
     if (!NL) throw new BladUslugi(glebokoscUzytkowa ? `Głębokość użytkowa ${glebokoscUzytkowa} mm za mała dla prowadnic (min. NL 270 + 3 mm).` : "Podaj NL albo głębokość korpusu.");
@@ -629,7 +633,14 @@ export class Stolarnia {
     let montaz;
     try {
       montaz = rozstawProwadnic(q);
-      for (let i = 0; i < wyniki.length; i++) wyniki[i].mocowanieFrontu = mocowanieFrontu(profile[i], LW, wyniki[i].wariant, q);
+      for (let i = 0; i < wyniki.length; i++) {
+        if (zaDrzwiami?.kolizje.status === "kolizja") {
+          wyniki[i].mocowanieFrontu = { status: "kolizja", opis: zaDrzwiami.kolizje.opis, srednicaMM: null, glebokoscMM: null, zatwierdzoneProdukcyjnie: false };
+        } else {
+          wyniki[i].mocowanieFrontu = mocowanieFrontu(profile[i], LW, wyniki[i].wariant, zaDrzwiami ? { ...q, szerokoscFrontu: zaDrzwiami.szerokoscFrontu, przesuniecieFrontu: zaDrzwiami.przesuniecieWzgledemSwiatla } : q);
+          if (zaDrzwiami?.kolizje.status === "brakDanych" && wyniki[i].mocowanieFrontu!.status === "pozycje") wyniki[i].mocowanieFrontu!.status = "czesciowe";
+        }
+      }
     } catch (e) { throw new BladUslugi((e as Error).message); }
     return {
       LW,
@@ -637,6 +648,7 @@ export class Stolarnia {
       glebokoscUzytkowa,
       wyniki,
       montaz,
+      zaDrzwiami,
       warianty: Object.fromEntries(PROFILE_SZUFLAD.map((p) => [p.id, Object.entries(p.back.height_by_variant_mm).map(([w, h]) => ({ wariant: w, plecyWys: h }))])),
     };
   }

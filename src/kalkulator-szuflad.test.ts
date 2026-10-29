@@ -81,3 +81,53 @@ test("zaczepy: front wpuszczany i błędne pozycje otworów", () => {
   assert.throws(() => s.przelicznikSzuflad({ ...baza, pierwszyOtworOdDolu: 100, wysokoscFrontu: 200 }), /nie mieszczą/);
   assert.throws(() => s.przelicznikSzuflad({ ...baza, szerokoscFrontu: Infinity }), /Niepoprawne dane/);
 });
+
+test("skrzynka za zwykłymi zawiasami: dno i plecy −36, front osobno", () => {
+  for (const stronaZawiasow of ["lewa", "prawa"] as const) {
+    const r = s.przelicznikSzuflad({ ...baza, LW: 564, szerokoscFrontu: 528, frontZaDrzwiami: true, stronaZawiasow, pierwszyOtworOdDolu: 60, wystawanieZawiasuLewe: stronaZawiasow === "lewa" ? 30 : 0, wystawanieZawiasuPrawe: stronaZawiasow === "prawa" ? 30 : 0 });
+    assert.equal(r.zaDrzwiami!.szerokoscFrontu, 528);
+    assert.equal(r.LW, 528);
+    assert.equal(r.zaDrzwiami!.dystansLewy, stronaZawiasow === "lewa" ? 36 : 0);
+    assert.equal(r.zaDrzwiami!.dystansPrawy, stronaZawiasow === "prawa" ? 36 : 0);
+    assert.equal(r.zaDrzwiami!.przesuniecieWzgledemSwiatla, 0);
+    assert.equal(r.zaDrzwiami!.kolizje.status, "przeswitBocznySprawdzony");
+    assert.deepEqual([r.wyniki[0].dno.szer, r.wyniki[0].plecy.szer], [453, 441]);
+    assert.deepEqual([r.wyniki[0].mocowanieFrontu!.odLewejKrawedziMM, r.wyniki[0].mocowanieFrontu!.odPrawejKrawedziMM], [14.5, 14.5]);
+    assert.deepEqual(r.wyniki[0].mocowanieFrontu!.odDolnejKrawedziMM, [60, 92, 156, 188]);
+  }
+});
+
+test("kolizja z zawiasem blokuje współrzędne frontu, brak obrysu nie daje pozytywnej weryfikacji", () => {
+  const q = { ...baza, LW: 564, szerokoscFrontu: 528, frontZaDrzwiami: true, pierwszyOtworOdDolu: 60 };
+  const brak = s.przelicznikSzuflad(q);
+  assert.equal(brak.zaDrzwiami!.kolizje.status, "brakDanych");
+  assert.equal(brak.wyniki[0].mocowanieFrontu!.status, "czesciowe");
+  const kolizja = s.przelicznikSzuflad({ ...q, wystawanieZawiasuLewe: 36, wystawanieZawiasuPrawe: 0 });
+  assert.equal(kolizja.zaDrzwiami!.kolizje.status, "kolizja");
+  assert.equal(kolizja.wyniki[0].mocowanieFrontu!.status, "kolizja");
+  assert.equal(kolizja.wyniki[0].mocowanieFrontu!.odLewejKrawedziMM, undefined);
+  assert.equal(kolizja.wyniki[0].mocowanieFrontu!.odDolnejKrawedziMM, undefined);
+  const granica = s.przelicznikSzuflad({ ...q, wystawanieZawiasuLewe: 35, wystawanieZawiasuPrawe: 0, luzOdZawiasu: 1 });
+  assert.equal(granica.zaDrzwiami!.kolizje.status, "przeswitBocznySprawdzony");
+});
+
+test("wariant za drzwiami odrzuca sprzeczne wymiary i przesunięcia", () => {
+  const q = { ...baza, LW: 564, frontZaDrzwiami: true, szerokoscFrontu: 528 };
+  assert.throws(() => s.przelicznikSzuflad({ ...q, frontWewnetrzny: true }), /osobne warianty/);
+  assert.throws(() => s.przelicznikSzuflad({ ...q, przesuniecieFrontu: -18 }), /poza frontem/);
+  assert.throws(() => s.przelicznikSzuflad({ ...q, przesuniecieFrontu: 100 }), /wystaje poza/);
+  assert.throws(() => s.przelicznikSzuflad({ ...q, LW: 30 }), /niedodatnią/);
+});
+
+test("dystans nie zwęża ręcznego frontu i nie tworzy wymiaru frontu przy jego braku", () => {
+  const q = { ...baza, LW: 564, frontZaDrzwiami: true };
+  const bez = s.przelicznikSzuflad(q);
+  assert.equal(bez.zaDrzwiami!.szerokoscFrontu, undefined);
+  assert.equal(bez.wyniki[0].mocowanieFrontu!.odLewejKrawedziMM, undefined);
+  const r = s.przelicznikSzuflad({ ...q, szerokoscFrontu: 520 });
+  assert.equal(r.zaDrzwiami!.szerokoscFrontu, 520);
+  assert.equal(r.wyniki[0].dno.szer, 453);
+  assert.equal(r.wyniki[0].plecy.szer, 441);
+  assert.equal(r.wyniki[0].mocowanieFrontu!.odLewejKrawedziMM, 10.5);
+  assert.equal(r.wyniki[0].mocowanieFrontu!.odPrawejKrawedziMM, 10.5);
+});

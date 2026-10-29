@@ -118,11 +118,13 @@ export interface WynikPrzelicznika {
 }
 
 export interface MocowanieFrontu {
-  status: "brakDanych" | "czesciowe" | "pozycje";
+  status: "brakDanych" | "czesciowe" | "pozycje" | "kolizja";
   opis: string;
   odDolnejKrawedziMM?: number[];
   minimalneOdDolnejKrawedziMM?: number[];
   odBocznejKrawedziMM?: number;
+  odLewejKrawedziMM?: number;
+  odPrawejKrawedziMM?: number;
   zrodlo?: { dokument: string; strona: number };
   srednicaMM: number | null;
   glebokoscMM: number | null;
@@ -132,7 +134,7 @@ export interface MocowanieFrontu {
 /** Współrzędne na tylnej stronie frontu, przy froncie wyśrodkowanym względem LW. */
 export function mocowanieFrontu(
   p: ProfilSzuflady, LW: number, wariant: string,
-  q: { szerokoscFrontu?: number; pierwszyOtworOdDolu?: number; wysokoscFrontu?: number },
+  q: { szerokoscFrontu?: number; pierwszyOtworOdDolu?: number; wysokoscFrontu?: number; przesuniecieFrontu?: number },
 ): MocowanieFrontu {
   const f = p.front_mounting;
   const brak: MocowanieFrontu = { status: "brakDanych", opis: "Brak zweryfikowanego schematu mocowań frontu dla tego systemu.", srednicaMM: null, glebokoscMM: null, zatwierdzoneProdukcyjnie: false };
@@ -143,14 +145,17 @@ export function mocowanieFrontu(
   if (q.pierwszyOtworOdDolu !== undefined && q.pierwszyOtworOdDolu < minimum) throw new Error(`Amix: pierwszy otwór musi być co najmniej ${minimum} mm od dolnej krawędzi frontu.`);
   const y = q.pierwszyOtworOdDolu === undefined ? undefined : offsets.map((d) => r(q.pierwszyOtworOdDolu! + d));
   if (q.wysokoscFrontu !== undefined && (y?.at(-1) ?? minimum + offsets.at(-1)!) >= q.wysokoscFrontu) throw new Error("Amix: otwory mocowania nie mieszczą się na wysokości frontu. Zmień wysokość boku szuflady lub położenie pierwszego otworu.");
-  const x = q.szerokoscFrontu === undefined ? undefined : r((q.szerokoscFrontu - LW) / 2 + f.axis_inward_from_cabinet_inner_side_mm);
-  if (x !== undefined && (x <= 0 || x >= q.szerokoscFrontu! / 2)) throw new Error("Amix: osie mocowań wypadają poza frontem. Sprawdź szerokość frontu i LW.");
+  const x = q.szerokoscFrontu === undefined ? undefined : (q.szerokoscFrontu - LW) / 2 + f.axis_inward_from_cabinet_inner_side_mm;
+  const xL = x === undefined ? undefined : r(x - (q.przesuniecieFrontu ?? 0));
+  const xP = x === undefined ? undefined : r(x + (q.przesuniecieFrontu ?? 0));
+  if (xL !== undefined && xP !== undefined && (xL <= 0 || xP <= 0 || xL + xP >= q.szerokoscFrontu!)) throw new Error("Amix: osie mocowań wypadają poza frontem. Sprawdź szerokość frontu, dystanse i jego przesunięcie.");
   return {
     status: x !== undefined && y ? "pozycje" : "czesciowe",
-    opis: "Tylna strona frontu. Dwie pionowe osie, symetryczne: od lewej i prawej krawędzi. Front wyśrodkowany względem światła LW. Wysokości otworów mierzone od dolnej krawędzi frontu; pierwszy otwór ustawiasz według nałożenia frontu i położenia skrzynki. Minimum z instrukcji nie wyznacza jego dokładnej pozycji.",
+    opis: "Tylna strona frontu. Dwie pionowe osie mierzone od odpowiedniej krawędzi bocznej. Baza to światło między płaszczyznami prowadnic, po uwzględnieniu dystansów i przesunięcia frontu. Wysokości od dolnej krawędzi frontu; pozycja pierwszego otworu zależy od nałożenia frontu i położenia skrzynki. Minimum z instrukcji nie wyznacza jego dokładnej pozycji.",
     odDolnejKrawedziMM: y,
     minimalneOdDolnejKrawedziMM: offsets.map((d) => r(minimum + d)),
-    odBocznejKrawedziMM: x,
+    odBocznejKrawedziMM: xL === xP ? xL : undefined,
+    odLewejKrawedziMM: xL, odPrawejKrawedziMM: xP,
     zrodlo: { dokument: f.source_id, strona: f.pdf_page_1based },
     srednicaMM: f.diameter_mm, glebokoscMM: f.depth_mm, zatwierdzoneProdukcyjnie: false,
   };

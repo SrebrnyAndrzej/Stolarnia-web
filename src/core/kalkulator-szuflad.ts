@@ -13,6 +13,11 @@ export const wejsciePrzelicznika = z.object({
   wysokoscWewnetrzna: dodatnia.optional(), gruboscFrontu: dodatnia.optional(),
   frontWewnetrzny: z.boolean().optional(),
   szerokoscFrontu: dodatnia.optional(), pierwszyOtworOdDolu: nieujemna.optional(),
+  frontZaDrzwiami: z.boolean().optional(), stronaZawiasow: z.enum(["lewa", "prawa"]).optional(),
+  dystansLewy: nieujemna.optional(), dystansPrawy: nieujemna.optional(),
+  przesuniecieFrontu: z.number().finite().optional(),
+  wystawanieZawiasuLewe: nieujemna.optional(), wystawanieZawiasuPrawe: nieujemna.optional(),
+  luzOdZawiasu: nieujemna.optional(),
 });
 export type WejsciePrzelicznika = z.infer<typeof wejsciePrzelicznika>;
 
@@ -41,3 +46,34 @@ export function rozstawProwadnic(q: WejsciePrzelicznika) {
   };
 }
 export type MontazSzuflad = ReturnType<typeof rozstawProwadnic>;
+
+/** Dystans 36 po stronie zawiasów zwęża skrzynkę; front jest osobnym wymiarem. */
+export function frontZaZwyklymiZawiasami(q: WejsciePrzelicznika, LW: number) {
+  if (!q.frontZaDrzwiami) return undefined;
+  const lewy = q.dystansLewy ?? (q.stronaZawiasow === "prawa" ? 0 : 36);
+  const prawy = q.dystansPrawy ?? (q.stronaZawiasow === "prawa" ? 36 : 0);
+  const szerokoscFrontu = q.szerokoscFrontu;
+  const LWPoDystansach = LW - lewy - prawy;
+  if (LWPoDystansach <= 0) throw new Error("Światło po dystansach ma niedodatnią szerokość.");
+  const przesuniecie = (lewy - prawy) / 2 + (q.przesuniecieFrontu ?? 0);
+  const krawedzLewa = szerokoscFrontu === undefined ? undefined : (LW - szerokoscFrontu) / 2 + przesuniecie;
+  const krawedzPrawa = krawedzLewa === undefined ? undefined : LW - krawedzLewa - szerokoscFrontu!;
+  if ((krawedzLewa !== undefined && krawedzLewa < 0) || (krawedzPrawa !== undefined && krawedzPrawa < 0)) throw new Error("Front wewnętrzny wystaje poza światło korpusu. Sprawdź szerokość i przesunięcie frontu.");
+  const luz = q.luzOdZawiasu ?? 1;
+  const przeswitLewy = q.wystawanieZawiasuLewe === undefined ? undefined : Math.min(lewy, krawedzLewa ?? Infinity) - q.wystawanieZawiasuLewe;
+  const przeswitPrawy = q.wystawanieZawiasuPrawe === undefined ? undefined : Math.min(prawy, krawedzPrawa ?? Infinity) - q.wystawanieZawiasuPrawe;
+  const kolizja = (przeswitLewy !== undefined && przeswitLewy < (q.wystawanieZawiasuLewe === 0 ? 0 : luz)) || (przeswitPrawy !== undefined && przeswitPrawy < (q.wystawanieZawiasuPrawe === 0 ? 0 : luz));
+  const status = kolizja ? "kolizja" : szerokoscFrontu === undefined || przeswitLewy === undefined || przeswitPrawy === undefined ? "brakDanych" : "przeswitBocznySprawdzony";
+  return {
+    potracenieMM: lewy + prawy,
+    szerokoscFrontu, LWPrzedDystansami: LW, LWPoDystansach,
+    dystansLewy: lewy, dystansPrawy: prawy, krawedzLewa, krawedzPrawa,
+    // Baza wzoru zaczepów to środek otworu PO dodaniu dystansów.
+    przesuniecieWzgledemSwiatla: przesuniecie + (prawy - lewy) / 2,
+    kolizje: {
+      status, przeswitLewy, przeswitPrawy, wymaganyLuzMM: luz,
+      opis: kolizja ? "Front lub skrzynka wchodzi w obrys zawiasu albo nie zachowuje wymaganego luzu. Wiercenia frontu zablokowane." : status === "brakDanych" ? "Podaj osobną szerokość frontu i maksymalne wystawanie zawiasów po obu stronach w całym ruchu wysuwania (0 po stronie bez zawiasów). Do tego czasu pozycje wierceń są niezweryfikowane." : "Sprawdzono boczny prześwit frontu i skrzynki względem podanego obrysu zawiasów. Nie obejmuje toru drzwi, głębokości ani kolizji wkrętów z samym zaczepem.",
+    },
+  };
+}
+export type FrontZaDrzwiami = ReturnType<typeof frontZaZwyklymiZawiasami>;

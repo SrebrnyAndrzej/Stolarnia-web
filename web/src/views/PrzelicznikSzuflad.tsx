@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { WynikPrzelicznika } from "../../../src/core/catalog/drawers";
-import type { MontazSzuflad } from "../../../src/core/kalkulator-szuflad";
+import type { MontazSzuflad, FrontZaDrzwiami } from "../../../src/core/kalkulator-szuflad";
 
 interface Odpowiedz {
   LW: number;
@@ -9,6 +9,7 @@ interface Odpowiedz {
   wyniki: WynikPrzelicznika[];
   warianty: Record<string, { wariant: string; plecyWys: number }[]>;
   montaz?: MontazSzuflad;
+  zaDrzwiami?: FrontZaDrzwiami;
 }
 
 const OPIS_WERYFIKACJI: Record<string, string> = {
@@ -42,6 +43,11 @@ export function PrzelicznikSzuflad() {
   const [ponow, setPonow] = useState(0);
   const [szerokoscFrontu, setSzerokoscFrontu] = useState("");
   const [pierwszyOtwor, setPierwszyOtwor] = useState("");
+  const [zaDrzwiami, setZaDrzwiami] = useState(false);
+  const [stronaZawiasow, setStronaZawiasow] = useState<"lewa" | "prawa">("lewa");
+  const [wystawanie, setWystawanie] = useState("");
+  const [luzZawiasu, setLuzZawiasu] = useState("1");
+  const [przesuniecieFrontu, setPrzesuniecieFrontu] = useState("0");
 
   const parametry = () => {
     const q = new URLSearchParams();
@@ -54,6 +60,16 @@ export function PrzelicznikSzuflad() {
     if (front.trim()) q.set("wysokoscFrontu", front);
     q.set("sciankaTylna", scianka);
     if (szerokoscFrontu.trim()) q.set("szerokoscFrontu", szerokoscFrontu);
+    if (zaDrzwiami) {
+      q.set("frontZaDrzwiami", "true");
+      q.set("stronaZawiasow", stronaZawiasow);
+      const strona = stronaZawiasow === "lewa" ? "wystawanieZawiasuLewe" : "wystawanieZawiasuPrawe";
+      const przeciwna = stronaZawiasow === "lewa" ? "wystawanieZawiasuPrawe" : "wystawanieZawiasuLewe";
+      if (wystawanie.trim()) q.set(strona, wystawanie);
+      q.set(przeciwna, "0");
+      q.set("luzOdZawiasu", luzZawiasu.trim() || "NaN");
+      q.set("przesuniecieFrontu", przesuniecieFrontu.trim() || "NaN");
+    }
     if (pierwszyOtwor.trim()) q.set("pierwszyOtworOdDolu", pierwszyOtwor);
     if (liczMontaz) {
       q.set("liczbaSzuflad", liczba.trim() || "NaN");
@@ -96,7 +112,7 @@ export function PrzelicznikSzuflad() {
     }, 300);
     return () => { aktualne = false; controller.abort(); clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tryb, szer, bok, lw, gl, nl, front, scianka, wybrane, liczMontaz, liczba, szczelina, dolna, wysokosc, wewnetrzny, gruboscFrontu, ponow, szerokoscFrontu, pierwszyOtwor]);
+  }, [tryb, szer, bok, lw, gl, nl, front, scianka, wybrane, liczMontaz, liczba, szczelina, dolna, wysokosc, wewnetrzny, gruboscFrontu, ponow, szerokoscFrontu, pierwszyOtwor, zaDrzwiami, stronaZawiasow, wystawanie, luzZawiasu, przesuniecieFrontu]);
 
   const pole = (etykieta: string, v: string, set: (x: string) => void, placeholder?: string) => (
     <label className="field" style={{ minWidth: 130 }}>
@@ -138,22 +154,41 @@ export function PrzelicznikSzuflad() {
             {pole("Wysokość światła [mm] (opcjonalnie)", wysokosc, setWysokosc)}
           </div>
           <p className="muted">Wpisz wysokość frontu powyżej. Wysokości mierzymy od górnej powierzchni wieńca dolnego do dolnej krawędzi prowadnicy, nie do osi wkrętów.</p>
-          <label className="calculator-check"><input type="checkbox" checked={wewnetrzny} onChange={(e) => setWewnetrzny(e.target.checked)} />Front z płyty wewnątrz, zlicowany z korpusem</label>
+          <label className="calculator-check"><input type="checkbox" disabled={zaDrzwiami} checked={wewnetrzny} onChange={(e) => setWewnetrzny(e.target.checked)} />Front z płyty wewnątrz, zlicowany z korpusem</label>
           {wewnetrzny && pole("Grubość frontu [mm]", gruboscFrontu, setGruboscFrontu)}
         </>}
       </div>
       <div className="card calculator-mount">
         <h3>Wiercenia we froncie pod zaczepy — Amix Elite Box</h3>
+        <label className="calculator-check"><input type="checkbox" checked={zaDrzwiami} onChange={(e) => { setZaDrzwiami(e.target.checked); if (e.target.checked) setWewnetrzny(false); }} />Skrzynka za zwykłymi zawiasami — dno i plecy węższe o 36 mm</label>
+        {zaDrzwiami && <>
+          <p>Dystans 36 mm tylko po stronie zawiasów zwęża dno i plecy. Szerokość frontu wpisujesz osobno — nie odejmujemy od niej 36 mm. Osie zaczepów przesuwają się razem ze skrzynką.</p>
+          <div className="row" style={{ flexWrap: "wrap", gap: 10 }}>
+            <label className="field"><span id="kalkulator-strona-zawiasow">Strona zawiasów</span><select className="input" aria-labelledby="kalkulator-strona-zawiasow" value={stronaZawiasow} onChange={(e) => setStronaZawiasow(e.target.value as "lewa" | "prawa")}><option value="lewa">Lewa — dystans z lewej</option><option value="prawa">Prawa — dystans z prawej</option></select></label>
+            {pole("Maksymalne wystawanie zawiasu w światło [mm]", wystawanie, setWystawanie, "z karty lub pomiaru")}
+            {pole("Luz od zawiasu [mm]", luzZawiasu, setLuzZawiasu)}
+            {pole("Przesunięcie frontu względem skrzynki [mm]", przesuniecieFrontu, setPrzesuniecieFrontu, "0 = środek; + w prawo")}
+          </div>
+          <p className="muted">Wpisz największe wystawanie zawiasu i otwartych drzwi w całym ruchu wysuwania. Brak wartości oznacza brak sprawdzenia prześwitu. Wykryta kolizja blokuje pozycje wiercenia.</p>
+        </>}
         <div className="row" style={{ flexWrap: "wrap", gap: 10 }}>
-          {pole("Szerokość frontu [mm]", szerokoscFrontu, setSzerokoscFrontu, "wpisz wymiar frontu")}
+          {pole("Szerokość frontu [mm]", szerokoscFrontu, setSzerokoscFrontu, "osobny wymiar frontu")}
           {pole("Pierwszy otwór od dołu frontu [mm]", pierwszyOtwor, setPierwszyOtwor, "minimum 49,5 — wpisz pozycję")}
         </div>
-        <p className="muted">Front wyśrodkowany względem światła LW. Wyniki na tylnej stronie frontu: od lewej i prawej krawędzi oraz od dolnej krawędzi. Pozycję pierwszego otworu dobierz do nałożenia frontu i położenia skrzynki — 49,5 mm w instrukcji to minimum.</p>
+        <p className="muted">{zaDrzwiami ? "Front ustawiony względem prowadnic po dystansie." : "Front wyśrodkowany względem światła LW."} Wyniki na tylnej stronie frontu: od lewej i prawej krawędzi oraz od dolnej krawędzi. Pozycję pierwszego otworu dobierz do nałożenia frontu i położenia skrzynki — 49,5 mm w instrukcji to minimum.</p>
       </div>
       <div role="status" aria-live="polite" style={{ minHeight: 22 }}>{liczenie ? "Przeliczanie…" : blad ? "Popraw dane lub ponów obliczenia." : "Wyniki w mm."}</div>
       {blad && <div className="alert blad" role="alert">{blad} <button className="btn" onClick={() => setPonow((n) => n + 1)}>Przelicz ponownie</button></div>}
       {dane && !liczenie && !blad && (
         <>
+          {dane.zaDrzwiami && <section className="card calculator-mount" aria-label="Front za zwykłymi zawiasami">
+            <h3>Skrzynka za zawiasami i prześwit</h3>
+            <p>Światło pod skrzynkę: <b className="num">{dane.zaDrzwiami.LWPrzedDystansami} − {dane.zaDrzwiami.potracenieMM} = {dane.zaDrzwiami.LWPoDystansach} mm</b>. Dno i plecy są węższe o {dane.zaDrzwiami.potracenieMM} mm względem montażu bez dystansu.</p>
+            <p>Szerokość frontu (osobny wymiar): <b className="num">{dane.zaDrzwiami.szerokoscFrontu === undefined ? "podaj szerokość frontu" : `${dane.zaDrzwiami.szerokoscFrontu} mm`}</b>.</p>
+            <p>Dystans z lewej: {dane.zaDrzwiami.dystansLewy} mm; z prawej: {dane.zaDrzwiami.dystansPrawy} mm. Światło pod prowadnice: <b className="num">{dane.zaDrzwiami.LWPoDystansach} mm</b>.</p>
+            <p role={dane.zaDrzwiami.kolizje.status === "kolizja" ? "alert" : undefined}>{dane.zaDrzwiami.kolizje.opis}</p>
+            {dane.zaDrzwiami.kolizje.status !== "brakDanych" && <p>Prześwit boczny: lewy {dane.zaDrzwiami.kolizje.przeswitLewy ?? "brak danych"} mm, prawy {dane.zaDrzwiami.kolizje.przeswitPrawy ?? "brak danych"} mm.</p>}
+          </section>}
           {dane.montaz && <div className="card calculator-mount">
             <h3>Wysokości montażu prowadnic</h3>
             <p>{dane.montaz.baza}</p>
@@ -165,9 +200,10 @@ export function PrzelicznikSzuflad() {
             const w = nadpisane[bazowy.profilId] ?? bazowy;
             const f = w.mocowanieFrontu;
             if (!f || f.status === "brakDanych") return null;
+            if (f.status === "kolizja") return <section className="card calculator-mount" key={w.profilId}><h3>{w.system}: wiercenia frontu zablokowane</h3><p>{f.opis}</p></section>;
             return <section className="card calculator-mount" key={w.profilId} aria-label={`Zaczepy frontu — ${w.producent === "AMIX" ? "Amix" : w.producent} ${w.system}`}>
               <h3>Zaczepy frontu — {w.system}, H{w.wariant}</h3>
-              <p>Od lewej i prawej krawędzi: <b className="num">{f.odBocznejKrawedziMM === undefined ? "podaj szerokość frontu" : `${f.odBocznejKrawedziMM} mm`}</b></p>
+              <p>Od lewej krawędzi: <b className="num">{f.odLewejKrawedziMM === undefined ? "podaj szerokość frontu" : `${f.odLewejKrawedziMM} mm`}</b>; od prawej: <b className="num">{f.odPrawejKrawedziMM === undefined ? "podaj szerokość frontu" : `${f.odPrawejKrawedziMM} mm`}</b>.</p>
               {f.odDolnejKrawedziMM ? <p>Od dolnej krawędzi (na obu osiach): <b className="num">{f.odDolnejKrawedziMM.join(" / ")} mm</b></p> : <p>Minima od dolnej krawędzi: <span className="num">{f.minimalneOdDolnejKrawedziMM?.join(" / ")} mm</span>. Wpisz pozycję pierwszego otworu, aby otrzymać dokładne wysokości.</p>}
               <p className="muted">{f.opis}</p>
               <p className="muted">Ø i głębokość: brak danych w schemacie. Pozycje robocze, bez zatwierdzenia produkcyjnego.</p>
