@@ -39,7 +39,7 @@ export function PrzelicznikSzuflad() {
   const producent = w?.producent ?? system?.producent;
   const nazwa = `${producent === "AMIX" ? "Amix" : producent === "BLUM" ? "Blum" : producent ?? ""} ${w?.system ?? system?.system ?? f.system}`.trim();
 
-  useEffect(() => { document.title = "Kalkulator szuflad · Stolarnia Online"; }, []);
+  useEffect(() => { document.title = "Kalkulator szuflad · Pan Stolarz"; }, []);
   useEffect(() => setKopiowanie(""), [dane]);
 
   const pole = (key: keyof FormularzSzuflad, label: string, hint?: string, optional = false) => <Pole label={label} value={String(f[key])} onChange={(v) => ustaw(key, v)} error={errors[key]} hint={hint} optional={optional} />;

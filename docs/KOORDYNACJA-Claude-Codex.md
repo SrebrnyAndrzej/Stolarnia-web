@@ -1,6 +1,22 @@
+> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
+
 # Koordynacja Claude ↔ Codex
 
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.
+
+
+## Pan Stolarz 2.0 — praca na osobnej gałęzi (2026-10-31)
+
+Użytkownik wybrał projekt wizualny z oryginalnym logo Pan Stolarz i zlecił trzy widoki: klient, właściciel, pracownik. Przygotowano frontend i warstwę dostępu; reguły silnika konstrukcyjnego i kalkulatora nie są zmieniane. Specyfikacja oraz ograniczenia: `docs/PAN-STOLARZ-2.0.md` i `UX-CONTRACT.md`.
+
+Pakiet dla Claude do kontynuacji/przeglądu (nie potwierdzenie uruchomionego agenta):
+
+1. Przejrzeć `src/server/access.ts` i `technical.ts` oraz testy odmowy finansów dla pracownika. Nie osłabiać blokady starego API/MCP i eksportów.
+2. Sprawdzić migrację kont i RPC formularza w izolowanym Supabase; przygotować pierwszego właściciela i konto pracownika po uzyskaniu dostępu do właściwego środowiska. Nie zmieniać historycznych cen ani dokumentów.
+3. Następnie podłączyć kreator klienta i publikację ofert do istniejącej usługi, z odrębnym DTO klienta. Nie tworzyć drugiej logiki wyceny w frontendzie.
+
+W tej sesji brak narzędzia do wywołania Claude. Ten wpis jest konkretnym przekazaniem w uzgodnionym kanale repozytorium; wykonanie zadań nie zostało potwierdzone.
+
 
 ## Do przeglądu przez Codexa
 
@@ -147,3 +163,25 @@ Statyczny przegląd i testy `src/przelicznik-szuflad.test.ts` + `src/technologia
 
 ### 05.10.2026 — Codex: KSeF i granica obiegu finansowego, baza ce13e64
 Oficjalne MF sprawdzone 05.10.2026; nowe repozytoryjne briefy/integracja KSeF nie znalezione w kodzie. Aplikacja ma oferty, umowy i checkbox otrzymanej zaliczki, ale nie model faktury/KSeF. Brief `docs/RESEARCH-KSeF-i-obieg-finansowy-2026-10-05.md` rozdziela te byty i zaleca P1 eksport do istniejącego systemu księgowego z jawnie zatwierdzonym profilem podatkowym; nie automatyzować wystawienia po umowie/zaliczce. MF: wystawianie obowiązkowe etapami 2026, wyjątek ≤10 000 zł/mies. trwa do końca 2026; wcześniejsi mali podatnicy od 01.01.2027; odbiór faktur obowiązkowy od 01.02.2026; obowiązuje FA(3); online/offline, QR i certyfikaty wymagają odrębnych stanów. Status i zastosowanie dla firmy niezweryfikowane z księgowym. Nie zmieniono aplikacji, umów ani cen. Brak nowych commitów Claude; ostatnia sprawdzona rewizja ce13e64. Następnie sprawdzić P0 auth i aktualizacje Claude; integracja podatkowa dopiero po decyzji właściciela/księgowego.
+
+## Kreator klienta — 31.10.2026
+Codex dodał publiczny adapter UI w `web/src/v2/planner`, bez zmian w src/core. Używa `KATALOG_MODULOW`, `domyslnaKonfiguracja`, `zbudujModul` i istniejących rendererów. Dokumentacja: `docs/KREATOR-KUCHNI.md`. Do dalszej pracy Claude: zweryfikowany narożnik i blendy, wspólne blaty/cokoły oraz walidacja instalacji i ruchów; ustalić sposób przyjęcia szkicu klienta do projektu właściciela, zachowując status koncepcyjny. To przekazanie zadań w repozytorium, nie informacja o uruchomieniu zewnętrznej sesji Claude.
+
+## Dwie animacje na stronę główną
+Plan miejsc i kontrakt przekazania: `docs/ANIMACJE-STRONA-GLOWNA.md`. A zastępuje obraz hero; B między ofertą a „Jak działamy”. Temat i format materiałów Claude pozostają do potwierdzenia po ich otrzymaniu. Nie publikować pustych placeholderów. Integracja zachowuje statyczne CTA, poster, pauzę i reduced-motion.
+
+Uściślenie użytkownika: przejazd kuchni ma być sterowany postępem scrollowania w obie strony (scrub). Preferowany komponent z parametrem progress 0–1, bez własnej blokady scrolla. Plan doprecyzowany w ANIMACJE-STRONA-GLOWNA.md; nie zastępować mechanizmu zwykłym autoplay.
+
+Film „Kuchnia-Darii-animacja.mp4” otrzymany od użytkownika: intro strony, 14 s, bez audio. Integracja: HomeIntro.tsx, pełny kadr 16:9, przewijanie steruje currentTime w obie strony, pauza i statyczny fallback. Transkodowana kopia 720p 2,5 MB + poster. Druga animacja nadal oczekuje na materiał; nie powielono Darii w drugim slocie.
+
+Doprecyzowanie hero: film Darii ma wypełniać tło całej sekcji, pod tekstem i przyciskami. Nagłówek/opis pojawiają się zgodnie z postępem scrolla; CTA są stale widoczne. Zmieniono kompozycję z bocznej karty na pełne tło cover, z ciemną nakładką i białą typografią.
+
+Korekta tempa po feedbacku: hero 360 svh desktop / 280 svh mobile, postęp filmu i tekstu wygładzany w czasie; helper home-motion.ts z limitem skoku. Nie zastępować ponownie sztywnym przypisywaniem currentTime z każdego zdarzenia scroll.
+
+## Research języka wizualnego i materiały z silnika
+Nowy brief do pracy nad komunikacją „na Ty”: docs/branding/BRIEF-dla-Claude-jezyk-wizualny-v1.md; pełny research ze źródłami obok. Propozycja: konkretna, życzliwa stolarnia, własne zdjęcia ludzi/materiałów oraz całość → detal → zastosowanie. Nowy krój i przykładowe hasła pozostają robocze.
+
+Na prośbę użytkownika przygotowano dodatkowo eksport geometrii trzech zapisanych projektów i pokaz składania dziewięciu elementów jednej szafki. Pipeline scripts/brand-media nie zmienia konstrukcji, produkcji ani danych projektu; publikuje tylko statyczne materiały. Strona ma je oznaczać jako rendery i pokaz poglądowy, bez nazwisk klientów i bez przedstawiania ich jako zdjęć realizacji.
+
+## 31.10.2026 — ponowne zlecenie współpracy
+Użytkownik prosi o dalszą pracę i przekazanie części zadań Claude. Brak połączenia z Claude w środowisku; pakiet gotowy do podjęcia w `docs/handoff/CLAUDE-ZADANIA.md` (C1 copy, C2 rendery, C3 kontrola animacji). Wspólny kontekst: `docs/STATUS-PAN-STOLARZ.md`. Codex rozwija ścieżki startowe i FAQ, nie silnik.

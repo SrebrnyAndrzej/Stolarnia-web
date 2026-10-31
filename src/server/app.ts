@@ -11,6 +11,10 @@ import { konwerterDwg } from "../core/dwg.js";
 import { utworzSerwerMcp } from "../mcp/server.js";
 import { jsonBezMigawek, BladUslugi, Stolarnia } from "../service.js";
 import { KonfliktZapisu, Magazyn, konfiguracjaChmury } from "../store/store.js";
+import { z } from "zod";
+import { AccessError, createAccess, mayReadProject, type Principal } from "./access.js";
+import { projectSummary, technicalView } from "./technical.js";
+import { createHmac } from "node:crypto";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
 // Oba interfejsy używają tej samej usługi i tego samego magazynu. Uruchamiana lokalnie przez index.ts,
@@ -23,6 +27,33 @@ const brakBazyWChmurze = !!process.env.VERCEL && !konfiguracjaChmury();
 export const s = new Stolarnia(new Magazyn(brakBazyWChmurze ? "/tmp/stolarnia" : undefined));
 export const app = express();
 app.use(express.json({ limit: "30mb" }));
+const access = createAccess();
+app.get("/api/v2/config", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ authReady: access.configured }); });
+app.post("/api/v2/login", access.login);
+app.post("/api/v2/logout", access.logout);
+app.get("/api/v2/session", async (req, res) => {
+  res.setHeader("Cache-Control", "private, no-store");
+  try { res.json(await access.identify(req)); } catch (error) { access.fail(res, error); }
+});
+const requestSchema = z.object({ name: z.string().trim().min(2).max(120), email: z.string().trim().email().max(254), kind: z.enum(["kuchnia", "szafa", "inne"]), city: z.string().trim().min(2).max(120), description: z.string().trim().min(10).max(6000), website: z.string().max(0).optional(), submission_id: z.string().uuid() });
+app.post("/api/v2/requests", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  try {
+    access.checkOrigin(req);
+    if (!access.configured || !access.admin) throw new AccessError(503, "Formularz nie jest jeszcze uruchomiony. Spróbuj ponownie później.");
+    const parsed = requestSchema.safeParse(req.body);
+    if (!parsed.success) throw new AccessError(400, "Uzupełnij imię, e-mail, miejscowość i opis projektu (10–6000 znaków).");
+    const { website: _trap, submission_id, ...payload } = parsed.data;
+    const ip = process.env.VERCEL ? req.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.ip ?? "unknown" : req.ip ?? "unknown";
+    const bucket_key = createHmac("sha256", process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY!).update(ip).digest("hex");
+    const { data, error } = await access.admin.rpc("pan_stolarz_submit_request", { payload, bucket_key, submission_id });
+    if (error?.message.includes("request_limit_exceeded")) throw new AccessError(429, "Wysłano zbyt wiele zapytań. Spróbuj ponownie za godzinę.");
+    if (error) throw new AccessError(503, "Nie udało się zapisać zapytania. Twoje dane pozostały w formularzu.");
+    res.status(201).json({ id: data });
+  } catch (error) { access.fail(res, error); }
+});
+// Owner-only by default, including legacy PDF/CSV exports and HTTP MCP.
+app.use(["/api", "/mcp"], access.guard);
 if (brakBazyWChmurze) {
   app.use(["/api", "/mcp"], (_req, res) => {
     res.status(503).json({ blad: "Brak konfiguracji bazy danych: ustaw SUPABASE_URL i SUPABASE_SECRET_KEY w ustawieniach projektu Vercel (Settings → Environment Variables) i wdroż ponownie." });
@@ -80,6 +111,41 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 };
 
 const p = (req: Request, k: string) => String(req.params[k]);
+
+const v2 = (fn: (req: Request, person: Principal) => unknown) => async (req: Request, res: Response) => {
+  try { res.json(await fn(req, res.locals.person)); }
+  catch (error) { access.fail(res, error); }
+};
+app.get("/api/v2/projects", v2((_req, person) => s.magazyn.odczytaj().projekty.filter(p => mayReadProject(person, p.id)).map(projectSummary)));
+app.get("/api/v2/projects/:id", v2((req, person) => {
+  const id = p(req, "id");
+  if (!mayReadProject(person, id)) throw new AccessError(403, "Ten projekt nie jest Ci udostępniony.");
+  if (!s.magazyn.odczytaj().projekty.some(p => p.id === id)) throw new AccessError(404, "Nie znaleziono projektu.");
+  return technicalView(s, id);
+}));
+app.get("/api/v2/requests", v2(async (_req, person) => {
+  if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do zapytań klientów.");
+  const { data, error } = await access.admin!.from("pan_stolarz_requests").select("id,created_at,name,email,kind,city,description,status").order("created_at", { ascending: false }).limit(100);
+  if (error) throw new AccessError(503, "Nie udało się pobrać zapytań.");
+  return data;
+}));
+app.get("/api/v2/members", v2(async (_req, person) => {
+  if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do kont zespołu.");
+  const { data, error } = await access.admin!.from("pan_stolarz_members").select("user_id,display_name,role,active,project_ids").order("display_name").limit(200);
+  if (error) throw new AccessError(503, "Nie udało się pobrać pracowników.");
+  return data;
+}));
+app.patch("/api/v2/members/:id", v2(async (req, person) => {
+  if (person.role !== "owner") throw new AccessError(403, "Tylko właściciel może zmieniać dostęp.");
+  const parsed = z.object({ active: z.boolean(), project_ids: z.array(z.string().max(80)).max(1000) }).safeParse(req.body);
+  if (!parsed.success) throw new AccessError(400, "Sprawdź ustawienia dostępu.");
+  const projects = new Set(s.magazyn.odczytaj().projekty.map(p => p.id));
+  if (parsed.data.project_ids.some(id => !projects.has(id))) throw new AccessError(400, "Wybrany projekt już nie istnieje. Odśwież listę.");
+  const { data, error } = await access.admin!.from("pan_stolarz_members").update(parsed.data).eq("user_id", p(req, "id")).neq("role", "owner").select("user_id,display_name,role,active,project_ids").maybeSingle();
+  if (error) throw new AccessError(503, "Nie udało się zapisać uprawnień.");
+  if (!data) throw new AccessError(403, "Nie można zmienić tego konta.");
+  return data;
+}));
 
 // Katalogi i ustawienia
 app.use("/api/okucia-katalog/obrazy", express.static(join(process.cwd(), "docs/okucia/produkty/obrazy")));

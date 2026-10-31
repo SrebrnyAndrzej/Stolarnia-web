@@ -25,3 +25,6 @@ Research funkcjonalny i kryteria odbioru: docs/RESEARCH-kreator-premium-dla-Clau
 
 ## Koordynacja z Codexem
 Kanał roboczy: docs/KOORDYNACJA-Claude-Codex.md (do przeglądu, zamówienia danych, uwagi Codexa).
+
+## Pan Stolarz 2.0 — wznowienie między urządzeniami
+Przeczytaj `docs/STATUS-PAN-STOLARZ.md`. Przydzielone zadania copy i mediów: `docs/handoff/CLAUDE-ZADANIA.md`. Codex prowadzi układ i integrację strony; nie edytuj równolegle tych samych plików UI. Brief w repo nie oznacza automatycznego uruchomienia sesji Claude.

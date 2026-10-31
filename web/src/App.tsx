@@ -32,7 +32,7 @@ function czytajTrase(): Trasa {
   return { widok: "projekty" };
 }
 
-export function App() {
+export function LegacyApp() {
   const [trasa, setTrasa] = useState<Trasa>(czytajTrase);
   useEffect(() => {
     const f = () => setTrasa(czytajTrase());
@@ -41,14 +41,14 @@ export function App() {
   }, []);
   useEffect(() => {
     const tytuly = { projekty: "Projekty", projekt: "Projekt", materialy: "Materiały i okucia", szuflady: "Kalkulator szuflad", ustawienia: "Ustawienia" };
-    document.title = `${tytuly[trasa.widok]} · Stolarnia Online`;
+    document.title = `${tytuly[trasa.widok]} · Pan Stolarz`;
   }, [trasa.widok]);
 
   return (
     <div className="app">
       <header className="topbar">
-        <button className="brand" onClick={() => idz("#/")} aria-label="Stolarnia Online — projekty">
-          <span className="brand-mark" aria-hidden /> Stolarnia Online
+        <button className="brand" onClick={() => idz("#/")} aria-label="Pan Stolarz — projekty">
+          <span className="brand-mark" aria-hidden /> Pan Stolarz
         </button>
         <nav className="nav" aria-label="Menu główne">
           <button className={trasa.widok === "projekty" || trasa.widok === "projekt" ? "on" : ""} onClick={() => idz("#/")}>Projekty</button>
