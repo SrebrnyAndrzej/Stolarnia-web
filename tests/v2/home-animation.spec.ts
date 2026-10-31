@@ -149,3 +149,38 @@ test("hero copy reveals with scroll while actions remain available", async ({
     .focus();
   await expect.poll(opacity).toBe(1);
 });
+
+test("large scroll input is damped instead of jumping through the kitchen", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  await expect
+    .poll(
+      () =>
+        page
+          .locator(".ps-intro-film video")
+          .evaluate((v: HTMLVideoElement) => v.readyState),
+      { timeout: 15000 },
+    )
+    .toBeGreaterThanOrEqual(2);
+  const range = await page
+    .locator(".ps-home-intro")
+    .evaluate(
+      (el) => (el.getBoundingClientRect().height - innerHeight) / innerHeight,
+    );
+  expect(range).toBeCloseTo(2.6, 1);
+  const immediate = await page.evaluate(async () => {
+    const el = document.querySelector<HTMLElement>(".ps-home-intro")!;
+    scrollTo(0, el.offsetTop + (el.offsetHeight - innerHeight) * 0.85);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+    );
+    return document.querySelector("video")!.currentTime;
+  });
+  expect(immediate).toBeLessThan(1.2);
+  await expect.poll(() => time(page), { timeout: 7000 }).toBeGreaterThan(10);
+  await scrollProgress(page, 0.15);
+  await expect.poll(() => time(page), { timeout: 7000 }).toBeLessThan(3);
+});

@@ -62,3 +62,5 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 ## Animacja otwierająca
 
 Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Film wypełnia całą powierzchnię hero jako tło (cover), z ciemną nakładką i tekstem HTML nad nim. Kadrowanie zależy od ekranu. Biała typografia i zielony akcent utrzymują czytelność. Nagłówek i opis ujawniają się ze scrollem, a CTA są zawsze widoczne. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Drugi materiał nie jest jeszcze dostępny i nie tworzy pustej sekcji. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.
+
+Tempo intro: zakres 360 svh desktop / 280 svh telefon. Kadr i tekst łagodnie dochodzą do postępu scrolla; bez sprężynowania, oscylacji i przechwytywania gestów. Wygładzanie czasu filmu należy do v2/home-motion.ts.

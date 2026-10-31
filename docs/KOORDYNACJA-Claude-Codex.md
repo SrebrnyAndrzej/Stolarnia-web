@@ -173,3 +173,5 @@ Uściślenie użytkownika: przejazd kuchni ma być sterowany postępem scrollowa
 Film „Kuchnia-Darii-animacja.mp4” otrzymany od użytkownika: intro strony, 14 s, bez audio. Integracja: HomeIntro.tsx, pełny kadr 16:9, przewijanie steruje currentTime w obie strony, pauza i statyczny fallback. Transkodowana kopia 720p 2,5 MB + poster. Druga animacja nadal oczekuje na materiał; nie powielono Darii w drugim slocie.
 
 Doprecyzowanie hero: film Darii ma wypełniać tło całej sekcji, pod tekstem i przyciskami. Nagłówek/opis pojawiają się zgodnie z postępem scrolla; CTA są stale widoczne. Zmieniono kompozycję z bocznej karty na pełne tło cover, z ciemną nakładką i białą typografią.
+
+Korekta tempa po feedbacku: hero 360 svh desktop / 280 svh mobile, postęp filmu i tekstu wygładzany w czasie; helper home-motion.ts z limitem skoku. Nie zastępować ponownie sztywnym przypisywaniem currentTime z każdego zdarzenia scroll.

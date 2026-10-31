@@ -1853,7 +1853,7 @@ summary:focus-visible {
 }
 /* Kitchen Daria is the full-bleed background of the hero. */
 .ps-home-intro.has-motion {
-  height: 165svh;
+  height: 360svh;
 }
 .ps-home-intro > .ps-hero {
   position: relative;
@@ -1979,7 +1979,7 @@ summary:focus-visible {
 }
 @media (max-width: 800px) {
   .ps-home-intro.has-motion {
-    height: 135svh;
+    height: 280svh;
   }
   .ps-home-intro > .ps-hero {
     padding: 96px 24px 100px;

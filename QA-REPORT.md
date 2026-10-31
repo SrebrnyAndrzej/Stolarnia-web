@@ -53,3 +53,9 @@ Zaliczone: build/typecheck, audyt premium (zero ustaleń), diff check i 10 test�
 Zgodnie z doprecyzowaniem użytkownika film wypełnia całe hero przez cover, zamiast zajmować osobną kartę 16:9. Na filmie leżą przyciemnienie, tekst i CTA. Nagłówek oraz opis ujawniają się ze scrollem; CTA są zawsze dostępne. Fokus na CTA odsłania tekst. Statyczny wariant pokazuje pełny tekst.
 
 Zaliczone: build/typecheck, audyt premium bez ustaleń, 11 testów Chromium (5 intro + 6 regresji). Nowe kontrole: rozmiar warstwy filmu równy rozmiarowi hero, object-fit cover na telefonie, progres opacity w obie strony, widoczne CTA i ujawnienie po fokusie, pełny tekst w reduced-motion. Zaktualizowano i obejrzano zrzuty home-intro-desktop.png i home-intro-mobile.png. Poprzednia kontrola pełnego kadru dotyczy wcześniejszej wersji, zastąpionej celowym kadrowaniem tła.
+
+## Wolniejszy, łagodniejszy przejazd
+
+Po feedbacku użytkownika wydłużono aktywny zakres scrolla czterokrotnie na desktopie i około pięciokrotnie na telefonie. Film i tekst mają wygładzany postęp zamiast natychmiastowego skoku. Helper czasu ogranicza gwałtowne zmiany i nie oscyluje. Po dojściu do celu oraz poza widokiem nie utrzymuje pętli aktualizacji.
+
+Zaliczone: build/typecheck, 2 testy wygładzania (limit skoku także po długiej przerwie; zbieżność w obu kierunkach bez przekroczenia celu), audyt premium bez ustaleń oraz 8 ukierunkowanych scenariuszy Chromium (6 intro + formularz i dostępność). Nowy scenariusz weryfikuje dłuższy zakres, brak natychmiastowego skoku po przesunięciu do 85% sekcji i późniejsze dojście/cofnięcie. Zaktualizowano zrzuty. Pauza, statyczny fallback i dostępność CTA zachowane.
