@@ -164,3 +164,6 @@ Oficjalne MF sprawdzone 05.10.2026; nowe repozytoryjne briefy/integracja KSeF ni
 
 ## Kreator klienta — 31.10.2026
 Codex dodał publiczny adapter UI w `web/src/v2/planner`, bez zmian w src/core. Używa `KATALOG_MODULOW`, `domyslnaKonfiguracja`, `zbudujModul` i istniejących rendererów. Dokumentacja: `docs/KREATOR-KUCHNI.md`. Do dalszej pracy Claude: zweryfikowany narożnik i blendy, wspólne blaty/cokoły oraz walidacja instalacji i ruchów; ustalić sposób przyjęcia szkicu klienta do projektu właściciela, zachowując status koncepcyjny. To przekazanie zadań w repozytorium, nie informacja o uruchomieniu zewnętrznej sesji Claude.
+
+## Dwie animacje na stronę główną
+Plan miejsc i kontrakt przekazania: `docs/ANIMACJE-STRONA-GLOWNA.md`. A zastępuje obraz hero; B między ofertą a „Jak działamy”. Temat i format materiałów Claude pozostają do potwierdzenia po ich otrzymaniu. Nie publikować pustych placeholderów. Integracja zachowuje statyczne CTA, poster, pauzę i reduced-motion.
