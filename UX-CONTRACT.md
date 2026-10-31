@@ -38,3 +38,11 @@ Serwer sprawdza aktywne członkostwo przy każdym żądaniu. role=owner obsługu
 - Demonstracja → jawny komunikat i tylko dane syntetyczne; nie udaje logowania, zapisu ani kalkulacji z bazy zakładu.
 
 Nowe konto wymaga przygotowania w Supabase Auth i przypisania członkostwa. Panel nie implementuje jeszcze zaproszeń i resetu hasła. Formularz przyjmuje opis, nie upload. Publiczne wyceny i dokumenty klienta wymagają następnego etapu integracji; nie są przedstawiane jako gotowe.
+
+## Kreator kuchni (2026-10-31)
+
+Źródło zakresu: prośba użytkownika o samodzielny wstępny projekt kuchni; zasady konstrukcji nadal należą do istniejącego silnika i docs/RESEARCH-silnik-mebli-i-konta.md. UI: `planner/KitchenPlanner.tsx`; adapter i walidacja szkicu: `planner/model.ts`. Publiczny dostęp nie poszerza dostępu do projektów ani API właściciela.
+
+Strona klienta → kreator → wymiary → szafki/wygląd → podsumowanie → formularz zapytania z opisem. Zapis lokalny i eksport obejmują tylko koncepcję; nie stanowią zapisania projektu w bazie stolarni. Pierwszy zakres nie obejmuje okien, drzwi, instalacji, swobodnego drag-and-drop, aktywnej zabudowy narożnej, współdzielonych linków, automatycznej wyceny ani zatwierdzenia do produkcji. Brak tych kontroli jest jawny w interfejsie. Kolory to poglądowe wykończenia, nie wybór SKU płyty.
+
+Wymiary: pełne milimetry, długości 1800–8000 mm, wysokość 2300–3500 mm. Do 24 modułów z jawnego podzbioru katalogu. Przekroczenie ściany i nakładanie słupka/wiszącej blokują przejście do zapytania; kontrola nie oznacza pełnej analizy kolizji. Zmiana kolejności i usuwanie mają Cofnij. Dane kontaktowe są zbierane dopiero w istniejącym formularzu. Testy: `tests/v2/planner.spec.ts`, `web/src/v2/planner/model.test.ts`.

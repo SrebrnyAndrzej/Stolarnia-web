@@ -20,7 +20,7 @@ export function Feedback({
 }) {
   return (
     <div className="ps-feedback" role="alert">
-      <p>{children}</p>
+      <div className="ps-feedback-message">{children}</div>
       {retry && (
         <button className="ps-button secondary" onClick={retry}>
           Spróbuj ponownie

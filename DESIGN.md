@@ -48,3 +48,11 @@ Front zewnętrzny i wewnętrzny zachowują osobne szerokości, wysokości i pier
 
 ## Do's and Don'ts
 Wynik warsztatowego rozstawu nie jest automatycznym zatwierdzeniem CNC. Zachować statusy profili i odwołania do źródeł. Nie zaokrąglać rozstawu frontów do rastra 32 i nie utożsamiać go z osiami wierceń projektu.
+
+## Kreator kuchni klienta
+
+`#/kreator-kuchni` to publiczny, trzyetapowy wariant istniejącego języka Pan Stolarz. Wykorzystuje te same tokeny i logo: jasna plansza, grafitowe kontrole, zielone wybrane stany. Wyróżnikiem jest rzeczywisty rysunek kuchni z wymiarami, a nie fotografia przypisywana każdemu układowi. Typografia tytułów pozostaje bezszeryfowa, liczby mają tabelaryczne cyfry. Nie wprowadzamy nowej palety.
+
+Właściciel widoku i zapisu szkicu: `v2/planner/KitchenPlanner.tsx`. Adapter `planner/model.ts` korzysta z istniejącego katalogu, domyślnej konfiguracji, buildera i rendererów; nie definiuje technologii ani wyceny. Układ prosty/L, pozycje w kolejności szafek osobno dla dolnych i wiszących; L rezerwuje pusty narożnik 650 mm na ścianie B. Wskazanie szafki na rysunku ma alternatywę w postaci listy i przycisków. Natywne selecty i picker plików są świadomie obsługiwane przez system operacyjny.
+
+Szkic bez danych kontaktowych jest automatycznie zapisywany na urządzeniu pod `pan-stolarz.kuchnia.v1`, z walidacją wersji i katalogu podczas odczytu/importu. Błąd pamięci nie blokuje edycji; użytkownik może pobrać JSON. Zmiana w drugiej karcie wstrzymuje zapis i wymaga wyboru wersji. Reset wymaga potwierdzenia w natywnym dialogu; zwykłe usunięcie szafki jest odwracalne przyciskiem Cofnij. Przekazanie do zapytania przenosi opis w sessionStorage; potwierdzenie wysłania następuje dopiero po odpowiedzi serwera. JSON jest szkicem klienta, nie formatem importu produkcyjnego.

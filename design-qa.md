@@ -34,3 +34,9 @@
 final result: blocked
 
 Status dotyczy pełnego odbioru wizualnego i nie unieważnia zaliczonych testów kodu. Ta gałąź jest konkretną wersją roboczą do przeglądu, nie ukończoną publikacją strony 2.0.
+
+## Kreator klienta — osobny zakres 31.10.2026
+
+Nowy ekran rozszerza zatwierdzony system Pan Stolarz: te same logo, grafit, zielone zaznaczenie i jasne powierzchnie, bez nowej koncepcji marki. Obejrzano rzeczywiste zrzuty `qa/planner-desktop.png`, `qa/planner-mobile.png` i `qa/planner-3d.png`. Kontrole: brak poziomego przepełnienia przy 390 px, natywne formularze, jawne statusy zapisu, rysunek/3D z jednej geometrii. Zrzut 3D: canvas 1083×438 wewnątrz ramki 1085×440, brak błędów pageerror. Naprawiono nazwę dostępną przycisków katalogu i dopasowanie wysokości canvas. Axe nie wykazał poważnych/krytycznych ustaleń w sprawdzonym stanie kreatora. Przykładowa scena jest złożona z syntetycznego szkicu.
+
+Odbiór pierwszego zakresu kreatora: passed. Nie jest to odbiór wszystkich przyszłych funkcji planera ani zamknięcie uwag do panelu właściciela opisanych wyżej. Granice działającego zakresu: docs/KREATOR-KUCHNI.md.

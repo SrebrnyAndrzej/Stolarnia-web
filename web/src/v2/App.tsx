@@ -34,6 +34,12 @@ const Requests = lazy(() =>
   import("./Owner").then((m) => ({ default: m.Requests })),
 );
 
+const KitchenPlanner = lazy(() =>
+  import("./planner/KitchenPlanner").then((m) => ({
+    default: m.KitchenPlanner,
+  })),
+);
+
 export function App() {
   const [hash, setHash] = useState(location.hash || "#/");
   const [session, setSession] = useState<Principal | null>(null);
@@ -84,6 +90,7 @@ export function App() {
         email: "",
       }
     : session;
+  const plannerRoute = hash === "#/kreator-kuchni";
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
@@ -98,15 +105,17 @@ export function App() {
   const href = (page: string) =>
     demo ? `#/podglad/${person!.role}/${page}` : `#/panel/${page}`;
   useEffect(() => {
-    const title = publicRoute
-      ? "Meble na wymiar"
-      : section === "szuflady"
-        ? "Kalkulator szuflad"
-        : isPanel
-          ? "Panel stolarni"
-          : "Logowanie";
+    const title = plannerRoute
+      ? "Kreator kuchni"
+      : publicRoute
+        ? "Meble na wymiar"
+        : section === "szuflady"
+          ? "Kalkulator szuflad"
+          : isPanel
+            ? "Panel stolarni"
+            : "Logowanie";
     document.title = `${title} · Pan Stolarz`;
-  }, [publicRoute, section, isPanel]);
+  }, [publicRoute, section, isPanel, plannerRoute]);
   const logout = async () => {
     setLogoutError("");
     try {
@@ -117,6 +126,18 @@ export function App() {
       setLogoutError((error as Error).message);
     }
   };
+  if (plannerRoute)
+    return (
+      <Suspense
+        fallback={
+          <main className="ps-empty" role="status">
+            Wczytywanie kreatora kuchni…
+          </main>
+        }
+      >
+        <KitchenPlanner />
+      </Suspense>
+    );
   if (publicRoute && !demo) return <Landing session={session} />;
   if (!demo && (hash === "#/logowanie" || (isPanel && !session))) {
     if (loading)

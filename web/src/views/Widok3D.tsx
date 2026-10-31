@@ -7,6 +7,7 @@ import type { Analiza, Material } from "../api";
 import type { TechnicalAnalysis, VisualMaterial } from "../../../src/server/technical";
 
 interface Props {
+  fitContainer?: boolean;
   analiza: Pick<TechnicalAnalysis, "projekt" | "zbudowane">;
   pomieszczenieId: string;
   scianaId: string;
@@ -21,7 +22,7 @@ const M = 1 / 1000; // mm → m
  * Wizualizacja 3D (three.js). Układ: X = rzut X, Z = rzut Y, Y = wysokość.
  * Moduł stoi tyłem do lica ściany; elementy z buildera (boki, półki, fronty, blat) jako bryły.
  */
-export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz }: Props) {
+export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz, fitContainer = false }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const stan = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -80,7 +81,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
 
     const rozmiar = () => {
       const w = el.clientWidth;
-      const h = Math.max(360, Math.round(w * 0.56));
+      const h = fitContainer ? Math.max(200, el.clientHeight) : Math.max(360, Math.round(w * 0.56));
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();

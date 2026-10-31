@@ -8,6 +8,7 @@ import {
   IconTools,
 } from "@tabler/icons-react";
 import { Logo } from "./ui";
+const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
 import { request, type Principal } from "./api";
 
 const initial = {
@@ -19,7 +20,19 @@ const initial = {
   website: "",
 };
 export function Landing({ session }: { session: Principal | null }) {
-  const [form, setForm] = useState(initial);
+  const [form, setForm] = useState(() => {
+    try {
+      const description = sessionStorage.getItem(HANDOFF_KEY);
+      if (description && description.length <= 6000)
+        return { ...initial, description };
+    } catch {}
+    return initial;
+  });
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(HANDOFF_KEY);
+    } catch {}
+  }, []);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState("");
@@ -112,6 +125,7 @@ export function Landing({ session }: { session: Principal | null }) {
         <nav aria-label="Menu strony">
           <a href="#/zapytanie/kuchnia">Kuchnie</a>
           <a href="#/zapytanie/szafa">Szafy i zabudowy</a>
+          <a href="#/kreator-kuchni">Kreator kuchni</a>
           <a href="#/jak-dzialamy">Jak działamy</a>
         </nav>
         <a
@@ -137,12 +151,12 @@ export function Landing({ session }: { session: Principal | null }) {
               Kuchnia, szafa czy zabudowa? Zacznijmy od tego, czego
               potrzebujesz. Wspólnie dopracujemy układ, materiały i detale.
             </p>
-            <a className="ps-button" href="#/zapytanie">
-              Opowiedz o projekcie
+            <a className="ps-button" href="#/kreator-kuchni">
+              Zaprojektuj kuchnię
               <IconArrowRight size={20} />
             </a>
-            <a className="ps-under-link" href="#/jak-dzialamy">
-              Zobacz, jak działamy
+            <a className="ps-under-link" href="#/zapytanie">
+              Opowiedz o projekcie
             </a>
           </div>
           <figure className="ps-hero-image">

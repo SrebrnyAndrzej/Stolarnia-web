@@ -1847,3 +1847,7 @@ summary:focus-visible {
     font-size: 23px;
   }
 }
+.ps-feedback-message {
+  font-size: 13px;
+  line-height: 1.6;
+}

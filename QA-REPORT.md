@@ -21,8 +21,17 @@ Znaleziono i poprawiono: przepełnienie nagłówka strony na telefonie, nadpisan
 
 1. Wykonać i przetestować migrację tabel oraz RPC na izolowanym PostgreSQL/Supabase.
 2. Skonfigurować poprawny origin, klucze Auth, pierwszego właściciela i pracowników. Sprawdzić rzeczywiste sesje i ograniczenia kont.
-3. Potwierdzić Vercel: obecne połączenie zwraca 403 dla szczegółów projektu.
+3. Podgląd Vercel 2.0 ma potwierdzony status READY; prawdziwe konta nadal wymagają uruchomienia Supabase.
 4. Uzupełnić zatwierdzone informacje o prywatności przed zbieraniem publicznych zapytań.
 5. Osobny etap: zaproszenia/reset hasła, pliki, konfigurator klienta z wyceną i udostępnianie zaakceptowanych ofert. Nie są przedstawiane jako ukończone.
 
 Wynik: sprawdzona wersja robocza do przeglądu; **bez deklaracji gotowości produkcyjnej**.
+
+## Kreator kuchni — 31.10.2026
+
+- Build i typecheck zaliczone; statyczny audyt premium: zero ustaleń.
+- 3 testy adaptera szkicu oraz 3 istniejące testy dostępu zaliczone.
+- 12 scenariuszy Chromium sprawdzonych: 6 dotychczasowych i 6 kreatora. Po naprawie etykiet katalogu ostatni pełny przebieg zaliczył 11; pozostały scenariusz dostępności/3D zaliczono osobno po dostosowaniu oczekiwania na faktyczne załadowanie ciężkiego modułu 3D (do 15 s). Nie pominięto kontroli obecności canvas.
+- Kreator: zapis/odtworzenie, kolejność, usunięcie/Cofnij, eksport i przekazanie do formularza; odrzucenie wymiaru/wyjścia poza ścianę; 390 px bez przepełnienia; L i rezerwa narożnika; błędny i poprawny import; dialog anulowania resetu; jawny wybór wersji z innej karty; niedostępne localStorage; axe bez poważnych/krytycznych ustaleń w sprawdzonym stanie; przełączanie elewacja/3D.
+- Zrzuty: qa/planner-desktop.png i qa/planner-mobile.png. Dane syntetyczne, rzeczywista geometria buildera. Brak pomiaru na fizycznym urządzeniu.
+- Nie testowano wysłania prawdziwego zapytania do stolarni: Supabase nie jest skonfigurowany. Test potwierdza przeniesienie opisu do formularza, nie wysyłkę.
