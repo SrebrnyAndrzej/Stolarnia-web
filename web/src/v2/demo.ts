@@ -35,7 +35,7 @@ export const demoProjects: ProjectSummary[] = [
     nazwa: "Kuchnia • Projekt A",
     status: "szkic",
     zmieniono: "2026-10-31T09:00:00Z",
-    liczbaModulow: 7,
+    liczbaModulow: 11,
   },
   {
     id: "pokaz-szafa",
@@ -54,7 +54,7 @@ export const demoProjects: ProjectSummary[] = [
 ];
 export function demoProject(id: string): TechnicalAnalysis {
   const summary = demoProjects.find((p) => p.id === id) ?? demoProjects[0];
-  const moduly = [
+  let moduly = [
     module("m1", 0, 600, "a", true),
     module("m2", 600, 600),
     module("m3", 1200, 800),
@@ -63,6 +63,40 @@ export function demoProject(id: string): TechnicalAnalysis {
     module("m6", 600, 600, "b"),
     module("m7", 1200, 600, "b"),
   ];
+  const upper = (id: string, x: number, width: number): Modul => ({
+    ...module(id, x, width),
+    nazwa: "Szafka wisząca",
+    kategoria: "wall",
+    pozycjaYMM: 1400,
+    wysokoscMM: 720,
+    glebokoscMM: 320,
+    konfiguracja: domyslnaKonfiguracja({
+      construction: "shelves",
+      category: "wall",
+      widthMM: width,
+      heightMM: 720,
+    }),
+  });
+  moduly.push(
+    upper("u1", 600, 600),
+    upper("u2", 1200, 800),
+    upper("u3", 2000, 600),
+    upper("u4", 2600, 600),
+  );
+  if (summary.id === "pokaz-szafa")
+    moduly = [
+      module("s1", 0, 600, "a", true),
+      module("s2", 600, 600, "a", true),
+      module("s3", 1200, 600, "a", true),
+    ];
+  if (summary.id === "pokaz-rtv")
+    moduly = [module("r1", 0, 900), module("r2", 900, 900)].map((m) => ({
+      ...m,
+      nazwa: "Szafka RTV",
+      wysokoscMM: 400,
+      pozycjaYMM: 450,
+      konfiguracja: { ...m.konfiguracja, blat: false, nogi: false },
+    }));
   return {
     projekt: {
       ...summary,
@@ -75,10 +109,30 @@ export function demoProject(id: string): TechnicalAnalysis {
           materialKorpusuId: "white",
           materialFrontuId: "oak",
           materialBlatuId: "white",
-          sciany: [
-            { id: "a", nazwa: "Ściana A", dlugoscMM: 3200, wysokoscMM: 2600 },
-            { id: "b", nazwa: "Ściana B", dlugoscMM: 2400, wysokoscMM: 2600 },
-          ],
+          sciany:
+            summary.id !== "pokaz-kuchnia"
+              ? [
+                  {
+                    id: "a",
+                    nazwa: "Ściana A",
+                    dlugoscMM: 1800,
+                    wysokoscMM: 2600,
+                  },
+                ]
+              : [
+                  {
+                    id: "a",
+                    nazwa: "Ściana A",
+                    dlugoscMM: 3200,
+                    wysokoscMM: 2600,
+                  },
+                  {
+                    id: "b",
+                    nazwa: "Ściana B",
+                    dlugoscMM: 2400,
+                    wysokoscMM: 2600,
+                  },
+                ],
         },
       ],
     },

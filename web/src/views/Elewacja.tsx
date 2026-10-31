@@ -226,4 +226,3 @@ function Wymiar({ x1, x2, y, tekst, gruby }: { x1: number; x2: number; y: number
     </g>
   );
 }
-

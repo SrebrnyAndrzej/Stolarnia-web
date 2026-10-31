@@ -166,7 +166,7 @@ test("demo supports 3D and 2D and is explicitly not a login", async ({
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/#/podglad/owner");
   await expect(
-    page.getByText("To podgląd interfejsu.", { exact: false }),
+    page.getByText("Podgląd · dane przykładowe", { exact: false }),
   ).toBeVisible();
   await page.getByRole("button", { name: "3D", exact: true }).click();
   await expect(page.locator("canvas")).toHaveCount(1);

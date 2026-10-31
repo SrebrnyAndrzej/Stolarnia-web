@@ -1793,3 +1793,57 @@ summary:focus-visible {
   display: inline-flex;
   align-items: center;
 }
+/* Match the selected project-first composition; retain a clear mobile demo notice. */
+.ps-project-canvas {
+  position: relative;
+}
+.ps-sidebar nav a {
+  font-size: 13px;
+}
+.ps-project-items strong {
+  font-size: 13px;
+}
+.ps-project-items small {
+  font-size: 11px;
+}
+.ps-status {
+  font-size: 11px;
+}
+.ps-canvas-heading h2 {
+  font-size: 29px;
+}
+.ps-project-inspector section > h3 {
+  font-size: 15px;
+}
+.ps-detail-list dt,
+.ps-inspector-measure {
+  font-size: 12px;
+}
+.ps-detail-list dd,
+.ps-material-item strong {
+  font-size: 13px;
+}
+.ps-material-item small {
+  font-size: 11px;
+}
+@media (min-width: 1200px) {
+  .ps-demo-banner {
+    display: none;
+  }
+  .ps-canvas-toolbar {
+    position: absolute;
+    right: 34px;
+    top: 124px;
+    z-index: 2;
+    background: var(--panel);
+    border-radius: 5px;
+  }
+  .ps-visual {
+    height: 520px;
+  }
+}
+@media (max-width: 520px) {
+  .ps-canvas-heading h2 {
+    font-size: 23px;
+  }
+}

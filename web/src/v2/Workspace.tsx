@@ -149,7 +149,7 @@ export function Workspace({
                   aria-pressed={p.id === id}
                 >
                   <span className="ps-project-thumb">
-                    {demo ? (
+                    {demo && p.id === "pokaz-kuchnia" ? (
                       <img src="/images/kitchen-concept.png" alt="" />
                     ) : (
                       <IconFolder size={26} stroke={1.3} />
@@ -241,7 +241,7 @@ function ProjectDetail({
     owner && !demo ? `/api/projekty/${encodeURIComponent(id)}/analiza` : null,
   );
   const [view, setView] = useState<"image" | "3d" | "2d">(
-    demo ? "image" : "2d",
+    demo && id === "pokaz-kuchnia" ? "image" : "2d",
   );
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [wall, setWall] = useState("");
@@ -290,7 +290,7 @@ function ProjectDetail({
                 role="group"
                 aria-label="Widok projektu"
               >
-                {demo && (
+                {demo && id === "pokaz-kuchnia" && (
                   <button
                     aria-pressed={view === "image"}
                     onClick={() => setView("image")}

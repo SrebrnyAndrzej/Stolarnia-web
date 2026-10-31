@@ -10,8 +10,8 @@
 
 ## Kontrole
 
-- Typografia: font systemowy z polskimi znakami, czytelne kwoty i jednostki; źródło i implementacja mają zbliżony język bezszeryfowy. Implementacja jest miejscami bardziej kompaktowa niż makieta.
-- Układ: zachowano grafitową nawigację, listę projektów, duży obszar podglądu i prawy inspektor. Dodatkowy pasek demonstracyjny i osobny wybór widoku przesuwają treść względem makiety.
+- Typografia: font systemowy z polskimi znakami, czytelne kwoty i jednostki; źródło i implementacja mają zbliżony język bezszeryfowy. Po korekcie zwiększono tekst nawigacji, listy projektów i inspektora; implementacja nadal jest miejscami bardziej kompaktowa niż makieta.
+- Układ: zachowano grafitową nawigację, listę projektów, duży obszar podglądu i prawy inspektor. Na desktopie oznaczenie demonstracji przeniesiono do górnego paska, a wybór widoku nad obraz; przywrócono większą wysokość wizualizacji.
 - Kolory: użyto rzeczywistych kolorów logo #1C2B30 i #A5B859, jasnych powierzchni i grafitowego tekstu.
 - Obrazy: oryginalny PNG logo, bez odtwarzania znaku; wygenerowana wizualizacja wnętrza odpowiada kierunkowi, ma jawny status poglądowy. Rysunek techniczny pochodzi z istniejącego renderera i nie udaje fotograficznej elewacji z makiety.
 - Treści: zamiast fikcyjnych istniejących klientów są syntetyczne projekty. Demonstracja nie udaje generowania ofert ani zapisu. Prawdziwe wyceny i przejścia są dostępne właścicielowi po skonfigurowaniu kont.
@@ -22,11 +22,12 @@
 1. P2: nagłówek strony klienta przekraczał ekran telefonu. Przywrócono poprawne łamanie; ponowne zrzuty i test szerokości 390 px bez przepełnienia dokumentu.
 2. P2: szczegółowy selektor zmniejszał kwotę w inspektorze. Dodano właścicielski wariant typografii kwoty i ponownie obejrzano zrzut.
 3. P2: obraz miał dodatkową wysokość wynikającą z zachowania elementu inline. Ustawiono display:block. Zwiększono pola dotykowe kompaktowych kontrolek do 44 px.
-4. Testy ujawniły koszt inicjalizacji 3D przed pierwszym pokazaniem rzeczywistego projektu. Domyślnym widokiem danych technicznych jest teraz 2D; 3D uruchamia użytkownik. To jawna różnica funkcjonalna względem wizualizacji marketingowej.
+4. Różne projekty demonstracyjne mają odrębną geometrię; zdjęcie inspiracyjne i miniatura kuchni występują wyłącznie przy kuchni.
+5. Testy ujawniły koszt inicjalizacji 3D przed pierwszym pokazaniem rzeczywistego projektu. Domyślnym widokiem danych technicznych jest teraz 2D; 3D uruchamia użytkownik. To jawna różnica funkcjonalna względem wizualizacji marketingowej.
 
 ## Pozostałe różnice do kolejnej iteracji
 
-- P2: kompaktowe rozmiary tekstu, pionowe proporcje głównego obszaru i widoczność elewacji w pierwszym ekranie nadal odbiegają od wybranej makiety. Zestawienie dokumentuje tę różnicę; nie deklarujemy zgodności pikselowej.
+- P2: po korekcie typografii i proporcji elewacja nadal znajduje się niżej niż w makiecie. Zestawienie pokazuje aktualny stan; dalsza iteracja powinna zwiększyć czytelność rysunku i jego wymiarów.
 - P2: źródło przedstawia bogatszą prezentację konkretnego projektu niż renderer dostępny obecnie z silnika. Dalsza poprawa podglądu powinna korzystać z rzeczywistej geometrii i zapisanych wizualizacji projektu, zamiast przypisywać tę samą fotografię różnym meblom.
 - Brak sprawdzenia na fizycznym telefonie i prawdziwych kontach. Konta/migracja wymagają odrębnego uruchomienia według docs/PAN-STOLARZ-2.0.md.
 
