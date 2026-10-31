@@ -35,6 +35,8 @@ import {
   startOffset,
   STORAGE_KEY,
   toAnalysis,
+  wallIds,
+  wallLength,
   type Draft,
 } from "./model";
 import "./planner.css";
@@ -77,7 +79,7 @@ export function KitchenPlanner() {
   const [draft, setDraft] = useState<Draft>(initial.draft);
   const [history, setHistory] = useState<Draft[]>([]);
   const [step, setStep] = useState(0);
-  const [wall, setWall] = useState<"a" | "b">("a");
+  const [wall, setWall] = useState<"a" | "b" | "c">("a");
   const [view, setView] = useState<"front" | "plan" | "3d">("front");
   const [selected, setSelected] = useState<string | null>(null);
   const [group, setGroup] = useState("base");
@@ -89,6 +91,7 @@ export function KitchenPlanner() {
   const [dims, setDims] = useState({
     width: String(draft.width),
     depth: String(draft.depth),
+    returnLength: String(draft.returnLength),
     height: String(draft.height),
   });
   const [dimensionError, setDimensionError] = useState("");
@@ -113,6 +116,7 @@ export function KitchenPlanner() {
     setDims({
       width: String(d.width),
       depth: String(d.depth),
+      returnLength: String(d.returnLength),
       height: String(d.height),
     });
   useEffect(() => {
@@ -243,7 +247,7 @@ export function KitchenPlanner() {
   const activeModules = analysis.projekt.moduly.filter(
     (m) => m.scianaId === wall,
   );
-  const length = wall === "a" ? draft.width : draft.depth;
+  const length = wallLength(draft, wall);
   const used = Math.max(
     startOffset(draft, wall),
     ...activeModules
@@ -343,32 +347,41 @@ export function KitchenPlanner() {
             <div className="kp-panel">
               <h2>Jaki układ planujesz?</h2>
               <div className="kp-layouts">
-                {(["straight", "l"] as const).map((layout) => (
+                {(["straight", "l", "u"] as const).map((layout) => (
                   <button
                     key={layout}
                     aria-pressed={draft.layout === layout}
                     onClick={() => {
                       if (
-                        layout === "straight" &&
-                        draft.items.some((i) => i.wall === "b")
+                        draft.items.some(
+                          (i) => !wallIds({ layout }).includes(i.wall),
+                        )
                       ) {
                         setError(
-                          "Najpierw usuń szafki ze ściany B, aby wybrać układ prosty.",
+                          "Najpierw usuń szafki ze ścian, które nie występują w nowym układzie.",
                         );
                         return;
                       }
                       change({ ...draft, layout });
+                      setWall("a");
+                      setSelected(null);
                     }}
                   >
                     <span
                       className={`kp-layout-symbol ${layout}`}
                       aria-hidden="true"
                     />
-                    {layout === "straight" ? "Jedna ściana" : "Układ L"}
+                    {layout === "straight"
+                      ? "Jedna ściana"
+                      : layout === "l"
+                        ? "Układ L"
+                        : "Układ U"}
                     <small>
                       {layout === "straight"
                         ? "Zabudowa w jednej linii"
-                        : "Dwie ściany pod kątem prostym"}
+                        : layout === "l"
+                          ? "Dwie ściany pod kątem prostym"
+                          : "Trzy ściany wokół Ciebie"}
                     </small>
                   </button>
                 ))}
@@ -380,6 +393,7 @@ export function KitchenPlanner() {
                   const values = {
                     width: Number(dims.width),
                     depth: Number(dims.depth),
+                    returnLength: Number(dims.returnLength),
                     height: Number(dims.height),
                   };
                   if (
@@ -389,10 +403,14 @@ export function KitchenPlanner() {
                     !Number.isInteger(values.height) ||
                     values.height < 2300 ||
                     values.height > 3500 ||
-                    (draft.layout === "l" &&
+                    (draft.layout !== "straight" &&
                       (!Number.isInteger(values.depth) ||
                         values.depth < 1800 ||
-                        values.depth > 8000))
+                        values.depth > 8000)) ||
+                    (draft.layout === "u" &&
+                      (!Number.isInteger(values.returnLength) ||
+                        values.returnLength < 1800 ||
+                        values.returnLength > 8000))
                   ) {
                     setDimensionError(
                       "Podaj całe milimetry: ściany 1800–8000 mm, wysokość 2300–3500 mm.",
@@ -413,7 +431,8 @@ export function KitchenPlanner() {
                   {(
                     [
                       "width",
-                      ...(draft.layout === "l" ? ["depth"] : []),
+                      ...(draft.layout !== "straight" ? ["depth"] : []),
+                      ...(draft.layout === "u" ? ["returnLength"] : []),
                       "height",
                     ] as (keyof typeof dims)[]
                   ).map((key) => (
@@ -422,7 +441,9 @@ export function KitchenPlanner() {
                         ? "Długość ściany A"
                         : key === "depth"
                           ? "Długość ściany B"
-                          : "Wysokość pomieszczenia"}
+                          : key === "returnLength"
+                            ? "Długość ściany C"
+                            : "Wysokość pomieszczenia"}
                       <span>
                         <input
                           id={`kp-${key}`}
@@ -462,10 +483,11 @@ export function KitchenPlanner() {
                 Na tym etapie wystarczy prosty obrys. Okna, drzwi i przyłącza
                 omówimy podczas konsultacji.
               </p>
-              {draft.layout === "l" && (
+              {draft.layout !== "straight" && (
                 <p>
-                  W narożniku ściany B zostawiamy 650 mm pustej strefy. Sposób
-                  zabudowy narożnika dobierze stolarz.
+                  W narożniku ściany B
+                  {draft.layout === "u" ? " i ściany C" : ""} zostawiamy po 650
+                  mm pustej strefy. Sposób zabudowy narożnika dobierze stolarz.
                 </p>
               )}
               <strong>Szkic nie zastępuje pomiaru w Twoim domu.</strong>
@@ -492,12 +514,12 @@ export function KitchenPlanner() {
                       role="group"
                       aria-label="Wybierz ścianę"
                     >
-                      {(draft.layout === "l" ? ["a", "b"] : ["a"]).map((w) => (
+                      {wallIds(draft).map((w) => (
                         <button
                           key={w}
                           aria-pressed={wall === w}
                           onClick={() => {
-                            setWall(w as "a" | "b");
+                            setWall(w as "a" | "b" | "c");
                             setSelected(null);
                           }}
                         >
@@ -562,13 +584,25 @@ export function KitchenPlanner() {
                   <>
                     <dl className="kp-summary">
                       <dt>Układ</dt>
-                      <dd>{draft.layout === "l" ? "L" : "Prosty"}</dd>
+                      <dd>
+                        {draft.layout === "u"
+                          ? "U"
+                          : draft.layout === "l"
+                            ? "L"
+                            : "Prosty"}
+                      </dd>
                       <dt>Ściana A</dt>
                       <dd>{draft.width} mm</dd>
-                      {draft.layout === "l" && (
+                      {draft.layout !== "straight" && (
                         <>
                           <dt>Ściana B</dt>
                           <dd>{draft.depth} mm</dd>
+                        </>
+                      )}
+                      {draft.layout === "u" && (
+                        <>
+                          <dt>Ściana C</dt>
+                          <dd>{draft.returnLength} mm</dd>
                         </>
                       )}
                       <dt>Wysokość</dt>
@@ -653,7 +687,7 @@ export function KitchenPlanner() {
                       scianaId={wall}
                       wybrany={selected}
                       matMap={matMap}
-                      onSciana={(id) => setWall(id as "a" | "b")}
+                      onSciana={(id) => setWall(id as "a" | "b" | "c")}
                       onWybierz={setSelected}
                     />
                   ) : (
@@ -710,17 +744,17 @@ export function KitchenPlanner() {
                 </div>
                 <div className="kp-arrangement">
                   <h2>Szafki · ściana {wall.toUpperCase()}</h2>
-                  {draft.layout === "l" && (
+                  {draft.layout !== "straight" && (
                     <div
                       className="kp-wall-buttons"
                       role="group"
                       aria-label="Ściana listy szafek"
                     >
-                      {["a", "b"].map((w) => (
+                      {wallIds(draft).map((w) => (
                         <button
                           key={w}
                           aria-pressed={wall === w}
-                          onClick={() => setWall(w as "a" | "b")}
+                          onClick={() => setWall(w as "a" | "b" | "c")}
                         >
                           Ściana {w.toUpperCase()}
                         </button>

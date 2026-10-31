@@ -684,3 +684,12 @@
 .kp-page .ps-feedback > p:empty {
   display: none;
 }
+.kp-layout-symbol.u {
+  border-right: 12px solid var(--text);
+  border-left: 12px solid var(--text);
+}
+@media (min-width: 1001px) {
+  .kp-layouts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

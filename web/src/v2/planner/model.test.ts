@@ -57,3 +57,33 @@ test("overflow and tall/upper overlap are visible; brief fits form limit", () =>
   assert.ok(layoutIssues(many).some((i) => i.includes("poza")));
   assert.ok(brief(many).length < 6000);
 });
+
+test("U layout has three walls, two reserved corners and C overflow checks", () => {
+  const d: Draft = {
+    ...newDraft(),
+    layout: "u",
+    returnLength: 1800,
+    items: [{ id, catalogId: "base-shelves-600", wall: "c" }],
+  };
+  const a = toAnalysis(d);
+  assert.equal(a.projekt.pomieszczenia[0].sciany.length, 3);
+  assert.equal(a.projekt.moduly[0].pozycjaXMM, 650);
+  assert.equal(layoutIssues(d).length, 0);
+  assert.match(brief(d), /C: 1800 mm/);
+  d.items.push({
+    id: crypto.randomUUID(),
+    catalogId: "base-shelves-600",
+    wall: "c",
+  });
+  assert.ok(layoutIssues(d).some((i) => i.includes("ścianę C")));
+  assert.throws(() => readDraft(JSON.stringify({ ...d, layout: "l" })));
+});
+
+test("older straight and L drafts retain compatibility", () => {
+  const { returnLength: _old, ...legacy } = newDraft();
+  assert.equal(readDraft(JSON.stringify(legacy)).returnLength, 3600);
+  assert.equal(
+    readDraft(JSON.stringify({ ...legacy, layout: "l" })).layout,
+    "l",
+  );
+});

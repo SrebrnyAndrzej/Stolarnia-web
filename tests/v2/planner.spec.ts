@@ -219,3 +219,66 @@ test("unavailable storage still allows editing and valid file import", async ({
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await expect(page.locator(".kp-arrangement li")).toHaveCount(1);
 });
+
+test("U kitchen supports wall C, safe layout changes, restore and handoff", async ({
+  page,
+}) => {
+  test.setTimeout(45000);
+  await page.goto("/#/kreator-kuchni");
+  await page.getByRole("button", { name: "Układ U", exact: false }).click();
+  await page.getByLabel("Długość ściany C").fill("1800");
+  await page.getByRole("button", { name: "Przejdź do szafek" }).click();
+  await page
+    .getByRole("button", { name: "Ściana C", exact: true })
+    .first()
+    .click();
+  await expect(page.getByText("1150 mm wolne")).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Dodaj: Szafka dolna z półkami 600",
+      exact: false,
+    })
+    .click();
+  await expect(page.getByText("550 mm wolne")).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: "Dodaj: Szafka dolna z półkami 600",
+      exact: false,
+    })
+    .click();
+  await expect(
+    page.getByText("Szafki wychodzą poza ścianę C.", { exact: false }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Wymiary pomieszczenia", exact: false })
+    .click();
+  await page.getByRole("button", { name: "Układ L", exact: false }).click();
+  await expect(
+    page.getByText("Najpierw usuń szafki ze ścian", { exact: false }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Układ U", exact: false }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("Długość ściany C")).toHaveValue("1800");
+  await page.getByRole("button", { name: "Przejdź do szafek" }).click();
+  await page.getByRole("button", { name: "Rzut z góry", exact: true }).click();
+  await expect(page.locator(".kp-canvas svg")).toBeVisible();
+  await page.getByRole("button", { name: "3D", exact: true }).click();
+  await expect(page.locator(".kp-canvas canvas")).toBeVisible({
+    timeout: 15000,
+  });
+  await page.screenshot({ path: "qa/planner-u.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Zobacz podsumowanie" }).click();
+  await expect(page.locator(".kp-summary")).toContainText("Ściana C");
+  await page.getByRole("button", { name: "Przejdź do zapytania" }).click();
+  await expect(page.locator('textarea[name="description"]')).toHaveValue(
+    /Układ: U[\s\S]*C: 1800 mm/,
+  );
+});

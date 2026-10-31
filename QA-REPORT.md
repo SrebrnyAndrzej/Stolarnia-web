@@ -35,3 +35,7 @@ Wynik: sprawdzona wersja robocza do przeglądu; **bez deklaracji gotowości prod
 - Kreator: zapis/odtworzenie, kolejność, usunięcie/Cofnij, eksport i przekazanie do formularza; odrzucenie wymiaru/wyjścia poza ścianę; 390 px bez przepełnienia; L i rezerwa narożnika; błędny i poprawny import; dialog anulowania resetu; jawny wybór wersji z innej karty; niedostępne localStorage; axe bez poważnych/krytycznych ustaleń w sprawdzonym stanie; przełączanie elewacja/3D.
 - Zrzuty: qa/planner-desktop.png i qa/planner-mobile.png. Dane syntetyczne, rzeczywista geometria buildera. Brak pomiaru na fizycznym urządzeniu.
 - Nie testowano wysłania prawdziwego zapytania do stolarni: Supabase nie jest skonfigurowany. Test potwierdza przeniesienie opisu do formularza, nie wysyłkę.
+
+## Układ U
+
+Rozszerzenie sprawdzone: build/typecheck, 5 testów modelu (w tym geometria U, przepełnienie C i zgodność dawnych szkiców), 3 scenariusze Chromium (U: wybór/wymiar C, kontrola miejsca, blokada utraty szafek przy zmianie układu, odtworzenie, rzut/3D, 390 px, opis w formularzu; regresja L i import starszego formatu). Wszystkie zaliczone. Audyt premium: zero ustaleń. Zrzut: `qa/planner-u.png`.

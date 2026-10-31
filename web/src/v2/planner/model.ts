@@ -31,14 +31,15 @@ export const finishes = [
 const itemSchema = z.object({
   id: z.string().uuid(),
   catalogId: z.string().refine((id) => catalog.some((m) => m.id === id)),
-  wall: z.enum(["a", "b"]),
+  wall: z.enum(["a", "b", "c"]),
 });
 export const draftSchema = z
   .object({
     version: z.literal(1),
-    layout: z.enum(["straight", "l"]),
+    layout: z.enum(["straight", "l", "u"]),
     width: z.number().int().min(1800).max(8000),
     depth: z.number().int().min(1800).max(8000),
+    returnLength: z.number().int().min(1800).max(8000).default(3600),
     height: z.number().int().min(2300).max(3500),
     finish: z.enum(["white", "oak", "sage", "graphite"]),
     items: z.array(itemSchema).max(24),
@@ -49,10 +50,10 @@ export const draftSchema = z
         code: "custom",
         message: "Powtarzające się identyfikatory szafek.",
       });
-    if (d.layout === "straight" && d.items.some((i) => i.wall === "b"))
+    if (d.items.some((i) => !wallIds(d).includes(i.wall)))
       ctx.addIssue({
         code: "custom",
-        message: "Układ prosty obsługuje ścianę A.",
+        message: "Szafki znajdują się na ścianie spoza wybranego układu.",
       });
   });
 export type Draft = z.infer<typeof draftSchema>;
@@ -61,6 +62,7 @@ export const newDraft = (): Draft => ({
   layout: "straight",
   width: 3600,
   depth: 2400,
+  returnLength: 3600,
   height: 2600,
   finish: "oak",
   items: [],
@@ -70,8 +72,12 @@ export function readDraft(raw: string): Draft {
 }
 export const isUpper = (id: string) =>
   catalog.find((m) => m.id === id)?.category === "wall";
+export const wallIds = (d: Pick<Draft, "layout">): ("a" | "b" | "c")[] =>
+  d.layout === "u" ? ["a", "b", "c"] : d.layout === "l" ? ["a", "b"] : ["a"];
+export const wallLength = (d: Draft, wall: string) =>
+  wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
 export const startOffset = (d: Draft, wall: string) =>
-  d.layout === "l" && wall === "b" ? 650 : 0;
+  d.layout !== "straight" && wall !== "a" ? 650 : 0;
 export function toAnalysis(d: Draft): TechnicalAnalysis {
   // UI adapter only: catalog dimensions/configuration and existing engine build every part.
   const ends: Record<string, number> = {};
@@ -118,12 +124,22 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
               dlugoscMM: d.width,
               wysokoscMM: d.height,
             },
-            ...(d.layout === "l"
+            ...(d.layout !== "straight"
               ? [
                   {
                     id: "b",
                     nazwa: "Ściana B",
                     dlugoscMM: d.depth,
+                    wysokoscMM: d.height,
+                  },
+                ]
+              : []),
+            ...(d.layout === "u"
+              ? [
+                  {
+                    id: "c",
+                    nazwa: "Ściana C",
+                    dlugoscMM: d.returnLength,
                     wysokoscMM: d.height,
                   },
                 ]
@@ -149,8 +165,8 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
 export function layoutIssues(d: Draft): string[] {
   const modules = toAnalysis(d).projekt.moduly;
   const issues: string[] = [];
-  for (const wall of ["a", "b"]) {
-    const length = wall === "a" ? d.width : d.depth;
+  for (const wall of wallIds(d)) {
+    const length = wallLength(d, wall);
     if (
       modules.some(
         (m) => m.scianaId === wall && m.pozycjaXMM + m.szerokoscMM > length,
@@ -182,7 +198,7 @@ export function layoutIssues(d: Draft): string[] {
 export function brief(d: Draft): string {
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
-    `Układ: ${d.layout === "l" ? "L z pustym narożnikiem 650 mm na ścianie B" : "prosty"}. Ściana A: ${d.width} mm${d.layout === "l" ? `, B: ${d.depth} mm` : ""}. Wysokość: ${d.height} mm.`,
+    `Układ: ${d.layout === "u" ? "U z pustymi narożnikami po 650 mm na ścianach B i C" : d.layout === "l" ? "L z pustym narożnikiem 650 mm na ścianie B" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
     `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,
     "Szafki od początku każdej ściany, osobno dolne i wiszące:",
     ...toAnalysis(d).projekt.moduly.map(
