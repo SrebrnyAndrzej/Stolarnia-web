@@ -1851,22 +1851,88 @@ summary:focus-visible {
   font-size: 13px;
   line-height: 1.6;
 }
-/* Kitchen Daria: scroll owns the timeline; the next section remains normal document flow. */
+/* Kitchen Daria is the full-bleed background of the hero. */
 .ps-home-intro.has-motion {
   height: 165svh;
+}
+.ps-home-intro > .ps-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: calc(100svh - 100px);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 80px 7vw 100px;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ps-sidebar);
 }
 .ps-home-intro.has-motion > .ps-hero {
   position: sticky;
   top: 0;
   min-height: 100svh;
-  align-items: center;
+}
+.ps-home-intro > .ps-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgb(12 24 28 / 88%) 0%,
+    rgb(12 24 28 / 76%) 38%,
+    rgb(12 24 28 / 30%) 80%,
+    rgb(12 24 28 / 22%) 100%
+  );
+}
+.ps-home-intro .ps-hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 650px;
+  padding: 0;
+}
+.ps-home-intro .ps-hero-copy .ps-eyebrow {
+  color: #edf2e5;
+}
+.ps-home-intro .ps-hero h1 {
+  color: #fff;
+  font-size: clamp(46px, 5.7vw, 84px);
+  letter-spacing: -0.05em;
+}
+.ps-home-intro .ps-hero h1 span {
+  color: var(--ps-lime);
+}
+.ps-home-intro .ps-hero-copy > p {
+  color: #f0f2ed;
+  max-width: 410px;
+}
+.ps-home-intro .ps-hero-copy > .ps-button {
+  background: var(--ps-lime);
+  border-color: var(--ps-lime);
+  color: var(--text);
+}
+.ps-home-intro .ps-hero-copy > .ps-button:hover {
+  background: #b6c96a;
+  border-color: #b6c96a;
+}
+.ps-home-intro .ps-under-link {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .ps-hero-image.ps-intro-film {
+  position: absolute;
+  inset: 0;
   min-height: 0;
   width: 100%;
-  aspect-ratio: 16/9;
-  align-self: center;
-  background: var(--panel-2);
+  height: 100%;
+  margin: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--ps-sidebar);
 }
 .ps-intro-film img,
 .ps-intro-film video {
@@ -1874,7 +1940,8 @@ summary:focus-visible {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
   display: block;
 }
 .ps-intro-film video {
@@ -1886,8 +1953,9 @@ summary:focus-visible {
 }
 .ps-intro-control {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -1901,47 +1969,81 @@ summary:focus-visible {
   box-shadow: var(--shadow);
 }
 .ps-intro-film figcaption {
-  left: 14px;
+  left: 7vw;
   right: auto;
-  bottom: 14px;
-  max-width: calc(100% - 28px);
+  bottom: 24px;
+  z-index: 3;
+  max-width: calc(100% - 14vw);
+  background: rgb(12 24 28 / 72%);
+  color: #fff;
 }
 @media (max-width: 800px) {
   .ps-home-intro.has-motion {
     height: 135svh;
   }
+  .ps-home-intro > .ps-hero {
+    padding: 96px 24px 100px;
+    min-height: calc(100svh - 80px);
+  }
   .ps-home-intro.has-motion > .ps-hero {
-    gap: 20px;
-    padding: 24px;
-    align-content: center;
+    min-height: 100svh;
   }
-  .ps-home-intro.has-motion .ps-hero-copy {
-    padding: 0;
+  .ps-home-intro > .ps-hero::after {
+    background: linear-gradient(
+      180deg,
+      rgb(12 24 28 / 78%),
+      rgb(12 24 28 / 65%)
+    );
   }
-  .ps-home-intro.has-motion .ps-hero h1 {
-    font-size: clamp(32px, 8vw, 52px);
-    margin: 12px 0;
+  .ps-home-intro .ps-hero h1 {
+    font-size: clamp(40px, 10.5vw, 64px);
+    margin: 18px 0;
   }
-  .ps-home-intro.has-motion .ps-hero-copy > p {
+  .ps-home-intro .ps-hero-copy > p {
     font-size: 14px;
-    line-height: 1.6;
-    margin: 14px 0;
+    line-height: 1.7;
+    margin: 20px 0 24px;
   }
-  .ps-home-intro.has-motion .ps-under-link {
-    margin-top: 12px;
+  .ps-home-intro .ps-under-link {
+    margin-top: 16px;
+  }
+  .ps-intro-film img,
+  .ps-intro-film video {
+    object-position: 56% center;
   }
   .ps-intro-control {
-    top: 8px;
-    right: 8px;
+    top: 16px;
+    right: 16px;
     font-size: 11px;
     min-height: 44px;
-    padding: 8px;
   }
   .ps-intro-film figcaption {
     font-size: 10px;
-    left: 8px;
-    bottom: 8px;
-    max-width: calc(100% - 16px);
-    padding: 4px 6px;
+    left: 24px;
+    bottom: 20px;
+    max-width: calc(100% - 48px);
+    padding: 5px 8px;
   }
+}
+/* The copy follows scroll progress; action links remain available from the first frame. */
+.ps-home-intro.has-motion .ps-hero-copy > .ps-eyebrow {
+  opacity: clamp(0, calc(var(--intro-progress, 0) * 6), 1);
+}
+.ps-home-intro.has-motion .ps-hero-copy > h1 {
+  opacity: clamp(0, calc(var(--intro-progress, 0) * 4.5 - 0.18), 1);
+  transform: translateY(
+    clamp(0px, calc(24px - var(--intro-progress, 0) * 90px), 24px)
+  );
+}
+.ps-home-intro.has-motion .ps-hero-copy > p {
+  opacity: clamp(0, calc(var(--intro-progress, 0) * 5 - 0.65), 1);
+  transform: translateY(
+    clamp(0px, calc(20px - var(--intro-progress, 0) * 65px), 20px)
+  );
+}
+.ps-home-intro.has-motion .ps-hero-copy:focus-within > .ps-eyebrow,
+.ps-home-intro.has-motion .ps-hero-copy:focus-within > h1,
+.ps-home-intro.has-motion .ps-hero-copy:focus-within > p {
+  opacity: 1;
+  transform: none;
 }

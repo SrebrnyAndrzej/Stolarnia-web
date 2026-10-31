@@ -44,3 +44,5 @@ Odbiór pierwszego zakresu kreatora: passed. Nie jest to odbiór wszystkich przy
 ## Film intro — kuchnia Darii
 
 Osadzono rzeczywisty materiał dostarczony przez użytkownika, w pełnym 16:9. Obejrzano qa/home-intro-desktop.png i qa/home-intro-mobile.png; branding i CTA pozostały w HTML, przycisk pauzy jest dostępny na obrazie. Telefon 390 px nie przepełnia dokumentu. Statyczny poster nie wymaga pobrania filmu dla reduced-motion; awaria nie usuwa hero. Zakres osadzenia intro: passed w lokalnym Chromium. Fizyczne Safari/iOS pozostaje do sprawdzenia.
+
+Korekta intro po feedbacku użytkownika: film jest pełnym tłem hero, a tekst ujawnia się podczas przewijania. Obejrzano nowe zrzuty desktop/mobile; biały tekst i zielony akcent są czytelne na ciemnej nakładce. Brak osobnej karty filmu. Kadrowanie cover na telefonie jest intencjonalne. Nowe 11 scenariuszy przeszło; zakres korekty: passed.

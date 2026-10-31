@@ -63,13 +63,18 @@ test("reduced motion keeps a static intro without downloading the movie", async 
   await page.goto("/#/");
   await expect(page.locator(".ps-intro-film img")).toBeVisible();
   await expect(page.locator(".ps-intro-film video")).toHaveCount(0);
+  expect(
+    await page
+      .locator(".ps-home-intro h1")
+      .evaluate((el) => getComputedStyle(el).opacity),
+  ).toBe("1");
   await expect(page.locator(".ps-home-intro")).not.toHaveClass(/has-motion/);
   expect(requests).toEqual([]);
   await page.getByRole("button", { name: "Włącz animację" }).click();
   await expect(page.locator(".ps-intro-film video")).toHaveCount(1);
 });
 
-test("phone keeps the whole video frame and working navigation", async ({
+test("phone video fills the hero background and keeps working navigation", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -86,7 +91,14 @@ test("phone keeps the whole video frame and working navigation", async ({
   await scrollProgress(page, 0.5);
   await expect.poll(() => time(page)).toBeGreaterThan(5);
   const box = await page.locator(".ps-intro-film").boundingBox();
-  expect(box!.width / box!.height).toBeCloseTo(16 / 9, 1);
+  const hero = await page.locator(".ps-home-intro > .ps-hero").boundingBox();
+  expect(box!.width).toBeCloseTo(hero!.width, 0);
+  expect(box!.height).toBeCloseTo(hero!.height, 0);
+  expect(
+    await page
+      .locator(".ps-intro-film video")
+      .evaluate((v) => getComputedStyle(v).objectFit),
+  ).toBe("cover");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -115,4 +127,25 @@ test("failed media retains poster, content and normal page scrolling", async ({
     .getByRole("link", { name: "Opowiedz o projekcie", exact: true })
     .click();
   await expect(page.locator('input[name="name"]')).toBeVisible();
+});
+
+test("hero copy reveals with scroll while actions remain available", async ({
+  page,
+}) => {
+  await page.goto("/#/");
+  const title = page.locator(".ps-home-intro h1");
+  const opacity = () =>
+    title.evaluate((el) => Number(getComputedStyle(el).opacity));
+  await expect.poll(opacity).toBe(0);
+  await expect(
+    page.getByRole("link", { name: "Zaprojektuj kuchnię", exact: true }),
+  ).toBeVisible();
+  await scrollProgress(page, 0.4);
+  await expect.poll(opacity).toBe(1);
+  await scrollProgress(page, 0.1);
+  await expect.poll(opacity).toBeLessThan(0.5);
+  await page
+    .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
+    .focus();
+  await expect.poll(opacity).toBe(1);
 });

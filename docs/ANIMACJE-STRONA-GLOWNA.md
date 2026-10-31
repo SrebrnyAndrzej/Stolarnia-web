@@ -4,13 +4,11 @@ Status: animacja otwierająca osadzona w podglądzie; drugie miejsce zaplanowane
 
 ## Miejsce A: pierwszy ekran
 
-Lokalizacja: `web/src/v2/Landing.tsx`, obecne `figure.ps-hero-image`, po prawej od nagłówka „Twoje wnętrze. Dobrze przemyślane.”. Animacja zastąpi wizualizację kuchni. Nagłówek i przycisk „Zaprojektuj kuchnię” pozostają zwykłym HTML, widocznym również bez odtwarzania.
+Lokalizacja: tło całej sekcji hero w `web/src/v2/HomeIntro.tsx`, nie osobna karta obok tekstu. Film i poster są absolutną warstwą pod tekstem i CTA. Ciemna nakładka zapewnia czytelność białej typografii i zielonego akcentu Pan Stolarz.
 
-Rola: przyciągnąć uwagę i pokazać rezultat pracy Pan Stolarz. Jeśli materiały Claude mają inną narrację, zamienić kolejność A/B po obejrzeniu obu.
+Źródło filmu ma proporcje 16:9, ale ekran wypełnia przez object-fit:cover. Kadrowanie jest responsywne, szczególnie na telefonie; jest to świadoma konsekwencja doprecyzowania użytkownika „filmik w tle sekcji hero”. Obraz zajmuje cały obszar, bez białej ramki.
 
-Rekomendowana plansza: 4:3, eksport 1600×1200 px, szerokość na desktopie około 600–850 CSS px. Na telefonie pod tekstem i przyciskiem; pełna szerokość kontenera, proporcje 4:3. Dla gotowego materiału 16:9 zachować oryginalny kadr i uzgodnić zmianę proporcji ramki; nie przycinać istotnych elementów przez object-fit:cover.
-
-Do czasu podłączenia pozostaje obecny obraz. Po podłączeniu dedykowany poster z tej samej animacji, zarezerwowane proporcje i rozmiar, bez przesuwania strony po załadowaniu.
+Nagłówek i opis pojawiają się stopniowo wraz ze scrollem, bez zmiany zajętego miejsca. Przyciski są widoczne od początku. Fokus klawiatury w obszarze CTA odsłania cały tekst. Reduced-motion, oszczędzanie danych i błąd filmu pokazują statyczne tło i pełny tekst, bez wydłużonej sekcji.
 
 ## Miejsce B: druga animacja — oczekuje na materiał
 
@@ -50,8 +48,10 @@ Do odbioru dodać: płynny ruch w obie strony, zatrzymanie w dowolnym miejscu, s
 
 ## Osadzenie filmu Darii
 
-Film otwiera stronę w `v2/HomeIntro.tsx`, wywołanym przez Landing. Zachowano pełne 16:9 w miejscu obrazu hero; tekst i CTA pozostają HTML. Kopia do strony: `web/public/animations/kuchnia-darii.mp4`, H.264 1280×720, 14 s, 2 577 076 B zamiast 8 138 389 B. Kluczowe klatki co 6 klatek dla seekowania. Poster z pierwszej klatki: `kuchnia-darii-poster.jpg` (około 66 KB). Oryginał jest załącznikiem użytkownika, nie dodawano jego cięższej kopii do publicznych zasobów.
+Film otwiera stronę w `v2/HomeIntro.tsx`, wywołanym przez Landing. Film wypełnia tło całego hero przez responsywne kadrowanie cover; tekst i CTA pozostają HTML nad przyciemnieniem. Kopia do strony: `web/public/animations/kuchnia-darii.mp4`, H.264 1280×720, 14 s, 2 577 076 B zamiast 8 138 389 B. Kluczowe klatki co 6 klatek dla seekowania. Poster z pierwszej klatki: `kuchnia-darii-poster.jpg` (około 66 KB). Oryginał jest załącznikiem użytkownika, nie dodawano jego cięższej kopii do publicznych zasobów.
 
 Ta animacja jest sterowana scrollem już w pierwszym ekranie: zakres 165 svh na desktopie i 135 svh na telefonie, przyklejona treść hero. Ruch jest dwukierunkowy, bez autoplay i bez przechwytywania scrolla. Widoczny przycisk pozwala wstrzymać i wznowić powiązanie z przewijaniem. Reduced-motion/oszczędzanie danych pokazują poster, z jawnym opt-in do animacji; błąd filmu zachowuje poster i normalną wysokość sekcji. Materiał jest ładowany dopiero w pobliżu sekcji. Kolejka seeków pomija nieaktualne cele, a dokument w tle nie aktualizuje klatek.
 
 Wcześniejsze propozycje przypisania przejazdu do miejsca B zastępuje identyfikacja użytkownika: przesłany film jest animacją otwierającą. Miejsce B pozostaje przygotowane wyłącznie w planie.
+
+Ostatnie doprecyzowanie: tekst ujawniany jest poprzez opacity i delikatne przesunięcie, zależne od tej samej wartości postępu scrolla; nie przez uruchamianie timera. Przyciski nie są wygaszane. Wsteczny scroll cofa także ujawnienie tekstu.

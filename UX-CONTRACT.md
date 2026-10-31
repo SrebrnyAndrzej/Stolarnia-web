@@ -52,3 +52,5 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 ## Animacja intro
 
 Źródło: użytkownik dostarczył „Kuchnia-Darii-animacja.mp4” jako animację otwierającą i wcześniej zlecił sterowanie przejazdem podczas scrollowania. Kanoniczny komponent: `v2/HomeIntro.tsx`. Scroll jest natywny; film nie przechwytuje wheel/touchmove ani klawiszy. Pauza zatrzymuje zmianę kadru, a nie stronę. Ograniczenie ruchu i danych nie pobiera MP4 bez opt-in. Awaria zachowuje obraz i CTA. Testy: `tests/v2/home-animation.spec.ts`.
+
+Doprecyzowanie intro: film jest tłem całego hero, a tekst pojawia się wraz z postępem przewijania. Przyciski pozostają dostępne; fokus klawiatury odsłania tekst, a reduced-motion i awaria pokazują go od razu. Kadrowanie cover jest celowe na wszystkich ekranach.

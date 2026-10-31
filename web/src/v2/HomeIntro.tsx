@@ -51,11 +51,13 @@ export function HomeIntro({ children }: { children: ReactNode }) {
   useEffect(() => {
     const el = section.current;
     const film = video.current;
-    if (!motion || paused || !nearby || !el || !film) return;
+    if (!motion || !el) return;
     let raf = 0;
     let target = 0;
     const seek = () => {
       if (
+        paused ||
+        !film ||
         document.hidden ||
         film.readyState < 1 ||
         film.seeking ||
@@ -72,7 +74,8 @@ export function HomeIntro({ children }: { children: ReactNode }) {
       if (rect.bottom < 0 || rect.top > innerHeight) return;
       const range = Math.max(1, el.offsetHeight - innerHeight);
       const progress = Math.max(0, Math.min(1, -rect.top / range));
-      target = progress * Math.max(0, (film.duration || 0) - 0.04);
+      el.style.setProperty("--intro-progress", progress.toFixed(4));
+      target = progress * Math.max(0, (film?.duration || 0) - 0.04);
       seek();
     };
     const schedule = () => {
@@ -81,16 +84,16 @@ export function HomeIntro({ children }: { children: ReactNode }) {
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
     document.addEventListener("visibilitychange", schedule);
-    film.addEventListener("loadedmetadata", schedule);
-    film.addEventListener("seeked", seek);
+    film?.addEventListener("loadedmetadata", schedule);
+    film?.addEventListener("seeked", seek);
     schedule();
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       document.removeEventListener("visibilitychange", schedule);
-      film.removeEventListener("loadedmetadata", schedule);
-      film.removeEventListener("seeked", seek);
+      film?.removeEventListener("loadedmetadata", schedule);
+      film?.removeEventListener("seeked", seek);
     };
   }, [motion, paused, nearby]);
 

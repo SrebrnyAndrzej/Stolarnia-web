@@ -47,3 +47,9 @@ Po oględzinach U dopasowano start kamery do pierwszej użytej ściany szkicu i 
 Źródło użytkownika: Full HD H.264 25 kl./s, 14 s, bez audio, 8 138 389 B. Wersja strony: 1280×720 H.264, częste klatki kluczowe, 2 577 076 B i poster około 66 KB. Cały kadr 16:9, bez kadrowania.
 
 Zaliczone: build/typecheck, audyt premium (zero ustaleń), diff check i 10 testów Chromium. Cztery nowe scenariusze: seek zgodny ze scrollem w dół/górę, pauza/wznowienie, brak autoplay; reduced-motion bez pobierania MP4 i jawne włączenie; telefon 390 px (cały kadr, brak przepełnienia, wejście do kreatora); awaria MP4 zachowująca obraz/formularz. Sześć wcześniejszych scenariuszy ról i formularza również zaliczone. Axe w intro bez ustaleń serious/critical. Zrzuty: qa/home-intro-desktop.png i qa/home-intro-mobile.png. Nie sprawdzano na fizycznym iPhonie/Androidzie.
+
+## Korekta hero: film jako tło, tekst ze scrollem
+
+Zgodnie z doprecyzowaniem użytkownika film wypełnia całe hero przez cover, zamiast zajmować osobną kartę 16:9. Na filmie leżą przyciemnienie, tekst i CTA. Nagłówek oraz opis ujawniają się ze scrollem; CTA są zawsze dostępne. Fokus na CTA odsłania tekst. Statyczny wariant pokazuje pełny tekst.
+
+Zaliczone: build/typecheck, audyt premium bez ustaleń, 11 testów Chromium (5 intro + 6 regresji). Nowe kontrole: rozmiar warstwy filmu równy rozmiarowi hero, object-fit cover na telefonie, progres opacity w obie strony, widoczne CTA i ujawnienie po fokusie, pełny tekst w reduced-motion. Zaktualizowano i obejrzano zrzuty home-intro-desktop.png i home-intro-mobile.png. Poprzednia kontrola pełnego kadru dotyczy wcześniejszej wersji, zastąpionej celowym kadrowaniem tła.

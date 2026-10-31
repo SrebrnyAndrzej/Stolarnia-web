@@ -171,3 +171,5 @@ Plan miejsc i kontrakt przekazania: `docs/ANIMACJE-STRONA-GLOWNA.md`. A zastępu
 Uściślenie użytkownika: przejazd kuchni ma być sterowany postępem scrollowania w obie strony (scrub). Preferowany komponent z parametrem progress 0–1, bez własnej blokady scrolla. Plan doprecyzowany w ANIMACJE-STRONA-GLOWNA.md; nie zastępować mechanizmu zwykłym autoplay.
 
 Film „Kuchnia-Darii-animacja.mp4” otrzymany od użytkownika: intro strony, 14 s, bez audio. Integracja: HomeIntro.tsx, pełny kadr 16:9, przewijanie steruje currentTime w obie strony, pauza i statyczny fallback. Transkodowana kopia 720p 2,5 MB + poster. Druga animacja nadal oczekuje na materiał; nie powielono Darii w drugim slocie.
+
+Doprecyzowanie hero: film Darii ma wypełniać tło całej sekcji, pod tekstem i przyciskami. Nagłówek/opis pojawiają się zgodnie z postępem scrolla; CTA są stale widoczne. Zmieniono kompozycję z bocznej karty na pełne tło cover, z ciemną nakładką i białą typografią.
