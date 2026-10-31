@@ -175,3 +175,8 @@ Film „Kuchnia-Darii-animacja.mp4” otrzymany od użytkownika: intro strony, 1
 Doprecyzowanie hero: film Darii ma wypełniać tło całej sekcji, pod tekstem i przyciskami. Nagłówek/opis pojawiają się zgodnie z postępem scrolla; CTA są stale widoczne. Zmieniono kompozycję z bocznej karty na pełne tło cover, z ciemną nakładką i białą typografią.
 
 Korekta tempa po feedbacku: hero 360 svh desktop / 280 svh mobile, postęp filmu i tekstu wygładzany w czasie; helper home-motion.ts z limitem skoku. Nie zastępować ponownie sztywnym przypisywaniem currentTime z każdego zdarzenia scroll.
+
+## Research języka wizualnego i materiały z silnika
+Nowy brief do pracy nad komunikacją „na Ty”: docs/branding/BRIEF-dla-Claude-jezyk-wizualny-v1.md; pełny research ze źródłami obok. Propozycja: konkretna, życzliwa stolarnia, własne zdjęcia ludzi/materiałów oraz całość → detal → zastosowanie. Nowy krój i przykładowe hasła pozostają robocze.
+
+Na prośbę użytkownika przygotowano dodatkowo eksport geometrii trzech zapisanych projektów i pokaz składania dziewięciu elementów jednej szafki. Pipeline scripts/brand-media nie zmienia konstrukcji, produkcji ani danych projektu; publikuje tylko statyczne materiały. Strona ma je oznaczać jako rendery i pokaz poglądowy, bez nazwisk klientów i bez przedstawiania ich jako zdjęć realizacji.

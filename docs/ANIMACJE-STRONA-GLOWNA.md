@@ -1,6 +1,6 @@
 # Dwa miejsca na animacje — strona główna Pan Stolarz
 
-Status: animacja otwierająca osadzona w podglądzie; drugie miejsce zaplanowane. Animacje przygotowuje Claude. Użytkownik potwierdził, że animacja z przejazdem kuchni ma być sterowana przewijaniem. Otrzymano Kuchnia-Darii-animacja.mp4: H.264, 1920×1080, 25 kl./s, 14 s, bez ścieżki dźwiękowej. Drugi materiał nie został jeszcze dostarczony. Poniższe role są rekomendacją, nie opisem otrzymanych materiałów. Nie dodajemy pustych pól ani komunikatów technicznych dla klientów przed dostarczeniem animacji.
+Status: animacja otwierająca osadzona w podglądzie; dodana druga animacja składania szafki. Pierwszy film użytkownik przekazał jako materiał przygotowywany z Claude; drugi pokaz wyeksportowano z geometrii projektu na kolejną prośbę użytkownika. Użytkownik potwierdził, że animacja z przejazdem kuchni ma być sterowana przewijaniem. Otrzymano Kuchnia-Darii-animacja.mp4: H.264, 1920×1080, 25 kl./s, 14 s, bez ścieżki dźwiękowej. Druga animacja została przygotowana z elementów zapisanej szafki na zlecenie użytkownika. Poniższe role są rekomendacją, nie opisem otrzymanych materiałów. Nie dodajemy pustych pól ani komunikatów technicznych dla klientów przed dostarczeniem animacji.
 
 ## Miejsce A: pierwszy ekran
 
@@ -10,9 +10,11 @@ Lokalizacja: tło całej sekcji hero w `web/src/v2/HomeIntro.tsx`, nie osobna ka
 
 Nagłówek i opis pojawiają się stopniowo wraz ze scrollem, bez zmiany zajętego miejsca. Przyciski są widoczne od początku. Fokus klawiatury w obszarze CTA odsłania cały tekst. Reduced-motion, oszczędzanie danych i błąd filmu pokazują statyczne tło i pełny tekst, bez wydłużonej sekcji.
 
-## Miejsce B: druga animacja — oczekuje na materiał
+## Miejsce B: składanie szafki
 
-Lokalizacja pozostaje zaplanowana po sekcji „Co planujesz w swoim wnętrzu?”, przed „Jak działamy”. Format rekomendowany 16:9. Sekcja nie jest renderowana, dopóki nie otrzymamy drugiej animacji. Nie powielamy filmu Darii w dwóch miejscach. Temat i sposób sterowania drugą animacją ustalimy po obejrzeniu materiału.
+Sekcja po ofercie pokazuje poglądowe składanie dziewięciu elementów szafki 600 mm z rzeczywistego projektu stolarnia-web. Film 1280×720, 25 kl./s, 8 s, bez audio. Native controls i preload=none: użytkownik uruchamia go samodzielnie, bez dodatkowej długiej sekcji scrollowej. Błąd zachowuje poster. To pokaz konstrukcji, nie instrukcja montażu.
+
+Eksport: scripts/brand-media. Publikowane są tylko obrazy i film, bez danych kontaktowych i finansowych projektu. Drugi materiał jest własnym renderem geometrii; nie opisujemy go jako pliku otrzymanego z zewnętrznej sesji Claude.
 
 ## Wspólne zasady dla Claude i integracji
 
@@ -52,7 +54,7 @@ Film otwiera stronę w `v2/HomeIntro.tsx`, wywołanym przez Landing. Film wypeł
 
 Ta animacja jest sterowana scrollem już w pierwszym ekranie: zakres 360 svh na desktopie i 280 svh na telefonie, przyklejona treść hero. Ruch jest dwukierunkowy, bez autoplay i bez przechwytywania scrolla. Widoczny przycisk pozwala wstrzymać i wznowić powiązanie z przewijaniem. Reduced-motion/oszczędzanie danych pokazują poster, z jawnym opt-in do animacji; błąd filmu zachowuje poster i normalną wysokość sekcji. Materiał jest ładowany dopiero w pobliżu sekcji. Kolejka seeków pomija nieaktualne cele, a dokument w tle nie aktualizuje klatek.
 
-Wcześniejsze propozycje przypisania przejazdu do miejsca B zastępuje identyfikacja użytkownika: przesłany film jest animacją otwierającą. Miejsce B pozostaje przygotowane wyłącznie w planie.
+Wcześniejsze propozycje przypisania przejazdu do miejsca B zastępuje identyfikacja użytkownika: przesłany film jest animacją otwierającą. Miejsce B zostało następnie wypełnione pokazem składania szafki na kolejną prośbę użytkownika.
 
 Ostatnie doprecyzowanie: tekst ujawniany jest poprzez opacity i delikatne przesunięcie, zależne od tej samej wartości postępu scrolla; nie przez uruchamianie timera. Przyciski nie są wygaszane. Wsteczny scroll cofa także ujawnienie tekstu.
 

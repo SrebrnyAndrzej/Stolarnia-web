@@ -59,3 +59,13 @@ Zaliczone: build/typecheck, audyt premium bez ustaleń, 11 testów Chromium (5 i
 Po feedbacku użytkownika wydłużono aktywny zakres scrolla czterokrotnie na desktopie i około pięciokrotnie na telefonie. Film i tekst mają wygładzany postęp zamiast natychmiastowego skoku. Helper czasu ogranicza gwałtowne zmiany i nie oscyluje. Po dojściu do celu oraz poza widokiem nie utrzymuje pętli aktualizacji.
 
 Zaliczone: build/typecheck, 2 testy wygładzania (limit skoku także po długiej przerwie; zbieżność w obu kierunkach bez przekroczenia celu), audyt premium bez ustaleń oraz 8 ukierunkowanych scenariuszy Chromium (6 intro + formularz i dostępność). Nowy scenariusz weryfikuje dłuższy zakres, brak natychmiastowego skoku po przesunięciu do 85% sekcji i późniejsze dojście/cofnięcie. Zaktualizowano zrzuty. Pauza, statyczny fallback i dostępność CTA zachowane.
+
+## Składanie szafki i rendery zapisanych projektów
+
+Na prośbę użytkownika odczytano trzy rzeczywiste analizy projektów z aplikacji stolarnia-web oraz kolory użytych materiałów. Nie zmieniano danych źródłowych ani src/core. Eksport korzysta z istniejącego technicalView i geometrii elementów; publiczne pliki nie zawierają kontaktów, nazw klientów, finansów ani JSON projektów.
+
+Wynik: trzy JPG 1920×1200 (projekty 16/11/12 modułów), ZIP z opisem, animacja 8 s, 1280×720, 25 kl./s, H.264, bez audio, 120 085 B. Pokaz składa 9 elementów szafki dolnej 600 mm; kolejność jest wizualizacją, nie zatwierdzoną instrukcją montażu. Oświetlenie i tło są studyjne, materiały i kolory poglądowe; nie dodano modeli AGD ani tekstur producentów.
+
+Oględziny wykazały zbyt jasne pierwsze eksporty: poprawiono ekspozycję, kontrast płyt i kąt widoku układu z wyspą. W animacji dopasowano końcowe ujęcie do złożonej szafki. Obejrzano trzy finalne obrazy i wybrane klatki animacji. Pipeline i odtwarzalny sposób eksportu: scripts/brand-media/README.md.
+
+Zaliczone: build/typecheck, formatter i audyt premium bez ustaleń; 11 scenariuszy Chromium obejmujących intro, formularz, dostępność i nowe media. Po ostatniej zmianie kadru i eksporcie ponownie zaliczono 3 scenariusze mediów: obrazy 1920 px bez żądań API prywatnych projektów; rzeczywiste odtworzenie filmu/8 s i telefon bez przepełnienia; awaria z posterem. Axe nowych sekcji: zero serious/critical. Dowody: qa/project-renders-desktop.png i qa/cabinet-assembly-mobile.png. Brak sprawdzenia na fizycznym urządzeniu.

@@ -106,6 +106,7 @@ test("phone video fills the hero background and keeps working navigation", async
   ).toBe(true);
   await page.screenshot({ path: "qa/home-intro-mobile.png", fullPage: false });
   await page
+    .locator(".ps-home-intro")
     .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
     .click();
   await expect(
@@ -138,13 +139,16 @@ test("hero copy reveals with scroll while actions remain available", async ({
     title.evaluate((el) => Number(getComputedStyle(el).opacity));
   await expect.poll(opacity).toBe(0);
   await expect(
-    page.getByRole("link", { name: "Zaprojektuj kuchnię", exact: true }),
+    page
+      .locator(".ps-home-intro")
+      .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true }),
   ).toBeVisible();
   await scrollProgress(page, 0.4);
   await expect.poll(opacity).toBe(1);
   await scrollProgress(page, 0.1);
   await expect.poll(opacity).toBeLessThan(0.5);
   await page
+    .locator(".ps-home-intro")
     .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
     .focus();
   await expect.poll(opacity).toBe(1);

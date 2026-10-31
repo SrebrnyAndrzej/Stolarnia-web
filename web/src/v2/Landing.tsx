@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { Logo } from "./ui";
 import { HomeIntro } from "./HomeIntro";
+import { CabinetAssembly, ProjectRenders } from "./ProjectMedia";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
 import { request, type Principal } from "./api";
 
@@ -197,6 +198,8 @@ export function Landing({ session }: { session: Principal | null }) {
             ))}
           </div>
         </section>
+        <CabinetAssembly />
+        <ProjectRenders />
         <section className="ps-public-section ps-process" id="proces">
           <span className="ps-eyebrow">Jak działamy</span>
           <h2>

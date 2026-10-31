@@ -46,3 +46,7 @@ Odbiór pierwszego zakresu kreatora: passed. Nie jest to odbiór wszystkich przy
 Osadzono rzeczywisty materiał dostarczony przez użytkownika, w pełnym 16:9. Obejrzano qa/home-intro-desktop.png i qa/home-intro-mobile.png; branding i CTA pozostały w HTML, przycisk pauzy jest dostępny na obrazie. Telefon 390 px nie przepełnia dokumentu. Statyczny poster nie wymaga pobrania filmu dla reduced-motion; awaria nie usuwa hero. Zakres osadzenia intro: passed w lokalnym Chromium. Fizyczne Safari/iOS pozostaje do sprawdzenia.
 
 Korekta intro po feedbacku użytkownika: film jest pełnym tłem hero, a tekst ujawnia się podczas przewijania. Obejrzano nowe zrzuty desktop/mobile; biały tekst i zielony akcent są czytelne na ciemnej nakładce. Brak osobnej karty filmu. Kadrowanie cover na telefonie jest intencjonalne. Nowe 11 scenariuszy przeszło; zakres korekty: passed.
+
+## Media z geometrii silnika
+
+Trzy obrazy oraz początek/koniec pokazu składania zostały obejrzane. Poprawiono ekspozycję pierwszych prób i kąt kamery wyspy, tak aby bryły pozostawały widoczne. Na stronie obejrzano galerię desktop i pokaz mobile. Podpisy rozróżniają render/pokaz poglądowy od zdjęcia realizacji/instrukcji montażowej. Materiały są statyczne i nie publikują bazy projektu. Lokalna kontrola tej iteracji: passed, w granicach opisanych w QA-REPORT.md.

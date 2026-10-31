@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pl">
+  <meta charset="utf-8" /><style>
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #eceee9;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/three/build/three.module.js",
+        "three/addons/": "/three/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+    import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+    import { scianyNaRzucie, punktNaRzucie } from "/core/geometry.js";
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      preserveDrawingBuffer: true,
+    });
+    renderer.setPixelRatio(1);
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.85;
+    document.body.append(renderer.domElement);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color("#c9d1ce");
+    const env = new RoomEnvironment();
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(env, 0.04).texture;
+    scene.environmentIntensity = 0.3;
+    env.dispose();
+    pmrem.dispose();
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x9a958a, 0.45));
+    const light = new THREE.DirectionalLight(0xfff4e6, 2.7);
+    light.position.set(-3, 7, 4);
+    light.castShadow = true;
+    light.shadow.mapSize.set(2048, 2048);
+    Object.assign(light.shadow.camera, {
+      left: -8,
+      right: 8,
+      top: 8,
+      bottom: -8,
+      near: 0.1,
+      far: 30,
+    });
+    light.shadow.normalBias = 0.015;
+    light.shadow.bias = -0.0001;
+    scene.add(light);
+    const fill = new THREE.DirectionalLight(0xe6efff, 0.65);
+    fill.position.set(5, 3, -4);
+    scene.add(fill);
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(100, 100),
+      new THREE.MeshStandardMaterial({ color: "#c7ccc5", roughness: 0.85 }),
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.025;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    const camera = new THREE.OrthographicCamera(-3, 3, 2, -2, 0.01, 150);
+    let group = new THREE.Group();
+    scene.add(group);
+    let assembly = [];
+    let assemblyCamera = null;
+    const dispose = () => {
+      scene.remove(group);
+      group.traverse((o) => {
+        o.geometry?.dispose();
+        if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose());
+        else o.material?.dispose();
+      });
+      group = new THREE.Group();
+      scene.add(group);
+      assembly = [];
+    };
+    function board(e, color) {
+      const geo = new THREE.BoxGeometry(
+        Math.max(1, e.szer) / 1000,
+        Math.max(1, e.wys) / 1000,
+        Math.max(1, e.gl) / 1000,
+      );
+      const mesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+          color,
+          roughness:
+            e.materialRola === "blat"
+              ? 0.35
+              : e.materialRola === "front"
+                ? 0.45
+                : 0.7,
+        }),
+      );
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        new THREE.LineBasicMaterial({
+          color: 0x263530,
+          transparent: true,
+          opacity: 0.12,
+        }),
+      );
+      mesh.add(edges);
+      return mesh;
+    }
+    function fit(dir) {
+      const box = new THREE.Box3().setFromObject(group),
+        center = box.getCenter(new THREE.Vector3()),
+        size = box.getSize(new THREE.Vector3());
+      camera.position.copy(center).add(
+        dir
+          .clone()
+          .normalize()
+          .multiplyScalar(Math.max(size.x, size.y, size.z) * 4),
+      );
+      camera.lookAt(center);
+      camera.updateMatrixWorld();
+      let sx = 0,
+        sy = 0;
+      for (const x of [box.min.x, box.max.x])
+        for (const y of [box.min.y, box.max.y])
+          for (const z of [box.min.z, box.max.z]) {
+            const p = new THREE.Vector3(x, y, z).applyMatrix4(
+              camera.matrixWorldInverse,
+            );
+            sx = Math.max(sx, Math.abs(p.x));
+            sy = Math.max(sy, Math.abs(p.y));
+          }
+      const half = Math.max(sy, sx / (innerWidth / innerHeight)) * 1.18;
+      camera.top = half;
+      camera.bottom = -half;
+      camera.left = (-half * innerWidth) / innerHeight;
+      camera.right = -camera.left;
+      camera.updateProjectionMatrix();
+      light.target.position.copy(center);
+      scene.add(light.target);
+      renderer.render(scene, camera);
+    }
+    const roleColor = (m, room, matMap, role) => {
+      const id =
+        role === "front"
+          ? (m.materialFrontuId ?? room.materialFrontuId)
+          : role === "blat"
+            ? room.materialBlatuId
+            : (m.materialKorpusuId ?? room.materialKorpusuId);
+      return (
+        matMap.get(id)?.kolorHEX ??
+        (role === "front" ? "#b89668" : role === "blat" ? "#d9d6cc" : "#f1f0eb")
+      );
+    };
+    window.renderProject = async (index, angle = 0) => {
+      dispose();
+      const data = await (await fetch("/scene.json?index=" + index)).json();
+      const p = data.projekt,
+        room = p.pomieszczenia[0],
+        walls = scianyNaRzucie(room),
+        mats = new Map(data.materialy.map((m) => [m.id, m]));
+      for (const z of data.zbudowane) {
+        const m = z.modul,
+          w = walls.find((s) => s.sciana.id === m.scianaId);
+        if (!w) continue;
+        for (const e of z.elementy) {
+          if (
+            ["drawerSide", "drawerFrontBack", "drawerBottom"].includes(e.rola)
+          )
+            continue;
+          const mesh = board(e, roleColor(m, room, mats, e.materialRola));
+          const [x, zp] = punktNaRzucie(
+            w,
+            m.pozycjaXMM + e.x + e.szer / 2,
+            m.glebokoscMM - (e.z + e.gl / 2),
+          );
+          mesh.position.set(
+            x / 1000,
+            (m.pozycjaYMM + e.y + e.wys / 2) / 1000,
+            zp / 1000,
+          );
+          mesh.rotation.y = Math.atan2(-w.dy, w.dx);
+          group.add(mesh);
+        }
+        if (m.konfiguracja.nogi && m.pozycjaYMM > 0) {
+          const toe = new THREE.Mesh(
+            new THREE.BoxGeometry(
+              m.szerokoscMM / 1000,
+              m.pozycjaYMM / 1000,
+              0.018,
+            ),
+            new THREE.MeshStandardMaterial({
+              color: "#484642",
+              roughness: 0.7,
+            }),
+          );
+          const [x, zp] = punktNaRzucie(
+            w,
+            m.pozycjaXMM + m.szerokoscMM / 2,
+            m.glebokoscMM - 55,
+          );
+          toe.position.set(x / 1000, m.pozycjaYMM / 2000, zp / 1000);
+          toe.rotation.y = Math.atan2(-w.dy, w.dx);
+          toe.castShadow = true;
+          group.add(toe);
+        }
+      }
+      const dirs =
+        index === 2
+          ? [
+              new THREE.Vector3(-0.8, 0.8, 1.2),
+              new THREE.Vector3(0.9, 0.8, -1.2),
+            ]
+          : [new THREE.Vector3(-1, 1, 1.2), new THREE.Vector3(1.15, 1, -0.8)];
+      fit(dirs[angle % 2]);
+      return { parts: group.children.length };
+    };
+    window.prepareAssembly = async () => {
+      dispose();
+      const data = await (await fetch("/scene.json?index=1")).json();
+      const built = data.zbudowane.find(
+        (z) =>
+          z.modul.kategoria === "base" &&
+          z.modul.konstrukcja === "shelves" &&
+          z.modul.szerokoscMM === 600,
+      );
+      if (!built) throw Error("Brak rzeczywistej szafki do animacji");
+      const m = built.modul,
+        room = data.projekt.pomieszczenia[0],
+        mats = new Map(data.materialy.map((x) => [x.id, x]));
+      for (const e of built.elementy) {
+        if (["drawerSide", "drawerFrontBack", "drawerBottom"].includes(e.rola))
+          continue;
+        const mesh = board(e, roleColor(m, room, mats, e.materialRola));
+        const home = new THREE.Vector3(
+          (e.x + e.szer / 2 - m.szerokoscMM / 2) / 1000,
+          (m.pozycjaYMM + e.y + e.wys / 2) / 1000,
+          (e.z + e.gl / 2 - m.glebokoscMM / 2) / 1000,
+        );
+        let offset = new THREE.Vector3(),
+          start = 0;
+        if (e.rola === "side") {
+          offset.x = e.x < m.szerokoscMM / 2 ? -0.6 : 0.6;
+          start = 0.08;
+        } else if (e.rola === "back") {
+          offset.z = 0.65;
+          start = 0.25;
+        } else if (e.rola === "shelf" || e.rola === "fixedShelf") {
+          offset.y = 0.45;
+          start = 0.38;
+        } else if (e.rola === "top" || e.rola === "worktop") {
+          offset.y = e.rola === "worktop" ? 0.8 : 0.6;
+          start = 0.53;
+        } else if (e.rola === "front" || e.rola === "filler") {
+          offset.z = -0.75;
+          start = 0.7;
+        }
+        mesh.position.copy(home).add(offset);
+        group.add(mesh);
+        assembly.push({ mesh, home, offset, start });
+      }
+      const startCenter = new THREE.Box3()
+        .setFromObject(group)
+        .getCenter(new THREE.Vector3());
+      for (const a of assembly) a.mesh.position.copy(a.home);
+      const endCenter = new THREE.Box3()
+        .setFromObject(group)
+        .getCenter(new THREE.Vector3());
+      for (const a of assembly) a.mesh.position.copy(a.home).add(a.offset);
+      fit(new THREE.Vector3(1.2, 0.9, -1.8));
+      assemblyCamera = {
+        position: camera.position.clone(),
+        center: startCenter,
+        delta: endCenter.sub(startCenter),
+      };
+      return { parts: assembly.length };
+    };
+    window.assemblyFrame = (p) => {
+      for (const a of assembly) {
+        const t = Math.max(0, Math.min(1, (p - a.start) / 0.3));
+        const eased = t * t * (3 - 2 * t);
+        a.mesh.position.copy(a.home).addScaledVector(a.offset, 1 - eased);
+      }
+      if (assemblyCamera) {
+        const t = Math.max(0, Math.min(1, (p - 0.5) * 2));
+        const zoomProgress = t * t * (3 - 2 * t);
+        camera.zoom = 1 + 0.9 * zoomProgress;
+        camera.position
+          .copy(assemblyCamera.position)
+          .addScaledVector(assemblyCamera.delta, zoomProgress);
+        camera.lookAt(
+          assemblyCamera.center
+            .clone()
+            .addScaledVector(assemblyCamera.delta, zoomProgress),
+        );
+        camera.updateProjectionMatrix();
+      }
+      renderer.render(scene, camera);
+    };
+    window.studioReady = true;
+  </script>
+</html>
