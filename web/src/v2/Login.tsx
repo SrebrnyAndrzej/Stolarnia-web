@@ -22,14 +22,20 @@ export function Login({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(sessionError);
   const ref = useRef<HTMLFormElement>(null);
+  const [invalid, setInvalid] = useState<{
+    email?: boolean;
+    password?: boolean;
+  }>({});
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !password) {
+    const emailInvalid = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setInvalid({ email: emailInvalid, password: !password });
+    if (emailInvalid || !password) {
       setError("Wpisz poprawny e-mail i hasło.");
       ref.current
         ?.querySelector<HTMLInputElement>(
-          !email ? "input[type=email]" : "input[name=password]",
+          emailInvalid ? "input[type=email]" : "input[name=password]",
         )
         ?.focus();
       return;
@@ -91,9 +97,13 @@ export function Login({
             <label htmlFor="login-email">E-mail</label>
             <input
               id="login-email"
+              aria-invalid={invalid.email || undefined}
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setInvalid((v) => ({ ...v, email: false }));
+              }}
               autoComplete="username"
               required
               maxLength={254}
@@ -103,10 +113,14 @@ export function Login({
             <div className="ps-password">
               <input
                 id="login-password"
+                aria-invalid={invalid.password || undefined}
                 name="password"
                 type={show ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setInvalid((v) => ({ ...v, password: false }));
+                }}
                 autoComplete="current-password"
                 required
                 maxLength={256}

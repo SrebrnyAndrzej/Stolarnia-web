@@ -1,3 +1,12 @@
+## Dopracowanie paneli i przepływów — 31.10.2026
+
+- Typecheck i build: poprawne. Renderer 3D zachowuje osobny duży chunk; jego pobranie w panelu jest odroczone do wyboru 3D, co potwierdza test żądań sieciowych.
+- Pełny przebieg 27 testów Playwright: 26 poprawnych; jeden starszy test 3D przekroczył dotychczasowe 5 s przy zimnym, odroczonym ładowaniu. Po dostosowaniu oczekiwania do jawnego stanu ładowania (15 s) ponowiono ten scenariusz: poprawny, 12,2 s łącznie. Nie zmieniono geometrii ani silnika, zachowano powrót do 2D.
+- Nowe scenariusze: link pracownika z parametrami i odświeżenie, zachowanie etapu i projektu, pusty filtr i odzyskanie listy, wyszukiwanie zapytań oraz zmiana roli demo na telefonie, błędny e-mail i widoczność hasła, odświeżenie dokumentacji po wygenerowaniu PDF.
+- Pierwsze robocze błędy nowych testów dotyczyły atrapy zwracającej zawsze pierwszy projekt oraz etykiety selecta; poprawiono atrapę i jawne powiązanie label/id w UI. Końcowe scenariusze są poprawne.
+- `npm run test:v2:unit`: 3/3 poprawne. Audyt premium strict: 0 findings. Mobilne ekrany właściciela, pracownika i zapytań: brak poziomego overflow i 0 serious/critical axe findings.
+- Nie zmieniono src/core, finansów, polityki uprawnień, mediów hero ani konfiguracji prawdziwych kont. Brak konfiguracji auth/formularza nadal blokuje pełne uruchomienie produkcyjne.
+
 ## Dokumentacja techniczna i montażowa — 31.10.2026
 
 - `npm run typecheck` i `npm run build`: poprawne, istniejące ostrzeżenie dużego chunka 3D bez zmian.

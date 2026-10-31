@@ -36,3 +36,7 @@ Wspólny widok projektów otrzymał oddzielne nagłówki ról, podsumowania etap
 
 ## Dokumentacja i wydruk
 Właściciel i pracownik mają w projekcie przycisk „Dokumentacja techniczna”. Pełne PDF-y techniczne i skrócone karty montażowe wykorzystują istniejący generator; zakres cały projekt lub szafka. Pracownik drukuje z zapisanego wydania przypisanego projektu, właściciel również z bieżącej rewizji. Wydania tworzy dotychczasowy panel Produkcja. Brak wydania jest jawny; roboczy status nie znika. API sprawdza uprawnienia i rewizję, bez finansów i danych klienta. Demo zawiera wyłącznie syntetyczne przykładowe pliki. To integracja dokumentacji, nie nowa implementacja silnika ani zatwierdzenie konstrukcji do produkcji.
+
+## Dopracowanie UX
+Naprawiono rozpoznawanie sekcji panelu z parametrami hash (ważne przy odświeżaniu linku pracownika). Filtry i wyszukiwanie projektów zachowują się w URL, są filtry produkcji/montażu i przywrócenie pustej listy. Inspektor pokazuje wybraną szafkę. Dodano przełączanie ról demo, wyszukiwanie najnowszych zapytań właściciela, odświeżanie dokumentacji i polskie etykiety diagnostyki. Walidacja logowania poprawnie wskazuje błędny e-mail. Bez nowych deklaracji gotowości produkcyjnej i bez zmian src/core.
+Renderer 3D w panelu projektów jest ładowany dopiero po wyborze 3D; ekran 2D i dokumentacja nie wymagają jego pobrania. Nie zmienia to geometrii ani zachowania silnika. Pozostaje build warning wielkości chunka samego renderera.

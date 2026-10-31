@@ -97,7 +97,7 @@ export function App() {
     hash === "#/jak-dzialamy";
   const section = demo
     ? demoMatch?.[2] || "projekty"
-    : hash.split("/")[2] || "projekty";
+    : hash.split("?")[0].split("/")[2] || "projekty";
   const isPanel =
     hash.startsWith("#/panel") ||
     demo ||
@@ -280,8 +280,25 @@ export function App() {
       <main id="ps-content" tabIndex={-1} className="ps-panel-content">
         {demo && (
           <div className="ps-demo-banner">
-            To podgląd interfejsu. Przykładowe projekty nie pochodzą z bazy
-            stolarni. <a href="#/logowanie">Przejdź do logowania</a>
+            <span>
+              To podgląd interfejsu. Przykładowe projekty nie pochodzą z bazy
+              stolarni.
+            </span>
+            <nav
+              className="ps-demo-role-switch"
+              aria-label="Przełącz widok demonstracyjny"
+            >
+              {(["owner", "employee", "client"] as const).map((role) => (
+                <a
+                  key={role}
+                  href={`#/podglad/${role}/projekty`}
+                  aria-current={person.role === role ? "page" : undefined}
+                >
+                  {roles[role]}
+                </a>
+              ))}
+            </nav>
+            <a href="#/logowanie">Przejdź do logowania</a>
           </div>
         )}
         {logoutError && <Feedback>{logoutError}</Feedback>}

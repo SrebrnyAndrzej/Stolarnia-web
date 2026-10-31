@@ -75,3 +75,11 @@ Karty techniczne = pełny pakiet istniejącego generatora, z kartami szafek i os
 Adapter zwraca jawny zestaw pól podsumowania bez notatek wydania, danych klienta, cen, umów i migawki. PDF warsztatowy ukrywa pole klienta; brak kwot i finansów potwierdzono ekstrakcją tekstu w izolowanych testach. Legacy eksporty pozostają owner-only. Każde pobranie sprawdza aktywną rolę i przydział, odpowiedzi private/no-store. PDF przechowywany w pamięci przeglądarki jako Blob, URL sprzątany po zmianie zakresu/zamknięciu. Błąd zachowuje wybór i umożliwia ponowienie. Zamknięcie przywraca fokus. Wydruk z podglądu PDF w nowej karcie; bez automatycznego otwierania popupu po await.
 
 Demo ma statyczne PDF-y syntetycznej szafki, niezależne od wybranego przykładowego projektu, wyraźnie oznaczone jako nieprodukcyjne. Nie pobiera dokumentacji prywatnej. Skrypt odtwarzania: scripts/generate-technical-demo.mts, wyłącznie lokalny magazyn tymczasowy. Testy: tests/v2/documents.spec.ts, scripts/verify-v2-access.mjs.
+
+## Przywracanie kontekstu i wyszukiwanie
+Parametry hash `projekt`, `q`, `etap` odtwarzają wybór i filtry po odświeżeniu. App rozpoznaje sekcję oddzielnie od parametrów, aby link z parametrami nie zmieniał zakresu dostępu pracownika. W trakcie ładowania lub błędu nie nadpisujemy zapisanego wyboru pustą listą. Zmiana parametrów hash jest odczytywana przez Workspace; zwykłe wpisywanie używa replaceState, bez wpisu historii na każdy znak.
+
+Puste wyniki listy mają „Pokaż wszystkie projekty” i przywrócenie fokusu do wyszukiwania. Wyczyszczenie pola search również przywraca fokus. Filtry nie zmieniają projektu ani jego statusu. Owner Requests filtruje tylko aktualnie pobraną listę do 100 zgłoszeń, lokalnie i bez wysyłania zapytań mutujących.
+
+Odświeżenie dokumentacji anuluje przygotowanie PDF, usuwa poprzedni plik z UI i resetuje zakres szafki. Polskie etykiety diagnostyki są warstwą prezentacji, nie zmianą poziomów silnika. Walidacja logowania kieruje fokus do błędnego e-maila również wtedy, gdy pole nie jest puste; aria-invalid wskazuje błędne pola. Nie zmieniono polityki autoryzacji ani ról.
+Wyszukiwanie zapytań pozostaje w pamięci widoku: fraza może zawierać imię lub e-mail, dlatego nie zapisujemy jej w URL ani localStorage. Zmiana roli demonstracyjnej przechodzi na listę projektów danej roli, bez przenoszenia danych sesji i bez udawania zalogowania.

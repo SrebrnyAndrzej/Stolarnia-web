@@ -29,6 +29,21 @@ export function ProjectDocuments({
       : `${base}${release ? `?wydanie=${encodeURIComponent(release)}` : ""}`,
   );
   const d = resource.data?.document;
+  const diagnosticLabels: Record<string, string> = {
+    blad: "Błąd",
+    brakDanych: "Brak danych",
+    niesprawdzone: "Do sprawdzenia",
+    ostrzezenie: "Ostrzeżenie",
+    info: "Informacja",
+  };
+  const refresh = () => {
+    operation.current?.abort();
+    setBusy("");
+    setPdf(null);
+    setError("");
+    setModule("");
+    resource.retry();
+  };
   useEffect(() => () => operation.current?.abort(), []);
   useEffect(
     () => () => {
@@ -85,6 +100,15 @@ export function ProjectDocuments({
         montażowe to skrócone karty szafek z wymiarami, częściami i okuciami.
         PDF otworzysz w nowej karcie i wydrukujesz z przeglądarki.
       </p>
+      {!demo && (
+        <button
+          className="ps-text-button"
+          disabled={resource.busy || !!busy}
+          onClick={refresh}
+        >
+          Odśwież dokumentację
+        </button>
+      )}
       {demo ? (
         <p className="ps-document-warning">
           Podgląd: wydruki pokazują wyłącznie przykładową szafkę, niezależną od
@@ -161,9 +185,9 @@ export function ProjectDocuments({
                   disabled={!!busy}
                 >
                   <option value="">Cały projekt</option>
-                  {d.modules.map((m) => (
+                  {d.modules.map((m, index) => (
                     <option key={m.id} value={m.id}>
-                      {m.name} · {m.parts} części
+                      {index + 1}. {m.name} · {m.parts} części
                     </option>
                   ))}
                 </select>
@@ -176,7 +200,10 @@ export function ProjectDocuments({
                   <ul>
                     {d.diagnostics.map((x, i) => (
                       <li key={`${x.code}-${i}`}>
-                        <strong>{x.level}</strong>: {x.description}
+                        <strong>
+                          {diagnosticLabels[x.level] ?? "Informacja"}
+                        </strong>
+                        : {x.description}
                       </li>
                     ))}
                   </ul>
@@ -227,8 +254,8 @@ export function ProjectDocuments({
       )}
       {error && (
         <Feedback>
-          {error} Ponów przygotowanie PDF. Jeśli projekt się zmienił, zamknij i
-          otwórz dokumentację ponownie.
+          {error} Ponów przygotowanie PDF. Jeśli projekt się zmienił, użyj
+          przycisku „Odśwież dokumentację”.
         </Feedback>
       )}
       {pdf && (

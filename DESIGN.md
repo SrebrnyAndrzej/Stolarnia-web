@@ -80,3 +80,10 @@ Research przyszłego kierunku komunikacji oraz roboczy brief do pracy z Claude: 
 
 ## Dokumentacja w przestrzeni projektu
 Przycisk „Dokumentacja techniczna” obok nagłówka projektu otwiera sekcję w naturalnym przepływie, bez modala. ProjectDocuments.tsx używa istniejących tokenów, przycisków, pól i Feedback. Natywne selecty są wyborem platformowym. Dwie akcje prowadzą do PDF technicznego i skróconego montażowego; link do druku pojawia się dopiero po pobraniu dokumentu. Na telefonie akcje układają się pionowo. Klient nie otrzymuje dokumentacji warsztatowej. Nie projektujemy nowego szablonu rysunków: zachowujemy istniejący generator wektorowy, skalę, mm i oznaczenia rewizji.
+
+## Usprawnienia codziennej pracy — 31.10.2026
+Demonstracja ma jawny przełącznik trzech ról, oddzielony od prawdziwego logowania. Lista projektów zachowuje wyszukiwanie, etap i wybór w adresie; filtry obejmują wszystkie/w trakcie/produkcja/montaż/zakończone. Puste wyniki mają akcję przywrócenia listy, a licznik pokazuje zakres bieżącej listy. Wybrana szafka ma w inspektorze własne gabaryty i liczbę elementów modelu. Zmiana ściany usuwa poprzedni wybór szafki.
+
+Właściciel wyszukuje w załadowanej liście najnowszych 100 zapytań i filtruje rodzaj. Nie jest to wyszukiwanie całej historii w bazie. Natywny select korzysta z geometrii systemowej; pole search ma dostępny przycisk czyszczenia i zwraca fokus. Dokumentacja używa polskich etykiet diagnostyki i jawnej akcji odświeżenia. Zachowano logo, paletę, typografię oraz spokojne tempo hero.
+
+Renderer 3D w przestrzeni projektów jest importowany dynamicznie po wybraniu widoku 3D. Rzut, dokumentacja i dane projektu pozostają dostępne niezależnie od pobrania renderera. Suspense rezerwuje obszar podglądu i pokazuje polski status ładowania; istniejący CanvasBoundary pozostawia alternatywę 2D po awarii.

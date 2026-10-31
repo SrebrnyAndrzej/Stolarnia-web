@@ -129,6 +129,13 @@ for (const role of ["owner", "employee"] as const) {
     ).toBe(true);
     if (role === "employee")
       expect(urls.some((u) => u.includes("/api/projekty/"))).toBe(false);
+    await page
+      .getByRole("button", { name: "Odśwież dokumentację", exact: true })
+      .click();
+    await expect(
+      page.getByRole("link", { name: "Pobierz PDF", exact: true }),
+    ).toHaveCount(0);
+    await expect(page.getByLabel("Zakres wydruku")).toHaveValue("");
     await page.getByRole("button", { name: "Zamknij dokumentację" }).click();
     await expect(entry).toBeFocused();
   });

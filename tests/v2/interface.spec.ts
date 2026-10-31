@@ -23,7 +23,9 @@ async function signedIn(page: Page, role: "owner" | "employee" | "client") {
     if (path === "/api/v2/projects")
       return route.fulfill(json([demoProjects[0]]));
     if (path.startsWith("/api/v2/projects/"))
-      return route.fulfill(json(demoProject(demoProjects[0].id)));
+      return route.fulfill(
+        json(demoProject(decodeURIComponent(path.split("/")[4]))),
+      );
     if (path.endsWith("/analiza") && role === "owner")
       return route.fulfill(
         json({
@@ -187,7 +189,7 @@ test("demo supports 3D and 2D and is explicitly not a login", async ({
     page.getByText("Podgląd · dane przykładowe", { exact: false }),
   ).toBeVisible();
   await page.getByRole("button", { name: "3D", exact: true }).click();
-  await expect(page.locator("canvas")).toHaveCount(1);
+  await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15000 });
   await page.getByRole("button", { name: "Rzut 2D", exact: true }).click();
   await expect(page.locator(".ps-visual svg.elev")).toBeVisible();
   expect(errors).toEqual([]);
@@ -217,4 +219,135 @@ test("public page and owner 2D view have no serious accessibility findings", asy
       ["critical", "serious"].includes(v.impact ?? ""),
     ),
   ).toEqual([]);
+});
+
+test("employee project link and production filter survive refresh with a recoverable empty filter", async ({
+  page,
+}) => {
+  await signedIn(page, "employee");
+  await page.route("**/api/v2/projects", (route) =>
+    route.fulfill(json(demoProjects)),
+  );
+  await page.goto("/#/panel/projekty?etap=production&projekt=pokaz-szafa");
+  await expect(
+    page.getByRole("heading", {
+      name: "Szafa wnękowa • Projekt B",
+      exact: true,
+    }),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(
+    page.getByRole("button", { name: "W produkcji", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await expect(
+    page.getByRole("heading", {
+      name: "Szafa wnękowa • Projekt B",
+      exact: true,
+    }),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(
+    page.getByRole("heading", { name: "Brak dostępu", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Do montażu", exact: true }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Brak pasujących projektów",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Pokaż wszystkie projekty", exact: true })
+    .click();
+  await expect(
+    page.getByRole("searchbox", { name: "Szukaj projektów", exact: true }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Wszystkie", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("employee loads 3D only when requested", async ({ page }) => {
+  const rendererRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/assets\/Widok3D-/.test(request.url()))
+      rendererRequests.push(request.url());
+  });
+  await page.goto("/#/podglad/employee/projekty");
+  await expect(
+    page.getByRole("heading", { name: "Kuchnia • Projekt A", exact: true }),
+  ).toBeVisible({ timeout: 15000 });
+  expect(rendererRequests).toHaveLength(0);
+  await page.getByRole("button", { name: "3D", exact: true }).click();
+  await expect.poll(() => rendererRequests.length).toBeGreaterThan(0);
+  await expect(page.locator(".ps-visual canvas")).toBeVisible({
+    timeout: 15000,
+  });
+});
+
+test("login validation focuses a malformed email and keeps password visibility accessible", async ({
+  page,
+}) => {
+  let sent = 0;
+  page.on("request", (r) => {
+    if (r.url().endsWith("/api/v2/login")) sent++;
+  });
+  await page.goto("/#/logowanie");
+  const email = page.getByLabel("E-mail", { exact: true });
+  const password = page.getByLabel("Hasło", { exact: true });
+  await email.fill("bledny-adres");
+  await password.fill("przykladowe-haslo");
+  await page.getByRole("button", { name: "Pokaż hasło", exact: true }).click();
+  await expect(password).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "Ukryj hasło", exact: true }).click();
+  await expect(password).toHaveAttribute("type", "password");
+  await page.getByRole("button", { name: "Zaloguj się", exact: true }).click();
+  await expect(email).toBeFocused();
+  await expect(email).toHaveAttribute("aria-invalid", "true");
+  expect(sent).toBe(0);
+});
+
+test("owner can search enquiries and switch demonstration roles on a phone", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/#/podglad/owner/zapytania");
+  await expect(
+    page.getByRole("heading", { name: "Zapytania klientów", exact: true }),
+  ).toBeVisible();
+  const search = page.getByRole("searchbox", {
+    name: "Szukaj zapytań",
+    exact: true,
+  });
+  await search.fill("brak-wyniku");
+  await expect(
+    page.getByRole("heading", { name: "Brak pasujących zapytań", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Wyczyść wyszukiwanie zapytań", exact: true })
+    .click();
+  await expect(search).toBeFocused();
+  await expect(
+    page.getByRole("heading", { name: "Zapytanie pokazowe", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Rodzaj zapytania", { exact: true })
+    .selectOption("szafa");
+  await page
+    .getByRole("button", { name: "Pokaż wszystkie zapytania", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Rodzaj zapytania", { exact: true }),
+  ).toHaveValue("all");
+  await page
+    .getByRole("navigation", { name: "Przełącz widok demonstracyjny" })
+    .getByRole("link", { name: "Pracownik", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Panel pracownika", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
 });

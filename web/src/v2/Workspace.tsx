@@ -1,4 +1,12 @@
-import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   IconArrowRight,
   IconArrowUpRight,
@@ -14,7 +22,9 @@ import {
   IconUsers,
   IconMail,
 } from "@tabler/icons-react";
-import { Widok3D } from "../views/Widok3D";
+const Widok3D = lazy(() =>
+  import("../views/Widok3D").then((m) => ({ default: m.Widok3D })),
+);
 import { Rzut } from "../views/Rzut";
 import { Elewacja } from "../views/Elewacja";
 import type { Analiza } from "../api";
@@ -67,7 +77,14 @@ export function Workspace({
   );
   const params = new URLSearchParams(location.hash.split("?")[1] ?? "");
   const [query, setQuery] = useState(params.get("q") ?? "");
-  const [filter, setFilter] = useState("all");
+  const validFilter = (value: string | null) =>
+    ["all", "active", "production", "installation", "done"].includes(
+      value ?? "",
+    )
+      ? value!
+      : "all";
+  const [filter, setFilter] = useState(() => validFilter(params.get("etap")));
+  const searchInput = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState(params.get("projekt") ?? "");
   const [newProject, setNewProject] = useState(false);
   const projects = list.data ?? [];
@@ -77,13 +94,29 @@ export function Workspace({
       (filter === "all" ||
         (filter === "done"
           ? p.status === "zakonczony"
-          : p.status !== "zakonczony")),
+          : filter === "production"
+            ? p.status === "produkcja"
+            : filter === "installation"
+              ? p.status === "gotoweDoMontazu"
+              : p.status !== "zakonczony")),
   );
   const id = visible.some((p) => p.id === selected)
     ? selected
     : (visible[0]?.id ?? "");
   useEffect(() => {
+    const sync = () => {
+      const next = new URLSearchParams(location.hash.split("?")[1] ?? "");
+      setQuery(next.get("q") ?? "");
+      setFilter(validFilter(next.get("etap")));
+      setSelected(next.get("projekt") ?? "");
+    };
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+  useEffect(() => {
+    if (list.busy || list.error) return;
     const next = new URLSearchParams();
+    if (filter !== "all") next.set("etap", filter);
     if (query) next.set("q", query);
     if (id) next.set("projekt", id);
     history.replaceState(
@@ -91,7 +124,7 @@ export function Workspace({
       "",
       `${location.hash.split("?")[0]}${next.size ? `?${next}` : ""}`,
     );
-  }, [id, query]);
+  }, [id, query, filter, list.busy, list.error]);
   return (
     <>
       {(owner || employee) && (
@@ -196,6 +229,7 @@ export function Workspace({
           <div className="ps-search">
             <IconSearch size={17} />
             <input
+              ref={searchInput}
               type="search"
               aria-label="Szukaj projektów"
               placeholder="Szukaj projektu…"
@@ -205,7 +239,10 @@ export function Workspace({
             {query && (
               <button
                 aria-label="Wyczyść wyszukiwanie"
-                onClick={() => setQuery("")}
+                onClick={() => {
+                  setQuery("");
+                  searchInput.current?.focus();
+                }}
               >
                 <IconX size={16} />
               </button>
@@ -219,6 +256,8 @@ export function Workspace({
             {[
               ["all", "Wszystkie"],
               ["active", "W trakcie"],
+              ["production", "W produkcji"],
+              ["installation", "Do montażu"],
               ["done", "Zakończone"],
             ].map(([v, label]) => (
               <button
@@ -230,6 +269,11 @@ export function Workspace({
               </button>
             ))}
           </div>
+          {!list.busy && !list.error && (
+            <p className="ps-project-count" role="status">
+              Widoczne projekty: {visible.length} z {projects.length}
+            </p>
+          )}
           {list.busy ? (
             <p className="ps-loading" role="status">
               Wczytywanie projektów…
@@ -273,9 +317,16 @@ export function Workspace({
                     ? "Nie masz jeszcze projektów."
                     : "Nie udostępniono Ci jeszcze projektów."}
               </p>
-              {query && (
-                <button className="ps-text-button" onClick={() => setQuery("")}>
-                  Wyczyść wyszukiwanie
+              {(query || filter !== "all") && (
+                <button
+                  className="ps-text-button"
+                  onClick={() => {
+                    setQuery("");
+                    setFilter("all");
+                    searchInput.current?.focus();
+                  }}
+                >
+                  Pokaż wszystkie projekty
                 </button>
               )}
             </div>
@@ -299,11 +350,23 @@ export function Workspace({
         ) : (
           <section className="ps-empty ps-workspace-empty">
             <IconFolder size={45} stroke={1.2} />
-            <h2>Tu zaczyna się projekt</h2>
+            <h2>
+              {list.busy
+                ? "Wczytywanie projektów…"
+                : list.error
+                  ? "Nie udało się wczytać projektów"
+                  : query || filter !== "all"
+                    ? "Brak pasujących projektów"
+                    : "Tu zaczyna się projekt"}
+            </h2>
             <p>
-              {query
-                ? "Zmień wyszukiwanie, aby zobaczyć projekt."
-                : "Po wybraniu projektu zobaczysz jego podgląd, wymiary i materiały."}
+              {list.busy
+                ? "Za chwilę zobaczysz udostępnione dane."
+                : list.error
+                  ? "Ponów odczyt na liście projektów."
+                  : query || filter !== "all"
+                    ? "Zmień wyszukiwanie lub filtr, aby zobaczyć projekt."
+                    : "Po wybraniu projektu zobaczysz jego podgląd, wymiary i materiały."}
             </p>
           </section>
         )}
@@ -418,7 +481,7 @@ function ProjectDetail({
                 role="group"
                 aria-label="Widok projektu"
               >
-                {demo && id === "pokaz-kuchnia" && (
+                {demo && !technicalOnly && id === "pokaz-kuchnia" && (
                   <button
                     aria-pressed={view === "image"}
                     onClick={() => setView("image")}
@@ -473,14 +536,22 @@ function ProjectDetail({
                 </figure>
               ) : view === "3d" ? (
                 <CanvasBoundary key={room.id}>
-                  <Widok3D
-                    analiza={a}
-                    pomieszczenieId={room.id}
-                    scianaId={wallId}
-                    wybrany={selectedModule}
-                    matMap={mats}
-                    onWybierz={setSelectedModule}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="ps-empty" role="status">
+                        Wczytywanie podglądu 3D…
+                      </div>
+                    }
+                  >
+                    <Widok3D
+                      analiza={a}
+                      pomieszczenieId={room.id}
+                      scianaId={wallId}
+                      wybrany={selectedModule}
+                      matMap={mats}
+                      onWybierz={setSelectedModule}
+                    />
+                  </Suspense>
                 </CanvasBoundary>
               ) : (
                 <Rzut
@@ -489,7 +560,10 @@ function ProjectDetail({
                   scianaId={wallId}
                   wybrany={selectedModule}
                   matMap={mats}
-                  onSciana={setWall}
+                  onSciana={(value) => {
+                    setWall(value);
+                    setSelectedModule(null);
+                  }}
                   onWybierz={setSelectedModule}
                 />
               )}
@@ -510,7 +584,10 @@ function ProjectDetail({
                 <button
                   key={w.id}
                   aria-pressed={wallId === w.id}
-                  onClick={() => setWall(w.id)}
+                  onClick={() => {
+                    setWall(w.id);
+                    setSelectedModule(null);
+                  }}
                 >
                   {w.nazwa}
                   <span>{w.dlugoscMM.toLocaleString("pl-PL")} mm</span>
@@ -568,6 +645,36 @@ function ProjectDetail({
       </section>
       <aside className="ps-project-inspector">
         <h2>Projekt</h2>
+        {selectedModule &&
+          (() => {
+            const module = p.moduly.find((m) => m.id === selectedModule);
+            if (!module) return null;
+            const parts = a.zbudowane.find((z) => z.modul.id === module.id)
+              ?.elementy.length;
+            return (
+              <section
+                className="ps-selected-module"
+                aria-label="Wybrana szafka"
+              >
+                <span className="ps-eyebrow">Wybrana szafka</span>
+                <h3>{module.nazwa}</h3>
+                <p className="ps-module-dimensions">
+                  {module.szerokoscMM} × {module.wysokoscMM} ×{" "}
+                  {module.glebokoscMM} mm
+                </p>
+                <p className="ps-muted">
+                  Szerokość × wysokość × głębokość korpusu.
+                </p>
+                {parts !== undefined && <p>Elementy modelu: {parts}</p>}
+                <button
+                  className="ps-text-button"
+                  onClick={() => setSelectedModule(null)}
+                >
+                  Wyczyść wybór szafki
+                </button>
+              </section>
+            );
+          })()}
         <dl className="ps-detail-list">
           <div>
             <dt>Nazwa</dt>

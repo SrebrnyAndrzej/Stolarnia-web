@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { IconMail, IconUsers } from "@tabler/icons-react";
+import { useRef, useState, type FormEvent } from "react";
+import { IconMail, IconUsers, IconSearch, IconX } from "@tabler/icons-react";
 import { Feedback } from "./ui";
 import {
   date,
@@ -29,6 +29,17 @@ export function Requests({ demo }: { demo: boolean }) {
       },
     ],
   );
+  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState("all");
+  const search = useRef<HTMLInputElement>(null);
+  const visible = (list.data ?? []).filter(
+    (r) =>
+      (kind === "all" || r.kind === kind) &&
+      [r.name, r.city, r.email, r.description]
+        .join(" ")
+        .toLocaleLowerCase("pl")
+        .includes(query.trim().toLocaleLowerCase("pl")),
+  );
   return (
     <section className="ps-owner-page">
       <span className="ps-eyebrow">Kontakt z klientami</span>
@@ -37,13 +48,65 @@ export function Requests({ demo }: { demo: boolean }) {
         Opisy przesłane przez formularz na stronie Pan Stolarz. Lista pokazuje
         do 100 najnowszych zgłoszeń.
       </p>
+      <div className="ps-request-tools">
+        <div className="ps-search">
+          <IconSearch size={18} aria-hidden="true" />
+          <input
+            ref={search}
+            type="search"
+            aria-label="Szukaj zapytań"
+            placeholder="Imię, miejscowość lub opis…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          {query && (
+            <button
+              aria-label="Wyczyść wyszukiwanie zapytań"
+              onClick={() => {
+                setQuery("");
+                search.current?.focus();
+              }}
+            >
+              <IconX size={18} />
+            </button>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="request-kind">Rodzaj zapytania</label>
+          <select
+            id="request-kind"
+            className="input"
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+          >
+            <option value="all">Wszystkie rodzaje</option>
+            <option value="kuchnia">Kuchnie</option>
+            <option value="szafa">Szafy i garderoby</option>
+            <option value="inne">Inne zabudowy</option>
+          </select>
+        </div>
+        {!demo && (
+          <button
+            className="ps-button secondary"
+            onClick={list.retry}
+            disabled={list.busy}
+          >
+            Odśwież zapytania
+          </button>
+        )}
+      </div>
+      {!list.busy && !list.error && (
+        <p className="ps-project-count" role="status">
+          Widoczne zapytania: {visible.length} z {list.data?.length ?? 0}
+        </p>
+      )}
       {list.busy ? (
         <p role="status">Wczytywanie zapytań…</p>
       ) : list.error ? (
         <Feedback retry={list.retry}>{list.error}</Feedback>
-      ) : list.data?.length ? (
+      ) : visible.length ? (
         <div className="ps-request-list">
-          {list.data.map((r) => (
+          {visible.map((r) => (
             <article key={r.id}>
               <header>
                 <div>
@@ -68,8 +131,28 @@ export function Requests({ demo }: { demo: boolean }) {
       ) : (
         <div className="ps-empty">
           <IconMail size={36} />
-          <h2>Jeszcze bez zapytań</h2>
-          <p>Nowe zgłoszenia ze strony pojawią się tutaj.</p>
+          <h2>
+            {list.data?.length
+              ? "Brak pasujących zapytań"
+              : "Jeszcze bez zapytań"}
+          </h2>
+          <p>
+            {list.data?.length
+              ? "Zmień wpisaną frazę lub rodzaj zapytania."
+              : "Nowe zgłoszenia ze strony pojawią się tutaj."}
+          </p>
+          {(query || kind !== "all") && (
+            <button
+              className="ps-button secondary"
+              onClick={() => {
+                setQuery("");
+                setKind("all");
+                search.current?.focus();
+              }}
+            >
+              Pokaż wszystkie zapytania
+            </button>
+          )}
         </div>
       )}
     </section>
