@@ -167,3 +167,5 @@ Codex dodał publiczny adapter UI w `web/src/v2/planner`, bez zmian w src/core. 
 
 ## Dwie animacje na stronę główną
 Plan miejsc i kontrakt przekazania: `docs/ANIMACJE-STRONA-GLOWNA.md`. A zastępuje obraz hero; B między ofertą a „Jak działamy”. Temat i format materiałów Claude pozostają do potwierdzenia po ich otrzymaniu. Nie publikować pustych placeholderów. Integracja zachowuje statyczne CTA, poster, pauzę i reduced-motion.
+
+Uściślenie użytkownika: przejazd kuchni ma być sterowany postępem scrollowania w obie strony (scrub). Preferowany komponent z parametrem progress 0–1, bez własnej blokady scrolla. Plan doprecyzowany w ANIMACJE-STRONA-GLOWNA.md; nie zastępować mechanizmu zwykłym autoplay.
