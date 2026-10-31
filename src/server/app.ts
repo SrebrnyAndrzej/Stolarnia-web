@@ -14,6 +14,7 @@ import { KonfliktZapisu, Magazyn, konfiguracjaChmury } from "../store/store.js";
 import { z } from "zod";
 import { AccessError, createAccess, mayReadProject, type Principal } from "./access.js";
 import { projectSummary, technicalView } from "./technical.js";
+import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
@@ -123,6 +124,36 @@ app.get("/api/v2/projects/:id", v2((req, person) => {
   if (!s.magazyn.odczytaj().projekty.some(p => p.id === id)) throw new AccessError(404, "Nie znaleziono projektu.");
   return technicalView(s, id);
 }));
+const technicalDocumentQuery = z.object({
+  wydanie: z.string().min(1).max(80).optional(),
+  rodzaj: z.enum(["techniczne", "montazowe"]).default("techniczne"),
+  modul: z.string().min(1).max(80).optional(),
+  rewizja: z.coerce.number().int().min(0).optional(),
+}).strict();
+app.get("/api/v2/projects/:id/documents", v2((req, person) => {
+  const parsed = technicalDocumentQuery.safeParse(req.query);
+  if (!parsed.success) throw new AccessError(400, "Niepoprawny wybór dokumentacji.");
+  return technicalDocuments(s, person, p(req, "id"), parsed.data.wydanie);
+}));
+app.get("/api/v2/projects/:id/documents.pdf", async (req, res) => {
+  try {
+    const person = res.locals.person as Principal;
+    const id = p(req, "id");
+    requireTechnicalDocuments(s, person, id);
+    const parsed = technicalDocumentQuery.safeParse(req.query);
+    if (!parsed.success || parsed.data.rewizja === undefined) throw new AccessError(400, "Wybierz rewizję dokumentacji przed wydrukiem.");
+    const q = parsed.data;
+    const source = documentSource(s, person, id, q.wydanie);
+    if (source.document.rewizja !== q.rewizja) throw new AccessError(409, "Projekt zmienił się. Odśwież dokumentację i ponownie wybierz wydruk.");
+    if (q.modul && !source.document.czesci.some(c => c.modulId === q.modul)) throw new AccessError(404, "Nie znaleziono szafki w tej dokumentacji.");
+    const wybor = { skrocony: q.rodzaj === "montazowe", moduly: q.modul ? [q.modul] : undefined, ukryjDaneKlienta: true };
+    const pdf = q.wydanie ? (await s.wydaniePdf(id, q.wydanie, wybor)).pdf : await s.dokumentacjaPdf(id, wybor);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Disposition", `inline; filename="karty-${q.rodzaj}-rew${q.rewizja}.pdf"`);
+    res.send(pdf);
+  } catch (error) { access.fail(res, error); }
+});
 app.get("/api/v2/requests", v2(async (_req, person) => {
   if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do zapytań klientów.");
   const { data, error } = await access.admin!.from("pan_stolarz_requests").select("id,created_at,name,email,kind,city,description,status").order("created_at", { ascending: false }).limit(100);

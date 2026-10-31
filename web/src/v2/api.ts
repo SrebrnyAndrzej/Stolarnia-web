@@ -23,6 +23,7 @@ export interface CustomerRequest {
 export async function request<T>(
   url: string,
   options: RequestInit = {},
+  format: "json" | "pdf" = "json",
 ): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
@@ -37,6 +38,11 @@ export async function request<T>(
       cache: "no-store",
       headers: { "Content-Type": "application/json", ...options.headers },
     });
+    if (r.ok && format === "pdf") {
+      if (!r.headers.get("content-type")?.includes("application/pdf"))
+        throw new Error("Serwer nie zwrócił pliku PDF. Spróbuj ponownie.");
+      return (await r.blob()) as T;
+    }
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
       if (
@@ -78,3 +84,6 @@ export const date = (s: string) =>
     month: "2-digit",
     year: "numeric",
   }).format(new Date(s));
+
+export const requestPdf = (url: string, signal?: AbortSignal) =>
+  request<Blob>(url, { signal }, "pdf");

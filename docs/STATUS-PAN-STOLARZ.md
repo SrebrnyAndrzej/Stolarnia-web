@@ -33,3 +33,6 @@ Pakiet dla Claude: `docs/handoff/CLAUDE-ZADANIA.md`. Status: przygotowany, niepr
 ## Ekrany właściciela i pracownika — bieżąca iteracja
 
 Wspólny widok projektów otrzymał oddzielne nagłówki ról, podsumowania etapów oraz skróty: właściciel do zapytań i zarządzania dostępem, pracownik do kalkulatora. Liczniki nie tworzą terminów ani zadań, których brak w danych. Bez zmian w API/silniku/uprawnieniach. Test pracownika dodatkowo sprawdza brak żądań finansowych. Do pokazania bez logowania: `#/podglad/owner/projekty` i `#/podglad/employee/projekty` — jawne dane przykładowe.
+
+## Dokumentacja i wydruk
+Właściciel i pracownik mają w projekcie przycisk „Dokumentacja techniczna”. Pełne PDF-y techniczne i skrócone karty montażowe wykorzystują istniejący generator; zakres cały projekt lub szafka. Pracownik drukuje z zapisanego wydania przypisanego projektu, właściciel również z bieżącej rewizji. Wydania tworzy dotychczasowy panel Produkcja. Brak wydania jest jawny; roboczy status nie znika. API sprawdza uprawnienia i rewizję, bez finansów i danych klienta. Demo zawiera wyłącznie syntetyczne przykładowe pliki. To integracja dokumentacji, nie nowa implementacja silnika ani zatwierdzenie konstrukcji do produkcji.

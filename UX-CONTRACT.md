@@ -63,3 +63,15 @@ Aktualne media: dostarczony film kuchni Darii v2 w hero i film składania szafki
 
 ## Pulpity ról — 31.10.2026
 `Workspace.tsx` pokazuje kontekst roli nad wspólną przestrzenią projektu. Właściciel: aktywne projekty, produkcja, gotowe do montażu i przejścia do zapytań oraz przydziału dostępu. Pracownik: przypisane projekty, ich etapy i kalkulator szuflad; bez żądań finansowych i uprawnień edycji. Liczniki wynikają wyłącznie z listy zwróconej dla konta; podczas odczytu pokazują wielokropek, przy błędzie kreskę, nigdy fikcyjne zero. Wspólna lista, 2D/3D i inspektor zachowują kontrakt odczytu. Demonstracja nadal ma dane syntetyczne i nie loguje użytkownika.
+
+## Dokumentacja warsztatowa i druk — 31.10.2026
+
+Źródło reguł: docs/WYTYCZNE.md (ta sama rewizja i jawna gotowość), istniejący Production.tsx (pracownik drukuje zamrożone wydanie), src/server/access.ts (role i przydziały). Właściciel i pracownik otwierają dokumentację z Workspace.tsx. Klient nie ma tego wejścia ani dostępu do endpointów.
+
+Kanoniczny komponent ProjectDocuments.tsx korzysta z useResource/requestPdf, natywnych selectów i Feedback. PDF generuje istniejący silnik przez adapter src/server/documents.ts i /api/v2/projects/:id/documents(.pdf). Nie zmieniono reguł konstrukcyjnych src/core. Właściciel może czytać bieżącą dokumentację lub wybrane wydanie; pracownik tylko wydania przypisanych projektów, domyślnie najnowsze. Brak wydania wyjaśnia brak wydruku. Nowe wydanie tworzy właściciel w istniejącym panelu produkcji, nie ten odczyt.
+
+Karty techniczne = pełny pakiet istniejącego generatora, z kartami szafek i osobnymi rysunkami części. Karty montażowe = istniejący pakiet skrócony, z rzutami, zbiorczymi kartami, częściami i okuciami. Nie dodano nowych instrukcji technologicznych ani nie zadeklarowano pełnej weryfikacji warsztatowej. Oba zakresy można ograniczyć do szafki. Wybrana rewizja jest kontrolowana przez serwer; jej zmiana zwraca 409. Roboczy status i braki danych pozostają w UI i PDF, również w historycznym wydaniu.
+
+Adapter zwraca jawny zestaw pól podsumowania bez notatek wydania, danych klienta, cen, umów i migawki. PDF warsztatowy ukrywa pole klienta; brak kwot i finansów potwierdzono ekstrakcją tekstu w izolowanych testach. Legacy eksporty pozostają owner-only. Każde pobranie sprawdza aktywną rolę i przydział, odpowiedzi private/no-store. PDF przechowywany w pamięci przeglądarki jako Blob, URL sprzątany po zmianie zakresu/zamknięciu. Błąd zachowuje wybór i umożliwia ponowienie. Zamknięcie przywraca fokus. Wydruk z podglądu PDF w nowej karcie; bez automatycznego otwierania popupu po await.
+
+Demo ma statyczne PDF-y syntetycznej szafki, niezależne od wybranego przykładowego projektu, wyraźnie oznaczone jako nieprodukcyjne. Nie pobiera dokumentacji prywatnej. Skrypt odtwarzania: scripts/generate-technical-demo.mts, wyłącznie lokalny magazyn tymczasowy. Testy: tests/v2/documents.spec.ts, scripts/verify-v2-access.mjs.

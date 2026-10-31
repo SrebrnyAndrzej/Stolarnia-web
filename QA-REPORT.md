@@ -1,3 +1,13 @@
+## Dokumentacja techniczna i montażowa — 31.10.2026
+
+- `npm run typecheck` i `npm run build`: poprawne, istniejące ostrzeżenie dużego chunka 3D bez zmian.
+- `node --import tsx scripts/verify-v2-access.mjs`: 38 kontroli API, izolowana baza i mock auth. Dokumenty oraz PDF: role, przydział, nieaktywne konto, rewizja, błędny moduł/wydanie, cache i brak danych prywatnych. Tekst rzeczywistych PDF-ów sprawdzony przez pdftotext, w tym pełny pakiet właściciela i karty pracownika z zamrożonego wydania po zmianie bieżącego projektu.
+- `tests/v2/documents.spec.ts`: 4/4 poprawne po poprawieniu zakresu selektora alertu i oczekiwania na lazy-loaded widok. Przygotowanie, błąd i ponowienie, zachowanie zakresu, pobranie Blob/PDF, mobilny reflow, brak wydania oraz syntetyczny demo PDF.
+- `tests/v2/interface.spec.ts`: 6/6 poprawne w przebiegu z nową dokumentacją (pierwszy przebieg miał 2 błędy w nowych testach dokumentacji, następnie poprawione jak wyżej).
+- `src/pdf.test.ts` i `src/wydania.test.ts`: 3/3 poprawne. Potwierdzono domyślny generator i niezmienność wydania.
+- Audyt statyczny premium strict: 0 findings. Axe na otwartym panelu dokumentacji pracownika przy 390×844: 0 serious/critical, brak poziomego overflow. Obejrzano raster wektorowej karty szafki (wymiary, części, tabela operacji, okucia i status roboczy).
+- Wydruk sprawdzono do etapu wygenerowania i pobrania PDF; nie wykonano fizycznego wydruku ani warsztatowego odbioru konstrukcji. Prawdziwe konta nadal wymagają konfiguracji środowiska/migracji.
+
 ## Iteracja 31.10.2026 — układ strony i ekrany ról
 
 - Typecheck i build: poprawne; pozostaje ostrzeżenie Vite o dużym istniejącym chunku 3D.

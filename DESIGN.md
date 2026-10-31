@@ -77,3 +77,6 @@ Research przyszłego kierunku komunikacji oraz roboczy brief do pracy z Claude: 
 
 ## Pulpity ról — 31.10.2026
 `Workspace.tsx` pokazuje kontekst roli nad wspólną przestrzenią projektu. Właściciel: aktywne projekty, produkcja, gotowe do montażu i przejścia do zapytań oraz przydziału dostępu. Pracownik: przypisane projekty, ich etapy i kalkulator szuflad; bez żądań finansowych i uprawnień edycji. Liczniki wynikają wyłącznie z listy zwróconej dla konta; podczas odczytu pokazują wielokropek, przy błędzie kreskę, nigdy fikcyjne zero. Wspólna lista, 2D/3D i inspektor zachowują kontrakt odczytu. Demonstracja nadal ma dane syntetyczne i nie loguje użytkownika.
+
+## Dokumentacja w przestrzeni projektu
+Przycisk „Dokumentacja techniczna” obok nagłówka projektu otwiera sekcję w naturalnym przepływie, bez modala. ProjectDocuments.tsx używa istniejących tokenów, przycisków, pól i Feedback. Natywne selecty są wyborem platformowym. Dwie akcje prowadzą do PDF technicznego i skróconego montażowego; link do druku pojawia się dopiero po pobraniu dokumentu. Na telefonie akcje układają się pionowo. Klient nie otrzymuje dokumentacji warsztatowej. Nie projektujemy nowego szablonu rysunków: zachowujemy istniejący generator wektorowy, skalę, mm i oznaczenia rewizji.

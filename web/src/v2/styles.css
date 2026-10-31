@@ -2234,3 +2234,97 @@ summary:focus-visible {
     width: 100%;
   }
 }
+
+.ps-project-documents-entry {
+  margin: 16px 0;
+}
+.ps-documents {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: clamp(16px, 2vw, 24px);
+  margin: 16px 0 24px;
+  background: var(--bg);
+}
+.ps-documents-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ps-documents h3 {
+  font-size: 22px;
+  line-height: 1.3;
+  margin: 8px 0 12px;
+}
+.ps-documents p,
+.ps-documents li {
+  line-height: 1.7;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.ps-documents .field {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0;
+}
+.ps-documents .input {
+  width: 100%;
+  min-width: 0;
+}
+.ps-document-warning {
+  border-left: 3px solid var(--accent);
+  padding: 12px;
+  background: var(--panel);
+}
+.ps-documents-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.ps-documents-stats dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+.ps-documents-stats dd {
+  margin: 4px 0;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.ps-document-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.ps-document-actions .ps-button {
+  min-height: 48px;
+}
+.ps-documents details {
+  margin: 20px 0;
+}
+.ps-documents summary {
+  cursor: pointer;
+  padding: 12px 0;
+}
+.ps-documents summary:hover {
+  color: var(--accent);
+}
+.ps-documents summary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+.ps-document-result {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 12px;
+}
+.ps-document-result .ps-under-link {
+  display: inline-block;
+  margin: 12px;
+}
+@media (max-width: 520px) {
+  .ps-document-actions .ps-button {
+    width: 100%;
+  }
+}

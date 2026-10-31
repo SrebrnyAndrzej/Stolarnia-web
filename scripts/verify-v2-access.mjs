@@ -1,7 +1,8 @@
 // Isolated integration checks. Supabase responses are mocked; no real credentials
 // or production database are used. Exercises the actual Express middleware/routes.
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 process.env.SUPABASE_URL = "https://auth-test.invalid";
@@ -20,6 +21,26 @@ const project = service.utworzProjekt({
   klient: { nazwa: "PRIVATE NAME", email: "private@example.com" },
 });
 const other = service.utworzProjekt({ nazwa: "Other private project" });
+const room = service.dodajPomieszczenie(project.id, { nazwa: "Workshop" });
+const furniture = service.dodajModul(project.id, {
+  scianaId: room.sciany[0].id,
+  nazwa: "Test cabinet",
+  konstrukcja: "shelves",
+  kategoria: "base",
+  szerokoscMM: 600,
+  wysokoscMM: 720,
+  glebokoscMM: 560,
+});
+local.zmien((b) => {
+  const p = b.projekty.find((p) => p.id === project.id);
+  p.cenaUzgodnionaBrutto = 99999;
+  p.notatki = "FINANCIAL SECRET";
+});
+const release = service.utworzWydanie(project.id, {
+  notatka: "PRIVATE RELEASE NOTE",
+});
+// A later live revision must not change the frozen print package.
+service.zmienModul(project.id, furniture.id, { pozycjaXMM: 100 });
 const database = local.odczytaj();
 database.projekty[0].cenaUzgodnionaBrutto = 99999;
 database.projekty[0].notatki = "FINANCIAL SECRET";
@@ -137,14 +158,111 @@ try {
     200,
   );
   checks++;
+  const docsBase = `/api/v2/projects/${project.id}/documents`;
+  const docs = await get(docsBase);
+  assert.equal(docs.response.status, 200);
+  const selectedDocs = JSON.parse(docs.text);
+  assert.equal(selectedDocs.selectedRelease, release.id);
+  assert.equal(selectedDocs.document.revision, release.rewizja);
+  assert.notEqual(selectedDocs.currentRevision, release.rewizja);
+  for (const secret of [
+    "PRIVATE",
+    "private@example",
+    "99999",
+    "cena",
+    "notatka",
+    "dane",
+  ])
+    assert.equal(docs.text.includes(secret), false, secret);
+  checks++;
+  assert.equal(
+    (await get(`/api/v2/projects/${other.id}/documents`)).response.status,
+    403,
+  );
+  checks++;
+  assert.equal((await get(`${docsBase}?wydanie=missing`)).response.status, 404);
+  checks++;
+  assert.equal(
+    (await get(`${docsBase}.pdf?rewizja=${release.rewizja}`)).response.status,
+    403,
+  );
+  checks++;
+  assert.equal(
+    (await get(`${docsBase}.pdf?wydanie=${release.id}&rewizja=999999`)).response
+      .status,
+    409,
+  );
+  checks++;
+  assert.equal(
+    (
+      await get(
+        `${docsBase}.pdf?wydanie=${release.id}&rewizja=${release.rewizja}&modul=missing`,
+      )
+    ).response.status,
+    404,
+  );
+  checks++;
+  assert.equal(
+    (
+      await get(
+        `${docsBase}.pdf?wydanie=${release.id}&rewizja=${release.rewizja}&rodzaj=oferta`,
+      )
+    ).response.status,
+    400,
+  );
+  checks++;
+  assert.equal(
+    (await get(`${docsBase}.pdf?wydanie=${release.id}`)).response.status,
+    400,
+  );
+  checks++;
+  for (const kind of ["techniczne", "montazowe"]) {
+    const response = await originalFetch(
+      `${base}${docsBase}.pdf?wydanie=${release.id}&rewizja=${release.rewizja}&rodzaj=${kind}&modul=${furniture.id}`,
+      { headers: { authorization: "Bearer valid" } },
+    );
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type"), /application\/pdf/);
+    assert.match(response.headers.get("cache-control"), /no-store/);
+    const pdf = Buffer.from(await response.arrayBuffer());
+    assert.equal(pdf.subarray(0, 5).toString(), "%PDF-");
+    const file = join(directory, `${kind}.pdf`);
+    writeFileSync(file, pdf);
+    const text = execFileSync("pdftotext", [file, "-"], { encoding: "utf8" });
+    assert.match(text, /Test cabinet/);
+    assert.match(text, /DOKUMENT ROBOCZY/);
+    for (const secret of [
+      "PRIVATE",
+      "99999",
+      "FINANCIAL",
+      "private@example",
+      "marża",
+      "cena netto",
+    ])
+      assert.equal(text.includes(secret), false, secret);
+    checks++;
+  }
   active = false;
   assert.equal(
     (await get(`/api/v2/projects/${project.id}`)).response.status,
     403,
   );
   checks++;
+  assert.equal((await get(docsBase)).response.status, 403);
+  checks++;
   active = true;
   role = "client";
+  assert.equal((await get(docsBase)).response.status, 403);
+  checks++;
+  assert.equal(
+    (
+      await get(
+        `${docsBase}.pdf?wydanie=${release.id}&rewizja=${release.rewizja}`,
+      )
+    ).response.status,
+    403,
+  );
+  checks++;
   assert.equal((await get("/api/systemy-szuflad")).response.status, 403);
   checks++;
   assert.equal(
@@ -153,10 +271,40 @@ try {
   );
   checks++;
   role = "owner";
+  assert.equal((await get(docsBase)).response.status, 200);
+  checks++;
+  assert.equal(
+    (
+      await get(
+        `${docsBase}.pdf?rewizja=${service.projekt(project.id).rewizja}&rodzaj=montazowe`,
+      )
+    ).response.status,
+    200,
+  );
+  checks++;
   assert.equal(
     (await get(`/api/projekty/${project.id}/analiza`)).response.status,
     200,
   );
+  checks++;
+  const ownerPdf = await originalFetch(
+    `${base}${docsBase}.pdf?rewizja=${service.projekt(project.id).rewizja}`,
+    { headers: { authorization: "Bearer valid" } },
+  );
+  assert.equal(ownerPdf.status, 200);
+  const ownerFile = join(directory, "owner-full.pdf");
+  writeFileSync(ownerFile, Buffer.from(await ownerPdf.arrayBuffer()));
+  const ownerText = execFileSync("pdftotext", [ownerFile, "-"], {
+    encoding: "utf8",
+  });
+  assert.match(ownerText, /Dokumentacja produkcyjna/);
+  for (const secret of [
+    "PRIVATE NAME",
+    "FINANCIAL SECRET",
+    "99999",
+    "private@example.com",
+  ])
+    assert.equal(ownerText.includes(secret), false, secret);
   checks++;
   const csrf = await originalFetch(base + "/api/v2/logout", {
     method: "POST",

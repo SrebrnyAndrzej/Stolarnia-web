@@ -870,10 +870,10 @@ export class Stolarnia {
   }
 
   /** Pakiet PDF całej kuchni — ta sama rewizja co dokumentacja(). */
-  async dokumentacjaPdf(projektId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean } = {}): Promise<Buffer> {
+  async dokumentacjaPdf(projektId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean; ukryjDaneKlienta?: boolean } = {}): Promise<Buffer> {
     const a = this.analiza(projektId);
     const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
-    return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony });
+    return dokumentacjaPdf({ projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony, ukryjDaneKlienta: wybor.ukryjDaneKlienta });
   }
 
   // ---------- Wydania produkcyjne (P03) ----------
@@ -928,9 +928,9 @@ export class Stolarnia {
     return this.migawkaWydania(projektId, wydanieId).dokumentacja;
   }
 
-  async wydaniePdf(projektId: string, wydanieId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean } = {}): Promise<{ pdf: Buffer; numer: number; rewizja: number }> {
+  async wydaniePdf(projektId: string, wydanieId: string, wybor: { czesci?: string[]; moduly?: string[]; skrocony?: boolean; ukryjDaneKlienta?: boolean } = {}): Promise<{ pdf: Buffer; numer: number; rewizja: number }> {
     const m = this.migawkaWydania(projektId, wydanieId);
-    const pdf = await dokumentacjaPdf({ projekt: m.projekt, zbudowane: m.zbudowane, dokumentacja: m.dokumentacja, firma: m.firma, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony, wydanie: { numer: m.wydanie.numer, utworzono: m.wydanie.utworzono } });
+    const pdf = await dokumentacjaPdf({ projekt: m.projekt, zbudowane: m.zbudowane, dokumentacja: m.dokumentacja, firma: m.firma, tylkoCzesci: wybor.czesci, tylkoModuly: wybor.moduly, skrocony: wybor.skrocony, ukryjDaneKlienta: wybor.ukryjDaneKlienta, wydanie: { numer: m.wydanie.numer, utworzono: m.wydanie.utworzono } });
     return { pdf, numer: m.wydanie.numer, rewizja: m.wydanie.rewizja };
   }
 

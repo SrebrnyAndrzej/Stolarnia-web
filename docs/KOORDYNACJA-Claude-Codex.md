@@ -185,3 +185,6 @@ Na prośbę użytkownika przygotowano dodatkowo eksport geometrii trzech zapisan
 
 ## 31.10.2026 — ponowne zlecenie współpracy
 Użytkownik prosi o dalszą pracę i przekazanie części zadań Claude. Brak połączenia z Claude w środowisku; pakiet gotowy do podjęcia w `docs/handoff/CLAUDE-ZADANIA.md` (C1 copy, C2 rendery, C3 kontrola animacji). Wspólny kontekst: `docs/STATUS-PAN-STOLARZ.md`. Codex rozwija ścieżki startowe i FAQ, nie silnik.
+
+## 31.10.2026 — dokumentacja w panelach ról
+Na zlecenie użytkownika Codex podłączył istniejące dokumentacjaPdf/wydaniePdf do właściciela i pracownika: dedykowane API v2, zakres projektu/szafki, pełne i skrócone karty, bez finansów i danych klienta. Opcjonalna flaga eksportu ukrywa dane klienta w warsztatowym PDF; domyślny legacy eksport bez zmian. src/core bez zmian. Pracownik drukuje zamrożone wydanie; status roboczy zachowany. Claude nadal prowadzi reguły konstrukcji i kompletność dokumentacji; integracja UI nie potwierdza fizycznego odbioru warsztatowego.

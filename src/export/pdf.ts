@@ -29,6 +29,8 @@ export interface WejsciePdf {
   zbudowane: ZbudowanyModul[];
   dokumentacja: DokumentacjaProjektu;
   firma?: string;
+  /** Wydruk warsztatowy bez danych osobowych klienta. */
+  ukryjDaneKlienta?: boolean;
   /** ID lub etykiety części — tylko ich rysunki zamiast pełnego pakietu. */
   tylkoCzesci?: string[];
   /** ID szafek — tylko ich strony (dokumentacja pojedynczej szafki). */
@@ -152,7 +154,7 @@ class Kontekst {
     y = doc.y + 14;
     doc.font("R").fontSize(10);
     for (const [k, v] of [
-      ["Klient", p.klient.nazwa || "—"],
+      ["Klient", this.w.ukryjDaneKlienta ? "—" : p.klient.nazwa || "—"],
       ["Status projektu", p.status],
       ["Mebli", String(this.w.zbudowane.length)],
       ["Części", String(this.d.czesci.length)],
