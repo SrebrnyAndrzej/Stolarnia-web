@@ -79,7 +79,9 @@ export function KitchenPlanner() {
   const [draft, setDraft] = useState<Draft>(initial.draft);
   const [history, setHistory] = useState<Draft[]>([]);
   const [step, setStep] = useState(0);
-  const [wall, setWall] = useState<"a" | "b" | "c">("a");
+  const [wall, setWall] = useState<"a" | "b" | "c">(
+    initial.draft.items[0]?.wall ?? "a",
+  );
   const [view, setView] = useState<"front" | "plan" | "3d">("front");
   const [selected, setSelected] = useState<string | null>(null);
   const [group, setGroup] = useState("base");
@@ -696,6 +698,7 @@ export function KitchenPlanner() {
                         fallback={<p role="status">Wczytywanie podglądu 3D…</p>}
                       >
                         <View3D
+                          key={wall}
                           fitContainer
                           analiza={analysis}
                           pomieszczenieId="kitchen"

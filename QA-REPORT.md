@@ -39,3 +39,5 @@ Wynik: sprawdzona wersja robocza do przeglądu; **bez deklaracji gotowości prod
 ## Układ U
 
 Rozszerzenie sprawdzone: build/typecheck, 5 testów modelu (w tym geometria U, przepełnienie C i zgodność dawnych szkiców), 3 scenariusze Chromium (U: wybór/wymiar C, kontrola miejsca, blokada utraty szafek przy zmianie układu, odtworzenie, rzut/3D, 390 px, opis w formularzu; regresja L i import starszego formatu). Wszystkie zaliczone. Audyt premium: zero ustaleń. Zrzut: `qa/planner-u.png`.
+
+Po oględzinach U dopasowano start kamery do pierwszej użytej ściany szkicu i zmianę ściany do nowego ujęcia. Ponowny scenariusz U oraz kontrola typów frontendu zaliczone.
