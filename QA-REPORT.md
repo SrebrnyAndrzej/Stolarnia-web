@@ -1,3 +1,7 @@
+## Spokojniejsze otwieranie — 31.10.2026
+
+Zmniejszono limit prędkości czasu filmu z 4× do 1× i zwiększono tłumienie z 0,28 s do 0,45 s. Hero ma 560 svh desktop / 400 svh telefon. Build i 2 testy home-motion poprawne. Pięć scenariuszy hero poprawnych; test telefonu wymagał wydłużenia oczekiwania na przekroczenie 5 s czasu filmu (przy limicie 1× nie może to nastąpić w 5 s testu). Ponowiony scenariusz telefonu poprawny. Potwierdzono pauzę, przewijanie w obie strony, ograniczenie skoków, fallback i reduced-motion.
+
 ## Film hero v4 — 31.10.2026
 
 Dostarczony film 1080p/26 s zoptymalizowano do 720p H.264 (6 166 969 bajtów), bez audio, z częstymi klatkami kluczowymi i faststart. Zaktualizowano źródło hero i poster; nie zmieniono scroll range, tłumienia ani limitów szybkości. Build poprawny, pełne dekodowanie ffmpeg bez błędów. Pięć testów hero poprawnych; szósty miał próg czasu dla wcześniejszego filmu 14 s. Po zastąpieniu progu odsetkiem długości nowego filmu ponowiony test dużego scrolla przeszedł. Zaktualizowano też progi testu dwukierunkowego do rzeczywistej długości. Bez zmian w zasadach motion/reduced-motion. Screenshoty desktop/telefon odzwierciedlają film v4.

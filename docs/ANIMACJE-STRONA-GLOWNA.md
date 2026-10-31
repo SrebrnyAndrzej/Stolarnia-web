@@ -67,3 +67,5 @@ Ostatnie doprecyzowanie: tekst ujawniany jest poprzez opacity i delikatne przesu
 ## Uspokojenie przejazdu po feedbacku
 
 Zakres aktywnego przewijania wzrósł z 65 do 260 svh na komputerze (4×) i z 35 do 180 svh na telefonie (około 5×). HomeIntro nie przypisuje już od razu docelowego czasu filmu: helper home-motion.ts wygładza go w czasie, z limitem skoku po dużym ruchu scrolla i bez oscylacji. Nagłówek/opis również mają wygładzany postęp. Mechanizm zasypia po osiągnięciu celu, poza sekcją i w nieaktywnej karcie. Pause zatrzymuje film, a wznowienie łagodnie dochodzi do aktualnej pozycji.
+
+Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześniej 4), łagodniejsze dochodzenie do kadru 0,45 s. Zakres hero 560 svh desktop / 400 svh telefon. Natywne przewijanie, pauza i ograniczenie ruchu pozostają dostępne.

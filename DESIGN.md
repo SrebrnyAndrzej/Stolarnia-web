@@ -63,7 +63,7 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 
 Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Film wypełnia całą powierzchnię hero jako tło (cover), z ciemną nakładką i tekstem HTML nad nim. Kadrowanie zależy od ekranu. Biała typografia i zielony akcent utrzymują czytelność. Nagłówek i opis ujawniają się ze scrollem, a CTA są zawsze widoczne. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Dostarczony film składania szafki ma osobną sekcję i natywne kontrolki odtwarzania. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.
 
-Tempo intro: zakres 360 svh desktop / 280 svh telefon. Kadr i tekst łagodnie dochodzą do postępu scrolla; bez sprężynowania, oscylacji i przechwytywania gestów. Wygładzanie czasu filmu należy do v2/home-motion.ts.
+Tempo intro: zakres 560 svh desktop / 400 svh telefon. Kadr i tekst łagodnie dochodzą do postępu scrolla; bez sprężynowania, oscylacji i przechwytywania gestów. Wygładzanie czasu filmu należy do v2/home-motion.ts.
 
 ## Składanie szafki i rendery projektów
 
@@ -87,3 +87,5 @@ Demonstracja ma jawny przełącznik trzech ról, oddzielony od prawdziwego logow
 Właściciel wyszukuje w załadowanej liście najnowszych 100 zapytań i filtruje rodzaj. Nie jest to wyszukiwanie całej historii w bazie. Natywny select korzysta z geometrii systemowej; pole search ma dostępny przycisk czyszczenia i zwraca fokus. Dokumentacja używa polskich etykiet diagnostyki i jawnej akcji odświeżenia. Zachowano logo, paletę, typografię oraz spokojne tempo hero.
 
 Renderer 3D w przestrzeni projektów jest importowany dynamicznie po wybraniu widoku 3D. Rzut, dokumentacja i dane projektu pozostają dostępne niezależnie od pobrania renderera. Suspense rezerwuje obszar podglądu i pokazuje polski status ładowania; istniejący CanvasBoundary pozostawia alternatywę 2D po awarii.
+
+Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześniej 4), łagodniejsze dochodzenie do kadru 0,45 s. Zakres hero 560 svh desktop / 400 svh telefon. Natywne przewijanie, pauza i ograniczenie ruchu pozostają dostępne.

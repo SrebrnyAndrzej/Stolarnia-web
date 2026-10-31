@@ -32,11 +32,11 @@ test("intro timeline follows scroll in both directions and can be paused", async
     .evaluate((v: HTMLVideoElement) => v.duration);
   await scrollProgress(page, 0.65);
   await expect
-    .poll(() => time(page), { timeout: 10000 })
+    .poll(() => time(page), { timeout: 25000 })
     .toBeGreaterThan(duration * 0.5);
   await scrollProgress(page, 0.2);
   await expect
-    .poll(() => time(page), { timeout: 10000 })
+    .poll(() => time(page), { timeout: 25000 })
     .toBeLessThan(duration * 0.3);
   await page.getByRole("button", { name: "Wstrzymaj animację" }).click();
   const frozen = await time(page);
@@ -44,7 +44,7 @@ test("intro timeline follows scroll in both directions and can be paused", async
   await expect.poll(() => time(page)).toBeCloseTo(frozen, 1);
   await page.getByRole("button", { name: "Wznów animację" }).click();
   await expect
-    .poll(() => time(page), { timeout: 10000 })
+    .poll(() => time(page), { timeout: 25000 })
     .toBeGreaterThan(duration * 0.5);
   expect(
     await page
@@ -98,7 +98,7 @@ test("phone video fills the hero background and keeps working navigation", async
     )
     .toBeGreaterThanOrEqual(2);
   await scrollProgress(page, 0.5);
-  await expect.poll(() => time(page)).toBeGreaterThan(5);
+  await expect.poll(() => time(page), { timeout: 12000 }).toBeGreaterThan(5);
   const box = await page.locator(".ps-intro-film").boundingBox();
   const hero = await page.locator(".ps-home-intro > .ps-hero").boundingBox();
   expect(box!.width).toBeCloseTo(hero!.width, 0);
@@ -166,6 +166,7 @@ test("hero copy reveals with scroll while actions remain available", async ({
 test("large scroll input is damped instead of jumping through the kitchen", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.goto("/#/");
   await expect
     .poll(
@@ -181,7 +182,7 @@ test("large scroll input is damped instead of jumping through the kitchen", asyn
     .evaluate(
       (el) => (el.getBoundingClientRect().height - innerHeight) / innerHeight,
     );
-  expect(range).toBeCloseTo(2.6, 1);
+  expect(range).toBeCloseTo(4.6, 1);
   const immediate = await page.evaluate(async () => {
     const el = document.querySelector<HTMLElement>(".ps-home-intro")!;
     scrollTo(0, el.offsetTop + (el.offsetHeight - innerHeight) * 0.85);
@@ -192,15 +193,15 @@ test("large scroll input is damped instead of jumping through the kitchen", asyn
     );
     return document.querySelector("video")!.currentTime;
   });
-  expect(immediate).toBeLessThan(1.2);
+  expect(immediate).toBeLessThan(0.4);
   const duration = await page
     .locator(".ps-intro-film video")
     .evaluate((v: HTMLVideoElement) => v.duration);
   await expect
-    .poll(() => time(page), { timeout: 10000 })
+    .poll(() => time(page), { timeout: 25000 })
     .toBeGreaterThan(duration * 0.6);
   await scrollProgress(page, 0.15);
   await expect
-    .poll(() => time(page), { timeout: 10000 })
+    .poll(() => time(page), { timeout: 25000 })
     .toBeLessThan(duration * 0.2);
 });

@@ -2,9 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { advanceMovieTime } from "./home-motion";
 test("large jumps respect the camera speed bound in both directions", () => {
-  assert.ok(advanceMovieTime(0, 14, 1 / 60) <= 4 / 60);
-  assert.ok(advanceMovieTime(14, 0, 1 / 60) >= 14 - 4 / 60);
-  assert.ok(advanceMovieTime(0, 14, 5) <= 4 * 0.064);
+  assert.ok(advanceMovieTime(0, 14, 1 / 60) <= 1 / 60);
+  assert.ok(advanceMovieTime(14, 0, 1 / 60) >= 14 - 1 / 60);
+  assert.ok(advanceMovieTime(0, 14, 5) <= 0.064);
 });
 test("normal scroll settles smoothly without overshooting or oscillating", () => {
   let time = 0;

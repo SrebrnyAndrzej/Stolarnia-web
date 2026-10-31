@@ -42,3 +42,5 @@ Naprawiono rozpoznawanie sekcji panelu z parametrami hash (ważne przy odśwież
 Renderer 3D w panelu projektów jest ładowany dopiero po wyborze 3D; ekran 2D i dokumentacja nie wymagają jego pobrania. Nie zmienia to geometrii ani zachowania silnika. Pozostaje build warning wielkości chunka samego renderera.
 
 Aktualizacja hero: dostarczona Kuchnia-Darii-animacja-v4.mp4 (26 s) zastępuje v2. HomeIntro używa nowych nazw plików, bez zmiany sterowania scrollem i wygładzania.
+
+Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześniej 4), łagodniejsze dochodzenie do kadru 0,45 s. Zakres hero 560 svh desktop / 400 svh telefon. Natywne przewijanie, pauza i ograniczenie ruchu pozostają dostępne.
