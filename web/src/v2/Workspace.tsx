@@ -10,6 +10,9 @@ import {
   IconSearch,
   IconX,
   IconRulerMeasure,
+  IconCalculator,
+  IconUsers,
+  IconMail,
 } from "@tabler/icons-react";
 import { Widok3D } from "../views/Widok3D";
 import { Rzut } from "../views/Rzut";
@@ -54,6 +57,9 @@ export function Workspace({
   demo: boolean;
 }) {
   const owner = person.role === "owner";
+  const employee = person.role === "employee";
+  const panelHref = (page: string) =>
+    demo ? `#/podglad/${person.role}/${page}` : `#/panel/${page}`;
   const list = useResource<ProjectSummary[]>(
     demo ? null : "/api/v2/projects",
     demoProjects,
@@ -86,147 +92,241 @@ export function Workspace({
     );
   }, [id, query]);
   return (
-    <div className="ps-workspace">
-      <section className="ps-project-list">
-        <div className="ps-list-heading">
-          <h1>{person.role === "client" ? "Moje projekty" : "Projekty"}</h1>
-          {owner && !demo && (
-            <button
-              className="ps-icon-button primary"
-              aria-label="Utwórz nowy projekt"
-              onClick={() => setNewProject(true)}
-            >
-              <IconPlus size={22} />
-            </button>
-          )}
-        </div>
-        <div className="ps-search">
-          <IconSearch size={17} />
-          <input
-            type="search"
-            aria-label="Szukaj projektów"
-            placeholder="Szukaj projektu…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {query && (
-            <button
-              aria-label="Wyczyść wyszukiwanie"
-              onClick={() => setQuery("")}
-            >
-              <IconX size={16} />
-            </button>
-          )}
-        </div>
-        <div className="ps-filters" role="group" aria-label="Status projektów">
-          {[
-            ["all", "Wszystkie"],
-            ["active", "W trakcie"],
-            ["done", "Zakończone"],
-          ].map(([v, label]) => (
-            <button
-              key={v}
-              aria-pressed={filter === v}
-              onClick={() => setFilter(v)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        {list.busy ? (
-          <p className="ps-loading" role="status">
-            Wczytywanie projektów…
-          </p>
-        ) : list.error ? (
-          <Feedback retry={list.retry}>{list.error}</Feedback>
-        ) : visible.length ? (
-          <ul className="ps-project-items">
-            {visible.map((p) => (
-              <li key={p.id}>
-                <button
-                  className={p.id === id ? "selected" : ""}
-                  onClick={() => setSelected(p.id)}
-                  aria-pressed={p.id === id}
-                >
-                  <span className="ps-project-thumb">
-                    {demo && p.id === "pokaz-kuchnia" ? (
-                      <img src="/images/kitchen-concept.png" alt="" />
-                    ) : (
-                      <IconFolder size={26} stroke={1.3} />
-                    )}
-                  </span>
-                  <span>
-                    <strong>{p.nazwa}</strong>
-                    <small>{date(p.zmieniono)}</small>
-                    <span className={`ps-status ${p.status}`}>
-                      {NAZWY_STATUSOW[p.status]}
-                    </span>
-                  </span>
-                </button>
-              </li>
+    <>
+      {(owner || employee) && (
+        <section
+          className="ps-role-overview"
+          aria-labelledby="workspace-role-title"
+        >
+          <div className="ps-role-intro">
+            <div>
+              <span className="ps-eyebrow">
+                {owner ? "Twoja stolarnia" : "Twój warsztat"}
+              </span>
+              <h1 id="workspace-role-title">
+                {owner ? "Panel właściciela" : "Panel pracownika"}
+              </h1>
+              <p>
+                {owner
+                  ? "Sprawdź projekty, przygotuj ofertę i przydziel pracę zespołowi."
+                  : "Otwórz przypisany projekt, sprawdź wymiary i skorzystaj z kalkulatora szuflad."}
+              </p>
+            </div>
+            <div className="ps-role-shortcuts" aria-label="Szybkie przejścia">
+              {owner && (
+                <>
+                  <a
+                    className="ps-button secondary"
+                    href={panelHref("zapytania")}
+                  >
+                    <IconMail size={18} aria-hidden="true" />
+                    Zapytania klientów
+                  </a>
+                  <a
+                    className="ps-button secondary"
+                    href={panelHref("pracownicy")}
+                  >
+                    <IconUsers size={18} aria-hidden="true" />
+                    Zarządzaj dostępem
+                  </a>
+                </>
+              )}
+              {employee && (
+                <a className="ps-button" href={panelHref("szuflady")}>
+                  <IconCalculator size={20} aria-hidden="true" />
+                  Otwórz kalkulator szuflad
+                </a>
+              )}
+            </div>
+          </div>
+          <dl
+            className="ps-role-stats"
+            aria-label={
+              owner
+                ? "Podsumowanie projektów"
+                : "Podsumowanie przypisanych projektów"
+            }
+          >
+            {[
+              {
+                label: owner ? "Aktywne projekty" : "Przypisane projekty",
+                value: owner
+                  ? projects.filter((p) => p.status !== "zakonczony").length
+                  : projects.length,
+              },
+              {
+                label: "W produkcji",
+                value: projects.filter((p) => p.status === "produkcja").length,
+              },
+              {
+                label: "Gotowe do montażu",
+                value: projects.filter((p) => p.status === "gotoweDoMontazu")
+                  .length,
+              },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{list.busy ? "…" : list.error ? "—" : value}</dd>
+              </div>
             ))}
-          </ul>
-        ) : (
-          <div className="ps-list-empty">
-            <IconFolder size={29} />
-            <p>
-              {projects.length
-                ? "Nie ma projektów pasujących do wyszukiwania."
-                : person.role === "owner"
-                  ? "Nie masz jeszcze projektów."
-                  : "Nie udostępniono Ci jeszcze projektów."}
+          </dl>
+          {employee && (
+            <p className="ps-work-access-note">
+              Widzisz projekty udostępnione przez właściciela. Dane techniczne
+              są do podglądu; zmiany projektu ustal z właścicielem.
             </p>
-            {query && (
-              <button className="ps-text-button" onClick={() => setQuery("")}>
-                Wyczyść wyszukiwanie
+          )}
+        </section>
+      )}
+      <div className="ps-workspace">
+        <section className="ps-project-list">
+          <div className="ps-list-heading">
+            {owner || employee ? <h2>Projekty</h2> : <h1>Moje projekty</h1>}
+            {owner && !demo && (
+              <button
+                className="ps-icon-button primary"
+                aria-label="Utwórz nowy projekt"
+                onClick={() => setNewProject(true)}
+              >
+                <IconPlus size={22} />
               </button>
             )}
           </div>
-        )}
-        <div className="ps-list-footer">
-          {demo
-            ? "Projekty demonstracyjne"
-            : person.role === "employee"
-              ? "Projekty udostępnione przez właściciela"
-              : "Pan Stolarz · przestrzeń projektów"}
-        </div>
-      </section>
-      {id ? (
-        <ProjectDetail
-          key={`${person.user_id}-${id}`}
-          id={id}
-          owner={owner}
-          demo={demo}
-        />
-      ) : (
-        <section className="ps-empty ps-workspace-empty">
-          <IconFolder size={45} stroke={1.2} />
-          <h2>Tu zaczyna się projekt</h2>
-          <p>
-            {query
-              ? "Zmień wyszukiwanie, aby zobaczyć projekt."
-              : "Po wybraniu projektu zobaczysz jego podgląd, wymiary i materiały."}
-          </p>
+          <div className="ps-search">
+            <IconSearch size={17} />
+            <input
+              type="search"
+              aria-label="Szukaj projektów"
+              placeholder="Szukaj projektu…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            {query && (
+              <button
+                aria-label="Wyczyść wyszukiwanie"
+                onClick={() => setQuery("")}
+              >
+                <IconX size={16} />
+              </button>
+            )}
+          </div>
+          <div
+            className="ps-filters"
+            role="group"
+            aria-label="Status projektów"
+          >
+            {[
+              ["all", "Wszystkie"],
+              ["active", "W trakcie"],
+              ["done", "Zakończone"],
+            ].map(([v, label]) => (
+              <button
+                key={v}
+                aria-pressed={filter === v}
+                onClick={() => setFilter(v)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {list.busy ? (
+            <p className="ps-loading" role="status">
+              Wczytywanie projektów…
+            </p>
+          ) : list.error ? (
+            <Feedback retry={list.retry}>{list.error}</Feedback>
+          ) : visible.length ? (
+            <ul className="ps-project-items">
+              {visible.map((p) => (
+                <li key={p.id}>
+                  <button
+                    className={p.id === id ? "selected" : ""}
+                    onClick={() => setSelected(p.id)}
+                    aria-pressed={p.id === id}
+                  >
+                    <span className="ps-project-thumb">
+                      {demo && p.id === "pokaz-kuchnia" ? (
+                        <img src="/images/kitchen-concept.png" alt="" />
+                      ) : (
+                        <IconFolder size={26} stroke={1.3} />
+                      )}
+                    </span>
+                    <span>
+                      <strong>{p.nazwa}</strong>
+                      <small>{date(p.zmieniono)}</small>
+                      <span className={`ps-status ${p.status}`}>
+                        {NAZWY_STATUSOW[p.status]}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="ps-list-empty">
+              <IconFolder size={29} />
+              <p>
+                {projects.length
+                  ? "Nie ma projektów pasujących do wyszukiwania."
+                  : person.role === "owner"
+                    ? "Nie masz jeszcze projektów."
+                    : "Nie udostępniono Ci jeszcze projektów."}
+              </p>
+              {query && (
+                <button className="ps-text-button" onClick={() => setQuery("")}>
+                  Wyczyść wyszukiwanie
+                </button>
+              )}
+            </div>
+          )}
+          <div className="ps-list-footer">
+            {demo
+              ? "Projekty demonstracyjne"
+              : person.role === "employee"
+                ? "Projekty udostępnione przez właściciela"
+                : "Pan Stolarz · przestrzeń projektów"}
+          </div>
         </section>
-      )}
-      {newProject && (
-        <NewProject
-          onClose={() => {
-            setNewProject(false);
-            list.retry();
-          }}
-        />
-      )}
-    </div>
+        {id ? (
+          <ProjectDetail
+            key={`${person.user_id}-${id}`}
+            id={id}
+            owner={owner}
+            technicalOnly={employee}
+            demo={demo}
+          />
+        ) : (
+          <section className="ps-empty ps-workspace-empty">
+            <IconFolder size={45} stroke={1.2} />
+            <h2>Tu zaczyna się projekt</h2>
+            <p>
+              {query
+                ? "Zmień wyszukiwanie, aby zobaczyć projekt."
+                : "Po wybraniu projektu zobaczysz jego podgląd, wymiary i materiały."}
+            </p>
+          </section>
+        )}
+        {newProject && (
+          <NewProject
+            onClose={() => {
+              setNewProject(false);
+              list.retry();
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 }
 function ProjectDetail({
   id,
   owner,
+  technicalOnly,
   demo,
 }: {
   id: string;
   owner: boolean;
+  technicalOnly: boolean;
   demo: boolean;
 }) {
   const demoData = useMemo(
@@ -241,7 +341,7 @@ function ProjectDetail({
     owner && !demo ? `/api/projekty/${encodeURIComponent(id)}/analiza` : null,
   );
   const [view, setView] = useState<"image" | "3d" | "2d">(
-    demo && id === "pokaz-kuchnia" ? "image" : "2d",
+    demo && !technicalOnly && id === "pokaz-kuchnia" ? "image" : "2d",
   );
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [wall, setWall] = useState("");

@@ -112,10 +112,14 @@ export function App() {
         : section === "szuflady"
           ? "Kalkulator szuflad"
           : isPanel
-            ? "Panel stolarni"
+            ? person?.role === "owner"
+              ? "Panel właściciela"
+              : person?.role === "employee"
+                ? "Panel pracownika"
+                : "Moje projekty"
             : "Logowanie";
     document.title = `${title} · Pan Stolarz`;
-  }, [publicRoute, section, isPanel, plannerRoute]);
+  }, [publicRoute, section, isPanel, plannerRoute, person?.role]);
   const logout = async () => {
     setLogoutError("");
     try {

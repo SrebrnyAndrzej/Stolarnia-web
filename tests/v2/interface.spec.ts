@@ -82,6 +82,12 @@ test("owner project workspace includes finance and existing tool links", async (
   await signedIn(page, "owner");
   await page.goto("/#/panel/projekty");
   await expect(
+    page.getByRole("heading", { name: "Panel właściciela", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Zarządzaj dostępem", exact: true }),
+  ).toHaveAttribute("href", "#/panel/pracownicy");
+  await expect(
     page.getByRole("heading", { name: "Kuchnia • Projekt A", exact: true }),
   ).toBeVisible();
   await expect(
@@ -113,6 +119,11 @@ test("owner project workspace includes finance and existing tool links", async (
 test("employee gets technical data only, with mobile navigation and 403 screen", async ({
   page,
 }) => {
+  const financialRequests: string[] = [];
+  page.on("request", (request) => {
+    if (/\/api\/projekty\/.+\/(analiza|wycena|oferta)/.test(request.url()))
+      financialRequests.push(request.url());
+  });
   await signedIn(page, "employee");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/#/panel/projekty");
@@ -125,6 +136,13 @@ test("employee gets technical data only, with mobile navigation and 403 screen",
   await expect(
     page.getByRole("link", { name: "Przygotuj ofertę" }),
   ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Panel pracownika", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Otwórz kalkulator szuflad", exact: true }),
+  ).toHaveAttribute("href", "#/panel/szuflady");
+  expect(financialRequests).toEqual([]);
   await page.getByRole("button", { name: "Otwórz menu" }).click();
   await expect(
     page.getByRole("link", { name: "Kalkulator szuflad", exact: true }),

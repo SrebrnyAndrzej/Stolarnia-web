@@ -162,6 +162,48 @@ export function Landing({ session }: { session: Principal | null }) {
           </div>
         </HomeIntro>
         <section
+          className="ps-public-section ps-start"
+          aria-labelledby="start-title"
+        >
+          <div className="ps-start-heading">
+            <span className="ps-eyebrow">Twój pierwszy krok</span>
+            <h2 id="start-title">Zacznij tak, jak Ci wygodnie.</h2>
+          </div>
+          <div className="ps-start-grid">
+            <article>
+              <IconLayout size={30} stroke={1.4} aria-hidden="true" />
+              <h3>Chcesz sprawdzić układ kuchni?</h3>
+              <p>
+                Wybierz układ prosty, L lub U. Dodaj szafki i zobacz wstępny
+                pomysł w 3D. Nie potrzebujesz konta.
+              </p>
+              <a className="ps-button" href="#/kreator-kuchni">
+                Otwórz kreator kuchni{" "}
+                <IconArrowRight size={20} aria-hidden="true" />
+              </a>
+              <p className="ps-form-note">
+                To szkic do rozmowy. Wymiary, rozwiązania i cenę potwierdzimy
+                osobno.
+              </p>
+            </article>
+            <article>
+              <IconRulerMeasure size={30} stroke={1.4} aria-hidden="true" />
+              <h3>Masz już pomysł lub projekt?</h3>
+              <p>
+                Opisz, czego potrzebujesz. Możesz zacząć od przybliżonych
+                wymiarów i tego, co ma się zmieścić w Twoich meblach.
+              </p>
+              <a className="ps-button secondary" href="#/zapytanie">
+                Opisz swój pomysł{" "}
+                <IconArrowRight size={20} aria-hidden="true" />
+              </a>
+              <p className="ps-form-note">
+                Kuchnia, szafa czy inna zabudowa — formularz jest wspólny.
+              </p>
+            </article>
+          </div>
+        </section>
+        <section
           className="ps-public-section ps-cabinet-story"
           aria-labelledby="cabinet-story-title"
         >
@@ -267,6 +309,44 @@ export function Landing({ session }: { session: Principal | null }) {
                 <h3>{title}</h3>
                 <p>{text}</p>
               </article>
+            ))}
+          </div>
+        </section>
+        <section
+          className="ps-public-section ps-faq"
+          aria-labelledby="faq-title"
+        >
+          <div>
+            <span className="ps-eyebrow">Zanim zaczniemy</span>
+            <h2 id="faq-title">Nie musisz mieć wszystkiego ustalonego.</h2>
+          </div>
+          <div className="ps-faq-list">
+            {[
+              {
+                question: "Czy potrzebuję gotowego projektu?",
+                answer:
+                  "Nie. Wystarczy pomysł i opis tego, czego potrzebujesz. Przybliżone wymiary pomogą zacząć rozmowę, a szczegóły dopracujemy wspólnie.",
+              },
+              {
+                question: "Co daje mi kreator kuchni?",
+                answer:
+                  "Możesz sprawdzić układ prosty, L lub U, rozmieścić szafki i obejrzeć szkic w 3D. To punkt wyjścia do rozmowy, a nie projekt gotowy do produkcji.",
+              },
+              {
+                question: "Czy w kreatorze poznam cenę?",
+                answer:
+                  "Kreator służy do planowania układu. Cenę ustalimy po doprecyzowaniu wymiarów, materiałów, wyposażenia i zakresu prac.",
+              },
+              {
+                question: "Co przygotować do pierwszego kontaktu?",
+                answer:
+                  "Napisz, jakie meble planujesz, gdzie mają powstać i co jest dla Ciebie ważne. Jeśli znasz przybliżone wymiary, dopisz je w opisie. Nie musisz znać nazw materiałów ani okuć.",
+              },
+            ].map(({ question, answer }) => (
+              <details key={question}>
+                <summary>{question}</summary>
+                <p>{answer}</p>
+              </details>
             ))}
           </div>
         </section>

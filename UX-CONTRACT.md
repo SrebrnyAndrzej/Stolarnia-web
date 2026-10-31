@@ -59,4 +59,7 @@ Doprecyzowanie intro: film jest tłem całego hero, a tekst pojawia się wraz z 
 
 ## Publiczne materiały projektowe
 
-Na zlecenie użytkownika dodano pokaz składania i rendery z zapisanych projektów. `ProjectMedia.tsx` pobiera wyłącznie publiczne pliki statyczne; nie udostępnia API prywatnych projektów. Film 8 s uruchamiany ręcznie, bez autoplay i audio; natywne sterowanie przeglądarki oraz poster przy błędzie. Trzy neutralnie podpisane widoki mają status renderów geometrii i poglądowych kolorów. Nie stanowią zatwierdzenia do produkcji ani zdjęć realizacji. Testy: tests/v2/project-media.spec.ts.
+Aktualne media: dostarczony film kuchni Darii v2 w hero i film składania szafki w osobnej sekcji `Landing.tsx` (12 s, ręczne odtwarzanie, preload none, poster). Prototyp ProjectMedia, rendery Codexa i test project-media zostały wycofane. Galeria czeka na materiały Claude. Strona nie odpytuje prywatnych projektów w celu prezentacji publicznych mediów.
+
+## Pulpity ról — 31.10.2026
+`Workspace.tsx` pokazuje kontekst roli nad wspólną przestrzenią projektu. Właściciel: aktywne projekty, produkcja, gotowe do montażu i przejścia do zapytań oraz przydziału dostępu. Pracownik: przypisane projekty, ich etapy i kalkulator szuflad; bez żądań finansowych i uprawnień edycji. Liczniki wynikają wyłącznie z listy zwróconej dla konta; podczas odczytu pokazują wielokropek, przy błędzie kreskę, nigdy fikcyjne zero. Wspólna lista, 2D/3D i inspektor zachowują kontrakt odczytu. Demonstracja nadal ma dane syntetyczne i nie loguje użytkownika.

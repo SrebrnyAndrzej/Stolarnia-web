@@ -1,3 +1,12 @@
+## Iteracja 31.10.2026 — układ strony i ekrany ról
+
+- Typecheck i build: poprawne; pozostaje ostrzeżenie Vite o dużym istniejącym chunku 3D.
+- 12 testów Playwright (home-animation + interface): poprawne. Rozszerzone asercje nagłówków ról, skrótów i braku żądań finansowych pracownika.
+- 3 testy serwerowego zakresu dostępu i technicznego DTO: poprawne.
+- Statyczny audyt premium strict: 0 findings.
+- Obejrzano ekran właściciela 1488×1056 i pracownika 390×844, bez poziomego overflow. Screenshoty przeglądu lokalnie w /tmp, dane syntetyczne.
+- Prawdziwe sesje i przyjmowanie zapytań niezweryfikowane: konfiguracja Supabase/środowiska i migracja pozostają do uruchomienia. Testy UI mockują sesje; nie dowodzą gotowości kont produkcyjnych.
+
 > Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
 
 # Pan Stolarz 2.0 — wynik weryfikacji

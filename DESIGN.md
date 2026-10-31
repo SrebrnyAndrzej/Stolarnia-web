@@ -1,5 +1,3 @@
-> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
-
 ---
 version: alpha
 colors:
@@ -63,12 +61,19 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 
 ## Animacja otwierająca
 
-Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Film wypełnia całą powierzchnię hero jako tło (cover), z ciemną nakładką i tekstem HTML nad nim. Kadrowanie zależy od ekranu. Biała typografia i zielony akcent utrzymują czytelność. Nagłówek i opis ujawniają się ze scrollem, a CTA są zawsze widoczne. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Drugi materiał nie jest jeszcze dostępny i nie tworzy pustej sekcji. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.
+Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Film wypełnia całą powierzchnię hero jako tło (cover), z ciemną nakładką i tekstem HTML nad nim. Kadrowanie zależy od ekranu. Biała typografia i zielony akcent utrzymują czytelność. Nagłówek i opis ujawniają się ze scrollem, a CTA są zawsze widoczne. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Dostarczony film składania szafki ma osobną sekcję i natywne kontrolki odtwarzania. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.
 
 Tempo intro: zakres 360 svh desktop / 280 svh telefon. Kadr i tekst łagodnie dochodzą do postępu scrolla; bez sprężynowania, oscylacji i przechwytywania gestów. Wygładzanie czasu filmu należy do v2/home-motion.ts.
 
 ## Składanie szafki i rendery projektów
 
-`v2/ProjectMedia.tsx` jest właścicielem dwóch sekcji pod ofertą: ręcznie uruchamianego pokazu składania i galerii trzech renderów studyjnych. Obrazy są z istniejącej geometrii projektów; nie są fotografiami realizacji. Galeria ma neutralne nazwy i podpisy, bez danych klientów. Wspólne kolory, typografia i kontrolki pozostają bez zmian. Pipeline offline `scripts/brand-media` nie zmienia core ani projektów; strona ładuje tylko statyczne JPG/MP4, bez odpytywania bazy projektów.
+`v2/Landing.tsx` zawiera sekcję filmu dostarczonego przez użytkownika: ręczne odtwarzanie, brak autoplay, preload none i poster. Galeria renderów czeka na materiały Claude; bez pustych miejsc. Prototyp ProjectMedia i pipeline offline zostały wycofane.
+
+Struktura strony: hero → dwa wejścia klienta → konstrukcja szafki → oferta → proces → FAQ → formularz. Dwa wejścia to kreator bez konta oraz opis własnego pomysłu. FAQ używa natywnych details/summary, działających z klawiatury. Zachowujemy istniejącą paletę, font i rytm sekcji; nie dodajemy nowej identyfikacji.
 
 Research przyszłego kierunku komunikacji oraz roboczy brief do pracy z Claude: docs/branding/. Propozycja Manrope i nowe przykłady copy nie zostały globalnie wdrożone.
+
+> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
+
+## Pulpity ról — 31.10.2026
+`Workspace.tsx` pokazuje kontekst roli nad wspólną przestrzenią projektu. Właściciel: aktywne projekty, produkcja, gotowe do montażu i przejścia do zapytań oraz przydziału dostępu. Pracownik: przypisane projekty, ich etapy i kalkulator szuflad; bez żądań finansowych i uprawnień edycji. Liczniki wynikają wyłącznie z listy zwróconej dla konta; podczas odczytu pokazują wielokropek, przy błędzie kreskę, nigdy fikcyjne zero. Wspólna lista, 2D/3D i inspektor zachowują kontrakt odczytu. Demonstracja nadal ma dane syntetyczne i nie loguje użytkownika.

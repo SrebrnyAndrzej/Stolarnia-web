@@ -182,3 +182,6 @@ Korekta tempa po feedbacku: hero 360 svh desktop / 280 svh mobile, postęp filmu
 Nowy brief do pracy nad komunikacją „na Ty”: docs/branding/BRIEF-dla-Claude-jezyk-wizualny-v1.md; pełny research ze źródłami obok. Propozycja: konkretna, życzliwa stolarnia, własne zdjęcia ludzi/materiałów oraz całość → detal → zastosowanie. Nowy krój i przykładowe hasła pozostają robocze.
 
 Na prośbę użytkownika przygotowano dodatkowo eksport geometrii trzech zapisanych projektów i pokaz składania dziewięciu elementów jednej szafki. Pipeline scripts/brand-media nie zmienia konstrukcji, produkcji ani danych projektu; publikuje tylko statyczne materiały. Strona ma je oznaczać jako rendery i pokaz poglądowy, bez nazwisk klientów i bez przedstawiania ich jako zdjęć realizacji.
+
+## 31.10.2026 — ponowne zlecenie współpracy
+Użytkownik prosi o dalszą pracę i przekazanie części zadań Claude. Brak połączenia z Claude w środowisku; pakiet gotowy do podjęcia w `docs/handoff/CLAUDE-ZADANIA.md` (C1 copy, C2 rendery, C3 kontrola animacji). Wspólny kontekst: `docs/STATUS-PAN-STOLARZ.md`. Codex rozwija ścieżki startowe i FAQ, nie silnik.
