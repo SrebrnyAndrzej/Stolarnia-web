@@ -1,3 +1,5 @@
+> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
+
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
 Źródła biznesowe: polecenia właściciela w rozmowie (2026-10-31), docs/RESEARCH-silnik-mebli-i-konta.md i docs/RESEARCH-macierz-autoryzacji-tras-2026-10-05.md. Nowe ustalenie: pracownik nie ma dostępu do wycen i finansów; ma kalkulator i podgląd udostępnionych projektów. Obsługujemy jedną stolarnię Pan Stolarz, nie produkt dla wielu warsztatów.

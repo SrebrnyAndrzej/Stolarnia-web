@@ -9,7 +9,6 @@ import {
 } from "@tabler/icons-react";
 import { Logo } from "./ui";
 import { HomeIntro } from "./HomeIntro";
-import { CabinetAssembly, ProjectRenders } from "./ProjectMedia";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
 import { request, type Principal } from "./api";
 
@@ -162,6 +161,46 @@ export function Landing({ session }: { session: Principal | null }) {
             </a>
           </div>
         </HomeIntro>
+        <section
+          className="ps-public-section ps-cabinet-story"
+          aria-labelledby="cabinet-story-title"
+        >
+          <div>
+            <span className="ps-eyebrow">Zajrzyj do środka</span>
+            <h2 id="cabinet-story-title">
+              Dobry mebel zaczyna się od konstrukcji.
+            </h2>
+            <p>
+              Front to dopiero początek. Zobacz, jak poszczególne elementy
+              składają się w szafkę — od korpusu po ostatni detal.
+            </p>
+            <p className="ps-form-note">
+              Animacja pokazuje przykładową konstrukcję. Rozwiązania do Twojego
+              projektu dobierzemy wspólnie.
+            </p>
+          </div>
+          <figure>
+            <video
+              controls
+              playsInline
+              muted
+              preload="none"
+              poster="/animations/szafka-skladanie-claude-poster.jpg"
+              aria-label="Animacja składania przykładowej szafki"
+              src="/animations/szafka-skladanie-claude.mp4"
+            >
+              Twoja przeglądarka nie obsługuje filmu.{" "}
+              <a href="/animations/szafka-skladanie-claude.mp4">
+                Otwórz animację składania szafki
+              </a>
+              .
+            </video>
+            <figcaption>
+              Od pojedynczych elementów do gotowej szafki. Uruchom animację,
+              żeby zobaczyć kolejne etapy.
+            </figcaption>
+          </figure>
+        </section>
         <section className="ps-public-section ps-offer">
           <div>
             <span className="ps-eyebrow">Od pomysłu do dopasowania</span>
@@ -198,8 +237,6 @@ export function Landing({ session }: { session: Principal | null }) {
             ))}
           </div>
         </section>
-        <CabinetAssembly />
-        <ProjectRenders />
         <section className="ps-public-section ps-process" id="proces">
           <span className="ps-eyebrow">Jak działamy</span>
           <h2>

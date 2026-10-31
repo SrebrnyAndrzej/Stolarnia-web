@@ -1,3 +1,5 @@
+> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
+
 # Koordynacja Claude ↔ Codex
 
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.

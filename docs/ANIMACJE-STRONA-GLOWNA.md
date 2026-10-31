@@ -1,3 +1,7 @@
+> Bieżące wdrożenie: otrzymano Szafka-skladanie-animacja.mp4 (12 s, 1080p), przygotowano kopię 720p i poster. Film w osobnej sekcji pod hero, ręczne odtwarzanie przez natywne kontrolki, bez autoplay i wstępnego pobierania. Materiał dostarczony przez użytkownika zastępuje wycofany prototyp.
+
+> Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
+
 # Dwa miejsca na animacje — strona główna Pan Stolarz
 
 Status: animacja otwierająca osadzona w podglądzie; dodana druga animacja składania szafki. Pierwszy film użytkownik przekazał jako materiał przygotowywany z Claude; drugi pokaz wyeksportowano z geometrii projektu na kolejną prośbę użytkownika. Użytkownik potwierdził, że animacja z przejazdem kuchni ma być sterowana przewijaniem. Otrzymano Kuchnia-Darii-animacja.mp4: H.264, 1920×1080, 25 kl./s, 14 s, bez ścieżki dźwiękowej. Druga animacja została przygotowana z elementów zapisanej szafki na zlecenie użytkownika. Poniższe role są rekomendacją, nie opisem otrzymanych materiałów. Nie dodajemy pustych pól ani komunikatów technicznych dla klientów przed dostarczeniem animacji.

@@ -135,7 +135,7 @@ export function HomeIntro({ children }: { children: ReactNode }) {
         {children}
         <figure className="ps-hero-image ps-intro-film">
           <img
-            src="/animations/kuchnia-darii-poster.jpg"
+            src="/animations/kuchnia-darii-v2-poster.jpg"
             width="1280"
             height="720"
             alt="Wizualizacja kuchni z drewnianymi frontami, jasnym blatem i zabudową wokół okna"
@@ -144,8 +144,8 @@ export function HomeIntro({ children }: { children: ReactNode }) {
           {motion && nearby && (
             <video
               ref={video}
-              src="/animations/kuchnia-darii.mp4"
-              poster="/animations/kuchnia-darii-poster.jpg"
+              src="/animations/kuchnia-darii-v2.mp4"
+              poster="/animations/kuchnia-darii-v2-poster.jpg"
               muted
               playsInline
               preload="auto"
