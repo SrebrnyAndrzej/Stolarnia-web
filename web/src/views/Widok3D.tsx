@@ -4,13 +4,14 @@ import { KIERUNEK_KLUCZA, studioEnvironment } from "./studio3d";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { granice, punktNaRzucie, scianyNaRzucie } from "../../../src/core/geometry";
 import type { Analiza, Material } from "../api";
+import type { TechnicalAnalysis, VisualMaterial } from "../../../src/server/technical";
 
 interface Props {
-  analiza: Analiza;
+  analiza: Pick<TechnicalAnalysis, "projekt" | "zbudowane">;
   pomieszczenieId: string;
   scianaId: string;
   wybrany: string | null;
-  matMap: Map<string, Material>;
+  matMap: Map<string, VisualMaterial | Material>;
   onWybierz: (id: string | null) => void;
 }
 

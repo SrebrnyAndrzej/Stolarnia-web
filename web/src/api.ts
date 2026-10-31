@@ -60,6 +60,7 @@ async function zadanie<T>(metoda: string, url: string, body?: unknown): Promise<
     body: body ? JSON.stringify(body) : undefined,
   });
   const dane = await r.json().catch(() => ({}));
+  if (r.status === 401) window.dispatchEvent(new Event("pan-stolarz-session-expired"));
   if (!r.ok) throw new Error((dane as { blad?: string }).blad ?? `Błąd ${r.status}`);
   return dane as T;
 }

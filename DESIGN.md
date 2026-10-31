@@ -1,10 +1,10 @@
 ---
 version: alpha
 colors:
-  background: "#f6f3ee"
+  background: "#f7f8f7"
   panel: "#ffffff"
-  text: "#221e19"
-  primary: "#9a6531"
+  text: "#1c2b30"
+  primary: "#1c2b30"
 typography:
   body:
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
@@ -13,9 +13,10 @@ rounded:
 ---
 
 ## Overview
-Polski warsztat stolarski: narzędzie do wymiarowania i przygotowania dokumentacji, z naciskiem na czytelność jednostek i punktów pomiaru. Zachowujemy istniejącą identyfikację aplikacji, bez przebudowy pozostałych widoków.
+Pan Stolarz 2.0: strona klienta i panel właściciela/pracownika. Użytkownik wybrał wariant 2 z oryginalnym brandingiem marki. Kontekst zatwierdzonego kierunku: grafitowa nawigacja, zielone zaznaczenia, jasny obszar projektu, lista po lewej i szczegóły po prawej. Dotychczasowy kalkulator i projektant zachowują logikę, dostają wspólne tokeny marki. UI po polsku; PLN, milimetry i Europe/Warsaw.
 
 ## Colors
+Marka pochodzi z oryginalnego `src/export/assets/pan-stolarz.png`: #1C2B30, #A5B859, #435058. W v2 źródłem nadpisania tokenów jest `web/src/v2/styles.css`, importowany po bazowym arkuszu. Oryginalny asset jest używany bezpośrednio jako logo; wygenerowana wizualizacja kuchni to jawnie oznaczona inspiracja, nie zdjęcie realizacji. Paleta v2 nadpisuje stary brązowy akcent. Na zieleni tekst grafitowy; główne przyciski grafitowe z białą etykietą. V2 obecnie ma jasne powierzchnie zgodne z wybranym obrazem; starszy automatyczny motyw ciemny nie jest aktywny w nowej warstwie.
 Źródłem tokenów jest `web/src/styles.css`, selektor `:root` i wariant ciemny `prefers-color-scheme`. Powyższe wartości dokumentują tryb jasny, nie stanowią osobnego generatora kolorów. Kalkulator używa wspólnych klas paneli, pól i tabel; scrollbar korzysta z istniejących tokenów linii i panelu.
 
 Na tle `--accent-soft` drobny tekst wybranych przycisków, etykiet i głównej nawigacji używa `--text`, nie `--accent` (jasny wariant accent/soft ma kontrast 4,02:1). Wybrany stan nadal wskazuje tło, obrys i `aria-pressed`/`aria-current`.
@@ -24,6 +25,7 @@ Na tle `--accent-soft` drobny tekst wybranych przycisków, etykiet i głównej n
 Font systemowy zgodny z resztą aplikacji. Wartości wymiarów używają `.num` (cyfry tabelaryczne). Wszystkie wymiary opisujemy w mm; dno: szerokość × głębokość, plecy: szerokość × wysokość.
 
 ## Layout
+V2: desktop — nawigacja 182 px, lista projektów 244 px, płynny podgląd i inspektor 292 px. Poniżej 1200 px inspektor przechodzi pod podgląd; poniżej 800 px lista jest poziomym przewijanym zbiorem i nawigacja rozwija się przyciskiem. Każdy region ma min-width:0 i własny kontrakt przewijania. Ilustracja poglądowa w demonstracji jest oddzielona od rzeczywistej geometrii silnika (3D, rzut i elewacja). Dane demonstracyjne są syntetyczne.
 Kalkulator jest osobnym narzędziem w głównym menu pod `#/szuflady`. Na komputerze: formularz do 410 px i karta wyników obok; poniżej 860 px jeden naturalnie przewijany ciąg formularz → wyniki. Nie używa szerokiej tabeli. Źródłem miar pozostaje serwis, UI wyświetla wybrany system, nie kopiuje wzorów okuć.
 
 Podstawowe pola liczbowe mają minimum 52 px wysokości (54 px na telefonie), tekst od 18 px. Przyciski wariantów minimum 44 px. Sekcje 1/2 odpowiadają rzeczywistej kolejności: korpus i szuflada → front i zaczepy. Wymiary cięcia to dwie karty; wiercenia pokazujemy na schemacie tylnej strony frontu i dużymi liczbami od krawędzi. Brak pozycji nie staje się schematycznym „gotowym” otworem. Wysokości prowadnic pokazujemy jako listę od dołu z jawnym punktem bazowym, odróżniając krawędź prowadnicy od osi wkrętów.
@@ -35,6 +37,7 @@ Karty dziedziczą wspólny cień `--shadow`.
 Panele używają `--radius`; nie dodajemy nowej geometrii kontrolek.
 
 ## Components
+Nowy shell `v2/App.tsx` i współdzielony `v2/api.ts`/`useResource.ts`: prywatne dane bez cache, anulowanie nieaktualnych odczytów, timeout, role serwerowe. Chronione zakładki i techniczny DTO opisane w UX-CONTRACT.md. Autoryzacja w src/server/access.ts; interfejs nie może zastąpić kontroli serwerowej. Trzy role mają osobne zakresy odpowiedzi. Nie publikować przed uruchomieniem kont/migracji i sprawdzeniem prawdziwych sesji.
 Właściciele UI: pola `.field/.input`, komunikaty `.alert`, panele `.card` w globalnym CSS. `.drawer-*` jest wariantem warsztatowym tych elementów: większy dotykowy rozmiar i wynik bez tabeli; nie zmienia kontrolek katalogu ani projektanta. Natywne selecty celowo pozostają obsługiwane przez system operacyjny.
 
 `web/src/views/szuflady/model.ts` jest właścicielem formularza, mapowania parametrów i walidacji wejść UI; `useKalkulator.ts` obsługuje odczyt REST i anulowanie żądań. Formularz nie zmienia zapisanych projektów. Wersjonowana pamięć `stolarnia.kalkulator-szuflad.v1` w localStorage zachowuje wyłącznie parametry narzędzia na urządzeniu. Typy i wartości enum są sprawdzane przy odtwarzaniu. Brak pamięci nie blokuje obliczeń.

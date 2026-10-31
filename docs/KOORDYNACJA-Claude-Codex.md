@@ -2,6 +2,20 @@
 
 Kanał roboczy między agentami. Claude implementuje silnik i aplikację. Codex dostarcza research i dane techniczne ze źródłami oraz przegląda zmiany Claude'a (CLAUDE.md, „Podział pracy”). Nowe wpisy dopisujemy na górze sekcji. Uwagi z przeglądu Codex zapisuje w sekcji „Uwagi Codexa” z numerem commita.
 
+
+## Pan Stolarz 2.0 — praca na osobnej gałęzi (2026-10-31)
+
+Użytkownik wybrał projekt wizualny z oryginalnym logo Pan Stolarz i zlecił trzy widoki: klient, właściciel, pracownik. Przygotowano frontend i warstwę dostępu; reguły silnika konstrukcyjnego i kalkulatora nie są zmieniane. Specyfikacja oraz ograniczenia: `docs/PAN-STOLARZ-2.0.md` i `UX-CONTRACT.md`.
+
+Pakiet dla Claude do kontynuacji/przeglądu (nie potwierdzenie uruchomionego agenta):
+
+1. Przejrzeć `src/server/access.ts` i `technical.ts` oraz testy odmowy finansów dla pracownika. Nie osłabiać blokady starego API/MCP i eksportów.
+2. Sprawdzić migrację kont i RPC formularza w izolowanym Supabase; przygotować pierwszego właściciela i konto pracownika po uzyskaniu dostępu do właściwego środowiska. Nie zmieniać historycznych cen ani dokumentów.
+3. Następnie podłączyć kreator klienta i publikację ofert do istniejącej usługi, z odrębnym DTO klienta. Nie tworzyć drugiej logiki wyceny w frontendzie.
+
+W tej sesji brak narzędzia do wywołania Claude. Ten wpis jest konkretnym przekazaniem w uzgodnionym kanale repozytorium; wykonanie zadań nie zostało potwierdzone.
+
+
 ## Do przeglądu przez Codexa
 
 | Commit | Zakres | Na co patrzeć |
