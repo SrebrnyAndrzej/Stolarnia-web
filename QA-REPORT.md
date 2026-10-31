@@ -1,3 +1,7 @@
+## Film hero v4 — 31.10.2026
+
+Dostarczony film 1080p/26 s zoptymalizowano do 720p H.264 (6 166 969 bajtów), bez audio, z częstymi klatkami kluczowymi i faststart. Zaktualizowano źródło hero i poster; nie zmieniono scroll range, tłumienia ani limitów szybkości. Build poprawny, pełne dekodowanie ffmpeg bez błędów. Pięć testów hero poprawnych; szósty miał próg czasu dla wcześniejszego filmu 14 s. Po zastąpieniu progu odsetkiem długości nowego filmu ponowiony test dużego scrolla przeszedł. Zaktualizowano też progi testu dwukierunkowego do rzeczywistej długości. Bez zmian w zasadach motion/reduced-motion. Screenshoty desktop/telefon odzwierciedlają film v4.
+
 ## Dopracowanie paneli i przepływów — 31.10.2026
 
 - Typecheck i build: poprawne. Renderer 3D zachowuje osobny duży chunk; jego pobranie w panelu jest odroczone do wyboru 3D, co potwierdza test żądań sieciowych.

@@ -27,16 +27,25 @@ test("intro timeline follows scroll in both directions and can be paused", async
       { timeout: 15000 },
     )
     .toBeGreaterThanOrEqual(2);
+  const duration = await page
+    .locator(".ps-intro-film video")
+    .evaluate((v: HTMLVideoElement) => v.duration);
   await scrollProgress(page, 0.65);
-  await expect.poll(() => time(page)).toBeGreaterThan(8);
+  await expect
+    .poll(() => time(page), { timeout: 10000 })
+    .toBeGreaterThan(duration * 0.5);
   await scrollProgress(page, 0.2);
-  await expect.poll(() => time(page)).toBeLessThan(4);
+  await expect
+    .poll(() => time(page), { timeout: 10000 })
+    .toBeLessThan(duration * 0.3);
   await page.getByRole("button", { name: "Wstrzymaj animację" }).click();
   const frozen = await time(page);
   await scrollProgress(page, 0.7);
   await expect.poll(() => time(page)).toBeCloseTo(frozen, 1);
   await page.getByRole("button", { name: "Wznów animację" }).click();
-  await expect.poll(() => time(page)).toBeGreaterThan(8);
+  await expect
+    .poll(() => time(page), { timeout: 10000 })
+    .toBeGreaterThan(duration * 0.5);
   expect(
     await page
       .locator(".ps-intro-film video")
@@ -184,7 +193,14 @@ test("large scroll input is damped instead of jumping through the kitchen", asyn
     return document.querySelector("video")!.currentTime;
   });
   expect(immediate).toBeLessThan(1.2);
-  await expect.poll(() => time(page), { timeout: 7000 }).toBeGreaterThan(10);
+  const duration = await page
+    .locator(".ps-intro-film video")
+    .evaluate((v: HTMLVideoElement) => v.duration);
+  await expect
+    .poll(() => time(page), { timeout: 10000 })
+    .toBeGreaterThan(duration * 0.6);
   await scrollProgress(page, 0.15);
-  await expect.poll(() => time(page), { timeout: 7000 }).toBeLessThan(3);
+  await expect
+    .poll(() => time(page), { timeout: 10000 })
+    .toBeLessThan(duration * 0.2);
 });

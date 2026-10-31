@@ -1,3 +1,5 @@
+> Aktualne hero: Kuchnia-Darii-animacja-v4.mp4 dostarczona przez użytkownika, 26 s / 25 kl./s / 1920×1080. Strona używa zoptymalizowanej kopii 720p H.264 z częstymi klatkami kluczowymi oraz nowego postera. Bez zmian w zakresie scrolla, wygładzaniu i limitach szybkości. Zastępuje wersję v2; poniższe wpisy opisują historię.
+
 > Bieżące wdrożenie: otrzymano Szafka-skladanie-animacja.mp4 (12 s, 1080p), przygotowano kopię 720p i poster. Film w osobnej sekcji pod hero, ręczne odtwarzanie przez natywne kontrolki, bez autoplay i wstępnego pobierania. Materiał dostarczony przez użytkownika zastępuje wycofany prototyp.
 
 > Aktualizacja 31.10.2026: film hero zastąpiony dostarczoną wersją Kuchnia-Darii-animacja-v2.mp4 (14 s). Sterowanie i wygładzanie scrolla pozostają bez zmian. Rendery i nową animację składania przygotowuje Claude. Wcześniejsze prototypy Codex wycofano z publikowanej strony i zachowano w lokalnym archiwum; poniższe wzmianki o ich wdrożeniu są historyczne. Codex odpowiada za układ i treści.
