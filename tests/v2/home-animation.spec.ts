@@ -1,119 +1,114 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-async function scrollProgress(page: Page, progress: number) {
-  await page.evaluate((p) => {
-    const el = document.querySelector<HTMLElement>(".ps-home-intro")!;
-    window.scrollTo(0, el.offsetTop + (el.offsetHeight - innerHeight) * p);
-  }, progress);
-}
-const time = (page: Page) =>
-  page
-    .locator(".ps-intro-film video")
-    .evaluate((v: HTMLVideoElement) => v.currentTime);
+const film = (page: import("@playwright/test").Page) =>
+  page.locator(".ps-intro-film video");
 
-test("intro timeline follows scroll in both directions and can be paused", async ({
+test("hero plays without scrolling and moves to the next section when finished", async ({
   page,
 }) => {
-  test.setTimeout(45000);
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/#/");
+  await page.goto("/");
+  await expect
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.currentTime), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(0.2);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+  expect(
+    await film(page).evaluate((v: HTMLVideoElement) => v.playbackRate),
+  ).toBe(0.75);
+  expect(await film(page).evaluate((v: HTMLVideoElement) => v.muted)).toBe(
+    true,
+  );
+  await film(page).evaluate((v: HTMLVideoElement) => {
+    v.currentTime = v.duration - 0.15;
+  });
   await expect
     .poll(
       () =>
-        page
-          .locator(".ps-intro-film video")
-          .evaluate((v: HTMLVideoElement) => v.readyState),
-      { timeout: 15000 },
+        page.evaluate(
+          () =>
+            document.querySelector(".ps-start")!.getBoundingClientRect().top,
+        ),
+      { timeout: 10000 },
     )
-    .toBeGreaterThanOrEqual(2);
-  const duration = await page
-    .locator(".ps-intro-film video")
-    .evaluate((v: HTMLVideoElement) => v.duration);
-  await scrollProgress(page, 0.65);
+    .toBeLessThan(10);
+  await expect(
+    page.getByRole("heading", { name: "Zacznij tak, jak Ci wygodnie." }),
+  ).toBeInViewport();
+});
+test("pause and resume work independently of scrolling", async ({ page }) => {
+  await page.goto("/");
   await expect
-    .poll(() => time(page), { timeout: 25000 })
-    .toBeGreaterThan(duration * 0.5);
-  await scrollProgress(page, 0.2);
-  await expect
-    .poll(() => time(page), { timeout: 25000 })
-    .toBeLessThan(duration * 0.3);
-  await page.getByRole("button", { name: "Wstrzymaj animację" }).click();
-  const frozen = await time(page);
-  await scrollProgress(page, 0.7);
-  await expect.poll(() => time(page)).toBeCloseTo(frozen, 1);
-  await page.getByRole("button", { name: "Wznów animację" }).click();
-  await expect
-    .poll(() => time(page), { timeout: 25000 })
-    .toBeGreaterThan(duration * 0.5);
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.currentTime), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(0.2);
+  await page
+    .getByRole("button", { name: "Wstrzymaj animację", exact: true })
+    .click();
+  const before = await film(page).evaluate(
+    (v: HTMLVideoElement) => v.currentTime,
+  );
+  await page.waitForTimeout(500);
   expect(
-    await page
-      .locator(".ps-intro-film video")
-      .evaluate((v: HTMLVideoElement) => v.autoplay),
-  ).toBe(false);
-  const axe = await new AxeBuilder({ page }).analyze();
+    await film(page).evaluate((v: HTMLVideoElement) => v.currentTime),
+  ).toBeCloseTo(before, 1);
+  await page
+    .getByRole("button", { name: "Wznów animację", exact: true })
+    .click();
+  await expect
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.currentTime))
+    .toBeGreaterThan(before + 0.2);
+  const results = await new AxeBuilder({ page }).analyze();
   expect(
-    axe.violations.filter((v) =>
+    results.violations.filter((v) =>
       ["serious", "critical"].includes(v.impact ?? ""),
     ),
   ).toEqual([]);
-  await page.screenshot({ path: "qa/home-intro-desktop.png", fullPage: false });
-  expect(errors).toEqual([]);
 });
-
-test("reduced motion keeps a static intro without downloading the movie", async ({
+test("reduced motion keeps a static hero without fetching the movie", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  const requests: string[] = [];
+  const movies: string[] = [];
   page.on("request", (r) => {
-    if (r.url().endsWith(".mp4")) requests.push(r.url());
+    if (r.url().endsWith(".mp4")) movies.push(r.url());
   });
-  await page.goto("/#/");
-  await expect(page.locator(".ps-intro-film img")).toBeVisible();
-  await expect(page.locator(".ps-intro-film video")).toHaveCount(0);
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: "Włącz animację", exact: true }),
+  ).toBeVisible();
+  await expect(film(page)).toHaveCount(0);
+  expect(movies).toEqual([]);
   expect(
     await page
-      .locator(".ps-home-intro h1")
+      .locator(".ps-hero-copy h1")
       .evaluate((el) => getComputedStyle(el).opacity),
   ).toBe("1");
-  await expect(page.locator(".ps-home-intro")).not.toHaveClass(/has-motion/);
-  expect(requests).toEqual([]);
-  await page.getByRole("button", { name: "Włącz animację" }).click();
-  await expect(page.locator(".ps-intro-film video")).toHaveCount(1);
 });
-
-test("phone video fills the hero background and keeps working navigation", async ({
+test("phone film covers the hero and the creator remains reachable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/#/");
+  await page.goto("/");
   await expect
-    .poll(
-      () =>
-        page
-          .locator(".ps-intro-film video")
-          .evaluate((v: HTMLVideoElement) => v.readyState),
-      { timeout: 15000 },
-    )
-    .toBeGreaterThanOrEqual(2);
-  await scrollProgress(page, 0.5);
-  await expect.poll(() => time(page), { timeout: 12000 }).toBeGreaterThan(5);
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.currentTime), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(0.2);
   const box = await page.locator(".ps-intro-film").boundingBox();
   const hero = await page.locator(".ps-home-intro > .ps-hero").boundingBox();
   expect(box!.width).toBeCloseTo(hero!.width, 0);
   expect(box!.height).toBeCloseTo(hero!.height, 0);
-  expect(
-    await page
-      .locator(".ps-intro-film video")
-      .evaluate((v) => getComputedStyle(v).objectFit),
-  ).toBe("cover");
+  expect(await film(page).evaluate((v) => getComputedStyle(v).objectFit)).toBe(
+    "cover",
+  );
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.screenshot({ path: "qa/home-intro-mobile.png", fullPage: false });
+  await page.screenshot({ path: "qa/home-intro-mobile.png" });
   await page
     .locator(".ps-home-intro")
     .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
@@ -122,86 +117,72 @@ test("phone video fills the hero background and keeps working navigation", async
     page.getByRole("heading", { name: "Zaplanuj swoją kuchnię" }),
   ).toBeVisible();
 });
-
-test("failed media retains poster, content and normal page scrolling", async ({
+test("failed film retains readable content and a static poster", async ({
   page,
 }) => {
   await page.route("**/animations/*.mp4", (r) => r.abort());
-  await page.goto("/#/");
+  await page.goto("/");
+  await expect(film(page)).toHaveCount(0);
   await expect(
-    page.getByText("Wizualizacja kuchni · podgląd statyczny"),
+    page.getByText("Wizualizacja kuchni · podgląd statyczny", { exact: true }),
   ).toBeVisible();
-  await expect(page.locator(".ps-intro-film img")).toBeVisible();
-  await expect(page.locator(".ps-home-intro")).not.toHaveClass(/has-motion/);
+  expect(
+    await page
+      .locator(".ps-hero-copy h1")
+      .evaluate((el) => getComputedStyle(el).opacity),
+  ).toBe("1");
   await page
+    .locator(".ps-home-intro")
     .getByRole("link", { name: "Opowiedz o projekcie", exact: true })
     .click();
-  await expect(page.locator('input[name="name"]')).toBeVisible();
+  await expect(page.getByLabel("Imię", { exact: true })).toBeVisible();
 });
-
-test("hero copy reveals with scroll while actions remain available", async ({
+test("manual navigation prevents an automatic jump and the hero has no long scroll spacer", async ({
   page,
 }) => {
-  await page.goto("/#/");
-  const title = page.locator(".ps-home-intro h1");
-  const opacity = () =>
-    title.evaluate((el) => Number(getComputedStyle(el).opacity));
-  await expect.poll(opacity).toBe(0);
-  await expect(
-    page
-      .locator(".ps-home-intro")
-      .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true }),
-  ).toBeVisible();
-  await scrollProgress(page, 0.4);
-  await expect.poll(opacity).toBe(1);
-  await scrollProgress(page, 0.1);
-  await expect.poll(opacity).toBeLessThan(0.5);
-  await page
-    .locator(".ps-home-intro")
-    .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
-    .focus();
-  await expect.poll(opacity).toBe(1);
-});
-
-test("large scroll input is damped instead of jumping through the kitchen", async ({
-  page,
-}) => {
-  test.setTimeout(60000);
-  await page.goto("/#/");
+  await page.goto("/");
   await expect
-    .poll(
-      () =>
-        page
-          .locator(".ps-intro-film video")
-          .evaluate((v: HTMLVideoElement) => v.readyState),
-      { timeout: 15000 },
-    )
-    .toBeGreaterThanOrEqual(2);
-  const range = await page
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.currentTime), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(0.2);
+  const size = await page
     .locator(".ps-home-intro")
-    .evaluate(
-      (el) => (el.getBoundingClientRect().height - innerHeight) / innerHeight,
-    );
-  expect(range).toBeCloseTo(4.6, 1);
-  const immediate = await page.evaluate(async () => {
-    const el = document.querySelector<HTMLElement>(".ps-home-intro")!;
-    scrollTo(0, el.offsetTop + (el.offsetHeight - innerHeight) * 0.85);
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-    );
-    return document.querySelector("video")!.currentTime;
+    .evaluate((el) => el.getBoundingClientRect().height / innerHeight);
+  expect(size).toBeLessThan(1.5);
+  await page.mouse.wheel(0, 80);
+  await page.waitForTimeout(300);
+  await page.evaluate(() => scrollTo(0, 0));
+  await film(page).evaluate((v: HTMLVideoElement) => {
+    v.currentTime = v.duration - 0.15;
   });
-  expect(immediate).toBeLessThan(0.4);
-  const duration = await page
-    .locator(".ps-intro-film video")
-    .evaluate((v: HTMLVideoElement) => v.duration);
   await expect
-    .poll(() => time(page), { timeout: 25000 })
-    .toBeGreaterThan(duration * 0.6);
-  await scrollProgress(page, 0.15);
-  await expect
-    .poll(() => time(page), { timeout: 25000 })
-    .toBeLessThan(duration * 0.2);
+    .poll(() => film(page).evaluate((v: HTMLVideoElement) => v.ended))
+    .toBe(true);
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+});
+
+test("blocked autoplay offers a play button and readable copy", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    HTMLMediaElement.prototype.play = function () {
+      return Promise.reject(
+        new DOMException("Autoplay blocked", "NotAllowedError"),
+      );
+    };
+  });
+  await page.goto("/");
+  await expect(
+    page.getByText("Uruchom animację przyciskiem", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Włącz animację", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page
+      .locator(".ps-hero-copy h1")
+      .evaluate((el) => getComputedStyle(el).opacity),
+  ).toBe("1");
 });

@@ -1,3 +1,9 @@
+## Samoczynne hero i przejście do następnej sekcji — 31.10.2026
+
+HomeIntro przełączono z timeline scrolla na odtwarzanie muted/playsInline 0,75×, bez pętli. Po naturalnym ended przechodzi płynnie do następnej sekcji. Brak długiej wysokości i sticky. Ręczna nawigacja, fokus w hero, reduced-motion i ukryta karta chronią przed automatycznym przesunięciem. Pauza poza widokiem i w ukrytej karcie; blokada autoplay pokazuje przycisk i pełną treść. Pauza użytkownika odsłania tekst i zachowuje go po wznowieniu.
+
+Typecheck i build poprawne. 7/7 nowych testów przeglądarkowych: samoczynny postęp przy scrollY=0, rzeczywisty ended i przejście, pauza/wznowienie, reduced-motion bez pobierania, telefon/CTA, awaria, ręczna nawigacja bez wymuszonego skoku, zablokowane autoplay. Koniec filmu w teście przyspieszono przez seek blisko końca, po sprawdzeniu naturalnego odtwarzania; nie czekano pełnych 34,7 s w każdej próbie. Axe w teście pauzy bez serious/critical findings. Audyt premium strict: 0 findings. Historyczne testy seekowania scrollowego zastąpione testami bieżącego zachowania.
+
 ## Spokojniejsze otwieranie — 31.10.2026
 
 Zmniejszono limit prędkości czasu filmu z 4× do 1× i zwiększono tłumienie z 0,28 s do 0,45 s. Hero ma 560 svh desktop / 400 svh telefon. Build i 2 testy home-motion poprawne. Pięć scenariuszy hero poprawnych; test telefonu wymagał wydłużenia oczekiwania na przekroczenie 5 s czasu filmu (przy limicie 1× nie może to nastąpić w 5 s testu). Ponowiony scenariusz telefonu poprawny. Potwierdzono pauzę, przewijanie w obie strony, ograniczenie skoków, fallback i reduced-motion.

@@ -1853,7 +1853,7 @@ summary:focus-visible {
 }
 /* Kitchen Daria is the full-bleed background of the hero. */
 .ps-home-intro.has-motion {
-  height: 560svh;
+  height: auto;
 }
 .ps-home-intro > .ps-hero {
   position: relative;
@@ -1867,11 +1867,6 @@ summary:focus-visible {
   isolation: isolate;
   overflow: hidden;
   background: var(--ps-sidebar);
-}
-.ps-home-intro.has-motion > .ps-hero {
-  position: sticky;
-  top: 0;
-  min-height: 100svh;
 }
 .ps-home-intro > .ps-hero::after {
   content: "";
@@ -1979,14 +1974,11 @@ summary:focus-visible {
 }
 @media (max-width: 800px) {
   .ps-home-intro.has-motion {
-    height: 400svh;
+    height: auto;
   }
   .ps-home-intro > .ps-hero {
     padding: 96px 24px 100px;
     min-height: calc(100svh - 80px);
-  }
-  .ps-home-intro.has-motion > .ps-hero {
-    min-height: 100svh;
   }
   .ps-home-intro > .ps-hero::after {
     background: linear-gradient(
@@ -2025,7 +2017,7 @@ summary:focus-visible {
     padding: 5px 8px;
   }
 }
-/* The copy follows scroll progress; action links remain available from the first frame. */
+/* Copy reveals with the film timeline; actions stay available immediately. */
 .ps-home-intro.has-motion .ps-hero-copy > .ps-eyebrow {
   opacity: clamp(0, calc(var(--intro-progress, 0) * 6), 1);
 }
@@ -2433,3 +2425,7 @@ summary:focus-visible {
     min-height: 44px;
   }
 }
+
+.ps-home-intro.is-readable .ps-hero-copy > .ps-eyebrow,
+.ps-home-intro.is-readable .ps-hero-copy > h1,
+.ps-home-intro.is-readable .ps-hero-copy > p { opacity: 1; transform: none; }

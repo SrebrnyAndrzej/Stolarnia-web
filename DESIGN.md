@@ -61,9 +61,7 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 
 ## Animacja otwierająca
 
-Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Film wypełnia całą powierzchnię hero jako tło (cover), z ciemną nakładką i tekstem HTML nad nim. Kadrowanie zależy od ekranu. Biała typografia i zielony akcent utrzymują czytelność. Nagłówek i opis ujawniają się ze scrollem, a CTA są zawsze widoczne. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Dostarczony film składania szafki ma osobną sekcję i natywne kontrolki odtwarzania. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.
-
-Tempo intro: zakres 560 svh desktop / 400 svh telefon. Kadr i tekst łagodnie dochodzą do postępu scrolla; bez sprężynowania, oscylacji i przechwytywania gestów. Wygładzanie czasu filmu należy do v2/home-motion.ts.
+HomeIntro.tsx odtwarza dostarczony film kuchni Darii v4 samoczynnie, bez dźwięku, w tempie 0,75× i bez zapętlenia. Hero ma naturalną wysokość, bez sticky i wielokrotności ekranu przeznaczonej na scroll. Tekst ujawnia się z czasem filmu, CTA pozostają dostępne od początku. Po końcu filmu następuje płynne przewinięcie do kolejnej sekcji, o ile użytkownik sam nie nawigował i nie ma fokusu w hero. Ukrycie karty lub opuszczenie hero wstrzymuje film. Pause/resume i replay są dostępne. Reduced-motion/saveData oraz awaria zachowują statyczny, czytelny wariant. Blokada autoplay daje przycisk odtworzenia i pełną treść. Dotychczasowy helper home-motion.ts dokumentuje poprzedni wariant i nie jest już używany przez hero.
 
 ## Składanie szafki i rendery projektów
 
@@ -89,3 +87,6 @@ Właściciel wyszukuje w załadowanej liście najnowszych 100 zapytań i filtruj
 Renderer 3D w przestrzeni projektów jest importowany dynamicznie po wybraniu widoku 3D. Rzut, dokumentacja i dane projektu pozostają dostępne niezależnie od pobrania renderera. Suspense rezerwuje obszar podglądu i pokazuje polski status ładowania; istniejący CanvasBoundary pozostawia alternatywę 2D po awarii.
 
 Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześniej 4), łagodniejsze dochodzenie do kadru 0,45 s. Zakres hero 560 svh desktop / 400 svh telefon. Natywne przewijanie, pauza i ograniczenie ruchu pozostają dostępne.
+
+## Aktualny tryb hero — samoczynne odtwarzanie
+Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.

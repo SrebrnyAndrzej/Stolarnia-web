@@ -1,3 +1,5 @@
+> BIEŻĄCY TRYB: film hero v4 odtwarza się automatycznie w tempie 0,75×, a po końcu płynnie przechodzi do kolejnej sekcji. Sterowanie scrollem zostało zastąpione na nowe zlecenie użytkownika. Wcześniejsze parametry poniżej są historyczne.
+
 > Aktualne hero: Kuchnia-Darii-animacja-v4.mp4 dostarczona przez użytkownika, 26 s / 25 kl./s / 1920×1080. Strona używa zoptymalizowanej kopii 720p H.264 z częstymi klatkami kluczowymi oraz nowego postera. Bez zmian w zakresie scrolla, wygładzaniu i limitach szybkości. Zastępuje wersję v2; poniższe wpisy opisują historię.
 
 > Bieżące wdrożenie: otrzymano Szafka-skladanie-animacja.mp4 (12 s, 1080p), przygotowano kopię 720p i poster. Film w osobnej sekcji pod hero, ręczne odtwarzanie przez natywne kontrolki, bez autoplay i wstępnego pobierania. Materiał dostarczony przez użytkownika zastępuje wycofany prototyp.
@@ -69,3 +71,6 @@ Ostatnie doprecyzowanie: tekst ujawniany jest poprzez opacity i delikatne przesu
 Zakres aktywnego przewijania wzrósł z 65 do 260 svh na komputerze (4×) i z 35 do 180 svh na telefonie (około 5×). HomeIntro nie przypisuje już od razu docelowego czasu filmu: helper home-motion.ts wygładza go w czasie, z limitem skoku po dużym ruchu scrolla i bez oscylacji. Nagłówek/opis również mają wygładzany postęp. Mechanizm zasypia po osiągnięciu celu, poza sekcją i w nieaktywnej karcie. Pause zatrzymuje film, a wznowienie łagodnie dochodzi do aktualnej pozycji.
 
 Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześniej 4), łagodniejsze dochodzenie do kadru 0,45 s. Zakres hero 560 svh desktop / 400 svh telefon. Natywne przewijanie, pauza i ograniczenie ruchu pozostają dostępne.
+
+## Aktualny tryb hero — samoczynne odtwarzanie
+Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.

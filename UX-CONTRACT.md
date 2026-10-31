@@ -53,9 +53,7 @@ Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożn
 
 ## Animacja intro
 
-Źródło: użytkownik dostarczył „Kuchnia-Darii-animacja.mp4” jako animację otwierającą i wcześniej zlecił sterowanie przejazdem podczas scrollowania. Kanoniczny komponent: `v2/HomeIntro.tsx`. Scroll jest natywny; film nie przechwytuje wheel/touchmove ani klawiszy. Pauza zatrzymuje zmianę kadru, a nie stronę. Ograniczenie ruchu i danych nie pobiera MP4 bez opt-in. Awaria zachowuje obraz i CTA. Testy: `tests/v2/home-animation.spec.ts`.
-
-Doprecyzowanie intro: film jest tłem całego hero, a tekst pojawia się wraz z postępem przewijania. Przyciski pozostają dostępne; fokus klawiatury odsłania tekst, a reduced-motion i awaria pokazują go od razu. Kadrowanie cover jest celowe na wszystkich ekranach.
+Kanoniczny komponent HomeIntro.tsx sam odtwarza film v4 (0,75×, muted/playsInline). Zakończenie prowadzi płynnie do kolejnej sekcji, bez konieczności przewijania i bez pętli. Hero nie przechwytuje scrolla i nie tworzy długiego obszaru przewijania. Ręczna nawigacja, fokus w hero, reduced-motion lub ukryta karta powstrzymują automatyczne przejście. Pauza i wznowienie nie blokują strony. Ograniczenie ruchu/danych nie pobiera filmu bez opt-in. Awaria i odrzucenie autoplay zachowują czytelną treść, poster oraz CTA. Film zatrzymuje się poza widokiem i w ukrytej karcie. Testy: tests/v2/home-animation.spec.ts.
 
 ## Publiczne materiały projektowe
 
@@ -83,3 +81,6 @@ Puste wyniki listy mają „Pokaż wszystkie projekty” i przywrócenie fokusu 
 
 Odświeżenie dokumentacji anuluje przygotowanie PDF, usuwa poprzedni plik z UI i resetuje zakres szafki. Polskie etykiety diagnostyki są warstwą prezentacji, nie zmianą poziomów silnika. Walidacja logowania kieruje fokus do błędnego e-maila również wtedy, gdy pole nie jest puste; aria-invalid wskazuje błędne pola. Nie zmieniono polityki autoryzacji ani ról.
 Wyszukiwanie zapytań pozostaje w pamięci widoku: fraza może zawierać imię lub e-mail, dlatego nie zapisujemy jej w URL ani localStorage. Zmiana roli demonstracyjnej przechodzi na listę projektów danej roli, bez przenoszenia danych sesji i bez udawania zalogowania.
+
+## Aktualny tryb hero — samoczynne odtwarzanie
+Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.
