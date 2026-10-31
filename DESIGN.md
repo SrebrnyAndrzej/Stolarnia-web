@@ -58,3 +58,7 @@ Właściciel widoku i zapisu szkicu: `v2/planner/KitchenPlanner.tsx`. Adapter `p
 Szkic bez danych kontaktowych jest automatycznie zapisywany na urządzeniu pod `pan-stolarz.kuchnia.v1`, z walidacją wersji i katalogu podczas odczytu/importu. Błąd pamięci nie blokuje edycji; użytkownik może pobrać JSON. Zmiana w drugiej karcie wstrzymuje zapis i wymaga wyboru wersji. Reset wymaga potwierdzenia w natywnym dialogu; zwykłe usunięcie szafki jest odwracalne przyciskiem Cofnij. Przekazanie do zapytania przenosi opis w sessionStorage; potwierdzenie wysłania następuje dopiero po odpowiedzi serwera. JSON jest szkicem klienta, nie formatem importu produkcyjnego.
 
 Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożników 650 mm na początku B i C; geometria ścian z istniejącego renderera (łańcuch 90°). Zmiana na mniejszy układ jest blokowana, dopóki na usuwanej ścianie są szafki. Starsze szkice bez długości C otrzymują domyślne 3600 mm; zapis wersji 1 pozostaje czytelny.
+
+## Animacja otwierająca
+
+Strona główna używa dostarczonego przez użytkownika filmu kuchni Darii, nie generowanej fotografii w hero. `v2/HomeIntro.tsx` jest właścicielem powiązania scrolla z czasem filmu. Proporcje 16:9 zachowują pełny kadr; hero pozostaje w języku istniejącej marki. Normalny scroll i statyczne CTA są zawsze dostępne. Poster i podgląd statyczny dla reduced-motion, oszczędzania danych i awarii; widoczny przycisk pauzy/wznowienia. Brak autoplay i audio. Drugi materiał nie jest jeszcze dostępny i nie tworzy pustej sekcji. Szczegóły: docs/ANIMACJE-STRONA-GLOWNA.md.

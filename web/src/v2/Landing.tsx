@@ -8,6 +8,7 @@ import {
   IconTools,
 } from "@tabler/icons-react";
 import { Logo } from "./ui";
+import { HomeIntro } from "./HomeIntro";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
 import { request, type Principal } from "./api";
 
@@ -137,7 +138,7 @@ export function Landing({ session }: { session: Principal | null }) {
         </a>
       </header>
       <main>
-        <section className="ps-hero">
+        <HomeIntro>
           <div className="ps-hero-copy">
             <span className="ps-eyebrow">Pan Stolarz · meble na wymiar</span>
             <h1>
@@ -159,17 +160,7 @@ export function Landing({ session }: { session: Principal | null }) {
               Opowiedz o projekcie
             </a>
           </div>
-          <figure className="ps-hero-image">
-            <img
-              src="/images/kitchen-concept.png"
-              alt="Przykładowa wizualizacja kuchni z dębowymi i jasnymi frontami"
-              fetchPriority="high"
-            />
-            <figcaption>
-              Wizualizacja poglądowa · inspiracja do rozmowy
-            </figcaption>
-          </figure>
-        </section>
+        </HomeIntro>
         <section className="ps-public-section ps-offer">
           <div>
             <span className="ps-eyebrow">Od pomysłu do dopasowania</span>

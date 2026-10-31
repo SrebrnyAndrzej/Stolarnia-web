@@ -1,6 +1,6 @@
 # Dwa miejsca na animacje — strona główna Pan Stolarz
 
-Status: plan rozmieszczenia i kontrakt osadzenia. Animacje przygotowuje Claude. Użytkownik potwierdził, że animacja z przejazdem kuchni ma być sterowana przewijaniem. Nie potwierdzono jeszcze formatu ani gotowych plików. Poniższe role są rekomendacją, nie opisem otrzymanych materiałów. Nie dodajemy pustych pól ani komunikatów technicznych dla klientów przed dostarczeniem animacji.
+Status: animacja otwierająca osadzona w podglądzie; drugie miejsce zaplanowane. Animacje przygotowuje Claude. Użytkownik potwierdził, że animacja z przejazdem kuchni ma być sterowana przewijaniem. Otrzymano Kuchnia-Darii-animacja.mp4: H.264, 1920×1080, 25 kl./s, 14 s, bez ścieżki dźwiękowej. Drugi materiał nie został jeszcze dostarczony. Poniższe role są rekomendacją, nie opisem otrzymanych materiałów. Nie dodajemy pustych pól ani komunikatów technicznych dla klientów przed dostarczeniem animacji.
 
 ## Miejsce A: pierwszy ekran
 
@@ -12,13 +12,9 @@ Rekomendowana plansza: 4:3, eksport 1600×1200 px, szerokość na desktopie oko�
 
 Do czasu podłączenia pozostaje obecny obraz. Po podłączeniu dedykowany poster z tej samej animacji, zarezerwowane proporcje i rozmiar, bez przesuwania strony po załadowaniu.
 
-## Miejsce B: przejazd kuchni sterowany przewijaniem
+## Miejsce B: druga animacja — oczekuje na materiał
 
-Lokalizacja: po sekcji „Co planujesz w swoim wnętrzu?”, przed sekcją „Jak działamy”. Osobna sekcja o szerokości zgodnej z pozostałą treścią, bez dwóch filmów odtwarzanych obok siebie. Nad nią krótki nagłówek HTML; obok lub pod nią przycisk „Zaprojektuj kuchnię” prowadzący do `#/kreator-kuchni`.
-
-Rola: prezentacja kuchni przez płynny przejazd. To rekomendowane miejsce dla potwierdzonej przez użytkownika animacji scrollowej. Treść tytułu dopasować do materiału Claude; nie przedstawiać filmu jako działania nieistniejących funkcji kreatora.
-
-Rekomendowana plansza: 16:9, eksport 1920×1080 px. Desktop: około 1000–1280 CSS px szerokości; telefon: szerokość kontenera z marginesami 24 px, wysokość wynikająca z proporcji. Sekcja ma stałą ramkę także przy błędzie i przed odtwarzaniem. Przed otrzymaniem materiału ta sekcja nie jest renderowana.
+Lokalizacja pozostaje zaplanowana po sekcji „Co planujesz w swoim wnętrzu?”, przed „Jak działamy”. Format rekomendowany 16:9. Sekcja nie jest renderowana, dopóki nie otrzymamy drugiej animacji. Nie powielamy filmu Darii w dwóch miejscach. Temat i sposób sterowania drugą animacją ustalimy po obejrzeniu materiału.
 
 ## Wspólne zasady dla Claude i integracji
 
@@ -50,4 +46,12 @@ Desktop i 390 px: brak przycięcia treści i poziomego przepełnienia, brak prze
 - Preferowany kontrakt od Claude: komponent/scena z jawnym parametrem `progress` od 0 do 1, który ustawia kamerę deterministycznie. Obsługę scrolla prowadzi strona, aby komponent nie dodawał drugiego listenera ani własnego przejmowania przewijania.
 - Jeśli plik jest wideo: integracja wymaga sprawdzenia płynnego seekowania w Safari/iOS i Chrome/Android, odpowiednio częstych klatek kluczowych i rozsądnego bitrate. Zmiany currentTime ograniczać do jednej kolejki aktualizacji; nie wymuszać dekodowania wszystkich żądań przy szybkim scrollu. Sam zwykły MP4 z autoplay nie spełni tego wymagania. Wybór wideo lub sceny nastąpi po sprawdzeniu materiału.
 
-Do odbioru dodać: płynny ruch w obie strony, zatrzymanie w dowolnym miejscu, szybki scroll do końca, wejście przez kotwicę, zmianę orientacji telefonu oraz brak blokady dostępu do następnej sekcji. To wymagania integracyjne; gotowej animacji nie otrzymano jeszcze w tym repozytorium.
+Do odbioru dodać: płynny ruch w obie strony, zatrzymanie w dowolnym miejscu, szybki scroll do końca, wejście przez kotwicę, zmianę orientacji telefonu oraz brak blokady dostępu do następnej sekcji. Są to kryteria mechanizmu osadzonego w HomeIntro.tsx; nie oznaczają zakończenia testów na fizycznych urządzeniach.
+
+## Osadzenie filmu Darii
+
+Film otwiera stronę w `v2/HomeIntro.tsx`, wywołanym przez Landing. Zachowano pełne 16:9 w miejscu obrazu hero; tekst i CTA pozostają HTML. Kopia do strony: `web/public/animations/kuchnia-darii.mp4`, H.264 1280×720, 14 s, 2 577 076 B zamiast 8 138 389 B. Kluczowe klatki co 6 klatek dla seekowania. Poster z pierwszej klatki: `kuchnia-darii-poster.jpg` (około 66 KB). Oryginał jest załącznikiem użytkownika, nie dodawano jego cięższej kopii do publicznych zasobów.
+
+Ta animacja jest sterowana scrollem już w pierwszym ekranie: zakres 165 svh na desktopie i 135 svh na telefonie, przyklejona treść hero. Ruch jest dwukierunkowy, bez autoplay i bez przechwytywania scrolla. Widoczny przycisk pozwala wstrzymać i wznowić powiązanie z przewijaniem. Reduced-motion/oszczędzanie danych pokazują poster, z jawnym opt-in do animacji; błąd filmu zachowuje poster i normalną wysokość sekcji. Materiał jest ładowany dopiero w pobliżu sekcji. Kolejka seeków pomija nieaktualne cele, a dokument w tle nie aktualizuje klatek.
+
+Wcześniejsze propozycje przypisania przejazdu do miejsca B zastępuje identyfikacja użytkownika: przesłany film jest animacją otwierającą. Miejsce B pozostaje przygotowane wyłącznie w planie.

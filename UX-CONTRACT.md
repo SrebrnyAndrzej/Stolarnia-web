@@ -48,3 +48,7 @@ Strona klienta → kreator → wymiary → szafki/wygląd → podsumowanie → f
 Wymiary: pełne milimetry, długości 1800–8000 mm, wysokość 2300–3500 mm. Do 24 modułów z jawnego podzbioru katalogu. Przekroczenie ściany i nakładanie słupka/wiszącej blokują przejście do zapytania; kontrola nie oznacza pełnej analizy kolizji. Zmiana kolejności i usuwanie mają Cofnij. Dane kontaktowe są zbierane dopiero w istniejącym formularzu. Testy: `tests/v2/planner.spec.ts`, `web/src/v2/planner/model.test.ts`.
 
 Układ U: trzy ściany A/B/C z niezależnymi długościami. Puste strefy narożników 650 mm na początku B i C; geometria ścian z istniejącego renderera (łańcuch 90°). Zmiana na mniejszy układ jest blokowana, dopóki na usuwanej ścianie są szafki. Starsze szkice bez długości C otrzymują domyślne 3600 mm; zapis wersji 1 pozostaje czytelny.
+
+## Animacja intro
+
+Źródło: użytkownik dostarczył „Kuchnia-Darii-animacja.mp4” jako animację otwierającą i wcześniej zlecił sterowanie przejazdem podczas scrollowania. Kanoniczny komponent: `v2/HomeIntro.tsx`. Scroll jest natywny; film nie przechwytuje wheel/touchmove ani klawiszy. Pauza zatrzymuje zmianę kadru, a nie stronę. Ograniczenie ruchu i danych nie pobiera MP4 bez opt-in. Awaria zachowuje obraz i CTA. Testy: `tests/v2/home-animation.spec.ts`.

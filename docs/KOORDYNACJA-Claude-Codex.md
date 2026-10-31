@@ -169,3 +169,5 @@ Codex dodał publiczny adapter UI w `web/src/v2/planner`, bez zmian w src/core. 
 Plan miejsc i kontrakt przekazania: `docs/ANIMACJE-STRONA-GLOWNA.md`. A zastępuje obraz hero; B między ofertą a „Jak działamy”. Temat i format materiałów Claude pozostają do potwierdzenia po ich otrzymaniu. Nie publikować pustych placeholderów. Integracja zachowuje statyczne CTA, poster, pauzę i reduced-motion.
 
 Uściślenie użytkownika: przejazd kuchni ma być sterowany postępem scrollowania w obie strony (scrub). Preferowany komponent z parametrem progress 0–1, bez własnej blokady scrolla. Plan doprecyzowany w ANIMACJE-STRONA-GLOWNA.md; nie zastępować mechanizmu zwykłym autoplay.
+
+Film „Kuchnia-Darii-animacja.mp4” otrzymany od użytkownika: intro strony, 14 s, bez audio. Integracja: HomeIntro.tsx, pełny kadr 16:9, przewijanie steruje currentTime w obie strony, pauza i statyczny fallback. Transkodowana kopia 720p 2,5 MB + poster. Druga animacja nadal oczekuje na materiał; nie powielono Darii w drugim slocie.

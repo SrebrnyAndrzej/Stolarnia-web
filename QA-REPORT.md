@@ -41,3 +41,9 @@ Wynik: sprawdzona wersja robocza do przeglądu; **bez deklaracji gotowości prod
 Rozszerzenie sprawdzone: build/typecheck, 5 testów modelu (w tym geometria U, przepełnienie C i zgodność dawnych szkiców), 3 scenariusze Chromium (U: wybór/wymiar C, kontrola miejsca, blokada utraty szafek przy zmianie układu, odtworzenie, rzut/3D, 390 px, opis w formularzu; regresja L i import starszego formatu). Wszystkie zaliczone. Audyt premium: zero ustaleń. Zrzut: `qa/planner-u.png`.
 
 Po oględzinach U dopasowano start kamery do pierwszej użytej ściany szkicu i zmianę ściany do nowego ujęcia. Ponowny scenariusz U oraz kontrola typów frontendu zaliczone.
+
+## Film kuchni Darii w intro
+
+Źródło użytkownika: Full HD H.264 25 kl./s, 14 s, bez audio, 8 138 389 B. Wersja strony: 1280×720 H.264, częste klatki kluczowe, 2 577 076 B i poster około 66 KB. Cały kadr 16:9, bez kadrowania.
+
+Zaliczone: build/typecheck, audyt premium (zero ustaleń), diff check i 10 testów Chromium. Cztery nowe scenariusze: seek zgodny ze scrollem w dół/górę, pauza/wznowienie, brak autoplay; reduced-motion bez pobierania MP4 i jawne włączenie; telefon 390 px (cały kadr, brak przepełnienia, wejście do kreatora); awaria MP4 zachowująca obraz/formularz. Sześć wcześniejszych scenariuszy ról i formularza również zaliczone. Axe w intro bez ustaleń serious/critical. Zrzuty: qa/home-intro-desktop.png i qa/home-intro-mobile.png. Nie sprawdzano na fizycznym iPhonie/Androidzie.

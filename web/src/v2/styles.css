@@ -1851,3 +1851,97 @@ summary:focus-visible {
   font-size: 13px;
   line-height: 1.6;
 }
+/* Kitchen Daria: scroll owns the timeline; the next section remains normal document flow. */
+.ps-home-intro.has-motion {
+  height: 165svh;
+}
+.ps-home-intro.has-motion > .ps-hero {
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  align-items: center;
+}
+.ps-hero-image.ps-intro-film {
+  min-height: 0;
+  width: 100%;
+  aspect-ratio: 16/9;
+  align-self: center;
+  background: var(--panel-2);
+}
+.ps-intro-film img,
+.ps-intro-film video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.ps-intro-film video {
+  opacity: 0;
+  pointer-events: none;
+}
+.ps-intro-film video.ready {
+  opacity: 1;
+}
+.ps-intro-control {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  box-shadow: var(--shadow);
+}
+.ps-intro-film figcaption {
+  left: 14px;
+  right: auto;
+  bottom: 14px;
+  max-width: calc(100% - 28px);
+}
+@media (max-width: 800px) {
+  .ps-home-intro.has-motion {
+    height: 135svh;
+  }
+  .ps-home-intro.has-motion > .ps-hero {
+    gap: 20px;
+    padding: 24px;
+    align-content: center;
+  }
+  .ps-home-intro.has-motion .ps-hero-copy {
+    padding: 0;
+  }
+  .ps-home-intro.has-motion .ps-hero h1 {
+    font-size: clamp(32px, 8vw, 52px);
+    margin: 12px 0;
+  }
+  .ps-home-intro.has-motion .ps-hero-copy > p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  .ps-home-intro.has-motion .ps-under-link {
+    margin-top: 12px;
+  }
+  .ps-intro-control {
+    top: 8px;
+    right: 8px;
+    font-size: 11px;
+    min-height: 44px;
+    padding: 8px;
+  }
+  .ps-intro-film figcaption {
+    font-size: 10px;
+    left: 8px;
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+    padding: 4px 6px;
+  }
+}
