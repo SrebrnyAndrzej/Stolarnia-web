@@ -29,6 +29,7 @@ import { createHmac } from "node:crypto";
 const brakBazyWChmurze = !!process.env.VERCEL && !konfiguracjaChmury();
 export const s = new Stolarnia(new Magazyn(brakBazyWChmurze ? "/tmp/stolarnia" : undefined));
 export const app = express();
+app.get("/healthz", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ status: "ok", service: "pan-stolarz" }); });
 app.use(express.json({ limit: "30mb" }));
 const access = createAccess();
 app.get("/api/v2/config", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ authReady: access.configured }); });
