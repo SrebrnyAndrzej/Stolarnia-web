@@ -74,28 +74,42 @@ export interface Rezerwacja {
 
 const PASMO: Record<Rzad, [number, number]> = { dolny: [0, 1000], wiszacy: [1400, 2120] };
 const r1 = (v: number) => Math.round(v * 10) / 10;
+/** Reszta poniżej tej wartości to luz montażowy (bez blendy) — decyzja koordynatora 1.11.2026. */
+const MIN_BLENDA_MM = 20;
+/** „Ściana A” zamiast „ściana Ściana A”. */
+export const opisSciany = (nazwa: string) => (/^ściana/i.test(nazwa) ? nazwa : `ściana ${nazwa}`);
+const Opis = (nazwa: string) => { const t = opisSciany(nazwa); return t[0].toUpperCase() + t.slice(1); };
 
 // ---------- Podział długości na szerokości szafek ----------
 
 export interface Odcinek {
-  typ: "szafka" | "blenda" | "dopasowana";
+  /** luz = szczelina montażowa < 20 mm, bez modułu. */
+  typ: "szafka" | "blenda" | "dopasowana" | "cargo" | "luz";
   szerokoscMM: number;
+  /** Ostrzeżenie dla użytkownika (luz, szeroka blenda). */
+  uwaga?: string;
 }
 
+export class BladRozkladu extends Error {}
+
 /**
- * Dzieli długość na szafki o preferowanych szerokościach (kolejność listy = preferencja) tak, by reszta była < 150 mm
- * (blenda). Gdy się nie da (np. 150–299 mm) — szafka dopasowana na wymiar, jak wypelnijLuke. Suma odcinków = długość.
+ * Dzieli długość na szafki o preferowanych szerokościach (kolejność listy = preferencja) tak, by reszta była < 150 mm.
+ * Reszta: < 20 mm → luz montażowy (bez modułu, ostrzeżenie); 20–149 mm → blenda. Gdy reszty nie da się zejść poniżej
+ * 150 mm: 150–299 mm → cargo 150/200 z katalogu (jeśli podano `cargo`) + blenda/luz, inaczej szeroka blenda z ostrzeżeniem
+ * (decyzja koordynatora 1.11.2026, do potwierdzenia przez Mateusza); ≥ 300 mm → szafki dopasowane po maks. 900 mm.
+ * Suma odcinków = długość.
  */
 export function rozlozDlugosc(
   dlugoscMM: number,
   szerokosci: number[],
-  o: { symetria?: boolean; blenda?: "poczatek" | "koniec"; maksBlendaMM?: number } = {},
+  o: { symetria?: boolean; blenda?: "poczatek" | "koniec"; maksBlendaMM?: number; cargo?: number[] } = {},
 ): Odcinek[] {
   const maks = o.maksBlendaMM ?? ZALOZENIA_UKLADU.maksBlendaMM;
   const L = r1(dlugoscMM);
   if (L <= 0.5) return [];
-  if (L < maks) return [{ typ: "blenda", szerokoscMM: L }];
+  if (L < maks) return [reszty(L)];
   const W = [...new Set(szerokosci.map((w) => Math.round(w)).filter((w) => w > 0))];
+  if (!W.length) throw new BladRozkladu("Brak szerokości szafek dostępnych w katalogu dla tego rzędu.");
   const n = Math.floor(L);
   const koszt = new Float64Array(n + 1).fill(Infinity);
   const skad = new Int32Array(n + 1).fill(-1);
@@ -122,16 +136,27 @@ export function rozlozDlugosc(
       najS = s;
     }
   }
-  let dopasowana = 0;
+  const dodatki: Odcinek[] = [];
+  let reszta = 0;
   if (najS < 0) {
-    // Brak sumy z resztą < 150 mm — największa osiągalna suma + szafka dopasowana na resztę.
+    // Brak sumy z resztą < 150 mm — największa osiągalna suma, resztę zamykają cargo / szafki dopasowane.
     najS = 0;
-    for (let s = n; s > 0; s--) if (koszt[s] !== Infinity && L - s >= ZALOZENIA_UKLADU.maksBlendaMM * 2) { najS = s; break; }
-    dopasowana = r1(L - najS);
-  }
+    for (let s = n; s > 0; s--) if (koszt[s] !== Infinity) { najS = s; break; }
+    const r = r1(L - najS);
+    if (r < 300) {
+      const c = [...(o.cargo ?? [])].filter((w) => w <= r).sort((a, b) => b - a)[0];
+      if (c) {
+        dodatki.push({ typ: "cargo", szerokoscMM: c });
+        reszta = r1(r - c);
+      } else dodatki.push({ typ: "blenda", szerokoscMM: r, uwaga: `Blenda ${Math.round(r)} mm (szersza niż 150 mm) — brak szafki pasującej do reszty; do potwierdzenia.` });
+    } else {
+      const ile = Math.ceil(r / 900);
+      const czesc = Math.floor((r / ile) * 10) / 10;
+      for (let i = 0; i < ile; i++) dodatki.push({ typ: "dopasowana", szerokoscMM: i === ile - 1 ? r1(r - czesc * (ile - 1)) : czesc });
+    }
+  } else reszta = r1(L - najS);
   const lista: number[] = [];
   for (let s = najS; s > 0; s -= skad[s]) lista.push(skad[s]);
-  const reszta = dopasowana ? 0 : r1(L - najS);
   const pref = (w: number) => W.indexOf(w);
   lista.sort((a, b) => pref(a) - pref(b) || b - a);
 
@@ -149,24 +174,39 @@ export function rozlozDlugosc(
   } else szafki = lista;
 
   const wynik: Odcinek[] = szafki.map((w) => ({ typ: "szafka" as const, szerokoscMM: w }));
-  if (dopasowana) wynik.push({ typ: "dopasowana", szerokoscMM: dopasowana });
+  wynik.push(...dodatki);
   if (reszta > 0.5) {
-    if (o.symetria) {
+    if (o.symetria && reszta >= 2 * MIN_BLENDA_MM) {
       const pol = r1(reszta / 2);
-      wynik.unshift({ typ: "blenda", szerokoscMM: pol });
-      wynik.push({ typ: "blenda", szerokoscMM: r1(reszta - pol) });
-    } else if (o.blenda === "poczatek") wynik.unshift({ typ: "blenda", szerokoscMM: reszta });
-    else wynik.push({ typ: "blenda", szerokoscMM: reszta });
+      wynik.unshift(reszty(pol));
+      wynik.push(reszty(r1(reszta - pol)));
+    } else if (o.blenda === "poczatek") wynik.unshift(reszty(reszta));
+    else wynik.push(reszty(reszta));
   }
   return wynik;
 }
 
-/** Odcinki → plan modułów w rzędzie, od pozycji x. */
-export function modulyZOdcinkow(odcinki: Odcinek[], scianaId: string, xMM: number, rzad: Rzad, konstrukcja: "shelves" | "drawers" = "shelves"): PlanModulu[] {
-  const wynik: PlanModulu[] = [];
+/** Reszta < 150 mm: blenda, a poniżej 20 mm luz montażowy. */
+function reszty(r: number): Odcinek {
+  return r < MIN_BLENDA_MM
+    ? { typ: "luz", szerokoscMM: r, uwaga: `Luz montażowy ${r} mm bez blendy — rozłóż przy montażu.` }
+    : { typ: "blenda", szerokoscMM: r };
+}
+
+export interface PlanOdcinkow {
+  plan: PlanModulu[];
+  luzy: { odMM: number; doMM: number }[];
+  uwagi: string[];
+}
+
+/** Odcinki → plan modułów w rzędzie, od pozycji x (luz nie tworzy modułu). */
+export function modulyZOdcinkow(odcinki: Odcinek[], scianaId: string, xMM: number, rzad: Rzad, konstrukcja: "shelves" | "drawers" = "shelves"): PlanOdcinkow {
+  const wynik: PlanOdcinkow = { plan: [], luzy: [], uwagi: [] };
   let x = xMM;
   for (const o of odcinki) {
-    wynik.push(modulOdcinka(o, scianaId, x, rzad, konstrukcja));
+    if (o.typ === "luz") wynik.luzy.push({ odMM: x, doMM: r1(x + o.szerokoscMM) });
+    else wynik.plan.push(modulOdcinka(o, scianaId, x, rzad, konstrukcja));
+    if (o.uwaga) wynik.uwagi.push(o.uwaga);
     x = r1(x + o.szerokoscMM);
   }
   return wynik;
@@ -174,8 +214,8 @@ export function modulyZOdcinkow(odcinki: Odcinek[], scianaId: string, xMM: numbe
 
 function modulOdcinka(o: Odcinek, scianaId: string, x: number, rzad: Rzad, konstrukcja: "shelves" | "drawers"): PlanModulu {
   const wiszacy = rzad === "wiszacy";
-  if (o.typ === "szafka") {
-    const katalogId = wiszacy ? `wall-shelves-${o.szerokoscMM}` : `base-${konstrukcja}-${o.szerokoscMM}`;
+  if (o.typ === "szafka" || o.typ === "cargo") {
+    const katalogId = o.typ === "cargo" ? `base-cargo-${o.szerokoscMM}` : wiszacy ? `wall-shelves-${o.szerokoscMM}` : `base-${konstrukcja}-${o.szerokoscMM}`;
     if (modulKatalogowy(katalogId)) return { scianaId, rola: "szafka", katalogId, pozycjaXMM: x, szerokoscMM: o.szerokoscMM };
   }
   return blendaLubDopasowana(o.szerokoscMM, scianaId, x, rzad, o.typ === "blenda" ? "blenda" : "dopasowana");
@@ -284,8 +324,11 @@ export function planWypelnieniaSciany(pom: Pomieszczenie, moduly: Modul[], scian
   const wolne = wolnePrzedzialy(od, doo, zajete);
   const konstr = o.rzad === "wiszacy" ? "shelves" : o.konstrukcja ?? "shelves";
   const szer = dostepneSzerokosci(o.szerokosci ?? ZALOZENIA_UKLADU.preferowaneSzerokosci, o.rzad, konstr);
+  if (!szer.length) throw new BladRozkladu(`Żadna z szerokości ${(o.szerokosci ?? []).join(", ")} mm nie ma modułu w katalogu dla tego rzędu.`);
   const blendaN = o.blendaNaroznaMM ?? ZALOZENIA_UKLADU.blendaNaroznaMM;
+  if (!(Number.isFinite(blendaN) && blendaN >= 0 && blendaN <= ZALOZENIA_UKLADU.maksBlendaMM)) throw new BladRozkladu("blendaNaroznaMM: 0–150 mm.");
   const plan: PlanModulu[] = [];
+  const luzy: { odMM: number; doMM: number }[] = [];
   const ostrzezenia: string[] = [];
   for (const w of wolne) {
     let [a, b] = [w.odMM, w.doMM];
@@ -300,11 +343,17 @@ export function planWypelnieniaSciany(pom: Pomieszczenie, moduly: Modul[], scian
     }
     // Blenda reszty przy końcu ściany (wyrównanie do muru), w przeciwnym razie na końcu przedziału.
     const strona = lewy === "koniec" && prawy !== "koniec" ? "poczatek" : "koniec";
-    plan.push(...modulyZOdcinkow(rozlozDlugosc(b - a, szer, { symetria: o.symetria, blenda: strona }), scianaId, a, o.rzad, konstr));
+    const r = modulyZOdcinkow(rozlozDlugosc(b - a, szer, { symetria: o.symetria, blenda: strona, cargo: o.rzad === "dolny" ? CARGO_RESZTY : [] }), scianaId, a, o.rzad, konstr);
+    plan.push(...r.plan);
+    luzy.push(...r.luzy);
+    ostrzezenia.push(...r.uwagi);
   }
   if (!wolne.length) ostrzezenia.push("Na ścianie nie ma wolnego miejsca w tym rzędzie.");
-  return { plan: plan.sort((x, y) => x.pozycjaXMM - y.pozycjaXMM), wolne: wolne.map(({ odMM, doMM }) => ({ odMM, doMM })), zajete, ostrzezenia };
+  return { plan: plan.sort((x, y) => x.pozycjaXMM - y.pozycjaXMM), wolne: wolne.map(({ odMM, doMM }) => ({ odMM, doMM })), zajete, luzy, ostrzezenia };
 }
+
+/** Cargo z katalogu do zamykania reszty 150–299 mm w rzędzie dolnym (decyzja koordynatora, do potwierdzenia przez Mateusza). */
+export const CARGO_RESZTY = [150, 200].filter((w) => modulKatalogowy(`base-cargo-${w}`));
 
 export function dostepneSzerokosci(pref: number[], rzad: Rzad, konstrukcja: "shelves" | "drawers"): number[] {
   return pref.filter((w) => modulKatalogowy(rzad === "wiszacy" ? `wall-shelves-${w}` : `base-${konstrukcja}-${w}`));
@@ -353,7 +402,13 @@ interface Element {
 
 export class BladUkladu extends Error {}
 
-export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkladu, ust: { gruboscFrontuMM: number }) {
+/** Zajętość ściany układu przez moduły spoza układu (np. szafka narożna ze ściany sąsiedniej), z zajeteNaScianie. */
+export interface ZajetoscZewnetrzna {
+  dolny: Przedzial[];
+  wiszacy: Przedzial[];
+}
+
+export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkladu, ust: { gruboscFrontuMM: number; zajete?: ZajetoscZewnetrzna[] }) {
   const n = { I: 1, L: 2, U: 3 }[o.typ];
   if (!n) throw new BladUkladu(`Nieznany typ układu "${o.typ}" (I, L lub U).`);
   if (sciany.length !== n) throw new BladUkladu(`Układ ${o.typ} wymaga ${n} ścian(y), podano ${sciany.length}.`);
@@ -365,6 +420,14 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
   const dolne = o.dolne ?? "drawers";
   const szerDolne = dostepneSzerokosci(o.szerokosci ?? Z.preferowaneSzerokosci, "dolny", dolne);
   const szerWiszace = dostepneSzerokosci(o.szerokosci ?? Z.preferowaneSzerokosci, "wiszacy", "shelves");
+  if (!szerDolne.length || ((o.wiszace ?? true) && !szerWiszace.length))
+    throw new BladUkladu(`Podane szerokości (${(o.szerokosci ?? []).join(", ")} mm) nie mają modułów w katalogu dla ${!szerDolne.length ? "rzędu dolnego" : "rzędu wiszącego"}.`);
+  const przerwy = (o.przerwyWiszacych ?? []).filter((x) => {
+    const ok = Number.isInteger(x.sciana) && x.sciana >= 0 && x.sciana < n && x.doMM > x.odMM;
+    if (!ok) ostrzezenia.push(`Przerwa w wiszących (ściana ${x.sciana}, ${x.odMM}–${x.doMM} mm) poza układem lub pusta — pominięta.`);
+    return ok;
+  });
+  const podPrzerwa = (i: number, od: number, doo: number) => przerwy.some((x) => x.sciana === i && x.odMM < doo - 0.5 && x.doMM > od + 0.5);
   const kat = (id: string) => {
     const k = modulKatalogowy(id);
     if (!k) throw new BladUkladu(`Brak modułu "${id}" w katalogu.`);
@@ -386,7 +449,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
       const k = kat("base-l-corner-900");
       plan.push({ scianaId: A.id, rola: "naroznik", katalogId: k.id, pozycjaXMM: A.dlugoscMM - k.widthMM, szerokoscMM: k.widthMM });
       koniecDolny[i] = A.dlugoscMM - k.widthMM;
-      rezerwacje.push({ scianaId: B.id, rzad: "dolny", odMM: 0, doMM: k.depthMM, opis: `Narożnik: ${k.name} ze ściany ${A.nazwa}` });
+      rezerwacje.push({ scianaId: B.id, rzad: "dolny", odMM: 0, doMM: k.depthMM, opis: `Narożnik: ${k.name} (${opisSciany(A.nazwa)})` });
       startDolny[i + 1] = k.depthMM;
     } else {
       const k = kat("base-blind-corner-1100");
@@ -396,19 +459,55 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
       });
       koniecDolny[i] = A.dlugoscMM - k.widthMM;
       const zajete = k.depthMM + front;
-      rezerwacje.push({ scianaId: B.id, rzad: "dolny", odMM: 0, doMM: zajete, opis: `Narożnik: ${k.name} ze ściany ${A.nazwa} (korpus + front)` });
+      rezerwacje.push({ scianaId: B.id, rzad: "dolny", odMM: 0, doMM: zajete, opis: `Narożnik: ${k.name} (${opisSciany(A.nazwa)}, korpus + front)` });
       plan.push({ ...blendaLubDopasowana(Z.blendaNaroznaMM, B.id, zajete, "dolny", "blendaNarozna") });
       startDolny[i + 1] = zajete + Z.blendaNaroznaMM;
     }
     if (wiszace) {
       const k = kat("wall-corner-600");
-      plan.push({ scianaId: A.id, rola: "naroznik", katalogId: k.id, pozycjaXMM: A.dlugoscMM - k.widthMM, szerokoscMM: k.widthMM });
+      if (podPrzerwa(i, A.dlugoscMM - k.widthMM, A.dlugoscMM) || podPrzerwa(i + 1, 0, k.depthMM))
+        ostrzezenia.push(`Narożnik wiszący ${opisSciany(A.nazwa)}/${opisSciany(B.nazwa)} wypada w przerwie (np. okno) — pominięty, narożnik zostaje pusty.`);
+      else plan.push({ scianaId: A.id, rola: "naroznik", katalogId: k.id, pozycjaXMM: A.dlugoscMM - k.widthMM, szerokoscMM: k.widthMM });
       koniecWisz[i] = A.dlugoscMM - k.widthMM;
-      rezerwacje.push({ scianaId: B.id, rzad: "wiszacy", odMM: 0, doMM: k.depthMM, opis: `Narożnik wiszący: ${k.name} ze ściany ${A.nazwa}` });
+      rezerwacje.push({ scianaId: B.id, rzad: "wiszacy", odMM: 0, doMM: k.depthMM, opis: `Narożnik wiszący: ${k.name} (${opisSciany(A.nazwa)})` });
       startWisz[i + 1] = k.depthMM;
     }
   }
-  for (let i = 0; i < n; i++) if (koniecDolny[i] - startDolny[i] < 0) throw new BladUkladu(`Ściana ${sciany[i].nazwa} jest za krótka na narożnik(i).`);
+  // --- Moduły spoza układu (np. szafka narożna ze ściany sąsiedniej): przy końcach ściany skracają odcinek, w środku — błąd ---
+  for (let i = 0; i < n; i++) {
+    const sc = sciany[i];
+    for (const rzad of ["dolny", "wiszacy"] as const) {
+      if (rzad === "wiszacy" && !wiszace) continue;
+      const start = rzad === "dolny" ? startDolny : startWisz;
+      const koniec = rzad === "dolny" ? koniecDolny : koniecWisz;
+      const lista = [...(ust.zajete?.[i]?.[rzad] ?? [])].sort((a, b) => a.odMM - b.odMM);
+      const blenda = (z: Przedzial) => z.prostopadly && !z.naroznikL && Z.blendaNaroznaMM > 0;
+      const pozostale: Przedzial[] = [];
+      for (const z of lista) {
+        if (z.doMM <= start[i] + 0.5) continue;
+        if (z.odMM <= start[i] + 1) {
+          rezerwacje.push({ scianaId: sc.id, rzad, odMM: r1(start[i]), doMM: r1(z.doMM), opis: `Zajęte: ${z.opis ?? "moduł spoza układu"}` });
+          start[i] = z.doMM;
+          if (blenda(z)) {
+            plan.push(blendaLubDopasowana(Z.blendaNaroznaMM, sc.id, r1(start[i]), rzad, "blendaNarozna"));
+            start[i] = r1(start[i] + Z.blendaNaroznaMM);
+          }
+        } else pozostale.push(z);
+      }
+      for (const z of pozostale.sort((a, b) => b.doMM - a.doMM)) {
+        if (z.odMM >= koniec[i] - 0.5) continue;
+        if (z.doMM >= koniec[i] - 1) {
+          rezerwacje.push({ scianaId: sc.id, rzad, odMM: r1(z.odMM), doMM: r1(koniec[i]), opis: `Zajęte: ${z.opis ?? "moduł spoza układu"}` });
+          koniec[i] = z.odMM;
+          if (blenda(z)) {
+            koniec[i] = r1(koniec[i] - Z.blendaNaroznaMM);
+            plan.push(blendaLubDopasowana(Z.blendaNaroznaMM, sc.id, koniec[i], rzad, "blendaNarozna"));
+          }
+        } else throw new BladUkladu(`${Opis(sc.nazwa)}: ${z.opis ?? "moduł spoza układu"} zajmuje środek ściany (${Math.round(z.odMM)}–${Math.round(z.doMM)} mm) — przesuń go albo usuń przed szybkim układem.`);
+      }
+    }
+  }
+  for (let i = 0; i < n; i++) if (koniecDolny[i] - startDolny[i] < 0 || koniecWisz[i] - startWisz[i] < 0) throw new BladUkladu(`${Opis(sciany[i].nazwa)} jest za krótka na narożnik(i).`);
 
   // --- Elementy stałe ---
   const domyslnaSciana = (r: Rodzaj) => ({ I: { lodowka: 0, zlew: 0, plyta: 0 }, L: { lodowka: 0, zlew: 0, plyta: 1 }, U: { lodowka: 0, zlew: 1, plyta: 2 } })[o.typ][r];
@@ -424,7 +523,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
     const sklad: Element["sklad"] = [];
     const slupki = (o.slupki ?? []).map((id) => {
       const k = kat(id);
-      if (k.category !== "tall" && k.anchoring !== "builtIn") throw new BladUkladu(`"${id}" nie jest słupkiem.`);
+      if (k.category !== "tall" && k.heightMM < 1800) throw new BladUkladu(`"${id}" nie jest słupkiem.`);
       return k;
     });
     let lod: Element["sklad"][number];
@@ -475,6 +574,17 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
     hob = { sciana: elementy[elementy.length - 1].sciana, szer: k.widthMM };
   }
 
+  // --- Słupek / lodówka przy drzwiach szafki ślepej (koniec ściany z narożnikiem): blenda 50 mm + ostrzeżenie ---
+  if (naroznik === "slepa")
+    for (const e of elementy) {
+      if (e.rodzaj !== "lodowka" || e.sciana >= n - 1) continue;
+      const przyNarozniku = e.xMM !== undefined ? e.xMM + e.szerokoscMM > koniecDolny[e.sciana] - Z.blendaNaroznaMM - 0.5 : e.kolejnosc === 3;
+      if (!przyNarozniku) continue;
+      koniecDolny[e.sciana] = r1(koniecDolny[e.sciana] - Z.blendaNaroznaMM);
+      plan.push(blendaLubDopasowana(Z.blendaNaroznaMM, sciany[e.sciana].id, koniecDolny[e.sciana], "dolny", "blendaNarozna"));
+      ostrzezenia.push(`${Opis(sciany[e.sciana].nazwa)}: słupek/lodówka przy drzwiach szafki narożnej ślepej — dodano blendę ${Z.blendaNaroznaMM} mm; sprawdź kolizję frontu i uchwytu przy otwieraniu.`);
+    }
+
   // --- Rozmieszczenie na ścianach ---
   const polozenie = new Map<Element, number>();
   const minOdstep = (a: Granica, b: Granica): { mm: number; prio: number; waga: number } => {
@@ -492,7 +602,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
     const stale = naScianie.filter((e) => e.xMM !== undefined).sort((a, b) => a.xMM! - b.xMM!);
     for (const e of stale) {
       if (e.xMM! < startDolny[i] - 0.5 || e.xMM! + e.szerokoscMM > koniecDolny[i] + 0.5)
-        throw new BladUkladu(`${e.rodzaj}: pozycja ${e.xMM}–${e.xMM! + e.szerokoscMM} mm poza wolnym odcinkiem ściany ${sciany[i].nazwa} (${startDolny[i]}–${koniecDolny[i]} mm).`);
+        throw new BladUkladu(`${e.rodzaj}: pozycja ${e.xMM}–${e.xMM! + e.szerokoscMM} mm poza wolnym odcinkiem (${opisSciany(sciany[i].nazwa)}: ${startDolny[i]}–${koniecDolny[i]} mm).`);
       polozenie.set(e, e.xMM!);
     }
     for (let j = 1; j < stale.length; j++)
@@ -516,7 +626,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
   function rozmiesc(odc: { a: number; b: number; gl: Granica; gp: Granica }, el: Element[], nazwaSciany: string) {
     const suma = el.reduce((s, e) => s + e.szerokoscMM, 0);
     const wolne = odc.b - odc.a - suma;
-    if (wolne < -0.5) throw new BladUkladu(`Ściana ${nazwaSciany}: elementy (${el.map((e) => e.rodzaj).join(", ")}, ${suma} mm) nie mieszczą się na wolnym odcinku ${Math.round(odc.b - odc.a)} mm.`);
+    if (wolne < -0.5) throw new BladUkladu(`${Opis(nazwaSciany)}: elementy (${el.map((e) => e.rodzaj).join(", ")}, ${suma} mm) nie mieszczą się na wolnym odcinku ${Math.round(odc.b - odc.a)} mm.`);
     const granice: Granica[] = [odc.gl, ...el.map((e) => e.rodzaj), odc.gp];
     const luki = el.length + 1;
     const min: number[] = [];
@@ -539,7 +649,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
         const ile = Math.min(min[g], brak);
         min[g] -= ile;
         brak -= ile;
-        ostrzezenia.push(`Ściana ${nazwaSciany}: odstęp ${granice[g]}–${granice[g + 1]} zmniejszony do ${Math.round(min[g])} mm (założenie ergonomii nie spełnione — brak miejsca).`);
+        ostrzezenia.push(`${Opis(nazwaSciany)}: odstęp ${granice[g]}–${granice[g + 1]} zmniejszony do ${Math.round(min[g])} mm (założenie ergonomii nie spełnione — brak miejsca).`);
       }
     }
     const nadwyzka = wolne - min.reduce((s, v) => s + v, 0);
@@ -558,6 +668,12 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
       polozenie.set(e, r1(x));
       x += e.szerokoscMM;
     });
+  }
+
+  function dodajOdcinki(r: PlanOdcinkow, scianaId: string, rzad: Rzad) {
+    plan.push(...r.plan);
+    for (const l of r.luzy) rezerwacje.push({ scianaId, rzad, odMM: l.odMM, doMM: l.doMM, opis: "Luz montażowy (bez blendy)" });
+    ostrzezenia.push(...r.uwagi);
   }
 
   // --- Plan dolnego rzędu ---
@@ -581,7 +697,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
       const lewa = zaj.find((z) => Math.abs(z.doMM - w.odMM) < 1)?.g ?? granicaKonca(i, "lewa");
       const prawa = zaj.find((z) => Math.abs(z.odMM - w.doMM) < 1)?.g ?? granicaKonca(i, "prawa");
       const strona = prawa === "koniec" || prawa === "lodowka" ? "koniec" : lewa === "koniec" || lewa === "lodowka" ? "poczatek" : "koniec";
-      plan.push(...modulyZOdcinkow(rozlozDlugosc(w.doMM - w.odMM, szerDolne, { symetria: o.symetria, blenda: strona }), sc.id, w.odMM, "dolny", dolne));
+      dodajOdcinki(modulyZOdcinkow(rozlozDlugosc(w.doMM - w.odMM, szerDolne, { symetria: o.symetria, blenda: strona, cargo: CARGO_RESZTY }), sc.id, w.odMM, "dolny", dolne), sc.id, "dolny");
     }
   }
 
@@ -590,7 +706,7 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
     for (let i = 0; i < n; i++) {
       const sc = sciany[i];
       const zaj: Przedzial[] = wysokie.filter((w) => w.sciana === i).map((w) => ({ odMM: w.od, doMM: w.do, opis: "słupek / lodówka" }));
-      for (const p of o.przerwyWiszacych ?? []) if (p.sciana === i) zaj.push({ odMM: Math.max(0, p.odMM), doMM: Math.min(sc.dlugoscMM, p.doMM), opis: "przerwa" });
+      for (const p of przerwy) if (p.sciana === i) zaj.push({ odMM: Math.max(0, p.odMM), doMM: Math.min(sc.dlugoscMM, p.doMM), opis: "przerwa" });
       const pl = elementy.find((e) => e.rodzaj === "plyta" && e.sciana === i);
       if (pl && hob) {
         const x = polozenie.get(pl)!;
@@ -604,14 +720,14 @@ export function planSzybkiegoUkladu(sciany: ScianaUkladu[], o: OpcjeSzybkiegoUkl
         zaj.push({ odMM: x, doMM: x + hob.szer, opis: "nad płytą" });
       }
       for (const w of wolnePrzedzialy(startWisz[i], koniecWisz[i], zaj))
-        plan.push(...modulyZOdcinkow(rozlozDlugosc(w.doMM - w.odMM, szerWiszace, { symetria: o.symetria, blenda: "koniec" }), sc.id, w.odMM, "wiszacy"));
+        dodajOdcinki(modulyZOdcinkow(rozlozDlugosc(w.doMM - w.odMM, szerWiszace, { symetria: o.symetria, blenda: "koniec" }), sc.id, w.odMM, "wiszacy"), sc.id, "wiszacy");
     }
   }
 
   // --- Wysokość pomieszczenia ---
   for (const s of sciany) {
-    if (wysokie.length && s.wysokoscMM < 2170) ostrzezenia.push(`Ściana ${s.nazwa}: wysokość ${s.wysokoscMM} mm < 2170 mm (słupek 2070 + nogi 100) — skróć słupki.`);
-    if (wiszace && s.wysokoscMM < 2120) ostrzezenia.push(`Ściana ${s.nazwa}: wysokość ${s.wysokoscMM} mm < 2120 mm — szafki wiszące nie mieszczą się.`);
+    if (wysokie.length && s.wysokoscMM < 2170) ostrzezenia.push(`${Opis(s.nazwa)}: wysokość ${s.wysokoscMM} mm < 2170 mm (słupek 2070 + nogi 100) — skróć słupki.`);
+    if (wiszace && s.wysokoscMM < 2120) ostrzezenia.push(`${Opis(s.nazwa)}: wysokość ${s.wysokoscMM} mm < 2120 mm — szafki wiszące nie mieszczą się.`);
   }
 
   return { plan: plan.sort((a, b) => sciany.findIndex((s) => s.id === a.scianaId) - sciany.findIndex((s) => s.id === b.scianaId) || a.pozycjaXMM - b.pozycjaXMM), rezerwacje, ostrzezenia, zalozenia };

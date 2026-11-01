@@ -1,4 +1,4 @@
-import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
+import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
 import { PRODUKTY_OKUC } from "../core/catalog/hardware-products.js";
 import { PROFILE_SZUFLAD } from "../core/catalog/drawers.js";
@@ -91,7 +91,8 @@ app.get("/api/okucia-katalog", api((r) => {
 }));
 app.post("/api/okucia-katalog/:id/dodaj", api(r => s.dodajProduktOkucia(p(r, "id"), r.body?.cenaNetto)));
 app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
-app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d) }))));
+// maBlat: dekor ma artykuł blatu roboczego (Egger PG_WORKTOPS) — galeria blatów filtruje po tej fladze.
+app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d), maBlat: artykulyDekoru(d, "PG_WORKTOPS").length > 0 }))));
 app.get("/api/dekory/:key", api(r => {
   const d = DEKORY.find(x => kluczDekoru(x) === p(r, "key"));
   if (!d) throw new BladUslugi("Nieznany dekor.");
@@ -160,6 +161,7 @@ app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)
 app.post("/api/projekty/:id/sciany/:sid/wypelnij", api((r) => s.wypelnijCalaSciane(p(r, "id"), p(r, "sid"), r.body ?? {})));
 app.post("/api/projekty/:id/szybki-uklad", api((r) => s.szybkiUklad(p(r, "id"), r.body ?? {})));
 app.post("/api/projekty/:id/styl", api((r) => s.ustawStyl(p(r, "id"), r.body ?? {})));
+app.get("/api/projekty/:id/styl", api((r) => s.stylPomieszczenia(p(r, "id"), typeof r.query.pomieszczenieId === "string" ? r.query.pomieszczenieId : undefined)));
 app.get("/api/okucia-projektu/opcje", api(() => s.opcjeOkuc()));
 app.put("/api/projekty/:id/okucia", api((r) => s.ustawOkucia(p(r, "id"), r.body?.okucia === undefined ? r.body : r.body.okucia)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));

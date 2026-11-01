@@ -37,6 +37,8 @@ export interface WynikWypelnienia {
   moduly: ModulUkladu[];
   wolne: { odMM: number; doMM: number }[];
   zajete: Przedzial[];
+  /** Luzy montażowe < 20 mm (bez modułu). */
+  luzy: { odMM: number; doMM: number }[];
   ostrzezenia: string[];
   zalozenia: string[];
 }
@@ -70,6 +72,29 @@ export interface WynikStylu {
   braki: { rola: RolaStylu; komunikat: string }[];
   ostrzezenia: string[];
   wyczyszczono: number;
+}
+
+/** Materiał roli w stylu pomieszczenia (dekor = klucz galerii, gdy materiał z niej pochodzi). */
+export interface MaterialStylu {
+  materialId: string;
+  brakMaterialu?: boolean;
+  nazwa?: string;
+  producent?: string;
+  typ?: Material["typ"];
+  gruboscMM?: number;
+  dekor?: string;
+  artykul?: string;
+  zdjecieURL?: string;
+  kolorHEX?: string;
+  maCene?: boolean;
+}
+export interface StylPomieszczenia {
+  pomieszczenieId: string;
+  korpus: MaterialStylu | null;
+  front: MaterialStylu | null;
+  blat: MaterialStylu | null;
+  modulyZWlasnymMaterialem: number;
+  okucia: OkuciaProjektu | null;
 }
 
 export interface OpcjaOkucia {
@@ -188,6 +213,7 @@ export const api = {
   wypelnijCalaSciane: (id: string, sid: string, d: OpcjeWypelnienia & { podglad?: boolean }) => zadanie<WynikWypelnienia>("POST", `/api/projekty/${id}/sciany/${sid}/wypelnij`, d),
   szybkiUklad: (id: string, d: ZadanieSzybkiegoUkladu) => zadanie<WynikSzybkiegoUkladu>("POST", `/api/projekty/${id}/szybki-uklad`, d),
   ustawStyl: (id: string, d: { pomieszczenieId?: string; korpus?: WyborMaterialu; front?: WyborMaterialu; blat?: WyborMaterialu; wyczyscWyjatkiModulow?: boolean; podglad?: boolean }) => zadanie<WynikStylu>("POST", `/api/projekty/${id}/styl`, d),
+  stylPomieszczenia: (id: string, pomieszczenieId?: string) => zadanie<StylPomieszczenia>("GET", `/api/projekty/${id}/styl${pomieszczenieId ? `?pomieszczenieId=${encodeURIComponent(pomieszczenieId)}` : ""}`),
   opcjeOkucProjektu: () => zadanie<OpcjeOkucProjektu>("GET", "/api/okucia-projektu/opcje"),
   ustawOkuciaProjektu: (id: string, okucia: OkuciaProjektu | null) => zadanie<{ okucia: OkuciaProjektu | null; ostrzezenia: string[] }>("PUT", `/api/projekty/${id}/okucia`, { okucia }),
 };

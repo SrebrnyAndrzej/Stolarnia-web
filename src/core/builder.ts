@@ -36,8 +36,10 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
   }
 
   // --- Walidacja (CabinetBuildParameters.validate) ---
-  if (W <= 2 * t) ostrzezenia.push("Szerokość mebla musi być większa niż suma grubości boków.");
-  if (H <= 2 * t) ostrzezenia.push("Wysokość mebla musi być większa niż suma grubości wieńców.");
+  // Blenda to jeden panel bez boków — walidacja korpusu jej nie dotyczy (wystarczy dodatnia szerokość).
+  const blenda = m.konstrukcja === "filler";
+  if (blenda ? !(W > 0) : W <= 2 * t) ostrzezenia.push(blenda ? "Szerokość blendy musi być dodatnia." : "Szerokość mebla musi być większa niż suma grubości boków.");
+  if (!blenda && H <= 2 * t) ostrzezenia.push("Wysokość mebla musi być większa niż suma grubości wieńców.");
   if (cfg.liczbaPolek < 0 || cfg.liczbaPolek > 20) ostrzezenia.push("Liczba półek musi mieścić się w zakresie 0...20.");
   if (ostrzezenia.length) return { modul: m, elementy: [], okucia: [], ostrzezenia };
 

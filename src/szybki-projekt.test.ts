@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { DEKORY, kluczDekoru, wariantyDekoru } from "./core/catalog/decors.js";
-import { rozlozDlugosc } from "./core/uklad.js";
+import { planSzybkiegoUkladu, rozlozDlugosc } from "./core/uklad.js";
 import { Stolarnia } from "./service.js";
 import { Magazyn } from "./store/store.js";
 import type { Modul } from "./core/types.js";
@@ -36,7 +36,19 @@ test("rozlozDlugosc: preferowane szerokości, blenda < 150 mm, szafka dopasowana
   assert.equal(r.reduce((s, o) => s + o.szerokoscMM, 0), 1250);
   assert.ok(r.filter((o) => o.typ === "blenda").every((o) => o.szerokoscMM < 150));
   assert.deepEqual(rozlozDlugosc(90, [600]), [{ typ: "blenda", szerokoscMM: 90 }]);
-  assert.deepEqual(rozlozDlugosc(220, [600, 300]), [{ typ: "dopasowana", szerokoscMM: 220 }]);
+  // Reszta 150–299 mm: cargo z katalogu, inaczej szeroka blenda z ostrzeżeniem; < 20 mm luz montażowy (decyzja koordynatora).
+  assert.deepEqual(rozlozDlugosc(220, [600, 300], { cargo: [150, 200] }).map((o) => [o.typ, o.szerokoscMM]), [["cargo", 200], ["blenda", 20]]);
+  assert.deepEqual(rozlozDlugosc(160, [600], { cargo: [150, 200] }).map((o) => o.typ), ["cargo", "luz"]);
+  const bezCargo = rozlozDlugosc(220, [600, 300]);
+  assert.equal(bezCargo[0].typ, "blenda");
+  assert.ok(bezCargo[0].uwaga);
+  assert.deepEqual(rozlozDlugosc(3610, [600]).map((o) => o.typ), ["szafka", "szafka", "szafka", "szafka", "szafka", "szafka", "luz"]);
+  assert.deepEqual(rozlozDlugosc(12, [600]).map((o) => o.typ), ["luz"]);
+  // Szafki dopasowane maks. 900 mm
+  const dop = rozlozDlugosc(2000, [3000]);
+  assert.ok(dop.length === 3 && dop.every((o) => o.typ === "dopasowana" && o.szerokoscMM <= 900));
+  assert.equal(Math.round(dop.reduce((x, o) => x + o.szerokoscMM, 0) * 10) / 10, 2000);
+  assert.throws(() => rozlozDlugosc(1000, []), /Brak szerokości/);
   const sym = rozlozDlugosc(2470, [600, 500, 400], { symetria: true });
   assert.equal(sym[0].typ, "blenda");
   assert.equal(sym[sym.length - 1].typ, "blenda");
@@ -185,4 +197,75 @@ test("okucia projektu: wybór respektowany w wycenie, brak ceny = jawny błąd, 
   assert.equal(s.wycena(p.id, "standard").warianty[0].cenaBrutto, 30000);
   s.ustawOkucia(p.id, null);
   assert.equal(s.projekt(p.id).okucia, undefined);
+});
+
+test("szybki układ omija szafkę ślepą z sąsiedniej ściany; moduł w środku ściany = błąd", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Ślepa+I", sciany: [{ dlugoscMM: 3000 }, { dlugoscMM: 3600 }] });
+  const [A, B] = p.pomieszczenia[0].sciany;
+  s.dodajModul(p.id, { katalogId: "base-blind-corner-1100", scianaId: A.id, pozycjaXMM: 1900, konfiguracja: { stronaDrzwiNaroznika: "lewa" } });
+  const w = s.szybkiUklad(p.id, { typ: "I", scianyIds: [B.id], lodowka: { strona: "koniec" } });
+  sprawdzSciane(w.moduly, w.rezerwacje, B.id, 3600);
+  assert.ok(w.rezerwacje.some((r) => r.scianaId === B.id && r.odMM === 0 && r.doMM === 578));
+  assert.ok(w.moduly.some((m) => m.rola === "blendaNarozna" && m.pozycjaXMM === 578));
+  assert.ok(!w.ostrzezenia.some((o) => /Ściana Ściana|ściana Ściana/.test(o)));
+  assert.deepEqual(s.analiza(p.id).walidacja.filter((u) => u.poziom === "blad"), []);
+
+  // Zajętość spoza układu w środku ściany → błąd planu
+  const sc = [{ id: "a", nazwa: "Ściana A", dlugoscMM: 3600, wysokoscMM: 2600 }];
+  assert.throws(() => planSzybkiegoUkladu(sc, { typ: "I" }, { gruboscFrontuMM: 18, zajete: [{ dolny: [{ odMM: 1500, doMM: 2000, opis: "Szafka X" }], wiszacy: [] }] }), /środek ściany/);
+});
+
+test("blenda węższa niż dwa boki bez błędu budowy; przerwa poza układem; lodówka przy drzwiach ślepej", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Blenda", sciany: [{ dlugoscMM: 3000 }, { dlugoscMM: 2400 }] });
+  const w = s.szybkiUklad(p.id, { typ: "L", lodowka: { strona: "koniec" }, przerwyWiszacych: [{ sciana: 5, odMM: 0, doMM: 500 }, { sciana: 0, odMM: 2500, doMM: 3000 }] });
+  assert.ok(w.ostrzezenia.some((o) => o.includes("poza układem")));
+  assert.ok(w.ostrzezenia.some((o) => o.includes("Narożnik wiszący")));
+  assert.ok(!w.moduly.some((m) => m.konstrukcja === "wallCorner"));
+  assert.ok(w.ostrzezenia.some((o) => o.includes("drzwiach szafki narożnej ślepej")));
+  const A = w.sciany[0];
+  sprawdzSciane(w.moduly, w.rezerwacje, A.id, 3000);
+  const blenda = s.dodajModul(p.id, { kategoria: "base", konstrukcja: "filler", nazwa: "Blenda 28", scianaId: A.id, pozycjaXMM: 0, szerokoscMM: 28, wysokoscMM: 720, glebokoscMM: 560 });
+  const zb = s.analiza(p.id).zbudowane.find((z) => z.modul.id === blenda.id)!;
+  assert.ok(zb.elementy.length > 0 && !zb.ostrzezenia.some((o) => o.includes("grubości boków")));
+});
+
+test("walidacja wejścia: zod → BladUslugi, puste szerokości, blenda narożna > 150", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Walidacja", sciany: [{ dlugoscMM: 3000 }] });
+  const sc = p.pomieszczenia[0].sciany[0].id;
+  assert.throws(() => s.ustawStyl(p.id, { korpus: "abc" as never }), (e: Error) => e.constructor.name === "BladUslugi");
+  assert.throws(() => s.wypelnijCalaSciane(p.id, sc, { rzad: "dolny", blendaNaroznaMM: 200 }), /Nieprawidłowe dane/);
+  assert.throws(() => s.wypelnijCalaSciane(p.id, sc, { rzad: "dolny", odXMM: Number.NaN }), /Nieprawidłowe dane/);
+  assert.throws(() => s.wypelnijCalaSciane(p.id, sc, { rzad: "dolny", szerokosci: [123] }), /katalogu/);
+  assert.throws(() => s.szybkiUklad(p.id, { typ: "I", szerokosci: [123] }), /katalogu/);
+  assert.throws(() => s.szybkiUklad(p.id, { typ: "X" as never }), /Nieprawidłowe dane/);
+  assert.equal(s.projekt(p.id).moduly.length, 0);
+});
+
+test("styl: zły typ materiału = brak bez zapisu; odczyt stylu z kluczem dekoru", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "StylOdczyt" });
+  const przed = s.projekt(p.id).pomieszczenia[0].materialKorpusuId;
+  const w = s.ustawStyl(p.id, { korpus: { materialId: "blat-lam-38" }, blat: { materialId: "front-mdf-folia" } });
+  assert.equal(w.braki.length, 2);
+  assert.equal(s.projekt(p.id).pomieszczenia[0].materialKorpusuId, przed);
+  const egger = DEKORY.find((d) => wariantyDekoru(d).some((x) => x.dimension_z_source.trim() === "18"))!;
+  s.ustawStyl(p.id, { front: { dekor: kluczDekoru(egger) } });
+  const st = s.stylPomieszczenia(p.id);
+  assert.equal(st.front?.dekor, kluczDekoru(egger));
+  assert.equal(st.korpus?.materialId, przed);
+});
+
+test("oferta PDF zablokowana, gdy wariant ma pozycje bez ceny; komunikat bez wewnętrznych id", async () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Oferta", sciany: [{ dlugoscMM: 3000 }] });
+  s.szybkiUklad(p.id, { typ: "I" });
+  s.zapiszOkucie({ id: "salice.silentia", cenaNetto: 0 });
+  s.ustawOkucia(p.id, { zawiasy: "salice.silentia" });
+  await assert.rejects(() => s.ofertaPdf(p.id, { wariant: "standard" }), (e: Error) => e.constructor.name === "BladUslugi" && /Silentia/.test(e.message) && !e.message.includes("salice.silentia"));
+  s.zapiszOkucie({ id: "salice.silentia", cenaNetto: 12 });
+  const pdf = await s.ofertaPdf(p.id, { wariant: "standard" });
+  assert.ok(pdf.length > 1000);
 });

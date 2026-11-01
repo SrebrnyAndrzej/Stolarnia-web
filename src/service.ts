@@ -38,7 +38,10 @@ import type {
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
 import { scianyNaRzucie } from "./core/geometry.js";
-import { OPIS_ZALOZEN_UKLADU, planSzybkiegoUkladu, planWypelnieniaSciany, type OpcjeSzybkiegoUkladu, type OpcjeWypelnienia } from "./core/uklad.js";
+import { OPIS_ZALOZEN_UKLADU, opisSciany, planSzybkiegoUkladu, planWypelnieniaSciany, zajeteNaScianie, type OpcjeSzybkiegoUkladu, type OpcjeWypelnienia } from "./core/uklad.js";
+import { opisBleduZod, schematOkucProjektu, schematStylu, schematSzybkiegoUkladu, schematWypelnienia } from "./schematy-szybki.js";
+import { DEKORY, kluczDekoru } from "./core/catalog/decors.js";
+import type { z } from "zod";
 import { blatZDekoru, plytaZDekoru, type RolaStylu, type RozstrzygniecieStylu, type WyborMaterialu } from "./core/styl.js";
 import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
@@ -61,6 +64,13 @@ export function jsonBezMigawek(v: unknown): string {
 }
 
 export class BladUslugi extends Error {}
+
+/** Walidacja wejścia schematem zod (REST i MCP) — błąd jako BladUslugi (HTTP 400). */
+function parsuj<T extends z.ZodTypeAny>(schemat: T, dane: unknown): z.infer<T> {
+  const r = schemat.safeParse(dane);
+  if (!r.success) throw new BladUslugi(`Nieprawidłowe dane: ${opisBleduZod(r.error)}`);
+  return r.data;
+}
 
 // dxf-parser to pakiet CommonJS/UMD — w zależności od loadera klasa jest pod default albo bezpośrednio.
 const DxfParser = ((dxfParserModul as unknown as { default?: unknown }).default ?? dxfParserModul) as new () => { parseSync(t: string): unknown };
@@ -610,8 +620,8 @@ export class Stolarnia {
    * Wypełnia wolne miejsce w rzędzie (dolny / wiszący) całej ściany modułami katalogowymi: preferowane szerokości,
    * blenda przy reszcie < 150 mm, stojące moduły (także szafki narożne ze ściany prostopadłej) zostają. podglad = bez zapisu.
    */
-  wypelnijCalaSciane(projektId: string, scianaId: string, opcje: OpcjeWypelnienia & { podglad?: boolean }) {
-    if (opcje?.rzad !== "dolny" && opcje?.rzad !== "wiszacy") throw new BladUslugi('Podaj rzad: "dolny" albo "wiszacy".');
+  wypelnijCalaSciane(projektId: string, scianaId: string, wejscie: OpcjeWypelnienia & { podglad?: boolean }) {
+    const opcje = parsuj(schematWypelnienia, wejscie);
     const wykonaj = (p: Projekt, b: BazaDanych) => {
       const pom = p.pomieszczenia.find((r) => r.sciany.some((x) => x.id === scianaId));
       if (!pom) throw new BladUslugi(`Nie ma ściany o id "${scianaId}" w projekcie.`);
@@ -626,7 +636,7 @@ export class Stolarnia {
         p.moduly.push(m);
         return { ...m, rola };
       });
-      return { moduly, wolne: w.wolne, zajete: w.zajete, ostrzezenia: w.ostrzezenia, zalozenia: OPIS_ZALOZEN_UKLADU.slice(3, 4) };
+      return { moduly, wolne: w.wolne, zajete: w.zajete, luzy: w.luzy, ostrzezenia: w.ostrzezenia, zalozenia: OPIS_ZALOZEN_UKLADU.slice(3, 5) };
     };
     return this.wykonajLubPodglad(projektId, !!opcje.podglad, wykonaj);
   }
@@ -636,9 +646,9 @@ export class Stolarnia {
    * wypełnienie dolnych i wiszących. Ściany: scianyIds albo pierwsze ściany pomieszczenia (brakujące tworzone z dlugosciScianMM).
    * Istniejące moduły na tych ścianach blokują układ, chyba że zastap = true. podglad = bez zapisu.
    */
-  szybkiUklad(projektId: string, opcje: OpcjeSzybkiegoUkladu & { pomieszczenieId?: string; scianyIds?: string[]; dlugosciScianMM?: number[]; wysokoscMM?: number; zastap?: boolean; podglad?: boolean }) {
-    const n = ({ I: 1, L: 2, U: 3 } as Record<string, number>)[opcje?.typ];
-    if (!n) throw new BladUslugi('Podaj typ układu: "I", "L" albo "U".');
+  szybkiUklad(projektId: string, wejscie: OpcjeSzybkiegoUkladu & { pomieszczenieId?: string; scianyIds?: string[]; dlugosciScianMM?: number[]; wysokoscMM?: number; zastap?: boolean; podglad?: boolean }) {
+    const opcje = parsuj(schematSzybkiegoUkladu, wejscie);
+    const n = { I: 1, L: 2, U: 3 }[opcje.typ];
     const wykonaj = (p: Projekt, b: BazaDanych) => {
       const pom = opcje.pomieszczenieId ? p.pomieszczenia.find((r) => r.id === opcje.pomieszczenieId) : p.pomieszczenia[0];
       if (!pom) throw new BladUslugi(opcje.pomieszczenieId ? `Nie ma pomieszczenia o id "${opcje.pomieszczenieId}".` : "Projekt nie ma pomieszczenia.");
@@ -662,28 +672,43 @@ export class Stolarnia {
           sciany.push(nowa);
         }
       }
+      const ostrzezeniaScian: string[] = [];
+      const domkniety = (() => {
+        const r = scianyNaRzucie(pom);
+        return r.length >= 3 && Math.hypot(r[r.length - 1].x2 - r[0].x1, r[r.length - 1].y2 - r[0].y1) <= 20;
+      })();
+      let zmieniono = false;
       sciany.forEach((sc, i) => {
         if (dl && Math.abs(sc.dlugoscMM - dl[i]) > 0.5) {
-          if (sc.x1 !== undefined) throw new BladUslugi(`Ściana ${sc.nazwa} pochodzi z CAD — zmień jej długość w rysunku albo pomiń dlugosciScianMM.`);
+          if (sc.x1 !== undefined) throw new BladUslugi(`${opisSciany(sc.nazwa)} pochodzi z CAD — zmień jej długość w rysunku albo pomiń dlugosciScianMM.`);
           sc.dlugoscMM = dl[i];
+          zmieniono = true;
         }
         if (opcje.wysokoscMM) sc.wysokoscMM = opcje.wysokoscMM;
       });
+      if (zmieniono && domkniety) {
+        const r = scianyNaRzucie(pom);
+        if (Math.hypot(r[r.length - 1].x2 - r[0].x1, r[r.length - 1].y2 - r[0].y1) > 20)
+          ostrzezeniaScian.push(`Zmiana długości ścian rozszczelnia zamknięty obrys pomieszczenia ${pom.nazwa} — rzut się nie domyka; popraw pozostałe ściany.`);
+      }
       // Narożniki: kolejna ściana zaczyna się w końcu poprzedniej i idzie w głąb pomieszczenia (kąt ~90°).
       const rzut = scianyNaRzucie(pom);
       for (let i = 0; i < n - 1; i++) {
         const a = rzut.find((w) => w.sciana.id === sciany[i].id)!;
         const c = rzut.find((w) => w.sciana.id === sciany[i + 1].id)!;
         if (Math.hypot(a.x2 - c.x1, a.y2 - c.y1) > 20 || c.dx * a.nx + c.dy * a.ny < 0.95)
-          throw new BladUslugi(`Ściany ${sciany[i].nazwa} i ${sciany[i + 1].nazwa} nie tworzą narożnika wewnętrznego 90° (koniec jednej = początek drugiej).`);
+          throw new BladUslugi(`${opisSciany(sciany[i].nazwa)} i ${opisSciany(sciany[i + 1].nazwa)} nie tworzą narożnika wewnętrznego 90° (koniec jednej = początek drugiej).`);
       }
       const ids = new Set(sciany.map((x) => x.id));
       const stojace = p.moduly.filter((m) => ids.has(m.scianaId));
       if (stojace.length && !opcje.zastap) throw new BladUslugi(`Na wybranych ścianach stoi ${stojace.length} modułów — użyj zastap: true, aby zastąpić ułożenie.`);
       p.moduly = p.moduly.filter((m) => !ids.has(m.scianaId));
+      // Moduły spoza układu (np. szafka narożna ze ściany sąsiedniej) zajmujące pas przy ścianach układu.
+      const front = b.ustawienia.konstrukcja.gruboscFrontuMM;
+      const zajete = sciany.map((x) => ({ dolny: zajeteNaScianie(pom, p.moduly, x.id, "dolny", front), wiszacy: zajeteNaScianie(pom, p.moduly, x.id, "wiszacy", front) }));
       let plan: ReturnType<typeof planSzybkiegoUkladu>;
       try {
-        plan = planSzybkiegoUkladu(sciany.map((x) => ({ id: x.id, nazwa: x.nazwa, dlugoscMM: x.dlugoscMM, wysokoscMM: x.wysokoscMM })), opcje, { gruboscFrontuMM: b.ustawienia.konstrukcja.gruboscFrontuMM });
+        plan = planSzybkiegoUkladu(sciany.map((x) => ({ id: x.id, nazwa: x.nazwa, dlugoscMM: x.dlugoscMM, wysokoscMM: x.wysokoscMM })), opcje, { gruboscFrontuMM: front, zajete });
       } catch (e) {
         throw new BladUslugi((e as Error).message);
       }
@@ -698,7 +723,7 @@ export class Stolarnia {
         moduly,
         rezerwacje: plan.rezerwacje,
         usunieto: stojace.length,
-        ostrzezenia: plan.ostrzezenia,
+        ostrzezenia: [...ostrzezeniaScian, ...plan.ostrzezenia],
         zalozenia: plan.zalozenia,
       };
     };
@@ -709,8 +734,9 @@ export class Stolarnia {
    * Pakiet stylu pomieszczenia: korpus, fronty i blat z materiałów albo wprost z galerii dekorów. Dekor bez materiału
    * jest aktywowany tylko, gdy grubość i format znane są z artykułu producenta (lub wpisane jawnie) — inaczej jawny brak.
    */
-  ustawStyl(projektId: string, dane: { pomieszczenieId?: string; korpus?: WyborMaterialu; front?: WyborMaterialu; blat?: WyborMaterialu; wyczyscWyjatkiModulow?: boolean; podglad?: boolean }) {
-    if (!dane?.korpus && !dane?.front && !dane?.blat) throw new BladUslugi("Podaj co najmniej jeden z: korpus, front, blat.");
+  ustawStyl(projektId: string, wejscie: { pomieszczenieId?: string; korpus?: WyborMaterialu; front?: WyborMaterialu; blat?: WyborMaterialu; wyczyscWyjatkiModulow?: boolean; podglad?: boolean }) {
+    const dane = parsuj(schematStylu, wejscie ?? {});
+    if (!dane.korpus && !dane?.front && !dane?.blat) throw new BladUslugi("Podaj co najmniej jeden z: korpus, front, blat.");
     const wykonaj = (p: Projekt, b: BazaDanych) => {
       const pom = dane.pomieszczenieId ? p.pomieszczenia.find((r) => r.id === dane.pomieszczenieId) : p.pomieszczenia[0];
       if (!pom) throw new BladUslugi("Nie znaleziono pomieszczenia.");
@@ -734,10 +760,14 @@ export class Stolarnia {
           braki.push({ rola, komunikat: r.brak ?? "Brak danych." });
           continue;
         }
-        const blat = ["blatLaminowany", "blatKompaktowy", "blatKamienny"].includes(r.material.typ);
-        if (rola === "blat" && (!blat || r.material.jednostka !== "metrBiezacy")) ostrzezenia.push(`Blat: materiał "${r.material.nazwa}" nie jest blatem liczonym w mb — wycena przyjmie blat z wariantu.`);
-        if (rola !== "blat" && blat) {
-          braki.push({ rola, komunikat: `"${r.material.nazwa}" to blat, nie płyta ${rola === "korpus" ? "korpusu" : "frontu"}.` });
+        // Typ materiału musi pasować do roli — inaczej brak, bez zapisu.
+        const dozwolone: Record<RolaStylu, Material["typ"][]> = {
+          korpus: ["plytaLaminowana", "mdf", "sklejka"],
+          front: ["plytaLaminowana", "mdf", "sklejka", "front"],
+          blat: ["blatLaminowany", "blatKompaktowy", "blatKamienny"],
+        };
+        if (!dozwolone[rola].includes(r.material.typ) || (rola === "blat" && r.material.jednostka !== "metrBiezacy")) {
+          braki.push({ rola, komunikat: `"${r.material.nazwa}" (${r.material.typ}) nie nadaje się na ${rola === "korpus" ? "korpus" : rola === "front" ? "fronty" : "blat liczony w mb"}.` });
           continue;
         }
         let m = b.materialy.find((x) => x.id === r.material!.id);
@@ -769,6 +799,31 @@ export class Stolarnia {
     return this.wykonajLubPodglad(projektId, !!dane.podglad, wykonaj);
   }
 
+  /** Bieżący styl pomieszczenia: materiały korpusu, frontów i blatu z kluczem dekoru galerii (gdy materiał z niego pochodzi). */
+  stylPomieszczenia(projektId: string, pomieszczenieId?: string) {
+    const b = this.magazyn.odczytaj();
+    const p = b.projekty.find((x) => x.id === projektId);
+    if (!p) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
+    const pom = pomieszczenieId ? p.pomieszczenia.find((r) => r.id === pomieszczenieId) : p.pomieszczenia[0];
+    if (!pom) throw new BladUslugi("Nie znaleziono pomieszczenia.");
+    const opis = (materialId?: string) => {
+      if (!materialId) return null;
+      const m = b.materialy.find((x) => x.id === materialId);
+      if (!m) return { materialId, brakMaterialu: true };
+      const d = m.zrodloKatalogu ? DEKORY.find((x) => x.source_url === m.zrodloKatalogu && x.manufacturer === m.producent) : undefined;
+      return { materialId, nazwa: m.nazwa, producent: m.producent, typ: m.typ, gruboscMM: m.gruboscMM, dekor: d ? kluczDekoru(d) : undefined, artykul: m.artykulProducenta, zdjecieURL: m.zdjecieURL, kolorHEX: m.kolorHEX, maCene: m.cenaNetto > 0 || !!b.cennikMaterialow?.[m.id] };
+    };
+    const naScianach = new Set(pom.sciany.map((x) => x.id));
+    return {
+      pomieszczenieId: pom.id,
+      korpus: opis(pom.materialKorpusuId),
+      front: opis(pom.materialFrontuId),
+      blat: opis(pom.materialBlatuId),
+      modulyZWlasnymMaterialem: p.moduly.filter((m) => naScianach.has(m.scianaId) && (m.materialKorpusuId || m.materialFrontuId)).length,
+      okucia: p.okucia ?? null,
+    };
+  }
+
   /** Okucia do wyboru na projekcie: pozycje bazy okuć (z informacją o cenie) i profile konstrukcyjne szuflad. */
   opcjeOkuc() {
     const b = this.magazyn.odczytaj();
@@ -784,7 +839,8 @@ export class Stolarnia {
   }
 
   /** Ustawia (null = usuwa) wybór okuć projektu. Pozycje bez ceny są dozwolone — wycena pokaże je jako błąd. */
-  ustawOkucia(projektId: string, okucia: OkuciaProjektu | null) {
+  ustawOkucia(projektId: string, wejscie: OkuciaProjektu | null) {
+    const okucia = parsuj(schematOkucProjektu, wejscie === undefined ? {} : wejscie);
     const ostrzezenia: string[] = [];
     const p = this.edytuj(projektId, (p, b) => {
       if (okucia === null) {
@@ -826,7 +882,8 @@ export class Stolarnia {
       if (!p) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
       return { ...fn(structuredClone(p), b), podglad: true };
     }
-    // Magazyn nie wycofuje zmian po błędzie — liczymy na kopii i podmieniamy dopiero po sukcesie.
+    // Magazyn.zmien zapisuje bazę po wywołaniu, bez wycofania częściowych zmian, gdy fn rzuci błąd w połowie —
+    // dlatego liczymy na kopii projektu i materiałów, a do bazy przenosimy dopiero po sukcesie.
     let wynik!: T;
     this.edytuj(projektId, (p, b) => {
       const kopia = structuredClone(p);
@@ -1183,6 +1240,15 @@ export class Stolarnia {
   ): Promise<Buffer> {
     const a = this.analiza(projektId);
     const b = this.magazyn.odczytaj();
+    // Oferta dla klienta nie może zawierać cen zastępczych: brak ceny / pozycji w bazie blokuje PDF z listą braków.
+    const wariantOferty = o.wariant ?? "standard";
+    const braki = (a.warianty.find((w) => w.wariant === wariantOferty)?.pozycje ?? []).filter((x) => x.jestBledemWyceny);
+    if (braki.length)
+      throw new BladUslugi(
+        `Oferty nie można wygenerować — w wariancie ${wariantOferty} są pozycje bez ceny lub bez rekordu w bazie: ` +
+          braki.map((x) => x.nazwa.replace(/\s*"[^"]*"/g, "").replace(/\s*\(ID:[^)]*\)/g, "").trim()).join("; ") +
+          ". Uzupełnij ceny w cenniku materiałów / bazie okuć albo zmień wybór.",
+      );
     const teraz = new Date();
     const wizualizacje = (o.wizualizacje ?? []).slice(0, 8).map((v) => {
       const jpeg = Buffer.from(String(v.jpegBase64).replace(/^data:image\/\w+;base64,/, ""), "base64");
@@ -1194,7 +1260,7 @@ export class Stolarnia {
       zbudowane: a.zbudowane,
       ilosci: a.projektWyceny,
       warianty: a.warianty,
-      wariant: o.wariant ?? "standard",
+      wariant: wariantOferty,
       firma: a.ustawienia.daneFirmy,
       materialy: new Map(b.materialy.map((m) => [m.id, m])),
       wizualizacje,
