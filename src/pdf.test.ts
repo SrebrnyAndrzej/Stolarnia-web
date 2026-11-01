@@ -69,3 +69,13 @@ function wejscieZ(s: Stolarnia, id: string) {
   const d = s.dokumentacja(id);
   return { projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined };
 }
+
+test("Składanie korpusów zależnie od projektu: zapis, walidacja i pakiet montażowy", async () => {
+  const { s, p } = projekt();
+  assert.equal(s.zmienProjekt(p.id, { skladanieKorpusow: "naMiejscu" }).skladanieKorpusow, "naMiejscu");
+  assert.throws(() => s.zmienProjekt(p.id, { skladanieKorpusow: "gdzies" as never }));
+  const naMiejscu = await s.montazPdf(p.id);
+  assert.equal(s.zmienProjekt(p.id, { skladanieKorpusow: null }).skladanieKorpusow, undefined);
+  const nieustalone = await s.montazPdf(p.id);
+  assert.ok(strony(naMiejscu.pdf) >= strony(nieustalone.pdf));
+});

@@ -272,6 +272,7 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
         status: z.enum(STATUSY_PROJEKTU).optional(),
         notatki: z.string().optional(),
         terminMontazu: z.string().nullable().optional().describe("RRRR-MM-DD, null usuwa termin"),
+        skladanieKorpusow: z.enum(["warsztat", "naMiejscu"]).nullable().optional().describe("Gdzie ekipa składa korpusy; null = nie ustalono"),
         agd: z
           .array(
             z.object({

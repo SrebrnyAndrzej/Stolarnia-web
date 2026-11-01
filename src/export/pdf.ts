@@ -49,7 +49,7 @@ export interface WejsciePdf {
   /** Domyślnie „produkcja”. „montaz” — rzut, elewacje z wymiarami montażowymi, kolejność, okucia i protokół odbioru. */
   rodzaj?: RodzajPakietu;
   /** Dane operacyjne montażu (z bieżącego projektu, nie z migawki): adres, kontakt, termin. */
-  montaz?: { adres?: string; kontakt?: string; termin?: string };
+  montaz?: { adres?: string; kontakt?: string; termin?: string; skladanie?: "warsztat" | "naMiejscu" };
   projekt: Projekt;
   zbudowane: ZbudowanyModul[];
   dokumentacja: DokumentacjaProjektu;
@@ -354,6 +354,7 @@ class Kontekst {
       ["Ekipa montażowa", "1. ______________  2. ______________"],
       ["Mebli do zamontowania", String(this.w.zbudowane.length)],
       ["Ściany z meblami", String(new Set(this.w.zbudowane.map((z) => z.modul.scianaId)).size)],
+      ["Składanie korpusów", mt.skladanie === "warsztat" ? "w warsztacie — wozimy złożone" : mt.skladanie === "naMiejscu" ? "na miejscu — formatki w paczkach" : "— nie ustalono (zapytaj właściciela)"],
     ];
     for (const [k, v] of wiersze) {
       doc.font("R").fontSize(10).fillColor("#555").text(k, m, y, { width: 160 });
@@ -375,7 +376,12 @@ class Kontekst {
     doc.font("B").fontSize(11).text("Przed wyjazdem", x2, y2);
     y2 += 16;
     for (const t of [
-      "Wszystkie korpusy i fronty spakowane, oznaczone numerem mebla",
+      mt.skladanie === "warsztat"
+        ? "Korpusy złożone wg kart Z, podpisane (złożył / sprawdził), zabezpieczone do transportu"
+        : mt.skladanie === "naMiejscu"
+          ? `Formatki każdej szafki w osobnej paczce z numerem mebla; konfirmaty (${this.konfirmatyRazem()} szt.) i podpórki wg kart Z`
+          : "Ustal z właścicielem: korpusy składamy w warsztacie czy na miejscu",
+      "Fronty spakowane osobno, oznaczone numerem mebla",
       "Okucia z listy M (zawiasy, prowadnice, nogi, zawieszki) skompletowane",
       "Blaty, listwy, cokoły i panele wykończeniowe na liście załadunku",
       "Wkręty, kołki, silikon, poziomica, dalmierz, wkrętarka, piła",
@@ -477,7 +483,7 @@ class Kontekst {
     this.sekcja = "Z";
     this.nowaStrona(
       `Złożenie szafki ${nr}: ${md.nazwa}`,
-      `Korpus ${md.szerokoscMM} × ${md.wysokoscMM} × ${md.glebokoscMM} mm · etykiety jak na naklejkach i w pakiecie P · odhaczaj ☐ po każdym kroku`,
+      `Korpus ${md.szerokoscMM} × ${md.wysokoscMM} × ${md.glebokoscMM} mm · ${this.w.montaz?.skladanie === "warsztat" ? "składać W WARSZTACIE przed wyjazdem" : this.w.montaz?.skladanie === "naMiejscu" ? "składać NA MIEJSCU u klienta" : "miejsce składania: nie ustalono"} · etykiety jak w pakiecie P · odhaczaj ☐`,
     );
     doc.page.margins.bottom = 0;
     const W = this.W;
@@ -662,6 +668,11 @@ class Kontekst {
   }
 
 
+  /** Konfirmaty z operacji całego wydania (jeden przelot w licu = jeden konfirmat). */
+  private konfirmatyRazem(): number {
+    return this.d.czesci.reduce((a, c) => a + c.operacje.filter((o) => o.przeznaczenie === "Konfirmat — przelot w licu").length, 0);
+  }
+
   okuciaMontazu() {
     const sumy = new Map<string, { typ: string; opis: string; ilosc: number; meble: Set<number> }>();
     this.w.zbudowane.forEach((z, i) => {
@@ -675,6 +686,11 @@ class Kontekst {
     });
     this.sekcja = "M";
     const wiersze = [...sumy.values()].sort((a, b) => a.typ.localeCompare(b.typ, "pl")).map((s) => [s.typ, s.opis, String(s.ilosc), [...s.meble].join(", "), "☐"]);
+    if (this.w.montaz?.skladanie === "naMiejscu") {
+      // Składanie u klienta: łączniki korpusów jadą z ekipą — liczba z operacji, rozmiar wg technologii zakładu.
+      const meble = this.w.zbudowane.map((z, i) => (this.d.czesci.some((c) => c.modulId === z.modul.id && c.operacje.some((o) => o.przeznaczenie === "Konfirmat — przelot w licu")) ? i + 1 : 0)).filter(Boolean);
+      wiersze.unshift(["konfirmat", "łącznik korpusu (liczba z operacji kart Z; rozmiar wg technologii zakładu, + zapas)", String(this.konfirmatyRazem()), meble.join(", "), "☐"]);
+    }
     this.tabela(
       "Okucia do zabrania na montaż",
       "Suma z wszystkich mebli tego wydania. Ilości z konstrukcji — nie obejmują zapasu ani elementów mocujących do ściany.",

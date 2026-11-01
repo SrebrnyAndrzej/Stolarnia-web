@@ -95,6 +95,6 @@ Kolejność na ścianie jest liczona od lewego końca ściany. Jeśli narożnik 
 
 1. ✅ Produkcja zmienia status na „Gotowe do montażu”, montaż na „Zakończony” (Mateusz, 1.11.2026).
 2. ✅ Montażysta nie widzi cen ani umowy (Mateusz, 1.11.2026) — do wymuszenia w etapie 3 (konta).
-3. ✅ Ekipa: 2 montażystów — to oni dostają dokumentację (Mateusz, 1.11.2026). Pakiet M ma pola na obu: ekipa na stronie T, „złożył / sprawdził” na każdej karcie Z, dwa podpisy montażystów w protokole K. ❓ Czy korpusy składają w warsztacie, czy na miejscu; stanowiska produkcji i etykiety — do ustalenia.
+3. ✅ Ekipa: 2 montażystów — to oni dostają dokumentację (Mateusz, 1.11.2026). Pakiet M ma pola na obu: ekipa na stronie T, „złożył / sprawdził” na każdej karcie Z, dwa podpisy montażystów w protokole K. Składanie korpusów zależnie od projektu ✅: pole „Składanie korpusów” w zakładce Temat (warsztat / na miejscu); pakiet M dopasowuje listę „przed wyjazdem”, nagłówki kart Z i dopisuje konfirmaty do listy okuć przy składaniu na miejscu. ❓ Stanowiska produkcji i etykiety — do ustalenia.
 4. ❓ Czy pakiet M ma być też w wersji na telefon (to samo w HTML)?
 5. ❓ Kiedy wprowadzamy konta (wymaga migracji bazy na Supabase).

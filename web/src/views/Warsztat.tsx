@@ -148,6 +148,7 @@ export function Warsztat() {
                 <h2 style={{ flex: 1 }}>{p.nazwa}</h2>
                 <span className="badge">{NAZWY_STATUSOW[p.status]}</span>
                 {p.terminMontazu && <span className="badge">montaż {p.terminMontazu}</span>}
+                <span className="badge">{p.skladanieKorpusow === "warsztat" ? "korpusy: składamy w warsztacie" : p.skladanieKorpusow === "naMiejscu" ? "korpusy: składamy na miejscu" : "składanie korpusów: nie ustalono"}</span>
               </div>
               <div className="card-b" style={{ display: "grid", gap: 8 }}>
                 <div style={{ fontSize: 13 }}><b>Teraz:</b> {NASTEPNY_KROK[p.status].krok}</div>

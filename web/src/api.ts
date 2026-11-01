@@ -49,6 +49,7 @@ export interface ProjektSkrot {
   liczbaModulow: number;
   zmieniono: string;
   terminMontazu?: string;
+  skladanieKorpusow?: "warsztat" | "naMiejscu";
   otwarteNotatki: number;
   ostatniaNotatka?: string;
 }

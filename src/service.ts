@@ -267,6 +267,7 @@ export class Stolarnia {
       liczbaModulow: p.moduly.length,
       zmieniono: p.zmieniono,
       terminMontazu: p.terminMontazu,
+      skladanieKorpusow: p.skladanieKorpusow,
       otwarteNotatki: (p.notatkiRobocze ?? []).filter((n) => !n.zalatwiona).length,
       ostatniaNotatka: (p.notatkiRobocze ?? []).find((n) => !n.zalatwiona)?.tekst,
     }));
@@ -335,12 +336,13 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; agd?: UrzadzenieAGD[] }): Projekt {
+  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; skladanieKorpusow?: "warsztat" | "naMiejscu" | null; agd?: UrzadzenieAGD[] }): Projekt {
     const cena = dane.cenaUzgodnionaBrutto;
     if (cena !== undefined && cena !== null && (typeof cena !== "number" || !Number.isFinite(cena) || cena <= 0 || cena > 100000000 || Math.abs(cena * 100 - Math.round(cena * 100)) > 0.00001)) throw new BladUslugi("Cena uzgodniona musi być dodatnią kwotą do 100 000 000 zł, z maksymalnie dwoma miejscami po przecinku.");
     if (dane.agd !== undefined) dane = { ...dane, agd: sprawdzAGD(dane.agd) };
     if (dane.status !== undefined && !czyStatus(dane.status)) throw new BladUslugi(`Nieznany status "${dane.status}". Dozwolone: ${STATUSY_PROJEKTU.join(", ")}.`);
     if (dane.terminMontazu && !/^\d{4}-\d{2}-\d{2}$/.test(dane.terminMontazu)) throw new BladUslugi("Termin montażu w formacie RRRR-MM-DD.");
+    if (dane.skladanieKorpusow && dane.skladanieKorpusow !== "warsztat" && dane.skladanieKorpusow !== "naMiejscu") throw new BladUslugi("Składanie korpusów: „warsztat” albo „naMiejscu”.");
     // Dane tematu (CRM) nie zmieniają konstrukcji — bez podbijania rewizji projektu.
     const tylkoCRM = dane.nazwa === undefined && dane.notatki === undefined;
     return (tylkoCRM ? this.edytujTemat.bind(this) : this.edytuj.bind(this))(projektId, (p) => {
@@ -353,6 +355,7 @@ export class Stolarnia {
       if (dane.notatki !== undefined) p.notatki = dane.notatki;
       if (cena !== undefined) { if (cena === null) delete p.cenaUzgodnionaBrutto; else p.cenaUzgodnionaBrutto = Math.round(cena * 100) / 100; }
       if (dane.terminMontazu !== undefined) p.terminMontazu = dane.terminMontazu || undefined;
+      if (dane.skladanieKorpusow !== undefined) p.skladanieKorpusow = dane.skladanieKorpusow || undefined;
       if (dane.agd !== undefined) p.agd = dane.agd.length ? dane.agd : undefined;
     });
   }
@@ -919,6 +922,7 @@ export class Stolarnia {
       adres: biezacy.klient.adres || undefined,
       kontakt: [biezacy.klient.nazwa, biezacy.klient.telefon].filter(Boolean).join(", ") || undefined,
       termin: biezacy.terminMontazu,
+      skladanie: biezacy.skladanieKorpusow,
     };
     if (wydanieId) {
       const m = this.migawkaWydania(projektId, wydanieId);

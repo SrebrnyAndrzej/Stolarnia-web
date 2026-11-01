@@ -411,6 +411,8 @@ export interface Projekt {
   historiaStatusow?: { status: StatusProjektu; data: string }[];
   /** Planowany termin montażu (RRRR-MM-DD). */
   terminMontazu?: string;
+  /** Gdzie ekipa składa korpusy — zależnie od projektu (Mateusz, 1.11.2026). Brak = nie ustalono. */
+  skladanieKorpusow?: "warsztat" | "naMiejscu";
   /** Urządzenia AGD klienta (modele i wymiary z kart producentów) — do szkiców i dopasowania nisz. */
   agd?: UrzadzenieAGD[];
   /** Wydania produkcyjne: zamrożone rewizje dokumentacji (P03). */
