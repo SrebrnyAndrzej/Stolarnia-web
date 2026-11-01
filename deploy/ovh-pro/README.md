@@ -23,3 +23,9 @@ OVH dokumentuje integrację `Moje strony → ... → Połącz Git`. Repozytorium
 `node scripts/paczka-ovh-pro.mjs` po buildzie tworzy `dist/ovh-pro`: frontend, `.htaccess` i `api-proxy.php`. Most PHP ma stały upstream `https://api.panstolarz.pro`, nie przekazuje dowolnych nagłówków odpowiedzi i nie podąża za redirectami. Przekazuje sesję i origin do istniejącego API, ogranicza rozmiar żądania, zachowuje weryfikację TLS. Brak API pokazuje 503, nie pozorny sukces. Serwer wymaga rozszerzenia PHP cURL.
 
 W Vercelu dodano `api.panstolarz.pro` do gałęzi `feat/pan-stolarz-v2` i ustawiono dla niej `PAN_STOLARZ_ORIGIN=https://panstolarz.pro`. Na chwilę tego wpisu rekord DNS API nie został jeszcze dodany. Zalecany CNAME zwrócony przez Vercel: `51b83f3d15d2beba.vercel-dns-017.com.`. Sprawdzić ponownie przed zmianą. Nie zmieniać A/AAAA domeny głównej ani MX. Chroniona produkcyjna baza i konfiguracja logowania Supabase pozostają osobnym warunkiem uruchomienia kont.
+
+### Potwierdzona alternatywa bez SFTP
+
+Dokładne sprawdzenie panelu potwierdziło, że FTP Explorer/Net2FTP jest wycofany. W sekcji FTP nie potwierdzono importu klucza do logowania przychodzącego. Oddzielna integracja Git w „Moje strony” jest dostępna; wymaga pustego katalogu. Nie czyścić istniejącego `www`. Docelowy testowy katalog to `panstolarz-v2`, a podgląd `podglad.panstolarz.pro`, po jego utworzeniu w panelu.
+
+Publiczne repozytorium `https://github.com/SrebrnyAndrzej/Stolarnia-web.git`, osobna gałąź `deploy/ovh-pro`, zawiera gotowy statyczny build i most PHP. Nie dodawać do niej sekretów ani kodu/konfiguracji bazy. Na tej gałęzi wyłączono zbędne deploye Vercel. Nie zapisujemy automatycznie wygenerowanych tokenów webhooków w dokumentacji ani w repo.
