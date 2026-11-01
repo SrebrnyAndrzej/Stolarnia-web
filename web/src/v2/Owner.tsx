@@ -11,6 +11,7 @@ import {
 } from "./api";
 import { useResource } from "./useResource";
 import { demoProjects } from "./demo";
+import { ActivationLink, CreateEmployee } from "./StaffAccounts";
 
 export function Requests({ demo }: { demo: boolean }) {
   const list = useResource<CustomerRequest[]>(
@@ -176,6 +177,7 @@ export function Members({ demo }: { demo: boolean }) {
     <section className="ps-owner-page">
       <span className="ps-eyebrow">Dostęp do pracowni</span>
       <h1>Pracownicy i dostęp</h1>
+      {!demo && <CreateEmployee onCreated={members.retry} />}
       <p className="ps-page-intro">
         Pracownik korzysta z kalkulatora szuflad i widzi udostępnione projekty.
         Wyceny, ceny i dokumenty finansowe pozostają dostępne tylko
@@ -196,7 +198,7 @@ export function Members({ demo }: { demo: boolean }) {
         <div className="ps-member-list">
           {members.data.map((m) => (
             <Member
-              key={`${m.user_id}-${m.active}-${m.project_ids.join()}`}
+              key={`${m.user_id}-${m.active}-${m.job_role ?? ""}-${m.project_ids.join()}`}
               member={m}
               projects={projects.data ?? []}
               demo={demo}
@@ -208,7 +210,11 @@ export function Members({ demo }: { demo: boolean }) {
         <div className="ps-empty">
           <IconUsers size={36} />
           <h2>Nie dodano jeszcze kont</h2>
-          <p>Konta pojawią się po skonfigurowaniu dostępu do stolarni.</p>
+          <p>
+            {demo
+              ? "Konta pojawią się po skonfigurowaniu dostępu do stolarni."
+              : "Dodaj pierwszego pracownika formularzem powyżej."}
+          </p>
         </div>
       )}
     </section>
@@ -227,6 +233,8 @@ function Member({
 }) {
   const [ids, setIds] = useState(member.project_ids);
   const [active, setActive] = useState(member.active);
+  const [job, setJob] = useState(member.job_role ?? "Pracownik");
+  const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -238,7 +246,7 @@ function Member({
     try {
       await request(`/api/v2/members/${encodeURIComponent(member.user_id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ active, project_ids: ids }),
+        body: JSON.stringify({ active, project_ids: ids, job_role: job }),
       });
       setSaved(true);
       onSaved();
@@ -256,7 +264,12 @@ function Member({
         </div>
         <div>
           <h2>{member.display_name || "Konto bez nazwy"}</h2>
-          <p>{roles[member.role]}</p>
+          <p>
+            {roles[member.role]}
+            {member.role === "employee"
+              ? ` · ${member.job_role ?? "Pracownik"}`
+              : ""}
+          </p>
         </div>
         <span className={`ps-status ${active ? "zaakceptowany" : "inactive"}`}>
           {active ? "Dostęp aktywny" : "Dostęp wyłączony"}
@@ -269,6 +282,18 @@ function Member({
         </p>
       ) : (
         <form noValidate onSubmit={save}>
+          <label htmlFor={`staff-job-${member.user_id}`}>
+            Funkcja w zespole
+          </label>
+          <input
+            id={`staff-job-${member.user_id}`}
+            className="input"
+            value={job}
+            maxLength={80}
+            disabled={demo || busy}
+            onChange={(e) => setJob(e.target.value)}
+            required
+          />
           <label className="ps-check">
             <input
               type="checkbox"
@@ -309,12 +334,38 @@ function Member({
           )}
           {saved && <p role="status">Dostęp został zapisany.</p>}
           {!demo && (
-            <button className="ps-button" disabled={busy}>
+            <button className="ps-button" disabled={busy || !job.trim()}>
               {busy ? "Zapisywanie…" : "Zapisz dostęp"}
+            </button>
+          )}
+          {!demo && (
+            <button
+              type="button"
+              className="ps-button secondary"
+              disabled={busy || !member.active}
+              onClick={async () => {
+                if (busy) return;
+                setBusy(true);
+                setError("");
+                try {
+                  const result = await request<{ activation_url: string }>(
+                    `/api/v2/members/${encodeURIComponent(member.user_id)}/activation`,
+                    { method: "POST", body: "{}" },
+                  );
+                  setLink(result.activation_url);
+                } catch (e) {
+                  setError((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Nowy link ustawienia hasła
             </button>
           )}
         </form>
       )}
+      {link && <ActivationLink value={link} />}
     </article>
   );
 }

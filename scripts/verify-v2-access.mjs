@@ -113,6 +113,39 @@ try {
     assert.equal((await get(path)).response.status, 403, path);
     checks++;
   }
+  // Employees cannot create staff accounts or activation links.
+  for (const path of [
+    "/api/v2/members",
+    `/api/v2/members/${ids.employee}/activation`,
+  ]) {
+    const created = await get(path, {
+      method: "POST",
+      body: JSON.stringify({
+        operation_id: "00000000-0000-4000-8000-000000000009",
+        display_name: "Test",
+        email: "new@example.com",
+      }),
+      headers: {
+        authorization: "Bearer valid",
+        "content-type": "application/json",
+      },
+    });
+    assert.equal(created.response.status, 403, path);
+    assert.equal(created.text.includes("aktywacja"), false, path);
+    checks++;
+  }
+  // Activation is public but still requires a browser origin match.
+  assert.equal(
+    (
+      await originalFetch(base + "/api/v2/activate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: "{}",
+      })
+    ).status,
+    403,
+  );
+  checks++;
   assert.equal(
     (
       await get("/mcp", {
@@ -265,10 +298,13 @@ try {
   checks++;
   assert.equal((await get("/api/systemy-szuflad")).response.status, 403);
   checks++;
+  // Legacy client rows cannot log in to staff panels (only owner/employee).
   assert.equal(
     (await get(`/api/v2/projects/${project.id}`)).response.status,
-    200,
+    403,
   );
+  checks++;
+  assert.equal((await get("/api/v2/session")).response.status, 403);
   checks++;
   role = "owner";
   assert.equal((await get(docsBase)).response.status, 200);

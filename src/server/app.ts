@@ -18,6 +18,7 @@ import { AccessError, createAccess, mayReadProject, type Principal } from "./acc
 import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
+import { createEmployee, employeeActivation, memberFields } from "./members.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
 // Oba interfejsy używają tej samej usługi i tego samego magazynu. Uruchamiana lokalnie przez index.ts,
@@ -35,6 +36,7 @@ const access = createAccess();
 app.get("/api/v2/config", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ authReady: access.configured }); });
 app.post("/api/v2/login", access.login);
 app.post("/api/v2/logout", access.logout);
+app.post("/api/v2/activate", access.activate);
 app.get("/api/v2/session", async (req, res) => {
   res.setHeader("Cache-Control", "private, no-store");
   try { res.json(await access.identify(req)); } catch (error) { access.fail(res, error); }
@@ -172,19 +174,27 @@ app.get("/api/v2/requests", v2(async (_req, person) => {
   if (error) throw new AccessError(503, "Nie udało się pobrać zapytań.");
   return data;
 }));
+app.post("/api/v2/members", v2(async (req, person) => {
+  if (!access.admin) throw new AccessError(503, "Usługa kont jest niedostępna.");
+  return createEmployee(access.admin, person, req.body, new Set(s.magazyn.odczytaj().projekty.map(p => p.id)), process.env.PAN_STOLARZ_ORIGIN ?? "");
+}));
+app.post("/api/v2/members/:id/activation", v2(async (req, person) => {
+  if (!access.admin) throw new AccessError(503, "Usługa kont jest niedostępna.");
+  return employeeActivation(access.admin, person, p(req, "id"), process.env.PAN_STOLARZ_ORIGIN ?? "");
+}));
 app.get("/api/v2/members", v2(async (_req, person) => {
   if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do kont zespołu.");
-  const { data, error } = await access.admin!.from("pan_stolarz_members").select("user_id,display_name,role,active,project_ids").order("display_name").limit(200);
+  const { data, error } = await access.admin!.from("pan_stolarz_members").select(memberFields).in("role", ["owner", "employee"]).order("display_name").limit(200);
   if (error) throw new AccessError(503, "Nie udało się pobrać pracowników.");
   return data;
 }));
 app.patch("/api/v2/members/:id", v2(async (req, person) => {
   if (person.role !== "owner") throw new AccessError(403, "Tylko właściciel może zmieniać dostęp.");
-  const parsed = z.object({ active: z.boolean(), project_ids: z.array(z.string().max(80)).max(1000) }).safeParse(req.body);
+  const parsed = z.object({ active: z.boolean(), project_ids: z.array(z.string().max(80)).max(1000), job_role: z.string().trim().min(1).max(80).optional() }).strict().safeParse(req.body);
   if (!parsed.success) throw new AccessError(400, "Sprawdź ustawienia dostępu.");
   const projects = new Set(s.magazyn.odczytaj().projekty.map(p => p.id));
   if (parsed.data.project_ids.some(id => !projects.has(id))) throw new AccessError(400, "Wybrany projekt już nie istnieje. Odśwież listę.");
-  const { data, error } = await access.admin!.from("pan_stolarz_members").update(parsed.data).eq("user_id", p(req, "id")).neq("role", "owner").select("user_id,display_name,role,active,project_ids").maybeSingle();
+  const { data, error } = await access.admin!.from("pan_stolarz_members").update(parsed.data).eq("user_id", p(req, "id")).eq("role", "employee").select(memberFields).maybeSingle();
   if (error) throw new AccessError(503, "Nie udało się zapisać uprawnień.");
   if (!data) throw new AccessError(403, "Nie można zmienić tego konta.");
   return data;

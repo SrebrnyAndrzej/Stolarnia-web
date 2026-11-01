@@ -18,6 +18,7 @@ import { request, roles, type Principal } from "./api";
 import { Landing } from "./Landing";
 import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
+import { ActivateAccount } from "./StaffAccounts";
 import { Logo, Feedback } from "./ui";
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
@@ -144,6 +145,17 @@ export function App() {
     }
   };
   if (hash === "#/katalog-dekorow") return <DecorCatalog />;
+  if (hash.startsWith("#/aktywacja"))
+    return (
+      <ActivateAccount
+        hash={hash}
+        onLogin={(p) => {
+          setSession(p);
+          setSessionError("");
+          location.hash = "#/panel/projekty";
+        }}
+      />
+    );
   if (plannerRoute)
     return (
       <Suspense

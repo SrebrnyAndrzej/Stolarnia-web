@@ -9,6 +9,7 @@ export interface Membership {
   active: boolean;
   project_ids: string[];
   display_name: string;
+  job_role?: string;
 }
 export interface Principal extends Membership {
   email: string;
@@ -19,6 +20,7 @@ const membershipSchema = z.object({
   active: z.boolean(),
   project_ids: z.array(z.string()),
   display_name: z.string(),
+  job_role: z.string().optional(),
 });
 const COOKIE = "pan_stolarz_session";
 export class AccessError extends Error {
@@ -30,7 +32,11 @@ export class AccessError extends Error {
   }
 }
 export const mayReadProject = (person: Membership, id: string) =>
-  person.active && (person.role === "owner" || person.project_ids.includes(id));
+  isWorkshopMember(person) &&
+  (person.role === "owner" || person.project_ids.includes(id));
+// Legacy client rows may remain in the database, but only staff can log in.
+export const isWorkshopMember = (person: Membership) =>
+  person.active && (person.role === "owner" || person.role === "employee");
 export function cookieToken(req: Request): string | undefined {
   const bearer = req.get("authorization");
   if (bearer?.startsWith("Bearer ")) return bearer.slice(7);
@@ -68,7 +74,7 @@ export function createAccess(env = process.env) {
     if (!admin) throw new AccessError(503, "Usługa kont jest niedostępna.");
     const { data, error } = await admin
       .from("pan_stolarz_members")
-      .select("user_id,role,active,project_ids,display_name")
+      .select("user_id,role,active,project_ids,display_name,job_role")
       .eq("user_id", id)
       .maybeSingle();
     if (error)
@@ -77,7 +83,7 @@ export function createAccess(env = process.env) {
         "Nie udało się sprawdzić dostępu. Spróbuj ponownie.",
       );
     const parsed = membershipSchema.safeParse(data);
-    if (!parsed.success || !parsed.data.active)
+    if (!parsed.success || !isWorkshopMember(parsed.data))
       throw new AccessError(
         403,
         "Konto nie ma aktywnego dostępu do Pan Stolarz.",
@@ -173,6 +179,54 @@ export function createAccess(env = process.env) {
       fail(res, error);
     }
   };
+  const activate = async (req: Request, res: Response) => {
+    res.setHeader("Cache-Control", "no-store");
+    try {
+      checkOrigin(req);
+      const parsed = z
+        .object({
+          token_hash: z.string().min(20).max(512),
+          type: z.enum(["invite", "recovery"]),
+          password: z.string().min(12).max(128),
+        })
+        .strict()
+        .safeParse(req.body);
+      if (!parsed.success)
+        throw new AccessError(
+          400,
+          "Hasło musi mieć od 12 do 128 znaków. Otwórz pełny link aktywacyjny.",
+        );
+      const auth = getAuth();
+      const { data, error } = await auth.auth.verifyOtp({
+        token_hash: parsed.data.token_hash,
+        type: parsed.data.type,
+      });
+      if (error || !data.user || !data.session)
+        throw new AccessError(
+          401,
+          "Link wygasł lub został użyty. Poproś właściciela o nowy link.",
+        );
+      const member = await membership(data.user.id);
+      const { error: passwordError } = await auth.auth.updateUser({
+        password: parsed.data.password,
+      });
+      if (passwordError)
+        throw new AccessError(
+          400,
+          "Nie udało się ustawić hasła. Poproś właściciela o nowy link i użyj innego hasła.",
+        );
+      res.cookie(COOKIE, data.session.access_token, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production" || !!env.VERCEL,
+        sameSite: "strict",
+        path: "/",
+        maxAge: data.session.expires_in * 1000,
+      });
+      res.json({ ...member, email: data.user.email ?? "" });
+    } catch (error) {
+      fail(res, error);
+    }
+  };
   const logout = async (req: Request, res: Response) => {
     try {
       checkOrigin(req);
@@ -198,6 +252,7 @@ export function createAccess(env = process.env) {
     guard,
     login,
     logout,
+    activate,
     checkOrigin,
     fail,
   };
