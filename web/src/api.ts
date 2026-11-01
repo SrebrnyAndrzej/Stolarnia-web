@@ -21,6 +21,93 @@ import type {
 
 export type WydanieMeta = Omit<WydanieProdukcyjne, "dane">;
 
+// ---------- Szybki projekt (kontrakt: docs/SZYBKI-PROJEKT.md) ----------
+export type { OpcjeSzybkiegoUkladu, OpcjeWypelnienia, Rezerwacja, RolaWUkladzie, Przedzial } from "../../src/core/uklad";
+export type { WyborMaterialu, RolaStylu } from "../../src/core/styl";
+export type { OkuciaProjektu } from "../../src/core/types";
+import type { OpcjeSzybkiegoUkladu, OpcjeWypelnienia, Rezerwacja, RolaWUkladzie, Przedzial } from "../../src/core/uklad";
+import type { WyborMaterialu, RolaStylu } from "../../src/core/styl";
+import type { OkuciaProjektu, Okucie as OkucieT } from "../../src/core/types";
+
+/** Moduł utworzony przez szybki projekt — zwykły Modul + rola w układzie. */
+export type ModulUkladu = Modul & { rola: RolaWUkladzie };
+
+export interface WynikWypelnienia {
+  podglad: boolean;
+  moduly: ModulUkladu[];
+  wolne: { odMM: number; doMM: number }[];
+  zajete: Przedzial[];
+  /** Luzy montażowe < 20 mm (bez modułu). */
+  luzy: { odMM: number; doMM: number }[];
+  ostrzezenia: string[];
+  zalozenia: string[];
+}
+
+export interface WynikSzybkiegoUkladu {
+  podglad: boolean;
+  pomieszczenieId: string;
+  sciany: { id: string; nazwa: string; dlugoscMM: number; wysokoscMM: number }[];
+  moduly: ModulUkladu[];
+  rezerwacje: Rezerwacja[];
+  usunieto: number;
+  ostrzezenia: string[];
+  zalozenia: string[];
+}
+
+export type ZadanieSzybkiegoUkladu = OpcjeSzybkiegoUkladu & {
+  pomieszczenieId?: string;
+  scianyIds?: string[];
+  dlugosciScianMM?: number[];
+  wysokoscMM?: number;
+  zastap?: boolean;
+  podglad?: boolean;
+};
+
+export interface WynikStylu {
+  podglad: boolean;
+  pomieszczenieId: string;
+  ustawiono: Partial<Record<RolaStylu, string>>;
+  zrodla: { rola: RolaStylu; materialId: string; zrodlo: string; alternatywy?: number }[];
+  aktywowane: Material[];
+  braki: { rola: RolaStylu; komunikat: string }[];
+  ostrzezenia: string[];
+  wyczyszczono: number;
+}
+
+/** Materiał roli w stylu pomieszczenia (dekor = klucz galerii, gdy materiał z niej pochodzi). */
+export interface MaterialStylu {
+  materialId: string;
+  brakMaterialu?: boolean;
+  nazwa?: string;
+  producent?: string;
+  typ?: Material["typ"];
+  gruboscMM?: number;
+  dekor?: string;
+  artykul?: string;
+  zdjecieURL?: string;
+  kolorHEX?: string;
+  maCene?: boolean;
+}
+export interface StylPomieszczenia {
+  pomieszczenieId: string;
+  korpus: MaterialStylu | null;
+  front: MaterialStylu | null;
+  blat: MaterialStylu | null;
+  modulyZWlasnymMaterialem: number;
+  okucia: OkuciaProjektu | null;
+}
+
+export interface OpcjaOkucia {
+  id: string; nazwa: string; producent: string; system: string; typ: OkucieT["typ"]; poziomWyceny: OkucieT["poziomWyceny"]; aktywne: boolean; cenaNetto: number; maCene: boolean;
+}
+export interface OpcjeOkucProjektu {
+  systemySzuflad: OpcjaOkucia[];
+  zawiasy: OpcjaOkucia[];
+  podnosniki: OpcjaOkucia[];
+  profileSzuflad: { id: string; producent: string; system: string; gruboscPlytyMM: number; zatwierdzonyProdukcyjnie: boolean; wiercenia: string }[];
+  profilDomyslny: string;
+}
+
 export type { Arkusz, CennikMaterialow, Formatka, Material, Modul, ModulKatalogowy, NotatkaProjektu, Okucie, PodsumowanieWariantu, Projekt, StatusProjektu, UrzadzenieAGD, UstawieniaStolarni };
 
 export interface Uwaga {
@@ -49,6 +136,7 @@ export interface ProjektSkrot {
   liczbaModulow: number;
   zmieniono: string;
   terminMontazu?: string;
+  skladanieKorpusow?: "warsztat" | "naMiejscu";
   otwarteNotatki: number;
   ostatniaNotatka?: string;
 }
@@ -121,6 +209,14 @@ export const api = {
   wydania: (id: string) => zadanie<WydanieMeta[]>("GET", `/api/projekty/${id}/wydania`),
   utworzWydanie: (id: string, notatka?: string) => zadanie<WydanieMeta>("POST", `/api/projekty/${id}/wydania`, { notatka }),
   duplikujModul: (id: string, mid: string) => zadanie<Modul>("POST", `/api/projekty/${id}/moduly/${mid}/duplikuj`, {}),
+
+  // Szybki projekt
+  wypelnijCalaSciane: (id: string, sid: string, d: OpcjeWypelnienia & { podglad?: boolean }) => zadanie<WynikWypelnienia>("POST", `/api/projekty/${id}/sciany/${sid}/wypelnij`, d),
+  szybkiUklad: (id: string, d: ZadanieSzybkiegoUkladu) => zadanie<WynikSzybkiegoUkladu>("POST", `/api/projekty/${id}/szybki-uklad`, d),
+  ustawStyl: (id: string, d: { pomieszczenieId?: string; korpus?: WyborMaterialu; front?: WyborMaterialu; blat?: WyborMaterialu; wyczyscWyjatkiModulow?: boolean; podglad?: boolean }) => zadanie<WynikStylu>("POST", `/api/projekty/${id}/styl`, d),
+  stylPomieszczenia: (id: string, pomieszczenieId?: string) => zadanie<StylPomieszczenia>("GET", `/api/projekty/${id}/styl${pomieszczenieId ? `?pomieszczenieId=${encodeURIComponent(pomieszczenieId)}` : ""}`),
+  opcjeOkucProjektu: () => zadanie<OpcjeOkucProjektu>("GET", "/api/okucia-projektu/opcje"),
+  ustawOkuciaProjektu: (id: string, okucia: OkuciaProjektu | null) => zadanie<{ okucia: OkuciaProjektu | null; ostrzezenia: string[] }>("PUT", `/api/projekty/${id}/okucia`, { okucia }),
 };
 
 export const idz = (hash: string) => {

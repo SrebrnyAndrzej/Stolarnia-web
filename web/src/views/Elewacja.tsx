@@ -18,7 +18,7 @@ interface ElewacjaProps {
 }
 
 /** Wolne odcinki w rzędzie dolnym lub wiszącym (słupki blokują oba rzędy). */
-function luki(moduly: Modul[], dlugosc: number, wiszacy: boolean): { x: number; szer: number }[] {
+export function luki(moduly: Modul[], dlugosc: number, wiszacy: boolean): { x: number; szer: number }[] {
   const wRzedzie = moduly.filter((m) => (m.pozycjaYMM >= 1000) === wiszacy || m.wysokoscMM > 1400);
   if (wiszacy && !moduly.some((m) => m.pozycjaYMM >= 1000)) return [];
   const odcinki = wRzedzie.map((m) => [m.pozycjaXMM, m.pozycjaXMM + m.szerokoscMM] as const).sort((a, b) => a[0] - b[0]);
