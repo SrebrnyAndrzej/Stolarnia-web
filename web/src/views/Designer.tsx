@@ -1,6 +1,6 @@
 import { DecorCatalog } from "./DecorCatalog";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, mm, type Analiza, type Material, type Modul, type ModulKatalogowy } from "../api";
+import { api, mm, type Analiza, type Material, type Modul, type ModulKatalogowy, type WynikWypelnienia } from "../api";
 import { ImportDxf } from "./ImportDxf";
 import { Rzut } from "./Rzut";
 import { Widok3D } from "./Widok3D";
@@ -111,6 +111,39 @@ export function Designer({ analiza, odswiez }: Props) {
       setWybrany(m.id);
     }, `Dodano: ${k.name}`);
 
+  // Dotyk: stuknięcie w moduł z katalogu dodaje go w pierwszej wolnej luce, w której się mieści.
+  const dodajWLuce = (k: ModulKatalogowy) => {
+    if (!sciana) return dodaj(k);
+    const wiszacy = k.category === "wall";
+    const naScianie = p.moduly.filter((m) => m.scianaId === sciana.id);
+    // Rząd wiszący bez żadnego modułu wiszącego: nie ma luk do policzenia, pozycję ustala serwer.
+    if (wiszacy && !naScianie.some((m) => m.pozycjaYMM >= 1000)) return dodaj(k, 0);
+    const wolne = luki(naScianie, sciana.dlugoscMM, wiszacy);
+    const luka = wolne.find((l) => l.szer >= k.widthMM);
+    if (!luka) return toast(`Brak wolnej luki ≥ ${k.widthMM} mm w tym rzędzie (największa: ${mm(Math.max(0, ...wolne.map((l) => l.szer)))} mm).`, true);
+    return dodaj(k, luka.x);
+  };
+
+  // Wypełnienie całej ściany (podgląd → zastosuj).
+  const [wyp, setWyp] = useState<{ rzad: "dolny" | "wiszacy"; konstrukcja: "drawers" | "shelves"; wynik: WynikWypelnienia | null; zajety: boolean } | null>(null);
+  const liczWypelnienie = async (rzad: "dolny" | "wiszacy", konstrukcja: "drawers" | "shelves") => {
+    if (!sciana) return;
+    setWyp({ rzad, konstrukcja, wynik: null, zajety: true });
+    try {
+      const wynik = await api.wypelnijCalaSciane(p.id, sciana.id, { rzad, konstrukcja, podglad: true });
+      setWyp({ rzad, konstrukcja, wynik, zajety: false });
+    } catch (e) {
+      toast((e as Error).message, true);
+      setWyp({ rzad, konstrukcja, wynik: null, zajety: false });
+    }
+  };
+  const zastosujWypelnienie = () => {
+    if (!sciana || !wyp) return;
+    const { rzad, konstrukcja } = wyp;
+    setWyp(null);
+    wykonaj(() => api.wypelnijCalaSciane(p.id, sciana.id, { rzad, konstrukcja }), rzad === "dolny" ? "Wypełniono rząd dolny" : "Wypełniono rząd wiszący");
+  };
+
   // Skróty klawiszowe
   const stanRef = useRef({ modul, cofnij, ponow, wykonaj, setWybrany });
   stanRef.current = { modul, cofnij, ponow, wykonaj, setWybrany };
@@ -168,6 +201,7 @@ export function Designer({ analiza, odswiez }: Props) {
               ))}
               <button className="btn small" onClick={() => wykonaj(() => api.dodajSciane(p.id, sciana?.pomieszczenie.id ?? p.pomieszczenia[0].id, { dlugoscMM: 2400 }))}>+ ściana</button>
               <button className="btn small" onClick={() => setImportDxf(true)} title="Wczytaj rzut pomieszczenia z pliku DXF">Import CAD</button>
+              {sciana && <button className="btn small" onClick={() => (wyp ? setWyp(null) : liczWypelnienie("dolny", "drawers"))} aria-expanded={!!wyp} title="Wypełnij wolne odcinki ściany szafkami z katalogu">Wypełnij całą ścianę</button>}
             </div>
             <div className="seg" role="tablist" aria-label="Widok">
               {(["elewacja", "rzut", "3d"] as const).map((v) => (
@@ -188,6 +222,43 @@ export function Designer({ analiza, odswiez }: Props) {
               </div>
             )}
           </div>
+          {wyp && (
+            <div className="card-b wypelnij-panel">
+              <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+                <b>Wypełnij całą ścianę {sciana?.nazwa}</b>
+                <div className="seg" role="group" aria-label="Rząd">
+                  {(["dolny", "wiszacy"] as const).map((r) => (
+                    <button key={r} className={wyp.rzad === r ? "on" : ""} aria-pressed={wyp.rzad === r} onClick={() => liczWypelnienie(r, wyp.konstrukcja)}>{r === "dolny" ? "Dolne" : "Wiszące"}</button>
+                  ))}
+                </div>
+                {wyp.rzad === "dolny" && (
+                  <div className="seg" role="group" aria-label="Konstrukcja">
+                    {(["drawers", "shelves"] as const).map((k) => (
+                      <button key={k} className={wyp.konstrukcja === k ? "on" : ""} aria-pressed={wyp.konstrukcja === k} onClick={() => liczWypelnienie(wyp.rzad, k)}>{k === "drawers" ? "Szuflady" : "Półki"}</button>
+                    ))}
+                  </div>
+                )}
+                <span className="spacer" />
+                <button className="btn" onClick={() => setWyp(null)}>Anuluj</button>
+                <button className="btn primary" disabled={!wyp.wynik || wyp.wynik.moduly.length === 0} onClick={zastosujWypelnienie}>Zastosuj ({wyp.wynik?.moduly.length ?? 0})</button>
+              </div>
+              {wyp.zajety && <div className="muted">Liczę podgląd…</div>}
+              {wyp.wynik && (
+                <div style={{ display: "grid", gap: 6, marginTop: 8 }}>
+                  <div className="muted">
+                    {wyp.wynik.moduly.length === 0
+                      ? "Nic do dodania — rząd jest już zajęty."
+                      : `Dodane zostaną: ${wyp.wynik.moduly.map((m) => `${m.rola === "blenda" || m.rola === "blendaNarozna" ? "blenda" : "szafka"} ${mm(m.szerokoscMM)}`).join(" · ")}`}
+                  </div>
+                  {wyp.wynik.ostrzezenia.length > 0 && (
+                    <div className="alert ostrzezenie">
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>{wyp.wynik.ostrzezenia.map((o, i) => <li key={i}>{o}</li>)}</ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <div className="card-b">
             {sciana && widok === "rzut" && (
               <Rzut
@@ -243,7 +314,7 @@ export function Designer({ analiza, odswiez }: Props) {
             ) : null}
             <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
               {widok === "elewacja" && (
-                <>Przeciągnij moduł z katalogu na ścianę albo kliknij, by dodać na koniec rzędu. Kliknij lukę <b>+</b>, aby ją domknąć (blenda &lt; 150 mm).
+                <>Przeciągnij moduł z katalogu na ścianę albo stuknij go, by dodać w pierwszej wolnej luce. Kliknij lukę <b>+</b>, aby ją domknąć (blenda &lt; 150 mm).
                 Skróty: ←/→ przesuń 10 mm (Shift 100, Alt 1) · Del usuń · Ctrl+D duplikuj · Ctrl+Z / Ctrl+Y · Esc.</>
               )}
               {widok === "rzut" && <>Kliknij ścianę, aby ją wybrać do edycji w elewacji. Szafki wiszące — linia przerywana.</>}
@@ -316,8 +387,8 @@ export function Designer({ analiza, odswiez }: Props) {
                       e.dataTransfer.setData("application/x-katalog", k.id);
                       e.dataTransfer.effectAllowed = "copy";
                     }}
-                    onClick={() => dodaj(k)}
-                    title="Kliknij — na koniec rzędu. Przeciągnij na ścianę — w wybrane miejsce."
+                    onClick={() => dodajWLuce(k)}
+                    title="Stuknij — doda w pierwszej wolnej luce. Przeciągnij na ścianę — w wybrane miejsce."
                   >
                     <MiniModul k={k} />
                     <span className="cat-name">{k.name.replace(/ \d+( × \d+)?$/, "")}</span>
