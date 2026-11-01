@@ -1,3 +1,4 @@
+import { randomId } from "../uuid";
 import { BrandCarousel } from "./BrandCarousel";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
@@ -50,7 +51,7 @@ export function Landing({ session }: { session: Principal | null }) {
   const [failure, setFailure] = useState("");
   const [result, setResult] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
-  const submissionId = useRef(crypto.randomUUID());
+  const submissionId = useRef(randomId());
   useEffect(() => {
     const sync = () => {
       if (location.hash.startsWith("#/zapytanie")) {
@@ -491,7 +492,7 @@ export function Landing({ session }: { session: Principal | null }) {
                 onClick={() => {
                   setResult("");
                   setForm(initial);
-                  submissionId.current = crypto.randomUUID();
+                  submissionId.current = randomId();
                 }}
               >
                 Nowe zapytanie

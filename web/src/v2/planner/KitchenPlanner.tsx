@@ -1,3 +1,4 @@
+import { randomId } from "../../uuid";
 import { DecorPicker, type DecorChoice } from "../DecorCatalog";
 import {
   Component,
@@ -204,7 +205,7 @@ export function KitchenPlanner() {
     }
     const next = {
       ...draft,
-      items: [...draft.items, { id: crypto.randomUUID(), catalogId, wall }],
+      items: [...draft.items, { id: randomId(), catalogId, wall }],
     };
     const problems = layoutIssues(next);
     if (problems.length) {

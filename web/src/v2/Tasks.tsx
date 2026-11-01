@@ -1,3 +1,4 @@
+import { randomId } from "../uuid";
 import { useState, type FormEvent } from "react";
 import {
   request,
@@ -34,7 +35,7 @@ export function Tasks({ person, demo }: { person: Principal; demo: boolean }) {
   const [project, setProject] = useState("");
   const [assignee, setAssignee] = useState("");
   const [title, setTitle] = useState("");
-  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
+  const [operationId, setOperationId] = useState(() => randomId());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -68,7 +69,7 @@ export function Tasks({ person, demo }: { person: Principal; demo: boolean }) {
       })
     ) {
       setTitle("");
-      setOperationId(crypto.randomUUID());
+      setOperationId(randomId());
     }
   }
   return (
