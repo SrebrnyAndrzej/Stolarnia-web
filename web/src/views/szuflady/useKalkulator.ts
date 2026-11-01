@@ -18,7 +18,8 @@ function wczytaj() {
   catch { return przywrocFormularz(null); }
 }
 
-export function useKalkulator() {
+export function useKalkulator(demo = false) {
+  const prefix = demo ? "/api/demo" : "/api";
   const [form, setForm] = useState(wczytaj);
   const [systemy, setSystemy] = useState<SystemSzuflady[]>([]);
   const [bladKatalogu, setBladKatalogu] = useState("");
@@ -39,14 +40,14 @@ export function useKalkulator() {
     const c = new AbortController();
     const limit = setTimeout(() => { if (!c.signal.aborted) { setBladKatalogu("Brak odpowiedzi katalogu. Sprawdź połączenie i ponów."); c.abort(); } }, 15000);
     setBladKatalogu("");
-    fetch("/api/systemy-szuflad", { signal: c.signal }).then(async (r) => {
+    fetch(`${prefix}/systemy-szuflad`, { signal: c.signal }).then(async (r) => {
       if (!r.ok) throw new Error("Nie udało się pobrać systemów szuflad.");
       return r.json() as Promise<SystemSzuflady[]>;
     }).then((dane) => { if (!c.signal.aborted) setSystemy(dane); }).catch((e: Error) => {
       if (!c.signal.aborted) setBladKatalogu(e.message);
     }).finally(() => clearTimeout(limit));
     return () => { clearTimeout(limit); c.abort(); };
-  }, [retry]);
+  }, [retry, prefix]);
 
   useEffect(() => {
     const c = new AbortController();
@@ -57,7 +58,7 @@ export function useKalkulator() {
     const t = setTimeout(async () => {
       limit = setTimeout(() => { if (!c.signal.aborted) { setBlad("Brak odpowiedzi serwera. Sprawdź połączenie i spróbuj ponownie."); setLiczenie(false); c.abort(); } }, 15000);
       try {
-        const r = await fetch(`/api/przelicznik-szuflad?${query}`, { signal: c.signal });
+        const r = await fetch(`${prefix}/przelicznik-szuflad?${query}`, { signal: c.signal });
         const dane = await r.json();
         if (!r.ok) throw new Error(dane.blad ?? "Nie udało się przeliczyć szuflady.");
         if (!c.signal.aborted) setWynik({ query, dane });
@@ -65,7 +66,7 @@ export function useKalkulator() {
       finally { clearTimeout(limit); if (!c.signal.aborted) setLiczenie(false); }
     }, 300);
     return () => { c.abort(); clearTimeout(t); clearTimeout(limit); };
-  }, [query, retry]);
+  }, [query, retry, prefix]);
 
   const ustaw = <K extends keyof FormularzSzuflad>(key: K, value: FormularzSzuflad[K]) => {
     setForm((f) => key === "system" ? { ...f, system: String(value), wariant: "", scianka: "drewniana" } : { ...f, [key]: value });

@@ -21,8 +21,8 @@ function Wybor({ selected, onClick, title, children, icon }: { selected: boolean
   </button>;
 }
 
-export function PrzelicznikSzuflad() {
-  const { form: f, ustaw, errors, systemy, bladKatalogu, blad, pamiec, liczenie, dane, ponow } = useKalkulator();
+export function PrzelicznikSzuflad({ demo = false }: { demo?: boolean } = {}) {
+  const { form: f, ustaw, errors, systemy, bladKatalogu, blad, pamiec, liczenie, dane, ponow } = useKalkulator(demo);
   const results = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [kopiowanie, setKopiowanie] = useState("");

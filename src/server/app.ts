@@ -1,3 +1,4 @@
+import { drawerSystems, calculateDrawer, previewCalculator } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
@@ -53,6 +54,13 @@ app.post("/api/v2/requests", async (req, res) => {
     if (error) throw new AccessError(503, "Nie udało się zapisać zapytania. Twoje dane pozostały w formularzu.");
     res.status(201).json({ id: data });
   } catch (error) { access.fail(res, error); }
+});
+// Public stateless preview only. Never loads or persists workshop data.
+const drawerPreview = previewCalculator(s);
+app.get("/api/demo/systemy-szuflad", (_req, res) => res.json(drawerSystems()));
+app.get("/api/demo/przelicznik-szuflad", (req, res) => {
+  try { res.json(calculateDrawer(req, drawerPreview)); }
+  catch (error) { res.status(400).json({ blad: error instanceof BladUslugi ? error.message : "Nie udało się przeliczyć szuflady." }); }
 });
 // Owner-only by default, including legacy PDF/CSV exports and HTTP MCP.
 app.use(["/api", "/mcp"], access.guard);
@@ -291,25 +299,8 @@ app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
 // Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
-app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, mocowanieFrontuMinMM: p.front_mounting?.bottom_hole_min_from_front_bottom_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));
-app.get("/api/przelicznik-szuflad", api((r) => {
-  const n = (k: string) => (r.query[k] !== undefined && r.query[k] !== "" ? Number(r.query[k]) : undefined);
-  const t = (k: string) => (typeof r.query[k] === "string" && r.query[k] ? String(r.query[k]) : undefined);
-  const b = (k: string) => {
-    if (r.query[k] === undefined) return undefined;
-    if (r.query[k] === "true") return true;
-    if (r.query[k] === "false") return false;
-    throw new BladUslugi(`Parametr ${k} musi mieć wartość true albo false.`);
-  };
-  return s.przelicznikSzuflad({ LW: n("LW"), szerokoscKorpusu: n("szerokoscKorpusu"), gruboscBoku: n("gruboscBoku"), NL: n("NL"), glebokoscKorpusu: n("glebokoscKorpusu"),
-    wysokoscFrontu: n("wysokoscFrontu"), wariant: t("wariant"), sciankaTylna: t("sciankaTylna") as "drewniana" | "stalowa" | undefined, profilId: t("profilId"),
-    liczbaSzuflad: n("liczbaSzuflad"), szczelinaFrontow: n("szczelinaFrontow"), dolnaProwadnica: n("dolnaProwadnica"),
-    wysokoscWewnetrzna: n("wysokoscWewnetrzna"), gruboscFrontu: n("gruboscFrontu"),
-    frontWewnetrzny: b("frontWewnetrzny"), szerokoscFrontu: n("szerokoscFrontu"), pierwszyOtworOdDolu: n("pierwszyOtworOdDolu"),
-    frontZaDrzwiami: b("frontZaDrzwiami"), stronaZawiasow: t("stronaZawiasow") as "lewa" | "prawa" | undefined,
-    dystansLewy: n("dystansLewy"), dystansPrawy: n("dystansPrawy"), przesuniecieFrontu: n("przesuniecieFrontu"),
-    wystawanieZawiasuLewe: n("wystawanieZawiasuLewe"), wystawanieZawiasuPrawe: n("wystawanieZawiasuPrawe"), luzOdZawiasu: n("luzOdZawiasu") });
-}));
+app.get("/api/systemy-szuflad", api(drawerSystems));
+app.get("/api/przelicznik-szuflad", api(r => calculateDrawer(r, s)));
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));
 app.delete("/api/projekty/:id/moduly/:mid/drzewo", api((r) => s.przywrocKonstrukcjeStandardowa(p(r, "id"), p(r, "mid"))));

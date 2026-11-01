@@ -343,25 +343,15 @@ export function App() {
               <LegacyApp />
             </div>
           ) : section === "szuflady" ? (
-            demo ? (
-              <section className="ps-empty">
-                <IconCalculator size={40} />
-                <h1>Kalkulator szuflad</h1>
-                <p>
-                  Rozkrój dna i pleców, mocowanie frontu oraz rozstaw prowadnic.
-                  Kalkulator korzysta z istniejącego silnika Pan Stolarz.
+            <>
+              {demo && (
+                <p className="ps-feedback" role="status">
+                  Podgląd kalkulatora bez logowania. Domyślne ustawienia
+                  konstrukcji; obliczenia nie zapisują się w projektach.
                 </p>
-                <p>
-                  Obliczenia są dostępne po zalogowaniu do konta pracownika lub
-                  właściciela.
-                </p>
-                <a className="ps-button" href="#/logowanie">
-                  Zaloguj się do kalkulatora
-                </a>
-              </section>
-            ) : (
-              <PrzelicznikSzuflad />
-            )
+              )}
+              <PrzelicznikSzuflad demo={demo} />
+            </>
           ) : section === "zadania" && (owner || employee) ? (
             <Tasks person={person} demo={demo} />
           ) : section === "pracownicy" && owner ? (
