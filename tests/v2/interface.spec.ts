@@ -44,14 +44,14 @@ test("client page reflows on phone and preserves the enquiry after a server erro
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Twoje wnętrze",
+    "Zobaczysz mebel w 3D",
   );
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Opowiedz o projekcie" }).click();
+  await page.getByRole("link", { name: "Opisz swój pomysł" }).click();
   await page.getByRole("button", { name: "Wyślij zapytanie" }).click();
   await expect(page.getByLabel("Imię", { exact: true })).toBeFocused();
   await page.getByLabel("Imię", { exact: true }).fill("Test");

@@ -5,10 +5,17 @@ import {
   IconCheck,
   IconRulerMeasure,
   IconLayout,
-  IconTools,
 } from "@tabler/icons-react";
 import { Logo } from "./ui";
 import { HomeIntro } from "./HomeIntro";
+import {
+  AREAS,
+  PHONE,
+  SERVICES,
+  PROCESS,
+  FAQ,
+  BUSINESS_SCHEMA,
+} from "./landing-content";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
 import { request, type Principal } from "./api";
 
@@ -48,6 +55,14 @@ export function Landing({ session }: { session: Principal | null }) {
           setForm((f) => ({ ...f, kind }));
         document
           .getElementById("zapytanie")
+          ?.scrollIntoView({ behavior: "instant" });
+      } else if (["#/uslugi", "#/o-nas"].includes(location.hash)) {
+        document
+          .getElementById(location.hash.slice(2))
+          ?.scrollIntoView({ behavior: "instant" });
+      } else if (location.hash === "#/wizualizacja") {
+        document
+          .getElementById("wizualizacja")
           ?.scrollIntoView({ behavior: "instant" });
       } else if (location.hash === "#/jak-dzialamy")
         document
@@ -109,6 +124,9 @@ export function Landing({ session }: { session: Principal | null }) {
   };
   return (
     <div className="ps-public">
+      <script type="application/ld+json">
+        {JSON.stringify(BUSINESS_SCHEMA)}
+      </script>
       <a
         className="ps-skip"
         href="#zapytanie"
@@ -124,11 +142,15 @@ export function Landing({ session }: { session: Principal | null }) {
           <Logo />
         </a>
         <nav aria-label="Menu strony">
-          <a href="#/zapytanie/kuchnia">Kuchnie</a>
-          <a href="#/zapytanie/szafa">Szafy i zabudowy</a>
+          <a href="#/uslugi">Usługi</a>
+          <a href="#/wizualizacja">Wizualizacje</a>
+          <a href="#/o-nas">O nas</a>
           <a href="#/kreator-kuchni">Kreator kuchni</a>
           <a href="#/jak-dzialamy">Jak działamy</a>
         </nav>
+        <a className="ps-button ps-header-call" href={PHONE.href}>
+          Zadzwoń: {PHONE.label}
+        </a>
         <a
           className="ps-text-button"
           href={session ? "#/panel/projekty" : "#/logowanie"}
@@ -140,27 +162,49 @@ export function Landing({ session }: { session: Principal | null }) {
       <main>
         <HomeIntro>
           <div className="ps-hero-copy">
-            <span className="ps-eyebrow">Pan Stolarz · meble na wymiar</span>
+            <span className="ps-eyebrow">
+              Kuchnie · garderoby · szafy · zabudowy na wymiar
+            </span>
             <h1>
-              Twoje wnętrze.
-              <br />
-              Dobrze
-              <br />
-              <span>przemyślane.</span>
+              Zobaczysz mebel w 3D,{" "}
+              <span>zanim powstanie pierwsza formatka.</span>
             </h1>
             <p>
-              Kuchnia, szafa czy zabudowa? Zacznijmy od tego, czego
-              potrzebujesz. Wspólnie dopracujemy układ, materiały i detale.
+              Mierzymy na miejscu, projektujemy i pokazujemy Ci fotorealistyczną
+              wizualizację. Z tej samej konstrukcji powstaje dokumentacja
+              produkcyjna, więc zatwierdzasz dokładnie to, co potem montujemy.
             </p>
-            <a className="ps-button" href="#/kreator-kuchni">
-              Zaprojektuj kuchnię
-              <IconArrowRight size={20} />
+            <a className="ps-button" href={PHONE.href}>
+              Umów pomiar <IconArrowRight size={20} />
             </a>
-            <a className="ps-under-link" href="#/zapytanie">
-              Opowiedz o projekcie
+            <a className="ps-under-link" href="#/wizualizacja">
+              Zobacz wizualizacje
             </a>
+            <p className="ps-hero-contact">
+              Zielona Góra i okolice · <a href={PHONE.href}>{PHONE.label}</a>
+            </p>
+            <p className="ps-brand-line">
+              Dobrze pomyślane. Dobrze dopasowane.
+            </p>
           </div>
         </HomeIntro>
+        <section
+          className="ps-proof-strip"
+          aria-label="Od pomysłu do wykonania"
+        >
+          <div>
+            <strong>3D</strong>
+            <span>Wizualizacja w cenie wyceny</span>
+          </div>
+          <div>
+            <strong>mm</strong>
+            <span>Pomiar i wymiarowanie frontów na miejscu</span>
+          </div>
+          <div>
+            <strong>PDF</strong>
+            <span>Dokumentacja każdej formatki</span>
+          </div>
+        </section>
         <section
           className="ps-public-section ps-start"
           aria-labelledby="start-title"
@@ -205,20 +249,19 @@ export function Landing({ session }: { session: Principal | null }) {
         </section>
         <section
           className="ps-public-section ps-cabinet-story"
+          id="wizualizacja"
           aria-labelledby="cabinet-story-title"
         >
           <div>
-            <span className="ps-eyebrow">Zajrzyj do środka</span>
-            <h2 id="cabinet-story-title">
-              Dobry mebel zaczyna się od konstrukcji.
-            </h2>
+            <span className="ps-eyebrow">Wizualizacja projektu</span>
+            <h2 id="cabinet-story-title">Zobacz, z czego powstaje szafka.</h2>
             <p>
               Front to dopiero początek. Zobacz, jak poszczególne elementy
               składają się w szafkę — od korpusu po ostatni detal.
             </p>
             <p className="ps-form-note">
-              Animacja pokazuje przykładową konstrukcję. Rozwiązania do Twojego
-              projektu dobierzemy wspólnie.
+              To wizualizacja, nie zdjęcie realizacji. Okucia są poglądowe.
+              Rozwiązania do Twojego projektu dobierzemy wspólnie.
             </p>
           </div>
           <figure>
@@ -238,37 +281,22 @@ export function Landing({ session }: { session: Principal | null }) {
               .
             </video>
             <figcaption>
-              Od pojedynczych elementów do gotowej szafki. Uruchom animację,
-              żeby zobaczyć kolejne etapy.
+              Składanie przykładowej szafki — wizualizacja projektu. Uruchom
+              animację, żeby zobaczyć kolejne etapy.
             </figcaption>
           </figure>
         </section>
-        <section className="ps-public-section ps-offer">
+        <section className="ps-public-section ps-offer" id="uslugi">
           <div>
-            <span className="ps-eyebrow">Od pomysłu do dopasowania</span>
-            <h2>
-              Co planujesz
-              <br />w swoim wnętrzu?
-            </h2>
+            <span className="ps-eyebrow">Meble pod Twoje wnętrze</span>
+            <h2>Co dla Ciebie zrobimy</h2>
+            <p>
+              Każdy mebel projektujemy pod Twoje wymiary, ściany i sposób
+              używania. Nie przerabiamy gotowych modułów.
+            </p>
           </div>
           <div className="ps-offer-links">
-            {[
-              {
-                kind: "kuchnia",
-                title: "Kuchnia",
-                text: "Układ, przechowywanie i wygoda na co dzień.",
-              },
-              {
-                kind: "szafa",
-                title: "Szafa i garderoba",
-                text: "Miejsce na Twoje rzeczy, dopasowane do wnęki.",
-              },
-              {
-                kind: "inne",
-                title: "Inna zabudowa",
-                text: "Łazienka, salon lub pomysł, który wymaga rozmowy.",
-              },
-            ].map((x) => (
+            {SERVICES.map((x) => (
               <a key={x.kind} href={`#/zapytanie/${x.kind}`}>
                 <div>
                   <h3>{x.title}</h3>
@@ -282,30 +310,21 @@ export function Landing({ session }: { session: Principal | null }) {
         <section className="ps-public-section ps-process" id="proces">
           <span className="ps-eyebrow">Jak działamy</span>
           <h2>
-            Najpierw rozumiemy.
+            Od pomiaru do montażu.
             <br />
-            Potem projektujemy.
+            Jeden projekt, z którego powstaje wszystko.
           </h2>
+          <p className="ps-process-lead">
+            Wizualizacja, rysunki produkcyjne i rysunki montażowe powstają z tej
+            samej konstrukcji. Dlatego to, co widzisz na ekranie, jest tym, co
+            stanie u Ciebie.
+          </p>
           <div className="ps-process-grid">
-            {[
-              {
-                Icon: IconLayout,
-                title: "Rozmawiamy o potrzebach",
-                text: "Opisz pomysł. Przybliżone wymiary i informacja o pomieszczeniu pomogą nam zacząć.",
-              },
-              {
-                Icon: IconRulerMeasure,
-                title: "Dopracowujemy projekt",
-                text: "Ustalamy układ, materiały i zakres. Wymiary oraz szczegóły wyceny wymagają potwierdzenia.",
-              },
-              {
-                Icon: IconTools,
-                title: "Przygotowujemy realizację",
-                text: "Dalsze etapy, termin i warunki ustalamy na podstawie zaakceptowanego projektu.",
-              },
-            ].map(({ Icon, title, text }) => (
+            {PROCESS.map(({ title, text }, index) => (
               <article key={title}>
-                <Icon size={30} stroke={1.4} />
+                <span className="ps-process-step">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <h3>{title}</h3>
                 <p>{text}</p>
               </article>
@@ -313,36 +332,58 @@ export function Landing({ session }: { session: Principal | null }) {
           </div>
         </section>
         <section
+          className="ps-public-section ps-about"
+          aria-labelledby="about-title"
+          id="o-nas"
+        >
+          <div>
+            <span className="ps-eyebrow">
+              Mateusz Wojciechowski · Pan Stolarz
+            </span>
+            <h2 id="about-title">Kto za tym stoi</h2>
+          </div>
+          <div>
+            <p>
+              Nazywam się Mateusz Wojciechowski i prowadzę Pan Stolarz w
+              Zielonej Górze. Sam jeżdżę na pomiary, sam projektuję i pilnuję,
+              żeby to, co zatwierdzisz na ekranie, zgadzało się z tym, co
+              przywieziemy.
+            </p>
+            <p>
+              Projekt i dokumentację robię we własnym programie, więc
+              wizualizacja i rysunki dla warsztatu nie rozjeżdżają się.
+            </p>
+          </div>
+        </section>
+        <section
+          className="ps-public-section ps-service-area"
+          aria-labelledby="area-title"
+        >
+          <span className="ps-eyebrow">Zielona Góra i okolice</span>
+          <h2 id="area-title">Gdzie przyjeżdżamy</h2>
+          <p>
+            Pracownia jest w Zielonej Górze. Na pomiar i montaż przyjeżdżamy do:
+          </p>
+          <ul aria-label="Obszar działania">
+            {AREAS.map((city) => (
+              <li key={city}>{city}</li>
+            ))}
+          </ul>
+          <p>
+            Mieszkasz gdzie indziej w okolicy?{" "}
+            <a href={PHONE.href}>Zadzwoń: {PHONE.label}</a> — ustalimy dojazd.
+          </p>
+        </section>
+        <section
           className="ps-public-section ps-faq"
           aria-labelledby="faq-title"
         >
           <div>
             <span className="ps-eyebrow">Zanim zaczniemy</span>
-            <h2 id="faq-title">Nie musisz mieć wszystkiego ustalonego.</h2>
+            <h2 id="faq-title">Najczęstsze pytania</h2>
           </div>
           <div className="ps-faq-list">
-            {[
-              {
-                question: "Czy potrzebuję gotowego projektu?",
-                answer:
-                  "Nie. Wystarczy pomysł i opis tego, czego potrzebujesz. Przybliżone wymiary pomogą zacząć rozmowę, a szczegóły dopracujemy wspólnie.",
-              },
-              {
-                question: "Co daje mi kreator kuchni?",
-                answer:
-                  "Możesz sprawdzić układ prosty, L lub U, rozmieścić szafki i obejrzeć szkic w 3D. To punkt wyjścia do rozmowy, a nie projekt gotowy do produkcji.",
-              },
-              {
-                question: "Czy w kreatorze poznam cenę?",
-                answer:
-                  "Kreator służy do planowania układu. Cenę ustalimy po doprecyzowaniu wymiarów, materiałów, wyposażenia i zakresu prac.",
-              },
-              {
-                question: "Co przygotować do pierwszego kontaktu?",
-                answer:
-                  "Napisz, jakie meble planujesz, gdzie mają powstać i co jest dla Ciebie ważne. Jeśli znasz przybliżone wymiary, dopisz je w opisie. Nie musisz znać nazw materiałów ani okuć.",
-              },
-            ].map(({ question, answer }) => (
+            {FAQ.map(({ question, answer }) => (
               <details key={question}>
                 <summary>{question}</summary>
                 <p>{answer}</p>
@@ -352,19 +393,18 @@ export function Landing({ session }: { session: Principal | null }) {
         </section>
         <section className="ps-public-section ps-enquiry" id="zapytanie">
           <div>
-            <span className="ps-eyebrow">Zacznijmy od rozmowy</span>
-            <h2>
-              Masz pomysł?
-              <br />
-              Opowiedz nam o nim.
-            </h2>
+            <span className="ps-eyebrow">Porozmawiajmy o Twoim wnętrzu</span>
+            <h2>Zacznijmy od pomiaru</h2>
             <p>
-              Nie potrzebujesz jeszcze dokładnego projektu. Napisz, co chcesz
-              zmienić i gdzie powstaną meble.
+              Napisz albo zadzwoń. Ustalimy, czego potrzebujesz, porozmawiamy o
+              pomiarze i przygotowaniu projektu z wizualizacją 3D.
             </p>
+            <a className="ps-button secondary" href={PHONE.href}>
+              Zadzwoń: {PHONE.label}
+            </a>
             <p className="ps-form-note">
-              To zapytanie, a nie zamówienie. Cena i możliwość realizacji
-              wymagają potwierdzenia.
+              To zapytanie, a nie zamówienie ani rezerwacja terminu. Cena,
+              zakres i możliwość realizacji wymagają potwierdzenia.
             </p>
           </div>
           {result ? (
@@ -466,7 +506,7 @@ export function Landing({ session }: { session: Principal | null }) {
                   maxLength={6000}
                   rows={5}
                   onChange={(e) => field("description", e.target.value)}
-                  placeholder="Przybliżone wymiary, układ, materiały, potrzeby…"
+                  placeholder="Przybliżone wymiary, czego potrzebujesz i kiedy chcesz mieć meble…"
                   aria-invalid={!!errors.description}
                   aria-describedby={
                     errors.description
@@ -514,7 +554,13 @@ export function Landing({ session }: { session: Principal | null }) {
       </main>
       <footer className="ps-public-footer">
         <Logo />
-        <span>Pan Stolarz · meble na wymiar</span>
+        <div className="ps-footer-contact">
+          <strong>Pan Stolarz · meble na wymiar</strong>
+          <span>
+            Zielona Góra · <a href={PHONE.href}>{PHONE.label}</a>
+          </span>
+          <small>{AREAS.join(" · ")}</small>
+        </div>
         <a href="#/logowanie">
           Panel stolarni
           <IconArrowUpRight size={17} />

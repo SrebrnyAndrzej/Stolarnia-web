@@ -1,3 +1,4 @@
+@import "./brand-fonts.css";
 /* Pan Stolarz 2.0 — brand tokens own both the new shell and retained tools. */
 :root {
   --bg: #f7f8f7;
@@ -2428,4 +2429,258 @@ summary:focus-visible {
 
 .ps-home-intro.is-readable .ps-hero-copy > .ps-eyebrow,
 .ps-home-intro.is-readable .ps-hero-copy > h1,
-.ps-home-intro.is-readable .ps-hero-copy > p { opacity: 1; transform: none; }
+.ps-home-intro.is-readable .ps-hero-copy > p {
+  opacity: 1;
+  transform: none;
+}
+
+.ps-home-intro .ps-hero h1 {
+  font-size: clamp(36px, 4.8vw, 68px);
+  line-height: 1.08;
+}
+.ps-home-intro .ps-hero-copy > .ps-hero-contact {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 20px 0 0;
+  max-width: 100%;
+  opacity: 1;
+  transform: none;
+}
+.ps-hero-contact a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+.ps-home-intro .ps-hero-copy > .ps-brand-line {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 12px 0 0;
+  opacity: 1;
+  transform: none;
+}
+.ps-proof-strip {
+  background: var(--ps-sidebar);
+  color: #fff;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  padding: 28px 7vw;
+}
+.ps-proof-strip > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.ps-proof-strip strong {
+  color: var(--ps-lime);
+  font-family: ui-monospace, monospace;
+  font-size: 25px;
+  font-weight: 600;
+}
+.ps-proof-strip span {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ps-offer > div > p {
+  line-height: 1.7;
+  max-width: 38ch;
+}
+.ps-process-lead {
+  line-height: 1.7;
+  max-width: 65ch;
+}
+.ps-process-step {
+  display: inline-block;
+  font-family: ui-monospace, monospace;
+  font-size: 16px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.ps-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px;
+  margin-top: 36px;
+}
+.ps-benefits-grid article {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.ps-benefits-grid h3 {
+  font-size: 22px;
+  line-height: 1.3;
+}
+.ps-benefits-grid p,
+.ps-about p,
+.ps-service-area p {
+  line-height: 1.8;
+  max-width: 65ch;
+}
+.ps-about {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(24px, 5vw, 80px);
+  background: var(--panel-2);
+}
+.ps-service-area ul {
+  display: flex;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 28px 0;
+  font-family: ui-monospace, monospace;
+}
+.ps-service-area li {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.ps-service-area a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ps-footer-contact {
+  display: grid;
+  gap: 8px;
+  max-width: 600px;
+  line-height: 1.7;
+}
+.ps-footer-contact small {
+  display: block;
+  color: var(--muted);
+}
+.ps-footer-contact a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .ps-proof-strip {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 28px 24px;
+  }
+  .ps-benefits-grid,
+  .ps-about {
+    grid-template-columns: 1fr;
+  }
+  .ps-home-intro .ps-hero h1 {
+    font-size: clamp(32px, 8vw, 48px);
+  }
+}
+
+@media (max-width: 800px) {
+  .ps-home-intro > .ps-hero {
+    padding: 84px 24px 72px;
+  }
+  .ps-home-intro .ps-hero-copy > p {
+    line-height: 1.6;
+    margin: 16px 0 20px;
+  }
+  .ps-home-intro .ps-hero-copy > .ps-hero-contact {
+    margin: 16px 0 0;
+  }
+  .ps-home-intro .ps-hero-copy > .ps-brand-line {
+    margin: 8px 0 0;
+  }
+}
+
+.ps-public-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--panel);
+  gap: 20px;
+}
+.ps-public-header nav {
+  gap: 16px;
+}
+.ps-header-call {
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 12px 16px;
+}
+.ps-public-section,
+.ps-proof-strip {
+  scroll-margin-top: 100px;
+}
+.ps-process-grid {
+  position: relative;
+}
+.ps-process-grid article {
+  border-top-color: var(--line-strong);
+}
+.ps-process-step::before,
+.ps-process-step::after {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 1px;
+  background: currentColor;
+  vertical-align: middle;
+  margin: 0 8px;
+}
+@media (max-width: 1100px) {
+  .ps-public-header nav {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .ps-public-header {
+    padding: 12px 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .ps-header-call {
+    font-size: 12px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  .ps-public-header .ps-logo {
+    width: 132px;
+  }
+  .ps-public-header > .ps-text-button {
+    font-size: 12px;
+  }
+  .ps-public-section,
+  .ps-proof-strip {
+    scroll-margin-top: 120px;
+  }
+}
+
+/* Website palette and typography from the supplied v02 brief; workshop tokens stay scoped separately. */
+.ps-public {
+  --granat: #1c2b30;
+  --tekst: #111317;
+  --tekst-2: #435058;
+  --linia: #717780;
+  --podpis: #848c8e;
+  --limonka: #a5b859;
+  --cieply: #bfb7b6;
+  --papier: #f1f2ee;
+  --biel: #ffffff;
+  --bg: var(--papier);
+  --panel: var(--biel);
+  --text: var(--tekst);
+  --muted: var(--tekst-2);
+  --line: var(--cieply);
+  --line-strong: var(--linia);
+  --ps-lime: var(--limonka);
+  --ps-sidebar: var(--granat);
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background: var(--papier);
+  color: var(--tekst);
+}
+.ps-public h1,
+.ps-public h2,
+.ps-public h3 {
+  font-weight: 600;
+}
+.ps-public .ps-proof-strip strong,
+.ps-public .ps-process-step,
+.ps-public .ps-service-area ul,
+.ps-public .ps-hero-contact {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+.ps-public .ps-about {
+  background: var(--cieply);
+}

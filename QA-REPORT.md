@@ -1,3 +1,12 @@
+## Aktualizacja treści z materiałów Mateusza — 1.11.2026
+
+- Typecheck i build poprawne. Build zawiera obowiązkowe `check:zgody`, wynik bez plików oczekujących. Niezależna próba z fixture w zagnieżdżonym katalogu: dozwolony plik przechodzi, `ZGODA-KLIENTA_` zatrzymuje kontrolę.
+- 18/18 testów Playwright poprawnych po uruchomieniu serwera lokalnego: nowa treść, JSON-LD/telefon/obszar/placeholdery/kotwice oraz wcześniejsze przepływy hero i ról. Pierwsza próba w nowej sesji miała ERR_CONNECTION_REFUSED, ponieważ serwer po restarcie środowiska nie działał; nie była błędem aplikacji.
+- Publiczny widok desktop 1440×1000 i telefon 375×812: brak poziomego overflow, 0 serious/critical axe findings. Font IBM Plex Sans potwierdzony w computed style; lokalne pliki WOFF2 i OFL. Screenshoty pełne w qa/content-desktop.png i qa/content-phone.png.
+- Audyt premium strict: 0 findings. Kontrola HTML/JS/CSS buildu: brak publicznych placeholderów.
+- JSON-LD sparsowany i sprawdzony w teście: telefon, miejscowość, brak ulicy/niepotwierdzonego maila/profili. Nie wykonywano zewnętrznej walidacji schema.org ani Lighthouse i nie deklarujemy ich progów jako spełnionych.
+- Nie zmieniono silnika, uprawnień, istniejącego adaptera formularza ani produkcyjnej konfiguracji usług. Brak galerii/renderów i decyzji biznesowych jest opisany w bridge/outbox/PS-WWW-001-codex.md. To aktualizacja istniejącego produktu, nie zakończenie całego nowego briefu Next.js.
+
 ## Samoczynne hero i przejście do następnej sekcji — 31.10.2026
 
 HomeIntro przełączono z timeline scrolla na odtwarzanie muted/playsInline 0,75×, bez pętli. Po naturalnym ended przechodzi płynnie do następnej sekcji. Brak długiej wysokości i sticky. Ręczna nawigacja, fokus w hero, reduced-motion i ukryta karta chronią przed automatycznym przesunięciem. Pauza poza widokiem i w ukrytej karcie; blokada autoplay pokazuje przycisk i pełną treść. Pauza użytkownika odsłania tekst i zachowuje go po wznowieniu.

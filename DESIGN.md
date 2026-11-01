@@ -90,3 +90,10 @@ Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześni
 
 ## Aktualny tryb hero — samoczynne odtwarzanie
 Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.
+
+## Publiczna strona — materiały Mateusza z 1.11.2026
+Aktualizacja opiera się na TRESCI-STRONA-GLOWNA.md, strategii treści i założeniach PS-WWW-001. Publiczne kopie danych nie obejmują ulicy, roboczych budżetów ani informacji weryfikacyjnych. Właściciel treści usług/procesu/FAQ: `v2/landing-content.ts`; Landing.tsx pozostaje właścicielem układu, formularza i hero. Brak danych oraz decyzji reprezentuje PENDING_CONTENT z null, bez publicznych placeholderów.
+
+W publicznej witrynie `.ps-public` obowiązuje książkowa paleta z briefu: granat #1C2B30, tekst #111317, drugi tekst #435058, linia #717780, podpis #848C8E, limonka #A5B859, ciepły #BFB7B6, papier #F1F2EE i biel #FFFFFF. Wartości są zadeklarowane w styles.css jako tokeny lokalne i mapowane na istniejące role CSS; nie nadpisują tokenów paneli. Podpis #848C8E nie jest wymuszany na treści, jeśli osłabiłby kontrast. Limonka używa ciemnej etykiety.
+
+Typografia publiczna: lokalne IBM Plex Sans 400/600 i IBM Plex Mono 400/600 dla telefonu, znaczników i osi procesu. Font-face i unicode-range w brand-fonts.css, pliki oraz licencje w public/fonts. Panele zachowują dotychczasowy font. Nagłówek publiczny jest sticky; kotwice sekcji mają scroll-margin, a telefon pozostaje dostępny na małym ekranie. Nie dodano nowej domeny, śledzenia ani fontów hostowanych zewnętrznie.

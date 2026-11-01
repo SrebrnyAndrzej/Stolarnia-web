@@ -84,3 +84,8 @@ Wyszukiwanie zapytań pozostaje w pamięci widoku: fraza może zawierać imię l
 
 ## Aktualny tryb hero — samoczynne odtwarzanie
 Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.
+
+## Treści publiczne i kontakt — 1.11.2026
+Treść pochodzi z plików Mateusza; niepotwierdzone warunki i brakujące materiały są wyłączone. Główne „Umów pomiar” otwiera telefon, bez udawania rezerwacji lub wysłania zapytania. Kotwice `#/uslugi`, `#/wizualizacja`, `#/o-nas` wracają do publicznej strony także przy aktywnej sesji. Stały nagłówek i scroll-margin utrzymują widoczność nagłówków docelowych. Dane kontaktowe są bez ulicy; JSON-LD nie zawiera niepotwierdzonego maila/domeny/profili.
+
+Dotychczasowy formularz i adapter nie oznaczają uruchomienia przyjmowania danych na produkcji. Nie dodano nieistniejącego uploadu, terminów odpowiedzi ani automatycznego oddzwaniania. Polityka prywatności i docelowa konfiguracja pozostają wymaganiami uruchomienia, a nie publicznym placeholderem. Kontrola check:zgody blokuje materiały oznaczone prefiksem oczekiwania na zgodę przed buildem.

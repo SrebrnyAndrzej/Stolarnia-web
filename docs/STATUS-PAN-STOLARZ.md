@@ -47,3 +47,6 @@ Aktualizacja tempa hero: maksymalnie 1 sekunda filmu na sekundę czasu (wcześni
 
 ## Aktualny tryb hero — samoczynne odtwarzanie
 Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania currentTime ze scrollem. Tempo 0,75×, bez dźwięku i zapętlenia. Po zakończeniu następuje płynne przewinięcie do następnej sekcji. Hero ma naturalną wysokość zamiast długiego obszaru scrolla; tekst ujawnia się z czasem filmu. Pauza/wznowienie i ponowne odtworzenie są dostępne. Po ręcznej nawigacji, przy fokusie w hero, ukrytej karcie lub reduced-motion nie wymuszamy przejścia. Reduced-motion/saveData nie pobiera filmu bez opt-in; odrzucenie autoplay pokazuje przycisk uruchomienia. Ta decyzja zastępuje wcześniejszy tryb przewijania i jego parametry.
+
+## Treści z materiałów agencji — 1.11.2026
+Dodano lokalne treści, sześć etapów współpracy, sekcję o Mateuszu, obszar działania, kontakt telefoniczny, lokalne SEO/JSON-LD, kolory v02 i lokalne IBM Plex tylko dla publicznej witryny. Nie opublikowano danych weryfikacyjnych ani źródłowych plików strategii. Brakujące rendery, warunki i terminy pozostają wyłączone. Raport do recenzji: bridge/outbox/PS-WWW-001-codex.md. Nie oznacza odbioru całego nowego briefu ani wykonania benchmarku/Lighthouse. Istniejące panele, kreator i hero autoplay pozostają zgodne z wcześniejszymi decyzjami użytkownika.

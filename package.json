@@ -8,7 +8,7 @@
     "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch src/server/index.ts",
     "dev:web": "vite",
-    "build": "vite build && tsc -p tsconfig.json",
+    "build": "npm run check:zgody && vite build && tsc -p tsconfig.json",
     "start": "node dist/server/index.js",
     "mcp": "tsx src/mcp/stdio.ts",
     "mcp:build": "node dist/mcp/stdio.js",
@@ -16,7 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit",
     "test:v2:unit": "node --import tsx --test --test-isolation=none src/server/access.test.ts",
     "test:v2:api": "node --import tsx scripts/verify-v2-access.mjs",
-    "test:v2:browser": "playwright test"
+    "test:v2:browser": "playwright test",
+    "check:zgody": "node scripts/check-consent-assets.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",

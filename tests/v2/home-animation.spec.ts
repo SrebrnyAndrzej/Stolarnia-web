@@ -27,11 +27,12 @@ test("hero plays without scrolling and moves to the next section when finished",
       () =>
         page.evaluate(
           () =>
-            document.querySelector(".ps-start")!.getBoundingClientRect().top,
+            document.querySelector(".ps-proof-strip")!.getBoundingClientRect()
+              .top,
         ),
       { timeout: 10000 },
     )
-    .toBeLessThan(10);
+    .toBeLessThan(125);
   await expect(
     page.getByRole("heading", { name: "Zacznij tak, jak Ci wygodnie." }),
   ).toBeInViewport();
@@ -110,8 +111,7 @@ test("phone film covers the hero and the creator remains reachable", async ({
   ).toBe(true);
   await page.screenshot({ path: "qa/home-intro-mobile.png" });
   await page
-    .locator(".ps-home-intro")
-    .getByRole("link", { name: "Zaprojektuj kuchnię", exact: true })
+    .getByRole("link", { name: "Otwórz kreator kuchni", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Zaplanuj swoją kuchnię" }),
@@ -132,8 +132,7 @@ test("failed film retains readable content and a static poster", async ({
       .evaluate((el) => getComputedStyle(el).opacity),
   ).toBe("1");
   await page
-    .locator(".ps-home-intro")
-    .getByRole("link", { name: "Opowiedz o projekcie", exact: true })
+    .getByRole("link", { name: "Opisz swój pomysł", exact: true })
     .click();
   await expect(page.getByLabel("Imię", { exact: true })).toBeVisible();
 });

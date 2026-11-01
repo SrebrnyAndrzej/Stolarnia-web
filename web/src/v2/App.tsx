@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { request, roles, type Principal } from "./api";
 import { Landing } from "./Landing";
+import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
 import { Logo, Feedback } from "./ui";
 const LegacyApp = lazy(() =>
@@ -94,7 +95,10 @@ export function App() {
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
-    hash === "#/jak-dzialamy";
+    hash === "#/jak-dzialamy" ||
+    hash === "#/wizualizacja" ||
+    hash === "#/uslugi" ||
+    hash === "#/o-nas";
   const section = demo
     ? demoMatch?.[2] || "projekty"
     : hash.split("?")[0].split("/")[2] || "projekty";
@@ -118,7 +122,11 @@ export function App() {
                 ? "Panel pracownika"
                 : "Moje projekty"
             : "Logowanie";
-    document.title = `${title} · Pan Stolarz`;
+    document.title = publicRoute ? HOME_TITLE : `${title} · Pan Stolarz`;
+    if (publicRoute)
+      document
+        .querySelector('meta[name="description"]')
+        ?.setAttribute("content", HOME_DESCRIPTION);
   }, [publicRoute, section, isPanel, plannerRoute, person?.role]);
   const logout = async () => {
     setLogoutError("");
