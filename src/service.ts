@@ -909,6 +909,28 @@ export class Stolarnia {
     return { pdf, numer: m.wydanie.numer, rewizja: m.wydanie.rewizja };
   }
 
+  /**
+   * Pakiet montażowy w tym samym schemacie co produkcyjny (sekcje T, R, E, M, K). Geometria z wydania (lub bieżącej rewizji),
+   * dane operacyjne montażu (adres, kontakt, termin) zawsze z bieżącego projektu.
+   */
+  async montazPdf(projektId: string, wydanieId?: string): Promise<{ pdf: Buffer; rewizja: number; numer?: number }> {
+    const biezacy = this.projekt(projektId);
+    const montaz = {
+      adres: biezacy.klient.adres || undefined,
+      kontakt: [biezacy.klient.nazwa, biezacy.klient.telefon].filter(Boolean).join(", ") || undefined,
+      termin: biezacy.terminMontazu,
+    };
+    if (wydanieId) {
+      const m = this.migawkaWydania(projektId, wydanieId);
+      const pdf = await dokumentacjaPdf({ rodzaj: "montaz", montaz, projekt: m.projekt, zbudowane: m.zbudowane, dokumentacja: m.dokumentacja, firma: m.firma, wydanie: { numer: m.wydanie.numer, utworzono: m.wydanie.utworzono } });
+      return { pdf, rewizja: m.wydanie.rewizja, numer: m.wydanie.numer };
+    }
+    const a = this.analiza(projektId);
+    const d = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
+    const pdf = await dokumentacjaPdf({ rodzaj: "montaz", montaz, projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined });
+    return { pdf, rewizja: a.projekt.rewizja };
+  }
+
   /** Oferta dla klienta z wizualizacjami (JPEG renderowane w przeglądarce). */
   async ofertaPdf(
     projektId: string,

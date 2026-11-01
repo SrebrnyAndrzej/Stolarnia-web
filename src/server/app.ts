@@ -186,6 +186,17 @@ app.get("/api/projekty/:id/wydania/:wid/dokumentacja.pdf", (req, res, next) => {
     })
     .catch(next);
 });
+// Pakiet montażowy (ten sam schemat stron co produkcyjny): z bieżącej rewizji lub z wydania.
+const wyslijMontaz = (req: Request, res: Response, next: NextFunction, wid?: string) =>
+  s.montazPdf(p(req, "id"), wid)
+    .then(({ pdf, rewizja, numer }) => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="montaz-${numer ? `wydanie-${numer}-` : ""}${p(req, "id")}-rew${rewizja}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
+app.get("/api/projekty/:id/montaz.pdf", (req, res, next) => wyslijMontaz(req, res, next));
+app.get("/api/projekty/:id/wydania/:wid/montaz.pdf", (req, res, next) => wyslijMontaz(req, res, next, p(req, "wid")));
 app.get("/api/projekty/:id/dokumentacja.pdf", (req, res, next) => {
   const lista = (k: string) => (req.query[k] ? String(req.query[k]).split(",") : undefined);
   s.dokumentacjaPdf(p(req, "id"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1" })

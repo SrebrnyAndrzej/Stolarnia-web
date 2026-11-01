@@ -24,7 +24,32 @@ const SKROT_OP: Record<string, string> = {
   "Prowadnik zawiasu": "prowadnik",
 };
 
+/**
+ * Jeden schemat dokumentów warsztatu: każda strona ma kod sekcji i numer (np. „S-03”), ten sam blok rewizji
+ * w prawym górnym rogu i tę samą stopkę z nazwą pakietu. Pakiety różnią się zestawem sekcji, nie wyglądem.
+ */
+export type RodzajPakietu = "produkcja" | "montaz";
+export type SekcjaDokumentu = "T" | "R" | "E" | "I" | "S" | "C" | "M" | "Z" | "K";
+export const SCHEMAT_SEKCJI: Record<SekcjaDokumentu, { nazwa: string; dla: string }> = {
+  T: { nazwa: "Strona tytułowa, stan pakietu, diagnostyka", dla: "wszyscy" },
+  R: { nazwa: "Rzut z góry z numerami mebli", dla: "wszyscy" },
+  E: { nazwa: "Elewacje ścian z wymiarami", dla: "wszyscy" },
+  I: { nazwa: "Indeks części", dla: "produkcja" },
+  S: { nazwa: "Karta szafki: widoki, formatki, operacje", dla: "produkcja" },
+  C: { nazwa: "Rysunek wykonawczy części", dla: "produkcja" },
+  M: { nazwa: "Montaż: kolejność, wymiary montażowe, okucia", dla: "montaż" },
+  Z: { nazwa: "Karta złożenia szafki: rysunek rozstrzelony, kroki", dla: "montaż" },
+  K: { nazwa: "Kontrola i protokół odbioru", dla: "montaż" },
+};
+/** Dopuszczalna różnica przekątnych korpusu — zasada warsztatu Pan Stolarz (Mateusz, 1.11.2026). */
+export const TOLERANCJA_PRZEKATNYCH_MM = 2;
+const NAZWA_PAKIETU: Record<RodzajPakietu, string> = { produkcja: "PAKIET PRODUKCYJNY", montaz: "PAKIET MONTAŻOWY" };
+
 export interface WejsciePdf {
+  /** Domyślnie „produkcja”. „montaz” — rzut, elewacje z wymiarami montażowymi, kolejność, okucia i protokół odbioru. */
+  rodzaj?: RodzajPakietu;
+  /** Dane operacyjne montażu (z bieżącego projektu, nie z migawki): adres, kontakt, termin. */
+  montaz?: { adres?: string; kontakt?: string; termin?: string };
   projekt: Projekt;
   zbudowane: ZbudowanyModul[];
   dokumentacja: DokumentacjaProjektu;
@@ -40,7 +65,8 @@ export interface WejsciePdf {
 }
 
 export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 28, autoFirstPage: false, bufferPages: true, info: { Title: `Dokumentacja — ${w.projekt.nazwa} (rew. ${w.dokumentacja.rewizja})`, Producer: w.dokumentacja.wersjaGeneratora } });
+  const tytulPakietu = w.rodzaj === "montaz" ? "Pakiet montażowy" : "Dokumentacja";
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 28, autoFirstPage: false, bufferPages: true, info: { Title: `${tytulPakietu} — ${w.projekt.nazwa} (rew. ${w.dokumentacja.rewizja})`, Producer: w.dokumentacja.wersjaGeneratora } });
   doc.registerFont("R", join(FONTY, "DejaVuSans.ttf"));
   doc.registerFont("B", join(FONTY, "DejaVuSans-Bold.ttf"));
   doc.registerFont("M", join(FONTY, "DejaVuSansMono.ttf"));
@@ -52,7 +78,14 @@ export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
   });
 
   const ctx = new Kontekst(doc, w);
-  if (w.tylkoModuly?.length) {
+  if (w.rodzaj === "montaz") {
+    ctx.tytulMontazu();
+    ctx.kuchnia();
+    ctx.kolejnoscMontazu();
+    for (const zm of w.zbudowane) ctx.zlozenie(zm);
+    ctx.okuciaMontazu();
+    ctx.protokolOdbioru();
+  } else if (w.tylkoModuly?.length) {
     for (const zm of w.zbudowane.filter((z) => w.tylkoModuly!.includes(z.modul.id))) {
       ctx.szafka(zm);
       if (!w.skrocony) for (const c of w.dokumentacja.czesci.filter((c) => c.modulId === zm.modul.id)) ctx.czesc(c);
@@ -96,12 +129,26 @@ class Kontekst {
     return this.w.dokumentacja;
   }
 
+  /** Sekcja schematu bieżącej strony — ustawiana na początku każdej sekcji; strony „(cd.)” dziedziczą sekcję. */
+  private sekcja: SekcjaDokumentu = "T";
+  private readonly licznikSekcji: Partial<Record<SekcjaDokumentu, number>> = {};
+  /** Kody stron w kolejności druku (do testów i spisu). */
+  readonly kodyStron: string[] = [];
+
   private nowaStrona(tytul: string, podtytul = "", format: "A4" | "A3" = "A4") {
     this.doc.addPage({ size: format, layout: "landscape", margin: this.m });
     this.strona += 1;
     const { doc, m } = this;
-    doc.font("B").fontSize(13).fillColor("#000").text(tytul, m, m, { width: this.W - 2 * m - 250 });
-    if (podtytul) doc.font("R").fontSize(8.5).fillColor("#555").text(podtytul, m, m + 17, { width: this.W - 2 * m - 250 });
+    const nr = (this.licznikSekcji[this.sekcja] ?? 0) + 1;
+    this.licznikSekcji[this.sekcja] = nr;
+    const kod = `${this.sekcja}-${String(nr).padStart(2, "0")}`;
+    this.kodyStron.push(kod);
+    // Kod strony w lewym górnym rogu — ten sam układ w pakiecie produkcyjnym i montażowym.
+    doc.lineWidth(1).strokeColor("#000").rect(m, m - 4, 44, 22).stroke();
+    doc.font("M").fontSize(10).fillColor("#000").text(kod, m, m + 2, { width: 44, align: "center", lineBreak: false });
+    const tx = m + 52;
+    doc.font("B").fontSize(13).fillColor("#000").text(tytul, tx, m, { width: this.W - 2 * m - 250 - 52 });
+    if (podtytul) doc.font("R").fontSize(8.5).fillColor("#555").text(podtytul, tx, m + 17, { width: this.W - 2 * m - 250 - 52 });
     // Blok rewizji w prawym górnym rogu
     const x = this.W - m - 230;
     doc.lineWidth(0.6).strokeColor("#000").rect(x, m - 4, 230, 34).stroke();
@@ -121,6 +168,7 @@ class Kontekst {
   }
 
   brak(tekst: string) {
+    this.sekcja = "T";
     this.nowaStrona("Brak danych");
     this.doc.font("R").fontSize(10).text(tekst, this.m, this.m + 60);
   }
@@ -132,7 +180,7 @@ class Kontekst {
       // Stopka leży w dolnym marginesie — bez zerowania marginesu pdfkit dodałby nową stronę.
       this.doc.page.margins.bottom = 0;
       this.doc.font("R").fontSize(7).fillColor("#666")
-        .text(`${this.w.firma ? this.w.firma + " · " : ""}Stolarnia Online ${this.d.wersjaGeneratora} · projekt ${this.d.projektId} · strona ${i + 1}/${zakres.count}`, this.m, this.H - 20, { width: this.W - 2 * this.m, align: "center", lineBreak: false });
+        .text(`${NAZWA_PAKIETU[this.w.rodzaj ?? "produkcja"]} · ${this.w.firma ? this.w.firma + " · " : ""}Stolarnia Online ${this.d.wersjaGeneratora} · projekt ${this.d.projektId} · strona ${i + 1}/${zakres.count}`, this.m, this.H - 20, { width: this.W - 2 * this.m, align: "center", lineBreak: false });
     }
   }
 
@@ -141,6 +189,7 @@ class Kontekst {
   stronaTytulowa() {
     const { doc, m } = this;
     const p = this.w.projekt;
+    this.sekcja = "T";
     this.nowaStrona(
       "Dokumentacja produkcyjna",
       this.w.wydanie
@@ -172,6 +221,7 @@ class Kontekst {
       .text(gotowa ? "Pakiet gotowy do produkcji" : "Dokument roboczy — nie do produkcji", m + 10, y + 8);
     doc.font("R").fontSize(8).text(gotowa ? "Wszystkie reguły zatwierdzone, brak braków danych." : "Pakiet zawiera reguły niezatwierdzone lub brakujące dane okuć — patrz diagnostyka.", m + 10, y + 26, { width: 360 });
     doc.fillColor("#000");
+    this.legendaSchematu(m, y + 60, 380, ["T", "R", "E", "I", "S", "C"]);
 
     // Diagnostyka
     const x2 = 440;
@@ -203,6 +253,7 @@ class Kontekst {
     const p = this.w.projekt;
     const idx = new Map(this.w.zbudowane.map((z, i) => [z.modul.id, i + 1]));
     for (const pom of p.pomieszczenia) {
+      this.sekcja = "R";
       this.nowaStrona(`Rzut z góry — ${pom.nazwa}`, "Szafki dolne: linia ciągła, wiszące: przerywana. Numery = numery mebli w dokumentacji.");
       const sc = scianyNaRzucie(pom);
       const g = granice(sc, 300);
@@ -242,6 +293,7 @@ class Kontekst {
     const sc = this.w.projekt.pomieszczenia.flatMap((r) => r.sciany).find((s) => s.id === scianaId)!;
     const zb = this.w.zbudowane.filter((z) => z.modul.scianaId === scianaId);
     if (!zb.length) return;
+    this.sekcja = "E";
     this.nowaStrona(`Elewacja — ${sc.nazwa}`, "Widok od strony pomieszczenia. Wymiary w mm od lewego końca ściany i od podłogi.");
     const obszar = { x: m + 20, y: m + 60, w: this.W - 2 * m - 40, h: this.H - m - 120 };
     const n = skala(sc.dlugoscMM, sc.wysokoscMM, obszar.w / MM, obszar.h / MM, [10, 20, 25, 50]);
@@ -263,11 +315,436 @@ class Kontekst {
       wymiarPoziomy(doc, X(md.pozycjaXMM), X(md.pozycjaXMM + md.szerokoscMM), wy, String(md.szerokoscMM));
     }
     wymiarPoziomy(doc, X(0), X(sc.dlugoscMM), Y(sc.wysokoscMM) - 16, String(sc.dlugoscMM));
+    // Pakiet montażowy: wysokość spodu każdego mebla nad podłogą (zawieszenie szafek, nogi).
+    if (this.w.rodzaj === "montaz") {
+      for (const z of zb) {
+        const md = z.modul;
+        if (md.pozycjaYMM > 0) wymiarPionowy(doc, X(md.pozycjaXMM) + 8, Y(md.pozycjaYMM), Y(0), String(md.pozycjaYMM));
+      }
+    }
+  }
+
+  // ---------- Pakiet montażowy (sekcje M i K) ----------
+
+  /** Etap montażu z kategorii mebla: najpierw dolne i słupki (poziom), potem blat, wiszące, na końcu fronty i wykończenie. */
+  private etapMontazu(md: ZbudowanyModul["modul"]): { nr: number; nazwa: string } {
+    if (md.kategoria === "wall" || md.pozycjaYMM >= 1000) return { nr: 3, nazwa: "3 · wiszące" };
+    if (md.kategoria === "tall") return { nr: 1, nazwa: "1 · słupki" };
+    return { nr: 1, nazwa: "1 · dolne" };
+  }
+
+  tytulMontazu() {
+    const { doc, m } = this;
+    const p = this.w.projekt;
+    const mt = this.w.montaz ?? {};
+    this.sekcja = "T";
+    this.nowaStrona(
+      "Pakiet montażowy",
+      this.w.wydanie
+        ? `Z wydania produkcyjnego nr ${this.w.wydanie.numer} (rew. ${this.d.rewizja}) — te same numery mebli i wymiary co w pakiecie produkcyjnym.`
+        : `Z bieżącej rewizji ${this.d.rewizja} — do montażu drukuj z wydania produkcyjnego.`,
+    );
+    let y = m + 50;
+    doc.font("B").fontSize(20).fillColor("#000").text(p.nazwa, m, y, { width: 420 });
+    y = doc.y + 12;
+    const wiersze: [string, string][] = [
+      ["Termin montażu", mt.termin || "— (nie ustalono)"],
+      ["Adres montażu", mt.adres || "— (brak w projekcie)"],
+      ["Kontakt na miejscu", mt.kontakt || "—"],
+      ["Mebli do zamontowania", String(this.w.zbudowane.length)],
+      ["Ściany z meblami", String(new Set(this.w.zbudowane.map((z) => z.modul.scianaId)).size)],
+    ];
+    for (const [k, v] of wiersze) {
+      doc.font("R").fontSize(10).fillColor("#555").text(k, m, y, { width: 160 });
+      doc.font("B").fillColor("#000").text(v, m + 170, y, { width: 260 });
+      y = Math.max(doc.y, y + 15) + 2;
+    }
+    doc.font("R").fontSize(7.5).fillColor("#8a5a00").text("Dane kontaktowe klienta służą tylko do realizacji montażu. Nie zostawiaj wydruku u osób trzecich; po odbiorze zwróć go do biura.", m, y + 4, { width: 420 });
+    y = doc.y + 12;
+    const gotowa = this.d.gotowaDoProdukcji;
+    doc.rect(m, y, 420, 34).fillColor(gotowa ? "#e7f3ea" : "#fbe9e7").fill();
+    doc.fillColor(gotowa ? KOLOR_STATUSU.gotowa : KOLOR_STATUSU.brakDanych).font("B").fontSize(11)
+      .text(gotowa ? "Dokumentacja kompletna" : "Dokumentacja robocza — sprawdź braki przed wyjazdem", m + 10, y + 6, { width: 400 });
+    doc.font("R").fontSize(7.5).text(gotowa ? "Wszystkie części mają zatwierdzone reguły." : `Części z brakiem danych: ${this.d.podsumowanie.brakDanych}, robocze: ${this.d.podsumowanie.robocza}. Szczegóły w pakiecie produkcyjnym (T-01).`, m + 10, y + 21, { width: 400 });
+    doc.fillColor("#000");
+
+    // Przed wyjazdem — lista kontrolna
+    const x2 = 480;
+    let y2 = m + 50;
+    doc.font("B").fontSize(11).text("Przed wyjazdem", x2, y2);
+    y2 += 16;
+    for (const t of [
+      "Wszystkie korpusy i fronty spakowane, oznaczone numerem mebla",
+      "Okucia z listy M (zawiasy, prowadnice, nogi, zawieszki) skompletowane",
+      "Blaty, listwy, cokoły i panele wykończeniowe na liście załadunku",
+      "Wkręty, kołki, silikon, poziomica, dalmierz, wkrętarka, piła",
+      "Ten wydruk z aktualnego wydania (numer w prawym górnym rogu)",
+    ]) {
+      doc.lineWidth(0.6).rect(x2, y2 + 1, 7, 7).stroke();
+      doc.font("R").fontSize(8.5).text(t, x2 + 12, y2, { width: this.W - m - x2 - 12 });
+      y2 = doc.y + 4;
+    }
+    this.legendaSchematu(x2, y2 + 14, this.W - m - x2, ["T", "R", "E", "M", "Z", "K"]);
+  }
+
+  /** Spis sekcji schematu — ten sam na stronach tytułowych obu pakietów. */
+  private legendaSchematu(x: number, y: number, w: number, kody: SekcjaDokumentu[]) {
+    const { doc } = this;
+    doc.font("B").fontSize(9).fillColor("#000").text("Schemat dokumentu", x, y);
+    y += 13;
+    for (const k of kody) {
+      doc.font("M").fontSize(8).text(`${k}-nn`, x, y, { width: 36 });
+      doc.font("R").fontSize(8).fillColor("#333").text(`${SCHEMAT_SEKCJI[k].nazwa} (${SCHEMAT_SEKCJI[k].dla})`, x + 38, y, { width: w - 38 });
+      doc.fillColor("#000");
+      y = doc.y + 2;
+    }
+  }
+
+  kolejnoscMontazu() {
+    const { doc, m } = this;
+    const idx = new Map(this.w.zbudowane.map((z, i) => [z.modul.id, i + 1]));
+    const sciany = this.w.projekt.pomieszczenia.flatMap((r) => r.sciany.map((s) => ({ s, pom: r.nazwa })));
+    for (const { s: sc, pom } of sciany) {
+      const zb = this.w.zbudowane
+        .filter((z) => z.modul.scianaId === sc.id)
+        .sort((a, b) => this.etapMontazu(a.modul).nr - this.etapMontazu(b.modul).nr || a.modul.pozycjaXMM - b.modul.pozycjaXMM);
+      if (!zb.length) continue;
+      this.sekcja = "M";
+      const kol = [
+        { t: "Lp.", w: 28 },
+        { t: "Nr", w: 28 },
+        { t: "Mebel", w: 170 },
+        { t: "Etap", w: 70 },
+        { t: "Od lewej", w: 60 },
+        { t: "Spód nad podł.", w: 70 },
+        { t: "Szer × wys × gł", w: 105 },
+        { t: "Okucia i uwagi", w: 205 },
+        { t: "Zrobione", w: 50 },
+      ];
+      const blat = zb.some((z) => z.elementy.some((e) => e.rola === "worktop"));
+      const y = this.tabela(
+        `Kolejność montażu — ${sc.nazwa}`,
+        `${pom} · ściana ${sc.dlugoscMM} mm · wymiary od lewego końca ściany (patrz elewacja E). Jeśli narożnik jest po prawej, poziomuj od narożnika i idź w lewo.`,
+        kol,
+        zb.map((z, i) => [
+          String(i + 1),
+          String(idx.get(z.modul.id)),
+          z.modul.nazwa,
+          this.etapMontazu(z.modul).nazwa,
+          String(z.modul.pozycjaXMM),
+          String(z.modul.pozycjaYMM),
+          `${z.modul.szerokoscMM} × ${z.modul.wysokoscMM} × ${z.modul.glebokoscMM}`,
+          [...z.okucia.map((o) => `${o.typ} ×${o.ilosc}`), ...z.ostrzezenia.map((o) => `! ${o}`)].join("; ") || "—",
+          "☐",
+        ]),
+        undefined,
+        undefined,
+        9,
+      );
+      let yy = y + 10;
+      if (yy > this.H - 110) {
+        this.nowaStrona(`Kolejność montażu — ${sc.nazwa} (cd.)`);
+        yy = m + 50;
+      }
+      doc.font("B").fontSize(9).fillColor("#000").text("Etapy na tej ścianie", m, yy);
+      yy += 13;
+      for (const t of [
+        "1 · Dolne i słupki: wypoziomuj nogi od najwyższego punktu podłogi, skręć korpusy ze sobą, sprawdź pion słupków.",
+        blat ? "2 · Blat: przytnij i dopasuj do ścian, uszczelnij styki i wycięcia (zlew, płyta)." : "2 · Blat: brak blatu w tym projekcie na tej ścianie.",
+        "3 · Wiszące: wyznacz linię spodu (kolumna „Spód nad podł.”), zamontuj listwę/zawieszki, wypoziomuj i skręć korpusy.",
+        "4 · Fronty: zawieś, wyreguluj szczeliny (pion, poziom, głębokość), sprawdź domyk drzwi i szuflad.",
+        "5 · Wykończenie: cokoły, listwy, panele, AGD, silikon; posprzątaj i przejdź protokół K.",
+      ]) {
+        doc.font("R").fontSize(8).text(t, m, yy, { width: this.W - 2 * m });
+        yy = doc.y + 3;
+      }
+    }
+  }
+
+  /**
+   * Karta złożenia szafki (Z): rysunek rozstrzelony korpusu z etykietami formatek i kroki złożenia
+   * wyprowadzone z tej samej konstrukcji — połączenia i liczba konfirmatów, plecy, przekątna kontrolna,
+   * podpórki, osie prowadnic, zawiasy, okucia. Bez cen. Czego nie ma w konstrukcji — pisze wprost.
+   */
+  zlozenie(zm: ZbudowanyModul) {
+    const { doc, m } = this;
+    const md = zm.modul;
+    const nr = this.w.zbudowane.indexOf(zm) + 1;
+    const czesci = this.d.czesci.filter((c) => c.modulId === md.id);
+    const poKodzie = new Map(czesci.map((c) => [c.kodElementu, c]));
+    const ety = (kod: string) => poKodzie.get(kod)?.etykieta ?? kod;
+    this.sekcja = "Z";
+    this.nowaStrona(
+      `Złożenie szafki ${nr}: ${md.nazwa}`,
+      `Korpus ${md.szerokoscMM} × ${md.wysokoscMM} × ${md.glebokoscMM} mm · etykiety jak na naklejkach i w pakiecie P · odhaczaj ☐ po każdym kroku`,
+    );
+    doc.page.margins.bottom = 0;
+    const W = this.W;
+    const H = this.H;
+    const top = m + 44;
+    const lewaW = 400;
+
+    // --- Rysunek rozstrzelony (rzut ukośny: głębokość w górę w prawo) ---
+    const KORPUS = new Set(["side", "top", "bottom", "shelf", "fixedShelf", "divider", "back", "reinforcement", "rail", "plinth"]);
+    const el = zm.elementy.filter((e) => KORPUS.has(e.rola));
+    const E = Math.max(70, Math.min(md.szerokoscMM, md.wysokoscMM) * 0.18); // odsunięcie rozstrzelenia [mm]
+    const przes = (e: (typeof el)[number]) => {
+      const lewy = e.x + e.szer / 2 < md.szerokoscMM / 2;
+      switch (e.rola) {
+        case "side": return { dx: lewy ? -E : E, dy: 0, dz: 0 };
+        case "top": return { dx: 0, dy: E, dz: 0 };
+        case "bottom": return { dx: 0, dy: -E * 0.7, dz: 0 };
+        case "plinth": return { dx: 0, dy: -E * 1.4, dz: -E * 0.5 };
+        case "back": return { dx: 0, dy: 0, dz: E * 1.6 };
+        case "shelf": return { dx: 0, dy: 0, dz: -E * 1.2 };
+        default: return { dx: 0, dy: 0, dz: -E * 0.5 };
+      }
+    };
+    const kz = 0.45; // skrót głębokości
+    const cs = Math.cos(Math.PI / 6) * kz;
+    const sn = Math.sin(Math.PI / 6) * kz;
+    const pts = el.flatMap((e) => {
+      const o = przes(e);
+      return [
+        [e.x + o.dx, e.y + o.dy, e.z + o.dz],
+        [e.x + e.szer + o.dx, e.y + e.wys + o.dy, e.z + e.gl + o.dz],
+      ];
+    });
+    const rzX = (x: number, z: number) => x + z * cs;
+    const rzY = (y: number, z: number) => y + z * sn;
+    const minX = Math.min(...pts.map(([x, , z]) => rzX(x, Math.min(z, 0))), 0);
+    const maxX = Math.max(...pts.map(([x, , z]) => rzX(x, z)), 1);
+    const minY = Math.min(...pts.map(([, y, z]) => rzY(y, Math.min(z, 0))), 0);
+    const maxY = Math.max(...pts.map(([, y, z]) => rzY(y, z)), 1);
+    const obszarH = H - top - 150;
+    const s = Math.min((lewaW - 20) / (maxX - minX), obszarH / (maxY - minY));
+    const ox = m + 10 - minX * s;
+    const oy = top + 14 + maxY * s;
+    const P = (x: number, y: number, z: number): [number, number] => [ox + rzX(x, z) * s, oy - rzY(y, z) * s];
+    doc.font("B").fontSize(7.5).fillColor("#000").text("Rysunek rozstrzelony korpusu (fronty, szuflady i blat — osobne kroki)", m, top);
+    // Malarz: najpierw dalsze (większe z), niższe i bardziej z lewej.
+    const kolej = [...el].sort((a, b) => {
+      const g = (e: (typeof el)[number]) => { const o = przes(e); return (e.z + o.dz + e.gl / 2) - (e.y + o.dy + e.wys / 2) * 0.3 - (e.x + o.dx + e.szer / 2) * 0.3; };
+      return g(b) - g(a);
+    });
+    const etykiety: { x: number; y: number; t: string }[] = [];
+    for (const e of kolej) {
+      const o = przes(e);
+      const x0 = e.x + o.dx, y0 = e.y + o.dy, z0 = e.z + o.dz;
+      const x1 = x0 + e.szer, y1 = y0 + e.wys, z1 = z0 + e.gl;
+      const kolor = e.rola === "back" ? "#e9e4dc" : e.rola === "plinth" ? "#d9d9d9" : "#ffffff";
+      const sciana = (q: [number, number][]) => {
+        doc.moveTo(...q[0]);
+        for (const p of q.slice(1)) doc.lineTo(...p);
+        doc.closePath().lineWidth(0.5).fillColor(kolor).strokeColor("#000").fillAndStroke();
+      };
+      sciana([P(x0, y0, z0), P(x1, y0, z0), P(x1, y1, z0), P(x0, y1, z0)]); // przód
+      sciana([P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)]); // góra
+      sciana([P(x1, y0, z0), P(x1, y0, z1), P(x1, y1, z1), P(x1, y1, z0)]); // prawy bok
+      const [lx, ly] = P(x0 + e.szer / 2, y0 + e.wys / 2, z0 + (e.rola === "back" ? 0 : e.gl / 2));
+      etykiety.push({ x: lx, y: ly, t: ety(e.kod) });
+    }
+    for (const l of etykiety) {
+      doc.font("B").fontSize(6.5);
+      const tw = doc.widthOfString(l.t) + 4;
+      doc.rect(l.x - tw / 2, l.y - 5, tw, 10).fillColor("#fff").strokeColor("#c25400").lineWidth(0.5).fillAndStroke();
+      doc.fillColor("#c25400").text(l.t, l.x - tw / 2 + 2, l.y - 3.5, { lineBreak: false });
+    }
+    doc.fillColor("#000");
+
+    // Tabela formatek pod rysunkiem
+    let yL = H - 132;
+    doc.font("B").fontSize(7.5).text("Formatki tej szafki", m, yL);
+    yL += 10;
+    const listy = czesci.map((c) => `${c.etykieta} ${c.kodElementu} ${f(c.dlugoscMM)}×${f(c.szerokoscMM)}×${f(c.gruboscMM)}`);
+    const kolF = 3;
+    const kw = lewaW / kolF;
+    const maxWierszy = Math.max(1, Math.floor((H - 36 - yL) / 9));
+    const miesci = listy.length <= maxWierszy * kolF ? listy.length : (maxWierszy - 1) * kolF;
+    doc.font("R").fontSize(6.5);
+    listy.slice(0, miesci).forEach((t, i) => {
+      let tt = t;
+      while (doc.widthOfString(tt) > kw - 6 && tt.length > 4) tt = tt.slice(0, -2);
+      doc.text(tt === t ? t : tt + "…", m + (i % kolF) * kw, yL + Math.floor(i / kolF) * 9, { lineBreak: false });
+    });
+    if (miesci < listy.length) doc.fillColor("#b3261e").text(`… i ${listy.length - miesci} kolejnych formatek — pełna lista na karcie S tej szafki w pakiecie P`, m, yL + (maxWierszy - 1) * 9, { lineBreak: false });
+    doc.fillColor("#000");
+
+    // --- Kroki złożenia (prawa kolumna) ---
+    const xK = m + lewaW + 20;
+    const wK = W - m - xK;
+    let y = top;
+    let nrK = 0;
+    const krok = (_: number, tytul: string, linie: string[], brak = false) => {
+      if (y > H - 50) return;
+      nrK += 1;
+      doc.lineWidth(0.6).strokeColor("#000").rect(xK, y + 1, 8, 8).stroke();
+      doc.font("B").fontSize(8.5).fillColor(brak ? "#b3261e" : "#000").text(`${nrK}. ${tytul}`, xK + 13, y, { width: wK - 13 });
+      y = doc.y + 1;
+      for (const t of linie) {
+        if (y > H - 40) break;
+        doc.font("R").fontSize(7.5).fillColor(t.startsWith("!") ? "#b3261e" : "#222").text(t, xK + 13, y, { width: wK - 13 });
+        y = doc.y + 1;
+      }
+      y += 5;
+    };
+    const ops = czesci.flatMap((c) => c.operacje);
+    // 1. Przygotowanie
+    const korpusowe = czesci.filter((c) => KORPUS.has(c.rola));
+    krok(1, "Przygotuj formatki korpusu", [
+      `${korpusowe.map((c) => c.etykieta).join(", ") || "—"} — sprawdź etykiety, wymiary i obrzeża z listy obok; lico A (od wnętrza) do środka.`,
+    ]);
+    // 2. Skręcenie korpusu: połączenia i konfirmaty
+    const polaczenia = new Map<string, number>();
+    for (const o of ops) if (o.przeznaczenie === "Konfirmat — przelot w licu") polaczenia.set(o.polaczenie ?? "?", (polaczenia.get(o.polaczenie ?? "?") ?? 0) + 1);
+    const sumaK = [...polaczenia.values()].reduce((a, b) => a + b, 0);
+    krok(2, `Skręć korpus — konfirmaty: ${sumaK}`, polaczenia.size
+      ? [...[...polaczenia].map(([p, n]) => `${p}: ×${n}`), "Skręcaj na płaskim stole, bok leży licem B do dołu; dokręcaj bez przeciągania gwintu."]
+      : ["! Brak operacji konfirmatów w konstrukcji — sposób łączenia do ustalenia z produkcją."], !polaczenia.size);
+    // 3. Plecy
+    const plecy = czesci.filter((c) => c.rola === "back");
+    const rowek = ops.some((o) => o.typ === "rowek" && o.przeznaczenie.startsWith("Rowek pod plecy"));
+    krok(3, "Plecy", plecy.length
+      ? rowek
+        ? [`${plecy.map((c) => c.etykieta).join(", ")} wsuń w rowek przed dokręceniem ostatniego wieńca.`]
+        : [`${plecy.map((c) => c.etykieta).join(", ")} nakładane na korpus.`, "! Sposób i rozstaw mocowania pleców nie są zapisane w konstrukcji — wg zasad warsztatu."]
+      : ["Szafka bez pleców w konstrukcji."]);
+    // 4. Kontrola prostokątności
+    const przek = Math.round(Math.hypot(md.szerokoscMM, md.wysokoscMM));
+    krok(4, "Sprawdź prostokątność", [`Obie przekątne korpusu od frontu równe, nominalnie ${przek} mm (z wymiarów ${md.szerokoscMM} × ${md.wysokoscMM}); dopuszczalna różnica przekątnych ${TOLERANCJA_PRZEKATNYCH_MM} mm. Koryguj przed dobiciem pleców.`]);
+    // 5. Półki
+    const podporki = ops.filter((o) => o.przeznaczenie === "Podpórka półki").length;
+    const polki = czesci.filter((c) => c.rola === "shelf");
+    if (polki.length || podporki) krok(5, "Półki", [`${polki.map((c) => c.etykieta).join(", ") || "—"}: podpórek ${podporki} (po jednej w każdym otworze).`]);
+    // 6. Prowadnice
+    const pr = this.d.prowadnice.filter((q) => q.modulId === md.id);
+    if (pr.length) krok(6, `Prowadnice szuflad — ${pr[0].system} NL ${pr[0].NL}`, [
+      ...pr.map((q) => `${q.szuflada}${q.wewnetrzna ? " (wewn.)" : ""}: oś wkrętów ${f(q.osOdDoluBokuMM)} mm od dołu boku${q.otworyOdFrontuMM ? `, otwory od frontu ${q.otworyOdFrontuMM.join("/")}` : ", otwory wg szablonu producenta"}`),
+    ]);
+    else if (zm.okucia.some((o) => o.typ === "prowadnica" || o.typ === "systemSzuflad")) krok(6, "Prowadnice szuflad", [
+      ...zm.okucia.filter((o) => o.typ === "prowadnica" || o.typ === "systemSzuflad").map((o) => `${o.typ} ×${o.ilosc} — ${o.opis}`),
+      "! Wysokości montażu prowadnic nie są wyliczone (brak zatwierdzonego profilu systemu) — nie wierć na oko, zapytaj produkcję.",
+    ], true);
+    // 7. Zawiasy
+    const prowadniki = ops.filter((o) => o.przeznaczenie === "Prowadnik zawiasu").length;
+    const puszki = ops.filter((o) => o.przeznaczenie === "Puszka zawiasu").length;
+    const drzwi = zm.elementy.filter((e) => e.rola === "front" && e.stronaZawiasow);
+    if (puszki || prowadniki) krok(7, `Zawiasy — ${puszki} szt.`, [
+      `Prowadniki na boku: otworów ${prowadniki}; puszki we frontach: ${puszki}.`,
+      ...(drzwi.length ? [`Strona zawiasów: ${drzwi.map((e) => `${ety(e.kod)} ${e.stronaZawiasow}`).join(", ")}.`] : []),
+    ]);
+    // 8. Okucia i mocowanie
+    const ok = zm.okucia.filter((o) => o.typ !== "zawias" && o.typ !== "prowadnica");
+    krok(8, "Okucia, nogi, zawieszki", [
+      ...(ok.length ? ok.map((o) => `${o.typ} ×${o.ilosc} — ${o.opis}`) : ["—"]),
+      ...(md.kategoria === "wall" || md.pozycjaYMM >= 1000 ? ["! Zawieszki/listwa do ściany nie są w konstrukcji — dobierz do ściany i obciążenia."] : []),
+    ]);
+    // 9. Fronty i szuflady
+    const fronty = czesci.filter((c) => c.rola === "front");
+    const szuflady = czesci.filter((c) => c.rola.startsWith("drawer"));
+    krok(9, "Fronty i szuflady (po ustawieniu na miejscu)", [
+      `${fronty.length ? `Fronty: ${fronty.map((c) => c.etykieta).join(", ")}.` : "Bez frontów."}${szuflady.length ? ` Elementy szuflad: ${szuflady.length} szt.` : ""}`,
+      "Wyreguluj szczeliny (pion, poziom, głębokość) i sprawdź domyk — wynik wpisz w protokole K.",
+    ]);
+    // Braki i ostrzeżenia
+    const braki = [
+      ...zm.ostrzezenia,
+      ...new Set(this.d.diagnostyka.filter((dg) => dg.obiekty.some((id) => czesci.some((c) => c.id === id))).map((dg) => `[${dg.poziom}] ${dg.opis.replace(`${md.nazwa}: `, "")}`)),
+    ];
+    if (braki.length && y < H - 50) {
+      doc.font("B").fontSize(7.5).fillColor("#b3261e").text("Uwagi z konstrukcji", xK, y);
+      doc.font("R").fontSize(6.8).text(braki.join("\n"), xK, doc.y + 1, { width: wK, height: H - 34 - doc.y, ellipsis: true });
+    }
+    doc.fillColor("#000");
+  }
+
+
+  okuciaMontazu() {
+    const sumy = new Map<string, { typ: string; opis: string; ilosc: number; meble: Set<number> }>();
+    this.w.zbudowane.forEach((z, i) => {
+      for (const o of z.okucia) {
+        const k = `${o.typ}|${o.profilID ?? ""}|${o.opis}`;
+        const s = sumy.get(k) ?? { typ: o.typ, opis: o.opis + (o.profilID ? ` [${o.profilID}]` : ""), ilosc: 0, meble: new Set<number>() };
+        s.ilosc += o.ilosc;
+        s.meble.add(i + 1);
+        sumy.set(k, s);
+      }
+    });
+    this.sekcja = "M";
+    const wiersze = [...sumy.values()].sort((a, b) => a.typ.localeCompare(b.typ, "pl")).map((s) => [s.typ, s.opis, String(s.ilosc), [...s.meble].join(", "), "☐"]);
+    this.tabela(
+      "Okucia do zabrania na montaż",
+      "Suma z wszystkich mebli tego wydania. Ilości z konstrukcji — nie obejmują zapasu ani elementów mocujących do ściany.",
+      [{ t: "Typ", w: 90 }, { t: "Opis / profil", w: 420 }, { t: "Ilość", w: 50 }, { t: "Meble (nr)", w: 180 }, { t: "Spak.", w: 40 }],
+      wiersze.length ? wiersze : [["—", "Brak okuć w konstrukcji", "", "", ""]],
+      undefined,
+      undefined,
+      9,
+    );
+  }
+
+  protokolOdbioru() {
+    const { doc, m } = this;
+    this.sekcja = "K";
+    const kol = [
+      { t: "Nr", w: 28 },
+      { t: "Mebel", w: 200 },
+      { t: "Poziom/pion", w: 70 },
+      { t: "Szczeliny frontów", w: 80 },
+      { t: "Domyk drzwi/szuflad", w: 90 },
+      { t: "Blat/uszczelnienie", w: 85 },
+      { t: "Cokół/listwy", w: 70 },
+      { t: "Czysto, bez uszkodzeń", w: 90 },
+    ];
+    const y = this.tabela(
+      "Protokół odbioru montażu",
+      "Zaznacz ☑ gdy w porządku, ✗ gdy jest uwaga — każdą uwagę wpisz niżej jako osobną pozycję.",
+      kol,
+      this.w.zbudowane.map((z, i) => [String(i + 1), z.modul.nazwa, "☐", "☐", "☐", "☐", "☐", "☐"]),
+      undefined,
+      undefined,
+      9,
+    );
+    let yy = y + 12;
+    if (yy > this.H - 220) {
+      this.nowaStrona("Protokół odbioru montażu — uwagi i podpisy");
+      yy = m + 50;
+    }
+    doc.font("B").fontSize(9).fillColor("#000").text("Uwagi i usterki (jedna pozycja = jeden problem)", m, yy);
+    yy += 13;
+    const kolU = [28, 60, 380, 130, 100, 88];
+    const nagl = ["Lp.", "Mebel nr", "Opis problemu i miejsce", "Kto usuwa", "Termin", "Zamknięte"];
+    let x = m;
+    doc.lineWidth(0.5).strokeColor("#000");
+    nagl.forEach((t, i) => {
+      doc.rect(x, yy, kolU[i], 14).stroke();
+      doc.font("B").fontSize(7.5).text(t, x + 3, yy + 3, { width: kolU[i] - 6, lineBreak: false });
+      x += kolU[i];
+    });
+    yy += 14;
+    for (let r = 1; r <= 6; r++) {
+      x = m;
+      kolU.forEach((wd, i) => {
+        doc.rect(x, yy, wd, 18).stroke();
+        if (i === 0) doc.font("R").fontSize(7.5).text(String(r), x + 3, yy + 5);
+        x += wd;
+      });
+      yy += 18;
+    }
+    yy += 14;
+    doc.font("R").fontSize(8).text(`Wydanie: ${this.w.wydanie ? `nr ${this.w.wydanie.numer}, ` : ""}rew. ${this.d.rewizja}. Data odbioru: ____________`, m, yy);
+    yy += 30;
+    const pol = (this.W - 2 * m - 40) / 2;
+    doc.lineWidth(0.5).moveTo(m, yy).lineTo(m + pol, yy).stroke().moveTo(m + pol + 40, yy).lineTo(this.W - m, yy).stroke();
+    doc.font("R").fontSize(7.5).text("Montażysta (imię, podpis)", m, yy + 3).text("Klient (podpis)", m + pol + 40, yy + 3);
+    doc.font("R").fontSize(7).fillColor("#555").text("Odbiór nie oznacza rezygnacji z roszczeń dotyczących wad i nie ogranicza ustawowych praw klienta.", m, yy + 18, { width: this.W - 2 * m });
+    doc.fillColor("#000");
   }
 
   // ---------- Indeks ----------
 
   indeks() {
+    this.sekcja = "I";
     const kol = [
       { t: "Etykieta", w: 70 },
       { t: "Mebel", w: 150 },
@@ -291,23 +768,25 @@ class Kontekst {
     this.tabela("Indeks części", this.w.skrocony ? "Wydruk skrócony: karty zbiorcze szafek, bez osobnych rysunków części." : "Każda wykonywana część ma własny rysunek w dalszej części pakietu.", kol, wiersze, (i) => KOLOR_STATUSU[this.d.czesci[i].status]);
   }
 
-  private tabela(tytul: string, podtytul: string, kol: { t: string; w: number }[], wiersze: string[][], kolorOstatniej?: (i: number) => string, y0?: number) {
+  private tabela(tytul: string, podtytul: string, kol: { t: string; w: number }[], wiersze: string[][], kolorOstatniej?: (i: number) => string, y0?: number, pt = 7) {
     const { doc, m } = this;
     let y = y0 ?? m + 50;
     if (y0 === undefined) this.nowaStrona(tytul, podtytul);
     const naglowek = () => {
       let x = m;
-      doc.font("B").fontSize(7).fillColor("#000");
+      doc.font("B").fontSize(pt).fillColor("#000");
+      // Wysokość nagłówka z najdłuższego (zawiniętego) tytułu kolumny — bez nachodzenia na linię.
+      const hN = Math.max(...kol.map((k) => doc.heightOfString(k.t, { width: k.w - 4 })));
       for (const k of kol) {
         doc.text(k.t, x + 2, y, { width: k.w - 4 });
         x += k.w;
       }
-      y += 11;
+      y += hN + 4;
       doc.lineWidth(0.5).strokeColor("#000").moveTo(m, y - 2).lineTo(m + kol.reduce((a, k) => a + k.w, 0), y - 2).stroke();
     };
     naglowek();
     wiersze.forEach((w, i) => {
-      const h = Math.max(...w.map((t, j) => doc.font("R").fontSize(7).heightOfString(t, { width: kol[j].w - 4 }))) + 3;
+      const h = Math.max(...w.map((t, j) => doc.font("R").fontSize(pt).heightOfString(t, { width: kol[j].w - 4 }))) + 3;
       if (y + h > this.H - 34) {
         this.nowaStrona(`${tytul} (cd.)`);
         y = m + 50;
@@ -316,7 +795,7 @@ class Kontekst {
       let x = m;
       w.forEach((t, j) => {
         const ost = j === w.length - 1 && kolorOstatniej;
-        doc.font(ost ? "B" : "R").fontSize(7).fillColor(ost ? kolorOstatniej(i) : "#000").text(t, x + 2, y, { width: kol[j].w - 4 });
+        doc.font(ost ? "B" : "R").fontSize(pt).fillColor(ost ? kolorOstatniej(i) : "#000").text(t, x + 2, y, { width: kol[j].w - 4 });
         x += kol[j].w;
       });
       y += h;
@@ -329,6 +808,7 @@ class Kontekst {
   // ---------- Mebel ----------
 
   mebel(zm: ZbudowanyModul) {
+    this.sekcja = "S";
     const { doc, m } = this;
     const md = zm.modul;
     const nr = this.w.zbudowane.indexOf(zm) + 1;
@@ -394,6 +874,7 @@ class Kontekst {
   // ---------- Zbiorcza karta szafki (A4, tabela może mieć kontynuację) ----------
 
   szafka(zm: ZbudowanyModul) {
+    this.sekcja = "S";
     const { doc, m } = this;
     const md = zm.modul;
     const nr = this.w.zbudowane.indexOf(zm) + 1;
@@ -672,6 +1153,7 @@ class Kontekst {
   // ---------- Część ----------
 
   czesc(c: Czesc) {
+    this.sekcja = "C";
     const { doc, m } = this;
     this.nowaStrona(
       `${c.etykieta} — ${c.kodElementu} (${c.nazwaModulu})`,

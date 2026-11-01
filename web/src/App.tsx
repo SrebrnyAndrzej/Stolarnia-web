@@ -8,6 +8,7 @@ import { Production } from "./views/Production";
 import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
+import { Warsztat } from "./views/Warsztat";
 import { nazwaStatusu, Temat } from "./views/Temat";
 
 type Zakladka = "temat" | "projekt" | "wycena" | "oferta" | "produkcja" | "umowy";
@@ -16,6 +17,7 @@ type Trasa =
   | { widok: "projekty" }
   | { widok: "projekt"; id: string; zakladka: Zakladka }
   | { widok: "materialy" }
+  | { widok: "warsztat" }
   | { widok: "ustawienia" };
 
 function czytajTrase(): Trasa {
@@ -25,6 +27,7 @@ function czytajTrase(): Trasa {
     return { widok: "projekt", id: cz[1], zakladka: z };
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
+  if (cz[0] === "warsztat") return { widok: "warsztat" };
   if (cz[0] === "ustawienia") return { widok: "ustawienia" };
   return { widok: "projekty" };
 }
@@ -45,6 +48,7 @@ export function App() {
         </div>
         <nav className="nav">
           <button className={trasa.widok === "projekty" || trasa.widok === "projekt" ? "on" : ""} onClick={() => idz("#/")}>Projekty</button>
+          <button className={trasa.widok === "warsztat" ? "on" : ""} onClick={() => idz("#/warsztat")}>Warsztat</button>
           <button className={trasa.widok === "materialy" ? "on" : ""} onClick={() => idz("#/materialy")}>Materiały i okucia</button>
           <button className={trasa.widok === "ustawienia" ? "on" : ""} onClick={() => idz("#/ustawienia")}>Ustawienia</button>
         </nav>
@@ -52,6 +56,7 @@ export function App() {
       <main className="main">
         {trasa.widok === "projekty" && <Projects />}
         {trasa.widok === "projekt" && <ProjektWidok id={trasa.id} zakladka={trasa.zakladka} />}
+        {trasa.widok === "warsztat" && <Warsztat />}
         {trasa.widok === "materialy" && <Materials />}
         {trasa.widok === "ustawienia" && <Settings />}
       </main>

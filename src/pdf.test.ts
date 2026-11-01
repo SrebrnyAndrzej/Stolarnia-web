@@ -50,3 +50,22 @@ test("PDF: cztery krawędzie dostają osobny rysunek, długie uwagi kontynuację
   c.uwagi = Array.from({ length: 100 }, (_, i) => `Uwaga ${i + 1}: zachowaj wszystkie informacje o obróbce oraz montażu.`);
   assert.ok(strony(await dokumentacjaPdf(wejscie)) > zKrawedziami, "uwagi nie są obcinane do ostatniej strony tabeli");
 });
+
+test("Pakiet montażowy: ten sam schemat stron (T, R, E, M, Z, K), z wydania i z bieżącej rewizji", async () => {
+  const { s, p } = projekt();
+  s.zmienProjekt(p.id, { klient: { nazwa: "Test", telefon: "500000000", email: "", adres: "ul. Testowa 1" }, terminMontazu: "2026-12-01" });
+  const biezacy = await s.montazPdf(p.id);
+  assert.ok(strony(biezacy.pdf) >= 5 + s.analiza(p.id).zbudowane.length, "tytuł, rzut, elewacja, kolejność, karta złożenia Z każdej szafki, okucia, protokół");
+  const w = s.utworzWydanie(p.id);
+  const zWydania = await s.montazPdf(p.id, w.id);
+  assert.equal(zWydania.numer, w.numer);
+  assert.equal(strony(zWydania.pdf), strony(biezacy.pdf));
+  // Produkcyjny bez zmian liczby stron względem trybu domyślnego
+  assert.equal(strony(await s.dokumentacjaPdf(p.id)), strony(await dokumentacjaPdf({ ...wejscieZ(s, p.id) })));
+});
+
+function wejscieZ(s: Stolarnia, id: string) {
+  const a = s.analiza(id);
+  const d = s.dokumentacja(id);
+  return { projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined };
+}
