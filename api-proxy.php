@@ -20,7 +20,7 @@ foreach (['CONTENT_TYPE'=>'Content-Type','HTTP_ORIGIN'=>'Origin','HTTP_COOKIE'=>
     $value = $_SERVER[$key] ?? '';
     if ($value !== '' && !preg_match('/[\r\n]/', $value)) $headers[] = $name . ': ' . $value;
 }
-$handle = curl_init('https://api.panstolarz.pro' . $uri);
+$handle = curl_init('https://backend.panstolarz.pro' . $uri);
 $responseHeaders = [];
 curl_setopt_array($handle, [
     CURLOPT_CUSTOMREQUEST=>$method, CURLOPT_HTTPHEADER=>$headers,
@@ -45,6 +45,8 @@ $failed = $result === false;
 curl_close($handle);
 // Never redirect to deployment login, relay cookies on redirects or cache private data.
 if ($failed || $status < 200 || ($status >= 300 && $status < 400)) failResponse(503, 'API jest chwilowo niedostępne. Spróbuj ponownie później.');
+$decoded = json_decode((string)$result, true);
+if (is_array($decoded) && isset($decoded['protection']['vercel_auth_enabled'])) failResponse(503, 'Połączenie z API wymaga konfiguracji po stronie serwera.');
 http_response_code($status);
 header('Cache-Control: private, no-store');
 header('X-Content-Type-Options: nosniff');
