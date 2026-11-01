@@ -156,6 +156,12 @@ app.get("/api/cad/konwerter", api(() => ({ dwg: konwerterDwg() })));
 app.put("/api/projekty/:id/stan", api((r) => s.przywrocStan(p(r, "id"), r.body)));
 app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.scianaId, r.body.xMM, r.body.szerokoscMM, !!r.body.wiszacy)));
 app.post("/api/projekty/:id/moduly", api((r) => s.dodajModul(p(r, "id"), r.body)));
+// Szybki projekt (docs/SZYBKI-PROJEKT.md): wypełnij całą ścianę, układ I/L/U, pakiet stylu, okucia projektu
+app.post("/api/projekty/:id/sciany/:sid/wypelnij", api((r) => s.wypelnijCalaSciane(p(r, "id"), p(r, "sid"), r.body ?? {})));
+app.post("/api/projekty/:id/szybki-uklad", api((r) => s.szybkiUklad(p(r, "id"), r.body ?? {})));
+app.post("/api/projekty/:id/styl", api((r) => s.ustawStyl(p(r, "id"), r.body ?? {})));
+app.get("/api/okucia-projektu/opcje", api(() => s.opcjeOkuc()));
+app.put("/api/projekty/:id/okucia", api((r) => s.ustawOkucia(p(r, "id"), r.body?.okucia === undefined ? r.body : r.body.okucia)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
 // Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
 app.get("/api/systemy-szuflad", api(() => PROFILE_SZUFLAD.map((p) => ({ id: p.id, producent: p.manufacturer, system: p.family, grubosc: p.board_thickness_mm, warianty: Object.entries(p.back.height_by_variant_mm).map(([wariant, plecyWys]) => ({ wariant, plecyWys })) }))));

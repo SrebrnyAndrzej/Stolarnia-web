@@ -32,6 +32,7 @@ Projekt (pomieszczenia → ściany → moduły) → `silnik` / `builder` buduje 
 ## Gdzie szukać, gdy…
 - konstrukcja szafki / szuflady / przegrody → `src/core/silnik/budowa.ts`, `builder.ts`, `catalog/drawers.ts`
 - operacje, wiercenia, technologia → `src/core/technologia.ts`
+- szybki projekt (wypełnij ścianę, układ I/L/U, pakiet stylu, okucia projektu) → `src/core/uklad.ts`, `src/core/styl.ts`, kontrakt `docs/SZYBKI-PROJEKT.md`
 - cena, warianty, marża → `src/core/pricing.ts`; cena uzgodniona → `agreed-price.test.ts`
 - PDF produkcyjny i montażowy (jeden schemat stron T/R/E/I/S/C/M/K) → `src/export/pdf.ts`; workflow ról → `docs/WORKFLOW-WARSZTAT.md`
 - nowe narzędzie MCP → `src/mcp/server.ts` + metoda w `src/service.ts`

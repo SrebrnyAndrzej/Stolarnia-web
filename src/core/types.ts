@@ -417,6 +417,23 @@ export interface Projekt {
   agd?: UrzadzenieAGD[];
   /** Wydania produkcyjne: zamrożone rewizje dokumentacji (P03). */
   wydania?: WydanieProdukcyjne[];
+  /** Okucia wybrane na projekcie (szybki projekt) — wycena respektuje je we wszystkich wariantach. Brak = dobór wariantem. */
+  okucia?: OkuciaProjektu;
+}
+
+/**
+ * Wybór okuć na projekcie: id pozycji z bazy okuć (Okucie.id) oraz profil konstrukcyjny szuflad (reguly-szuflad.json).
+ * Wybrana pozycja bez ceny daje w wycenie jawny błąd wyceny — bez ceny zastępczej.
+ */
+export interface OkuciaProjektu {
+  /** Okucie typu systemSzuflad lub prowadnica. */
+  systemSzuflad?: string;
+  /** Okucie typu zawias. */
+  zawiasy?: string;
+  /** Okucie typu podnosnik. */
+  podnosniki?: string;
+  /** Profil systemu szuflad (wymiary dna/pleców) dla szuflad systemowych bez własnego profilu w module. */
+  profilSzuflad?: string;
 }
 
 /**

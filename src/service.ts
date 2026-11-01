@@ -23,6 +23,7 @@ import type {
   Modul,
   NotatkaProjektu,
   Okucie,
+  OkuciaProjektu,
   Pomieszczenie,
   Projekt,
   Sciana,
@@ -36,6 +37,9 @@ import type {
   DokumentacjaProjektu,
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
+import { scianyNaRzucie } from "./core/geometry.js";
+import { OPIS_ZALOZEN_UKLADU, planSzybkiegoUkladu, planWypelnieniaSciany, type OpcjeSzybkiegoUkladu, type OpcjeWypelnienia } from "./core/uklad.js";
+import { blatZDekoru, plytaZDekoru, type RolaStylu, type RozstrzygniecieStylu, type WyborMaterialu } from "./core/styl.js";
 import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
 import { ofertaPdf } from "./export/oferta.js";
@@ -600,6 +604,240 @@ export class Stolarnia {
     });
   }
 
+  // ---------- Szybki projekt: wypełnienie ściany, układ I/L/U, pakiet stylu, okucia projektu ----------
+
+  /**
+   * Wypełnia wolne miejsce w rzędzie (dolny / wiszący) całej ściany modułami katalogowymi: preferowane szerokości,
+   * blenda przy reszcie < 150 mm, stojące moduły (także szafki narożne ze ściany prostopadłej) zostają. podglad = bez zapisu.
+   */
+  wypelnijCalaSciane(projektId: string, scianaId: string, opcje: OpcjeWypelnienia & { podglad?: boolean }) {
+    if (opcje?.rzad !== "dolny" && opcje?.rzad !== "wiszacy") throw new BladUslugi('Podaj rzad: "dolny" albo "wiszacy".');
+    const wykonaj = (p: Projekt, b: BazaDanych) => {
+      const pom = p.pomieszczenia.find((r) => r.sciany.some((x) => x.id === scianaId));
+      if (!pom) throw new BladUslugi(`Nie ma ściany o id "${scianaId}" w projekcie.`);
+      let w: ReturnType<typeof planWypelnieniaSciany>;
+      try {
+        w = planWypelnieniaSciany(pom, p.moduly, scianaId, opcje, b.ustawienia.konstrukcja.gruboscFrontuMM);
+      } catch (e) {
+        throw new BladUslugi((e as Error).message);
+      }
+      const moduly = w.plan.map(({ rola, ...d }) => {
+        const m = this.nowyModul(p, b, d);
+        p.moduly.push(m);
+        return { ...m, rola };
+      });
+      return { moduly, wolne: w.wolne, zajete: w.zajete, ostrzezenia: w.ostrzezenia, zalozenia: OPIS_ZALOZEN_UKLADU.slice(3, 4) };
+    };
+    return this.wykonajLubPodglad(projektId, !!opcje.podglad, wykonaj);
+  }
+
+  /**
+   * Szybki układ kuchni I / L / U: narożniki, zlew + zmywarka, płyta (z piekarnikiem), lodówka (słupek lub wnęka),
+   * wypełnienie dolnych i wiszących. Ściany: scianyIds albo pierwsze ściany pomieszczenia (brakujące tworzone z dlugosciScianMM).
+   * Istniejące moduły na tych ścianach blokują układ, chyba że zastap = true. podglad = bez zapisu.
+   */
+  szybkiUklad(projektId: string, opcje: OpcjeSzybkiegoUkladu & { pomieszczenieId?: string; scianyIds?: string[]; dlugosciScianMM?: number[]; wysokoscMM?: number; zastap?: boolean; podglad?: boolean }) {
+    const n = ({ I: 1, L: 2, U: 3 } as Record<string, number>)[opcje?.typ];
+    if (!n) throw new BladUslugi('Podaj typ układu: "I", "L" albo "U".');
+    const wykonaj = (p: Projekt, b: BazaDanych) => {
+      const pom = opcje.pomieszczenieId ? p.pomieszczenia.find((r) => r.id === opcje.pomieszczenieId) : p.pomieszczenia[0];
+      if (!pom) throw new BladUslugi(opcje.pomieszczenieId ? `Nie ma pomieszczenia o id "${opcje.pomieszczenieId}".` : "Projekt nie ma pomieszczenia.");
+      const dl = opcje.dlugosciScianMM;
+      if (dl && (dl.length !== n || !dl.every((v) => Number.isFinite(v) && v >= 300 && v <= 20000))) throw new BladUslugi(`dlugosciScianMM: ${n} wartości 300–20000 mm.`);
+      if (opcje.wysokoscMM !== undefined && !(opcje.wysokoscMM >= 1500 && opcje.wysokoscMM <= 5000)) throw new BladUslugi("wysokoscMM: 1500–5000 mm.");
+      let sciany: Sciana[];
+      if (opcje.scianyIds) {
+        if (opcje.scianyIds.length !== n) throw new BladUslugi(`Układ ${opcje.typ} wymaga ${n} ścian(y) w scianyIds.`);
+        sciany = opcje.scianyIds.map((sid) => {
+          const sc = pom.sciany.find((x) => x.id === sid);
+          if (!sc) throw new BladUslugi(`Ściana "${sid}" nie należy do pomieszczenia ${pom.nazwa}.`);
+          return sc;
+        });
+      } else {
+        sciany = pom.sciany.filter((x) => !x.wirtualna).slice(0, n);
+        while (sciany.length < n) {
+          if (!dl) throw new BladUslugi(`Pomieszczenie ma ${sciany.length} ścian(y), układ ${opcje.typ} wymaga ${n} — podaj dlugosciScianMM.`);
+          const nowa = nowaSciana({ dlugoscMM: dl[sciany.length], wysokoscMM: opcje.wysokoscMM }, pom.sciany.length);
+          pom.sciany.push(nowa);
+          sciany.push(nowa);
+        }
+      }
+      sciany.forEach((sc, i) => {
+        if (dl && Math.abs(sc.dlugoscMM - dl[i]) > 0.5) {
+          if (sc.x1 !== undefined) throw new BladUslugi(`Ściana ${sc.nazwa} pochodzi z CAD — zmień jej długość w rysunku albo pomiń dlugosciScianMM.`);
+          sc.dlugoscMM = dl[i];
+        }
+        if (opcje.wysokoscMM) sc.wysokoscMM = opcje.wysokoscMM;
+      });
+      // Narożniki: kolejna ściana zaczyna się w końcu poprzedniej i idzie w głąb pomieszczenia (kąt ~90°).
+      const rzut = scianyNaRzucie(pom);
+      for (let i = 0; i < n - 1; i++) {
+        const a = rzut.find((w) => w.sciana.id === sciany[i].id)!;
+        const c = rzut.find((w) => w.sciana.id === sciany[i + 1].id)!;
+        if (Math.hypot(a.x2 - c.x1, a.y2 - c.y1) > 20 || c.dx * a.nx + c.dy * a.ny < 0.95)
+          throw new BladUslugi(`Ściany ${sciany[i].nazwa} i ${sciany[i + 1].nazwa} nie tworzą narożnika wewnętrznego 90° (koniec jednej = początek drugiej).`);
+      }
+      const ids = new Set(sciany.map((x) => x.id));
+      const stojace = p.moduly.filter((m) => ids.has(m.scianaId));
+      if (stojace.length && !opcje.zastap) throw new BladUslugi(`Na wybranych ścianach stoi ${stojace.length} modułów — użyj zastap: true, aby zastąpić ułożenie.`);
+      p.moduly = p.moduly.filter((m) => !ids.has(m.scianaId));
+      let plan: ReturnType<typeof planSzybkiegoUkladu>;
+      try {
+        plan = planSzybkiegoUkladu(sciany.map((x) => ({ id: x.id, nazwa: x.nazwa, dlugoscMM: x.dlugoscMM, wysokoscMM: x.wysokoscMM })), opcje, { gruboscFrontuMM: b.ustawienia.konstrukcja.gruboscFrontuMM });
+      } catch (e) {
+        throw new BladUslugi((e as Error).message);
+      }
+      const moduly = plan.plan.map(({ rola, ...d }) => {
+        const m = this.nowyModul(p, b, d);
+        p.moduly.push(m);
+        return { ...m, rola };
+      });
+      return {
+        pomieszczenieId: pom.id,
+        sciany: sciany.map((x) => ({ id: x.id, nazwa: x.nazwa, dlugoscMM: x.dlugoscMM, wysokoscMM: x.wysokoscMM })),
+        moduly,
+        rezerwacje: plan.rezerwacje,
+        usunieto: stojace.length,
+        ostrzezenia: plan.ostrzezenia,
+        zalozenia: plan.zalozenia,
+      };
+    };
+    return this.wykonajLubPodglad(projektId, !!opcje.podglad, wykonaj);
+  }
+
+  /**
+   * Pakiet stylu pomieszczenia: korpus, fronty i blat z materiałów albo wprost z galerii dekorów. Dekor bez materiału
+   * jest aktywowany tylko, gdy grubość i format znane są z artykułu producenta (lub wpisane jawnie) — inaczej jawny brak.
+   */
+  ustawStyl(projektId: string, dane: { pomieszczenieId?: string; korpus?: WyborMaterialu; front?: WyborMaterialu; blat?: WyborMaterialu; wyczyscWyjatkiModulow?: boolean; podglad?: boolean }) {
+    if (!dane?.korpus && !dane?.front && !dane?.blat) throw new BladUslugi("Podaj co najmniej jeden z: korpus, front, blat.");
+    const wykonaj = (p: Projekt, b: BazaDanych) => {
+      const pom = dane.pomieszczenieId ? p.pomieszczenia.find((r) => r.id === dane.pomieszczenieId) : p.pomieszczenia[0];
+      if (!pom) throw new BladUslugi("Nie znaleziono pomieszczenia.");
+      const k = b.ustawienia.konstrukcja;
+      const ustawiono: Partial<Record<RolaStylu, string>> = {};
+      const aktywowane: Material[] = [];
+      const braki: { rola: RolaStylu; komunikat: string }[] = [];
+      const zrodla: { rola: RolaStylu; materialId: string; zrodlo: string; alternatywy?: number }[] = [];
+      const ostrzezenia: string[] = [];
+      for (const rola of ["korpus", "front", "blat"] as const) {
+        const w = dane[rola];
+        if (!w) continue;
+        let r: RozstrzygniecieStylu;
+        if ("materialId" in w) {
+          const m = b.materialy.find((x) => x.id === w.materialId);
+          r = m ? { rola, material: m, zrodlo: "materiał z bazy" } : { rola, brak: `Nie ma materiału o id "${w.materialId}".` };
+        } else if (typeof w.dekor === "string") {
+          r = rola === "blat" ? blatZDekoru(w, k) : plytaZDekoru(rola, w, rola === "korpus" ? k.gruboscPlytyKorpusuMM : k.gruboscFrontuMM);
+        } else r = { rola, brak: "Podaj materialId albo dekor." };
+        if (!r.material) {
+          braki.push({ rola, komunikat: r.brak ?? "Brak danych." });
+          continue;
+        }
+        const blat = ["blatLaminowany", "blatKompaktowy", "blatKamienny"].includes(r.material.typ);
+        if (rola === "blat" && (!blat || r.material.jednostka !== "metrBiezacy")) ostrzezenia.push(`Blat: materiał "${r.material.nazwa}" nie jest blatem liczonym w mb — wycena przyjmie blat z wariantu.`);
+        if (rola !== "blat" && blat) {
+          braki.push({ rola, komunikat: `"${r.material.nazwa}" to blat, nie płyta ${rola === "korpus" ? "korpusu" : "frontu"}.` });
+          continue;
+        }
+        let m = b.materialy.find((x) => x.id === r.material!.id);
+        if (!m) {
+          m = r.material;
+          if (!dane.podglad) b.materialy.push(m);
+          aktywowane.push(m);
+        } else if (!m.aktywny) {
+          if (!dane.podglad) m.aktywny = true;
+          aktywowane.push(m);
+        }
+        ustawiono[rola] = m.id;
+        zrodla.push({ rola, materialId: m.id, zrodlo: r.zrodlo ?? "", alternatywy: r.alternatywy || undefined });
+        if (!(m.cenaNetto > 0) && !b.cennikMaterialow?.[m.id]) ostrzezenia.push(`${m.nazwa}: brak ceny zakupu — wycena przyjmie cenę domyślną i oznaczy pozycję błędem; uzupełnij cennik.`);
+      }
+      if (ustawiono.korpus) pom.materialKorpusuId = ustawiono.korpus;
+      if (ustawiono.front) pom.materialFrontuId = ustawiono.front;
+      if (ustawiono.blat) pom.materialBlatuId = ustawiono.blat;
+      const naScianach = new Set(pom.sciany.map((x) => x.id));
+      const zWyjatkiem = p.moduly.filter((m) => naScianach.has(m.scianaId) && ((ustawiono.korpus && m.materialKorpusuId) || (ustawiono.front && m.materialFrontuId)));
+      if (dane.wyczyscWyjatkiModulow)
+        for (const m of zWyjatkiem) {
+          if (ustawiono.korpus) delete m.materialKorpusuId;
+          if (ustawiono.front) delete m.materialFrontuId;
+        }
+      else if (zWyjatkiem.length) ostrzezenia.push(`${zWyjatkiem.length} modułów ma własny materiał i go zachowuje (wyczyscWyjatkiModulow: true, aby ujednolicić).`);
+      return { pomieszczenieId: pom.id, ustawiono, zrodla, aktywowane, braki, ostrzezenia, wyczyszczono: dane.wyczyscWyjatkiModulow ? zWyjatkiem.length : 0 };
+    };
+    return this.wykonajLubPodglad(projektId, !!dane.podglad, wykonaj);
+  }
+
+  /** Okucia do wyboru na projekcie: pozycje bazy okuć (z informacją o cenie) i profile konstrukcyjne szuflad. */
+  opcjeOkuc() {
+    const b = this.magazyn.odczytaj();
+    const skrot = (o: Okucie) => ({ id: o.id, nazwa: o.nazwa, producent: o.producent, system: o.system, typ: o.typ, poziomWyceny: o.poziomWyceny, aktywne: o.aktywne, cenaNetto: o.cenaNetto, maCene: o.aktywne && o.cenaNetto * (1 - o.rabatProcent / 100) > 0 });
+    const typu = (...t: Okucie["typ"][]) => b.okucia.filter((o) => t.includes(o.typ)).map(skrot);
+    return {
+      systemySzuflad: typu("systemSzuflad", "prowadnica"),
+      zawiasy: typu("zawias"),
+      podnosniki: typu("podnosnik"),
+      profileSzuflad: PROFILE_SZUFLAD.map((x) => ({ id: x.id, producent: x.manufacturer, system: x.family, gruboscPlytyMM: x.board_thickness_mm, zatwierdzonyProdukcyjnie: x.production_approved, wiercenia: x.drilling_status })),
+      profilDomyslny: b.ustawienia.technologia.profilSzuflad,
+    };
+  }
+
+  /** Ustawia (null = usuwa) wybór okuć projektu. Pozycje bez ceny są dozwolone — wycena pokaże je jako błąd. */
+  ustawOkucia(projektId: string, okucia: OkuciaProjektu | null) {
+    const ostrzezenia: string[] = [];
+    const p = this.edytuj(projektId, (p, b) => {
+      if (okucia === null) {
+        delete p.okucia;
+        return;
+      }
+      if (!okucia || typeof okucia !== "object") throw new BladUslugi("okucia: obiekt { systemSzuflad?, zawiasy?, podnosniki?, profilSzuflad? } albo null.");
+      const wynik: OkuciaProjektu = {};
+      const sprawdz = (pole: "systemSzuflad" | "zawiasy" | "podnosniki", typy: Okucie["typ"][]) => {
+        const v = okucia[pole];
+        if (v === undefined || v === null || v === "") return;
+        const o = b.okucia.find((x) => x.id === v);
+        if (!o) throw new BladUslugi(`${pole}: nie ma okucia o id "${v}" w bazie okuć (opcje: GET /api/okucia-projektu/opcje).`);
+        if (!typy.includes(o.typ)) throw new BladUslugi(`${pole}: "${o.nazwa}" ma typ ${o.typ}, oczekiwano ${typy.join(" / ")}.`);
+        if (!o.aktywne || !(o.cenaNetto * (1 - o.rabatProcent / 100) > 0)) ostrzezenia.push(`${o.nazwa}: brak ceny lub pozycja nieaktywna — wycena oznaczy ją błędem (bez ceny zastępczej).`);
+        wynik[pole] = o.id;
+      };
+      sprawdz("systemSzuflad", ["systemSzuflad", "prowadnica"]);
+      sprawdz("zawiasy", ["zawias"]);
+      sprawdz("podnosniki", ["podnosnik"]);
+      if (okucia.profilSzuflad) {
+        const pr = PROFILE_SZUFLAD.find((x) => x.id === okucia.profilSzuflad);
+        if (!pr) throw new BladUslugi(`profilSzuflad: nieznany profil "${okucia.profilSzuflad}" (GET /api/systemy-szuflad).`);
+        if (!pr.production_approved) ostrzezenia.push(`Profil ${pr.id}: niezatwierdzony produkcyjnie (${pr.drilling_status}).`);
+        wynik.profilSzuflad = pr.id;
+      }
+      if (wynik.systemSzuflad && !wynik.profilSzuflad) ostrzezenia.push(`Wymiary dna i pleców szuflad systemowych z profilu ustawień technologii (${b.ustawienia.technologia.profilSzuflad}) — wybierz profilSzuflad zgodny z systemem.`);
+      if (Object.keys(wynik).length) p.okucia = wynik;
+      else delete p.okucia;
+    });
+    return { okucia: p.okucia ?? null, ostrzezenia };
+  }
+
+  /** Wykonuje zmianę z zapisem albo (podglad) na kopii projektu i bazy, bez zapisu. */
+  private wykonajLubPodglad<T extends object>(projektId: string, podglad: boolean, fn: (p: Projekt, b: BazaDanych) => T): T & { podglad: boolean } {
+    if (podglad) {
+      const b = this.magazyn.odczytaj();
+      const p = b.projekty.find((x) => x.id === projektId);
+      if (!p) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
+      return { ...fn(structuredClone(p), b), podglad: true };
+    }
+    // Magazyn nie wycofuje zmian po błędzie — liczymy na kopii i podmieniamy dopiero po sukcesie.
+    let wynik!: T;
+    this.edytuj(projektId, (p, b) => {
+      const kopia = structuredClone(p);
+      const bKopia = { ...b, materialy: structuredClone(b.materialy) };
+      wynik = fn(kopia, bKopia);
+      Object.assign(p, kopia);
+      b.materialy = bKopia.materialy;
+    });
+    return { ...wynik, podglad: false };
+  }
+
   /** Przywraca pomieszczenia i moduły z wcześniejszego stanu (cofnij/ponów w aplikacji). */
   przywrocStan(projektId: string, stan: Pick<Projekt, "pomieszczenia" | "moduly">): Projekt {
     if (!Array.isArray(stan?.pomieszczenia) || !Array.isArray(stan?.moduly)) throw new BladUslugi("Nieprawidłowy stan projektu.");
@@ -794,6 +1032,9 @@ export class Stolarnia {
       (a, c) => kolejnoscScian.indexOf(a.scianaId) - kolejnoscScian.indexOf(c.scianaId) || a.pozycjaYMM - c.pozycjaYMM || a.pozycjaXMM - c.pozycjaXMM,
     );
 
+    // Profil szuflad wybrany na projekcie zastępuje profil z ustawień (moduły z własnym profilem zachowują go).
+    const technologia = p.okucia?.profilSzuflad ? { ...b.ustawienia.technologia, profilSzuflad: p.okucia.profilSzuflad } : b.ustawienia.technologia;
+    const ustawienia = technologia === b.ustawienia.technologia ? b.ustawienia : { ...b.ustawienia, technologia };
     const zbudowane = moduly.map((m) => {
       const r = pomScian.get(m.scianaId) ?? p.pomieszczenia[0];
       const materialy: MaterialyModulu = {
@@ -814,19 +1055,19 @@ export class Stolarnia {
           { ...m.drzewo, szerokoscMM: m.szerokoscMM, wysokoscMM: m.wysokoscMM, glebokoscMM: m.glebokoscMM, szufladySystemowe: c.szufladySystemowe, profilSzuflad: c.profilSzuflad ?? undefined, wariantBokuSzuflady: c.wariantBokuSzuflady ?? undefined },
           m,
           konstrukcja,
-          b.ustawienia.technologia,
+          technologia,
         );
         zm.ostrzezenia.unshift("Konstrukcja z edytora — liczniki półek, drzwi i szuflad z konfiguracji nie są używane (przywróć konstrukcję standardową, aby do nich wrócić).");
         return { zm, materialy };
       }
-      return { zm: zbudujModul(m, konstrukcja, b.ustawienia.technologia), materialy };
+      return { zm: zbudujModul(m, konstrukcja, technologia), materialy };
     });
 
     const formatki = listaFormatek(zbudowane, mapa, { odejmujGruboscObrzeza: b.ustawienia.okleinowanie.odejmujGruboscObrzeza });
     const obrzeza = zapotrzebowanieObrzeza(formatki, b.ustawienia.okleinowanie);
     const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
     const projektWyceny = zbudujProjektWyceny(p.nazwa, zbudowane, obrzeza, raportRozkroju.arkusze.length);
-    const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia, b.cennikMaterialow ?? {});
+    const warianty = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia, b.cennikMaterialow ?? {}, p.okucia);
     const standard = warianty.find(w => w.wariant === "standard");
     if (standard && p.cenaUzgodnionaBrutto !== undefined) {
       const netto = Math.round(p.cenaUzgodnionaBrutto / (1 + b.ustawienia.finanse.vatProcent / 100) * 100) / 100;
@@ -838,7 +1079,7 @@ export class Stolarnia {
     }
     const walidacja = walidujProjekt(p);
 
-    return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja, ustawienia: b.ustawienia };
+    return { projekt: p, zbudowane: zbudowane.map((z) => z.zm), formatki, obrzeza, rozkroj: raportRozkroju, projektWyceny, warianty, walidacja, ustawienia };
   }
 
   /** Dokumentacja produkcyjna: części z układem lokalnym, operacje, diagnostyka i status gotowości — z jednej rewizji. */

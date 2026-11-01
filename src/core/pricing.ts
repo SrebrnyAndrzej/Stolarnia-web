@@ -5,6 +5,7 @@ import type {
   Material,
   CennikMaterialow,
   Okucie,
+  OkuciaProjektu,
   PodsumowanieWariantu,
   PozycjaKosztowa,
   PoziomWyceny,
@@ -153,13 +154,14 @@ export function wycenWszystkie(
   materialy: Material[],
   okucia: Okucie[],
   cennikMaterialow: CennikMaterialow = {},
+  wyborOkuc?: OkuciaProjektu,
 ): PodsumowanieWariantu[] {
   const efektywne = materialy.map((m) => {
     const wpis = cennikMaterialow[m.id];
     // Cena własna to faktyczna cena zakupu netto — rabat katalogowy dotyczy tylko ceny referencyjnej.
     return wpis ? { ...m, cenaNetto: wpis.cenaNetto, rabatProcent: 0, zrodloCeny: "cennikWlasny" as const } : m;
   });
-  return KOLEJNOSC_WARIANTOW.map((w) => wycenWariant(w, projekt, ustawienia, efektywne, okucia));
+  return KOLEJNOSC_WARIANTOW.map((w) => wycenWariant(w, projekt, ustawienia, efektywne, okucia, wyborOkuc));
 }
 
 export function wycenWariant(
@@ -168,6 +170,7 @@ export function wycenWariant(
   ustawienia: UstawieniaStolarni,
   materialy: Material[],
   okucia: Okucie[],
+  wyborOkuc?: OkuciaProjektu,
 ): PodsumowanieWariantu {
   const aktywne = materialy.filter((m) => m.aktywny);
   const f = ustawienia.finanse;
@@ -185,7 +188,7 @@ export function wycenWariant(
     ...(projekt.metryOklejaniaM > 0
       ? [poz("Oklejanie obrzeżem", "uslugi", projekt.metryOklejaniaM, "mb", f.cenaOklejaniaMbNetto, "Usługa oklejania — metry bieżące oklejonych krawędzi netto (materiał obrzeża liczony osobno w okuciach/akcesoriach).")]
       : []),
-    ...dobierzOkucia(projekt, wariant, okucia),
+    ...dobierzOkucia(projekt, wariant, okucia, wyborOkuc),
   ];
 
   const kosztBazowy = suma(pozycje);
@@ -256,6 +259,10 @@ function pozycjaBlatu(projekt: ProjektWyceny, materialy: Material[], wariant: Wa
   if (wybrany && cenaPoRabacieNetto(wybrany) > 0) {
     return poz(`Blat • ${opisMaterialu(wybrany)}`, "blaty", projekt.metryBiezaceBlatu, "mb", cenaPoRabacieNetto(wybrany), `Blat wybrany w projekcie. ${ZRODLO_CENY(wybrany)}`);
   }
+  if (wybrany) {
+    // Blat wybrany (np. dekor z galerii) bez ceny zakupu: jak płyty bez ceny — cena domyślna wariantu, pozycja oznaczona błędem.
+    return poz(`Blat • ${opisMaterialu(wybrany)}`, "blaty", projekt.metryBiezaceBlatu, "mb", FALLBACK_BLAT[wariant], "Blat wybrany w projekcie nie ma ceny — przyjęto cenę domyślną wariantu, uzupełnij cennik.", true);
+  }
   // DoborMaterialowWyceny.wybierz — kandydaci posortowani po cenie, pozycja wg frakcji wariantu.
   const kandydaci = materialy
     .filter((m) => TYPY_BLATU[wariant].includes(m.typ) && cenaPoRabacieNetto(m) > 0)
@@ -293,9 +300,20 @@ function poProfilu(id: string, okucia: Okucie[]): Okucie | undefined {
   return okucia.find((o) => o.aktywne && o.profilID === id);
 }
 
-function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[]): PozycjaKosztowa[] {
+function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[], wybor: OkuciaProjektu = {}): PozycjaKosztowa[] {
   const wynik: PozycjaKosztowa[] = [];
   const high = wariant === "premium" || wariant === "vip";
+  // Okucie wybrane na projekcie: ta sama pozycja we wszystkich wariantach; brak ceny = jawny błąd wyceny, bez ceny zastępczej.
+  const wybrane = (id: string | undefined, ilosc: number, jedn: string, opis: string): boolean => {
+    if (!id) return false;
+    if (ilosc <= 0) return true;
+    const o = okucia.find((x) => x.id === id);
+    if (!o) wynik.push(poz(`Okucie wybrane w projekcie "${id}" — brak w bazie okuć`, "okucia", ilosc, jedn, 0, `Wybór projektu wskazuje pozycję, której nie ma w bazie okuć — dodaj ją albo zmień wybór. Cena nie została przyjęta. ${opis}`, true));
+    else if (!o.aktywne || cenaOkuciaNetto(o) <= 0)
+      wynik.push(poz(o.nazwa, "okucia", ilosc, o.jednostka, 0, `${o.producent} • ${o.system}. Wybór projektu bez ${o.aktywne ? "ceny" : "aktywnej pozycji"} w bazie okuć — uzupełnij cenę; nie przyjęto ceny zastępczej. ${opis}`, true));
+    else wynik.push(poz(o.nazwa, "okucia", ilosc, o.jednostka, cenaOkuciaNetto(o), `${o.producent} • ${o.system}. Wybór projektu (ten sam we wszystkich wariantach). Cena z bazy okuć. ${opis}`));
+    return true;
+  };
 
   const zTypu = (typ: TypOkucia, ilosc: number, fallback: number, fallbackNazwa: string, jedn: string, opis: string) => {
     if (ilosc <= 0) return;
@@ -307,16 +325,20 @@ function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[
     wynik.push(pozOkucia(poProfilu(id, okucia), typ, ilosc, fallback, fallbackNazwa, jedn, opis));
   };
 
-  zTypu("zawias", p.liczbaZawiasow, 24, "Zawiasy meblowe", "szt.", "Liczba wynika z frontów rozwieranych.");
+  if (!wybrane(wybor.zawiasy, p.liczbaZawiasow, "szt.", "Liczba wynika z frontów rozwieranych."))
+    zTypu("zawias", p.liczbaZawiasow, 24, "Zawiasy meblowe", "szt.", "Liczba wynika z frontów rozwieranych.");
 
-  if (p.liczbaSzuflad > 0) {
+  if (wybrane(wybor.systemSzuflad, p.liczbaSzuflad, "kpl.", "Jeden komplet na każdą szufladę.")) {
+    // wybór projektu
+  } else if (p.liczbaSzuflad > 0) {
     const poziomy = LANCUCH[wariant];
     const maSystem = okucia.some((o) => o.aktywne && o.typ === "systemSzuflad" && poziomy.includes(o.poziomWyceny));
     const fb = { eco: 145, standard: 220, premium: 360, vip: 520 }[wariant];
     zTypu(maSystem ? "systemSzuflad" : "prowadnica", p.liczbaSzuflad, fb, "Systemy szuflad", "kpl.", "Jeden komplet na każdą szufladę.");
   }
   zTypu("cargo", p.liczbaCargo, { eco: 650, standard: 950, premium: 1450, vip: 2100 }[wariant], "Systemy cargo", "kpl.", "Jeden komplet na moduł cargo.");
-  zProfilu("blum.aventos.hf", "podnosnik", p.liczbaPodnosnikow, 337.63, "Podnośniki frontów", "kpl.", "Jeden podnośnik na front uchylny.");
+  if (!wybrane(wybor.podnosniki, p.liczbaPodnosnikow, "kpl.", "Jeden podnośnik na front uchylny."))
+    zProfilu("blum.aventos.hf", "podnosnik", p.liczbaPodnosnikow, 337.63, "Podnośniki frontów", "kpl.", "Jeden podnośnik na front uchylny.");
   zProfilu("kessebohmer.lemans2", "inne", p.liczbaSystemowNaroznych ?? 0, 1334.93, "System narożny LeMans II", "kpl.", "Komplet: 2 półki obrotowo-wysuwne (nerki) do szafki narożnej ślepej.");
   zTypu("noga", p.liczbaModulowDolnych > 0 ? nogi(p) : 0, 1.5, "Nogi meblowe", "szt.", "Nogi regulowane pod moduły stojące.");
   // Cena kółek nie jest podana w katalogu producenta — szacunek, do uzupełnienia w bazie okuć (profil kolko.meblowe*).

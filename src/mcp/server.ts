@@ -475,6 +475,119 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
     bezpiecznie((a) => s.wypelnijLuke(a.projektId, a.scianaId, a.xMM, a.szerokoscMM, !!a.wiszacy)),
   );
 
+  // ---------- Szybki projekt (docs/SZYBKI-PROJEKT.md) ----------
+
+  const skrotModulow = (w: { moduly: { id: string; nazwa: string; rola: string; scianaId: string; pozycjaXMM: number; pozycjaYMM: number; szerokoscMM: number; katalogId?: string }[] }) =>
+    ({ ...w, moduly: w.moduly.map((m) => ({ id: m.id, rola: m.rola, nazwa: m.nazwa, katalogId: m.katalogId, scianaId: m.scianaId, x: m.pozycjaXMM, y: m.pozycjaYMM, szerokosc: m.szerokoscMM })) });
+
+  server.registerTool(
+    "wypelnij_cala_sciane",
+    {
+      title: "Wypełnij całą ścianę",
+      description:
+        "Rozkłada moduły z katalogu na wolnej długości ściany w rzędzie dolnym lub wiszącym: preferowane szerokości (600/500/400/800/900/300/450), " +
+        "blenda przy reszcie < 150 mm, stojące moduły zostają (także szafka narożna ze ściany prostopadłej — przy niej blenda narożna 50 mm). podglad=true bez zapisu.",
+      inputSchema: {
+        projektId: z.string(),
+        scianaId: z.string(),
+        rzad: z.enum(["dolny", "wiszacy"]),
+        konstrukcja: z.enum(["shelves", "drawers"]).optional().describe("Dolne: półki (domyślnie) albo szuflady"),
+        szerokosci: z.array(z.number().positive()).optional().describe("Preferowane szerokości w kolejności preferencji"),
+        symetria: z.boolean().optional(),
+        odXMM: z.number().min(0).optional(),
+        doXMM: z.number().positive().optional(),
+        blendaNaroznaMM: z.number().min(0).max(150).optional(),
+        podglad: z.boolean().optional(),
+      },
+    },
+    bezpiecznie(({ projektId, scianaId, ...o }) => skrotModulow(s.wypelnijCalaSciane(projektId, scianaId, o))),
+  );
+
+  const element = { sciana: z.number().int().min(0).max(2).optional().describe("Indeks ściany w układzie (0 = pierwsza)"), xMM: z.number().min(0).optional().describe("Lewa krawędź od początku ściany; brak = automatycznie") };
+  server.registerTool(
+    "szybki_uklad",
+    {
+      title: "Szybki układ kuchni I / L / U",
+      description:
+        "Układa całą kuchnię jednym wywołaniem: narożniki (ślepa 1100 lub L 900 + wiszący narożny), zlew z szafką zlewową i zmywarką, płyta (piekarnik pod spodem), " +
+        "lodówka (słupek lub wnęka wolnostojąca), wypełnienie dolnych i wiszących (bez wiszących nad słupkami, nad płytą szafka okapowa). " +
+        "Domyślnie: I — wszystko na ścianie 0; L — lodówka i zlew na 0, płyta na 1; U — lodówka 0, zlew 1, płyta 2. Odstępy ergonomiczne to ZAŁOŻENIA (lista w odpowiedzi). " +
+        "Istniejące moduły na tych ścianach blokują układ bez zastap=true. podglad=true bez zapisu.",
+      inputSchema: {
+        projektId: z.string(),
+        typ: z.enum(["I", "L", "U"]),
+        pomieszczenieId: z.string().optional(),
+        scianyIds: z.array(z.string()).optional().describe("Kolejne ściany układu (koniec jednej = początek następnej)"),
+        dlugosciScianMM: z.array(z.number().positive()).optional().describe("Długości ścian; brakujące ściany zostaną utworzone"),
+        wysokoscMM: z.number().positive().optional().describe("Wysokość pomieszczenia"),
+        zlew: z.object({ ...element, szerokoscMM: z.number().positive().optional() }).nullable().optional().describe("null = bez zlewu"),
+        zmywarka: z.object({ szerokoscMM: z.union([z.literal(450), z.literal(600)]).optional(), strona: z.enum(["lewa", "prawa"]).optional() }).nullable().optional().describe("null = bez zmywarki"),
+        plyta: z.object({ ...element, szerokoscMM: z.number().positive().optional(), piekarnikPod: z.boolean().optional() }).nullable().optional(),
+        lodowka: z.object({ ...element, rodzaj: z.enum(["slupek", "wolnostojaca"]).optional(), szerokoscMM: z.number().positive().optional(), strona: z.enum(["poczatek", "koniec"]).optional() }).nullable().optional(),
+        slupki: z.array(z.string()).optional().describe("Dodatkowe słupki z katalogu obok lodówki, np. tall-oven-600"),
+        wiszace: z.boolean().optional(),
+        okap: z.enum(["szafka", "brak"]).optional(),
+        naroznik: z.enum(["slepa", "L"]).optional(),
+        dolne: z.enum(["shelves", "drawers"]).optional().describe("Szafki wypełniające dolne (domyślnie szuflady)"),
+        szerokosci: z.array(z.number().positive()).optional(),
+        symetria: z.boolean().optional(),
+        przerwyWiszacych: z.array(z.object({ sciana: z.number().int().min(0), odMM: z.number().min(0), doMM: z.number().positive() })).optional().describe("Np. okno"),
+        zastap: z.boolean().optional(),
+        podglad: z.boolean().optional(),
+      },
+    },
+    bezpiecznie(({ projektId, ...o }) => skrotModulow(s.szybkiUklad(projektId, o))),
+  );
+
+  const wyborMaterialu = z
+    .union([
+      z.object({ materialId: z.string() }),
+      z.object({
+        dekor: z.string().describe("Klucz dekoru z galerii: 'Producent:id', np. 'Egger:H1384 ST40'"),
+        artykul: z.string().optional(),
+        gruboscMM: z.number().positive().optional(),
+        szerokoscArkuszaMM: z.number().positive().optional(),
+        wysokoscArkuszaMM: z.number().positive().optional(),
+        glebokoscMM: z.number().positive().optional().describe("Blat: głębokość"),
+        dlugoscMM: z.number().positive().optional().describe("Blat: długość handlowa"),
+        struktura: z.string().optional(),
+      }),
+    ])
+    .optional();
+  server.registerTool(
+    "ustaw_styl",
+    {
+      title: "Pakiet stylu pomieszczenia",
+      description:
+        "Ustawia dekor korpusu, frontów i blatu pomieszczenia jednym wywołaniem — z materiałów (materialId) albo z galerii 644 dekorów (dekor). " +
+        "Dekor aktywowany automatycznie tylko, gdy grubość/format wynikają z artykułu producenta (Egger); inaczej zwraca braki ('wymaga wpisania grubości/formatu').",
+      inputSchema: { projektId: z.string(), pomieszczenieId: z.string().optional(), korpus: wyborMaterialu, front: wyborMaterialu, blat: wyborMaterialu, wyczyscWyjatkiModulow: z.boolean().optional(), podglad: z.boolean().optional() },
+    },
+    bezpiecznie(({ projektId, ...d }) => {
+      const w = s.ustawStyl(projektId, d);
+      return { ...w, aktywowane: w.aktywowane.map((m) => ({ id: m.id, nazwa: m.nazwa, gruboscMM: m.gruboscMM, artykul: m.artykulProducenta })) };
+    }),
+  );
+
+  server.registerTool(
+    "opcje_okuc_projektu",
+    { title: "Okucia do wyboru na projekcie", description: "Systemy szuflad/prowadnice, zawiasy i podnośniki z bazy okuć (z informacją maCene) oraz profile konstrukcyjne szuflad.", inputSchema: {} },
+    bezpiecznie(() => s.opcjeOkuc()),
+  );
+
+  server.registerTool(
+    "ustaw_okucia_projektu",
+    {
+      title: "Wybór okuć projektu",
+      description: "Ustawia system szuflad, zawiasy, podnośniki (id z bazy okuć) i profil szuflad projektu; wycena używa ich we wszystkich wariantach. Pozycja bez ceny = jawny błąd wyceny. okucia=null usuwa wybór.",
+      inputSchema: {
+        projektId: z.string(),
+        okucia: z.object({ systemSzuflad: z.string().optional(), zawiasy: z.string().optional(), podnosniki: z.string().optional(), profilSzuflad: z.string().optional() }).nullable(),
+      },
+    },
+    bezpiecznie((a) => s.ustawOkucia(a.projektId, a.okucia)),
+  );
+
   server.registerTool(
     "zmien_modul",
     {
