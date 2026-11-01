@@ -14,6 +14,13 @@ test("public copy has verified contact, six steps, structured data and no placeh
     page.getByRole("link", { name: "Umów pomiar", exact: true }),
   ).toHaveAttribute("href", "tel:+48572548957");
   await expect(page.locator(".ps-process-grid article")).toHaveCount(6);
+  await expect(page.locator(".ps-offer-links > a")).toHaveCount(4);
+  await expect(page.locator(".ps-gallery-grid figure")).toHaveCount(2);
+  await expect(page.locator(".ps-benefits-grid article")).toHaveCount(3);
+  await expect(page.locator(".ps-faq-list details")).toHaveCount(10);
+  const sample = await page.request.get("/documents/demo-techniczne.pdf");
+  expect(sample.status()).toBe(200);
+  expect(sample.headers()["content-type"]).toContain("application/pdf");
   await expect(page.locator(".ps-service-area li")).toHaveText(AREAS);
   const schema = JSON.parse(
     (await page.locator('script[type="application/ld+json"]').textContent()) ??
@@ -28,11 +35,12 @@ test("public copy has verified contact, six steps, structured data and no placeh
     /\[DO UZUPEŁNIENIA|\[DECYZJA|\[DO POTWIERDZENIA|\[DOMENA\]/,
   );
   await page
+    .locator(".ps-home-intro")
     .getByRole("link", { name: "Zobacz wizualizacje", exact: true })
     .click();
   await expect(
     page.getByRole("heading", {
-      name: "Zobacz, z czego powstaje szafka.",
+      name: "Tak wyglądają nasze projekty, zanim trafią do produkcji",
       exact: true,
     }),
   ).toBeInViewport();

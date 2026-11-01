@@ -31,6 +31,11 @@ export const SERVICES = [
     title: "Zabudowy wnęk",
     text: "Wnęki, przestrzeń pod schodami, zabudowy RTV i przedpokoje. Wykorzystujemy miejsca, z którymi gotowe meble sobie nie radzą.",
   },
+  {
+    kind: "inne",
+    title: "Meble łazienkowe",
+    text: "Szafki pod umywalkę i zabudowy na wymiar. Materiały dobieramy do wilgotnego pomieszczenia.",
+  },
 ];
 export const PROCESS = [
   {
@@ -43,7 +48,7 @@ export const PROCESS = [
   },
   {
     title: "Wycena i umowa",
-    text: "Dostajesz wycenę do konkretnego projektu.",
+    text: "Dostajesz wycenę do konkretnego projektu. Uzgodniona cena dotyczy zatwierdzonego zakresu i nie zmienia się wraz z aktualizacją cenników materiałów i okuć. Zmiany projektu uzgadniamy osobno.",
   },
   {
     title: "Dokumentacja produkcyjna",
@@ -80,6 +85,64 @@ export const FAQ = [
       "Laminat jest odporny i tańszy. Lakier daje gładką, jednolitą powierzchnię i więcej kolorów, ale kosztuje więcej i dłużej się go robi. Fornir to prawdziwe drewno. Na pomiarze pokażemy próbki, a w wizualizacji zobaczysz wybrany dekor we własnym wnętrzu.",
   },
 ];
+export const BENEFITS = [
+  {
+    title: "Widzisz mebel przed produkcją",
+    text: "Wizualizacja pozwala sprawdzić układ, kolory i rozmieszczenie szuflad. Omawiamy zmiany, zanim zaczniemy ciąć.",
+    link: "Zobacz wizualizacje",
+    href: "#/wizualizacja",
+  },
+  {
+    title: "Cena do zatwierdzonego projektu",
+    text: "Cenę i zakres zapisujemy w umowie. Uzgodniona cena projektu nie zmienia się przy aktualizacji cenników płyt i okuć. Jeżeli zmieniasz projekt, najpierw ustalamy nowy zakres i jego koszt.",
+    link: "Poznaj etapy współpracy",
+    href: "#/jak-dzialamy",
+  },
+  {
+    title: "Projekt opisany w dokumentacji",
+    text: "Wymiary, części i okucia zapisujemy w rysunkach. To podstawa pracy warsztatu i montażu. Zakres dokumentacji przekazywanej Tobie ustalimy przed zamówieniem.",
+    link: "Przykładowa karta techniczna (PDF)",
+    href: "/documents/demo-techniczne.pdf",
+  },
+];
+export const MATERIALS = [
+  "Płyty Egger",
+  "Okucia Blum",
+  "Podnośniki Aventos",
+  "Szuflady systemowe Amix Elitebox",
+];
+export const MORE_FAQ = [
+  {
+    question: "Dlaczego dwie wyceny potrafią różnić się o kilka tysięcy?",
+    answer:
+      "Zwykle dlatego, że nie obejmują tego samego. Sprawdź, czy w cenie są blat, okucia z cichym domykiem, transport, wniesienie i montaż. Porównuj wyceny dla tego samego zakresu i wyposażenia.",
+  },
+  {
+    question: "Czy pomiar jest płatny?",
+    answer:
+      "Warunki pomiaru i dojazdu ustalamy przy pierwszym kontakcie. Podaj miejscowość realizacji — przed umówieniem wizyty potwierdzimy, czy i jakie koszty dotyczą Twojego pomiaru.",
+  },
+  {
+    question: "Ile czeka się na meble?",
+    answer:
+      "Termin zależy od zakresu projektu, dostępności materiałów i wybranego wykończenia. Potwierdzimy go przed zamówieniem. Fronty lakierowane i fornirowane mogą wymagać dłuższego przygotowania.",
+  },
+  {
+    question: "Ile trwa montaż?",
+    answer:
+      "Zależy od liczby mebli, układu pomieszczenia i prac na miejscu. Czas montażu omówimy po dopracowaniu projektu, żeby można było przygotować mieszkanie i zaplanować odbiór.",
+  },
+  {
+    question: "Co musi być gotowe w mieszkaniu przed montażem?",
+    answer:
+      "Ustalimy to na podstawie projektu. Przed montażem omówimy stan ścian i podłogi, dostęp do pomieszczenia oraz położenie potrzebnych przyłączy. Przygotowania warto uzgodnić przed zakończeniem remontu.",
+  },
+  {
+    question: "Jaką gwarancję dajecie?",
+    answer:
+      "Zapytaj o warunki gwarancji na meble i wybrane okucia. Zakres, czas obowiązywania oraz sposób zgłaszania problemów potwierdzamy w dokumentach zamówienia.",
+  },
+];
 export const PENDING_CONTENT = {
   fixedPriceClause: null,
   guarantee: null,
@@ -87,7 +150,6 @@ export const PENDING_CONTENT = {
   installationDuration: null,
   measurementFee: null,
   travelFee: null,
-  bathroomOffer: null,
   documentOwnership: null,
   extraAbout: null,
   reviews: null,

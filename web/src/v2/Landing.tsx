@@ -14,6 +14,9 @@ import {
   SERVICES,
   PROCESS,
   FAQ,
+  MORE_FAQ,
+  BENEFITS,
+  MATERIALS,
   BUSINESS_SCHEMA,
 } from "./landing-content";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
@@ -204,6 +207,10 @@ export function Landing({ session }: { session: Principal | null }) {
             <strong>PDF</strong>
             <span>Dokumentacja każdej formatki</span>
           </div>
+          <div>
+            <strong>=</strong>
+            <span>Cena do zatwierdzonego projektu</span>
+          </div>
         </section>
         <section
           className="ps-public-section ps-start"
@@ -248,43 +255,67 @@ export function Landing({ session }: { session: Principal | null }) {
           </div>
         </section>
         <section
-          className="ps-public-section ps-cabinet-story"
+          className="ps-public-section ps-gallery"
           id="wizualizacja"
-          aria-labelledby="cabinet-story-title"
+          aria-labelledby="gallery-title"
         >
-          <div>
-            <span className="ps-eyebrow">Wizualizacja projektu</span>
-            <h2 id="cabinet-story-title">Zobacz, z czego powstaje szafka.</h2>
-            <p>
-              Front to dopiero początek. Zobacz, jak poszczególne elementy
-              składają się w szafkę — od korpusu po ostatni detal.
-            </p>
-            <p className="ps-form-note">
-              To wizualizacja, nie zdjęcie realizacji. Okucia są poglądowe.
-              Rozwiązania do Twojego projektu dobierzemy wspólnie.
-            </p>
+          <span className="ps-eyebrow">Najpierw zobacz projekt</span>
+          <h2 id="gallery-title">
+            Tak wyglądają nasze projekty, zanim trafią do produkcji
+          </h2>
+          <p className="ps-gallery-lead">
+            To wizualizacje, nie zdjęcia z montażu. Pokazują wygląd kuchni i
+            konstrukcję szafki. Materiały, detale i wyposażenie potwierdzamy w
+            projekcie.
+          </p>
+          <div className="ps-gallery-grid">
+            <figure>
+              <img
+                src="/animations/kuchnia-darii-v4-poster.jpg"
+                alt="Kuchnia na wymiar z drewnianymi frontami i zielonymi szafkami wokół okna — wizualizacja projektu"
+                loading="lazy"
+                width="1280"
+                height="720"
+              />
+              <figcaption>
+                <strong>Kuchnia w drewnie i zieleni</strong>
+                <span>Wizualizacja projektu · okucia poglądowe</span>
+                <a
+                  className="ps-under-link"
+                  href="/animations/kuchnia-darii-v4.mp4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Obejrzyj animację kuchni (nowa karta)
+                </a>
+              </figcaption>
+            </figure>
+            <figure>
+              <video
+                controls
+                playsInline
+                muted
+                preload="none"
+                poster="/animations/szafka-skladanie-claude-poster.jpg"
+                aria-label="Animacja składania przykładowej szafki"
+                src="/animations/szafka-skladanie-claude.mp4"
+              >
+                Twoja przeglądarka nie obsługuje filmu.{" "}
+                <a href="/animations/szafka-skladanie-claude.mp4">
+                  Otwórz animację składania szafki
+                </a>
+                .
+              </video>
+              <figcaption>
+                <strong>Od pojedynczych elementów do gotowej szafki</strong>
+                <span>Wizualizacja projektu · przykładowa konstrukcja</span>
+                <span>Uruchom animację, żeby zobaczyć kolejne etapy.</span>
+              </figcaption>
+            </figure>
           </div>
-          <figure>
-            <video
-              controls
-              playsInline
-              muted
-              preload="none"
-              poster="/animations/szafka-skladanie-claude-poster.jpg"
-              aria-label="Animacja składania przykładowej szafki"
-              src="/animations/szafka-skladanie-claude.mp4"
-            >
-              Twoja przeglądarka nie obsługuje filmu.{" "}
-              <a href="/animations/szafka-skladanie-claude.mp4">
-                Otwórz animację składania szafki
-              </a>
-              .
-            </video>
-            <figcaption>
-              Składanie przykładowej szafki — wizualizacja projektu. Uruchom
-              animację, żeby zobaczyć kolejne etapy.
-            </figcaption>
-          </figure>
+          <a className="ps-button secondary" href="#/zapytanie">
+            Chcę taką wizualizację mojego wnętrza <IconArrowRight size={18} />
+          </a>
         </section>
         <section className="ps-public-section ps-offer" id="uslugi">
           <div>
@@ -297,7 +328,7 @@ export function Landing({ session }: { session: Principal | null }) {
           </div>
           <div className="ps-offer-links">
             {SERVICES.map((x) => (
-              <a key={x.kind} href={`#/zapytanie/${x.kind}`}>
+              <a key={x.title} href={`#/zapytanie/${x.kind}`}>
                 <div>
                   <h3>{x.title}</h3>
                   <p>{x.text}</p>
@@ -329,6 +360,42 @@ export function Landing({ session }: { session: Principal | null }) {
                 <p>{text}</p>
               </article>
             ))}
+          </div>
+        </section>
+        <section
+          className="ps-public-section ps-benefits"
+          aria-labelledby="benefits-title"
+        >
+          <span className="ps-eyebrow">Co dostajesz w projekcie</span>
+          <h2 id="benefits-title">Co dostajesz, czego zwykle nie widać</h2>
+          <div className="ps-benefits-grid">
+            {BENEFITS.map((item) => (
+              <article key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+                <a
+                  className="ps-under-link"
+                  href={item.href}
+                  {...(item.href.endsWith(".pdf")
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  {item.link}
+                </a>
+              </article>
+            ))}
+          </div>
+          <div className="ps-materials">
+            <h3>Materiały i okucia</h3>
+            <p>
+              Dobieramy je do projektu, sposobu używania i ustalonego
+              wyposażenia.
+            </p>
+            <ul>
+              {MATERIALS.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
+            </ul>
           </div>
         </section>
         <section
@@ -383,7 +450,7 @@ export function Landing({ session }: { session: Principal | null }) {
             <h2 id="faq-title">Najczęstsze pytania</h2>
           </div>
           <div className="ps-faq-list">
-            {FAQ.map(({ question, answer }) => (
+            {[...FAQ, ...MORE_FAQ].map(({ question, answer }) => (
               <details key={question}>
                 <summary>{question}</summary>
                 <p>{answer}</p>
@@ -396,8 +463,8 @@ export function Landing({ session }: { session: Principal | null }) {
             <span className="ps-eyebrow">Porozmawiajmy o Twoim wnętrzu</span>
             <h2>Zacznijmy od pomiaru</h2>
             <p>
-              Napisz albo zadzwoń. Ustalimy, czego potrzebujesz, porozmawiamy o
-              pomiarze i przygotowaniu projektu z wizualizacją 3D.
+              Napisz albo zadzwoń. Ustalimy termin, przyjedziemy, zmierzymy i
+              przygotujemy projekt z wizualizacją 3D.
             </p>
             <a className="ps-button secondary" href={PHONE.href}>
               Zadzwoń: {PHONE.label}
@@ -492,7 +559,7 @@ export function Landing({ session }: { session: Principal | null }) {
                   >
                     <option value="kuchnia">Kuchnia</option>
                     <option value="szafa">Szafa lub garderoba</option>
-                    <option value="inne">Inna zabudowa</option>
+                    <option value="inne">Zabudowa lub meble łazienkowe</option>
                   </select>
                 </div>
               </div>
@@ -560,6 +627,7 @@ export function Landing({ session }: { session: Principal | null }) {
             Zielona Góra · <a href={PHONE.href}>{PHONE.label}</a>
           </span>
           <small>{AREAS.join(" · ")}</small>
+          <small>@panstolarz.meble</small>
         </div>
         <a href="#/logowanie">
           Panel stolarni

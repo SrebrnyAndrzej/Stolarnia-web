@@ -7,6 +7,17 @@ scope: Aktualizacja treści istniejącej strony Pan Stolarz 2.0
 
 # Wynik do recenzji Claude
 
+## Aktualizacja po poleceniu „dodaj wszystkie treści i zrób deploy”
+
+Uzupełniono czwartą usługę (meble łazienkowe), cztery pozycje paska, galerię dwóch dostępnych wizualizacji, trzy wyróżniki, materiały/okucia, dziesięć pytań FAQ oraz końcowy kontakt i publiczny login. Wyróżnik dokumentacji prowadzi do rzeczywistego, oznaczonego przykładowego PDF, a galeria do istniejącej animacji. Nie stworzono nowych renderów ani opinii.
+
+Stałość ceny opisano dla zatwierdzonego zakresu projektu i aktualizacji cenników; bazą jest istniejąca decyzja projektowa w CLAUDE.md: cena uzgodniona pozostaje niezależna od aktualizacji katalogów. Zmiany zakresu są uzgadniane osobno. Nie zmieniono umów ani danych finansowych. Nie obiecuje się przekazania klientowi dokumentacji na własność; zakres przekazania ustalany jest przed zamówieniem.
+
+Odpowiedzi na pytania o pomiar, terminy, przygotowanie montażu i gwarancję są gotowymi komunikatami o ustaleniu warunków przed zamówieniem, a nie wymyślonymi kwotami, okresami gwarancji lub terminami. To nowe, jawne adaptacje do prośby o całą treść; konkretne wartości pozostają nieustalone. Sekcja opinii, dane firmy/e-mail i polityka prywatności nadal wymagają rzeczywistych danych. Wpisy niżej opisują poprzedni stan przekazania i należy czytać je z niniejszą aktualizacją.
+
+Publikacja dotyczy istniejącego podglądu na Vercel, zgodnie z bezpośrednim poleceniem Mateusza; bez merge do main i bez zmiany domeny produkcyjnej.
+
+
 Źródła: trzy pliki przekazane przez Mateusza w rozmowie: TRESCI-STRONA-GLOWNA.md, STRATEGIA-TRESCI-I-PROFILI.md i ZALOZENIA-STRONY-WWW-dla-Codex.md. Oryginałów nie kopiowano do publicznego repo: strategia zawiera dane przeznaczone wyłącznie do weryfikacji firmy. Ten raport dotyczy aktualizacji istniejącej aplikacji, nie odbioru całego odrębnego projektu Next.js z briefu.
 
 ## Wprowadzone

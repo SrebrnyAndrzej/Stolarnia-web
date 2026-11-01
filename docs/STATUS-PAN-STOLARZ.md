@@ -50,3 +50,6 @@ Na nowe zlecenie użytkownika film v4 odtwarza się sam, bez powiązania current
 
 ## Treści z materiałów agencji — 1.11.2026
 Dodano lokalne treści, sześć etapów współpracy, sekcję o Mateuszu, obszar działania, kontakt telefoniczny, lokalne SEO/JSON-LD, kolory v02 i lokalne IBM Plex tylko dla publicznej witryny. Nie opublikowano danych weryfikacyjnych ani źródłowych plików strategii. Brakujące rendery, warunki i terminy pozostają wyłączone. Raport do recenzji: bridge/outbox/PS-WWW-001-codex.md. Nie oznacza odbioru całego nowego briefu ani wykonania benchmarku/Lighthouse. Istniejące panele, kreator i hero autoplay pozostają zgodne z wcześniejszymi decyzjami użytkownika.
+
+## Uzupełnienie całej gotowej treści — 1.11.2026
+Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2 istniejących wizualizacji, 3 wyróżniki z działającymi przejściami, materiały/okucia i komplet 10 pytań FAQ. Galeria zastępuje osobny blok składania; zachowuje ten sam film oraz dodaje kadr kuchni z linkiem do animacji. Wyróżnik dokumentacji otwiera publiczny syntetyczny przykład PDF z oznaczeniem nieprodukcyjnym. Ceny opisano dla zatwierdzonego zakresu, bez zmiany umów i aktualizacji zapisanych kwot. Nie podano nieznanych terminów, cen pomiaru ani okresów gwarancji. Opinie, nieznane dane firmy i brakujące dokumenty prawne nie są zastępowane fikcyjną treścią.

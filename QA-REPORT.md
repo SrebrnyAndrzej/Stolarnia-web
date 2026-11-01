@@ -1,3 +1,9 @@
+## Uzupełnienie gotowych sekcji i deploy — 1.11.2026
+
+Dodano 4 usługi, 4 pozycje paska, 2 dostępne wizualizacje, 3 wyróżniki, materiały/okucia i 10 FAQ. Przykład dokumentacji ma działający link do syntetycznego PDF; nie jest przedstawiany jako dokumentacja konkretnego klienta. Warunki ceny opisano dla zatwierdzonego projektu. Nie podano nieznanych kosztów pomiaru, terminów ani okresów gwarancji i nie dodano fikcyjnych opinii.
+
+Typecheck i build z check:zgody poprawne. 7 scenariuszy hero poprawnych. Rozszerzony test treści początkowo trafił na dwie prawidłowe akcje „Zobacz wizualizacje”; po ograniczeniu selektora do hero powtórka poprawna, wraz ze sprawdzeniem PDF (200/application/pdf), 4 usług, 2 pozycji galerii, 3 wyróżników i 10 FAQ. Desktop 1440 i telefon 375: brak poziomego overflow, 0 serious/critical axe findings. Audyt statyczny strict: 0 findings. Aktualne pełne screenshoty w qa/content-desktop.png i qa/content-phone.png.
+
 ## Aktualizacja treści z materiałów Mateusza — 1.11.2026
 
 - Typecheck i build poprawne. Build zawiera obowiązkowe `check:zgody`, wynik bez plików oczekujących. Niezależna próba z fixture w zagnieżdżonym katalogu: dozwolony plik przechodzi, `ZGODA-KLIENTA_` zatrzymuje kontrolę.
