@@ -1,3 +1,4 @@
+import { BrandCarousel } from "./BrandCarousel";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   IconArrowRight,
@@ -149,6 +150,7 @@ export function Landing({ session }: { session: Principal | null }) {
           <a href="#/wizualizacja">Wizualizacje</a>
           <a href="#/o-nas">O nas</a>
           <a href="#/kreator-kuchni">Kreator kuchni</a>
+          <a href="#/katalog-dekorow">Katalog dekorów</a>
           <a href="#/jak-dzialamy">Jak działamy</a>
         </nav>
         <a className="ps-button ps-header-call" href={PHONE.href}>
@@ -397,6 +399,7 @@ export function Landing({ session }: { session: Principal | null }) {
               ))}
             </ul>
           </div>
+          <BrandCarousel />
         </section>
         <section
           className="ps-public-section ps-about"

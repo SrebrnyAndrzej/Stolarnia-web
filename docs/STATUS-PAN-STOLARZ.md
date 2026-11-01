@@ -68,3 +68,7 @@ Podglądy `#/podglad/owner/szuflady` oraz `#/podglad/employee/szuflady` otwieraj
 
 ## Biblioteka marek i dekory
 Przeniesiono 19 WebP marek z repo mussi-plyta do `web/public/brand/manufacturers`, z manifestem i SHA-256. Nie są automatycznie listą oferty ani partnerów Pan Stolarz. Dekory (644 zdjęcia) już były w repo. Kopiowanie obrazów dekorów/okuć włączono do standardowego `npm run build`, a nie tylko komendy Vercel, z myślą o OVH. Szczegóły: `docs/ASSETY-dekory-i-logotypy.md`.
+
+## Katalog i karuzela marek — nowy interfejs
+Pod „Materiały i okucia” dodano ręczną karuzelę 19 logotypów. Menu publiczne ma `#/katalog-dekorow`, 644 dekory z wyszukiwaniem i filtrem producenta. Wspólny picker pozwala wybrać dekor frontów w kreatorze; wybór przechodzi z katalogu linkiem, utrwala się w lokalnym szkicu/import-export i jest uwzględniony w opisie zapytania. Publiczny endpoint dekorów nie czyta bazy firmy. Wybrana próbka jest widoczna, ale 3D pozostaje kolorem poglądowym; bez mapowania miniatur na geometrię. Potwierdzenie fizycznej próbki, formatów i grubości pozostaje osobnym etapem. Nowe testy: `tests/v2/decor-catalog.spec.ts`.
+Walidacja: typecheck i build przeszły; 2 nowe testy katalogu/karuzeli oraz eksport/import dekoru i briefu przeszły. 6/7 testów kreatora przeszło na dev; scenariusz U zatrzymał się na ładowaniu modułu 3D na dev, następnie przeszedł bez zmian na zbudowanej paczce produkcyjnej (vite preview).

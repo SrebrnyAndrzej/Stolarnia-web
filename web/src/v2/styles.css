@@ -2754,3 +2754,14 @@ summary:focus-visible {
 .ps-task-form label { display: grid; gap: .4rem; }
 .ps-task-card { border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-block: 1rem; background: var(--panel); }
 .ps-task-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+.ps-brand-carousel { margin-block: 2rem; }
+.ps-brand-carousel ul { display:flex; gap:1.5rem; overflow-x:auto; list-style:none; padding:1rem 0; scroll-snap-type:x proximity; }
+.ps-brand-carousel li { flex:0 0 180px; scroll-snap-align:start; background:white; border-radius:10px; padding:1rem; display:grid; place-items:center; }
+.ps-brand-carousel img { object-fit:contain; max-width:100%; }
+.ps-decor-filters {display:flex;flex-wrap:wrap;align-items:end;gap:1rem;margin-block:1rem;}
+.ps-decor-filters label {display:grid;gap:.5rem;max-width:100%;}
+.ps-decor-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:1rem;margin-block:1rem;}
+.ps-decor-card {border:1px solid var(--line);border-radius:10px;padding:1rem;background:var(--panel);}
+.ps-decor-card img {width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;}
+.ps-decor-card h3 {font-size:1rem;}
+.kp-decor-selection {margin-block:1.5rem;}

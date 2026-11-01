@@ -1,3 +1,4 @@
+import { DecorCatalog } from "./DecorCatalog";
 import { Tasks } from "./Tasks";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import {
@@ -92,7 +93,7 @@ export function App() {
         email: "",
       }
     : session;
-  const plannerRoute = hash === "#/kreator-kuchni";
+  const plannerRoute = hash.split("?")[0] === "#/kreator-kuchni";
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
@@ -110,25 +111,28 @@ export function App() {
   const href = (page: string) =>
     demo ? `#/podglad/${person!.role}/${page}` : `#/panel/${page}`;
   useEffect(() => {
-    const title = plannerRoute
-      ? "Kreator kuchni"
-      : publicRoute
-        ? "Meble na wymiar"
-        : section === "szuflady"
-          ? "Kalkulator szuflad"
-          : isPanel
-            ? person?.role === "owner"
-              ? "Panel właściciela"
-              : person?.role === "employee"
-                ? "Panel pracownika"
-                : "Moje projekty"
-            : "Logowanie";
+    const title =
+      hash === "#/katalog-dekorow"
+        ? "Katalog dekorów"
+        : plannerRoute
+          ? "Kreator kuchni"
+          : publicRoute
+            ? "Meble na wymiar"
+            : section === "szuflady"
+              ? "Kalkulator szuflad"
+              : isPanel
+                ? person?.role === "owner"
+                  ? "Panel właściciela"
+                  : person?.role === "employee"
+                    ? "Panel pracownika"
+                    : "Moje projekty"
+                : "Logowanie";
     document.title = publicRoute ? HOME_TITLE : `${title} · Pan Stolarz`;
     if (publicRoute)
       document
         .querySelector('meta[name="description"]')
         ?.setAttribute("content", HOME_DESCRIPTION);
-  }, [publicRoute, section, isPanel, plannerRoute, person?.role]);
+  }, [hash, publicRoute, section, isPanel, plannerRoute, person?.role]);
   const logout = async () => {
     setLogoutError("");
     try {
@@ -139,6 +143,7 @@ export function App() {
       setLogoutError((error as Error).message);
     }
   };
+  if (hash === "#/katalog-dekorow") return <DecorCatalog />;
   if (plannerRoute)
     return (
       <Suspense

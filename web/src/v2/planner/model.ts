@@ -42,6 +42,15 @@ export const draftSchema = z
     returnLength: z.number().int().min(1800).max(8000).default(3600),
     height: z.number().int().min(2300).max(3500),
     finish: z.enum(["white", "oak", "sage", "graphite"]),
+    decor: z
+      .object({
+        key: z.string().max(160),
+        id: z.string().max(120),
+        name: z.string().max(200),
+        manufacturer: z.enum(["Egger", "Kronospan"]),
+        obraz: z.string().startsWith("/api/dekory/obrazy/").max(240),
+      })
+      .optional(),
     items: z.array(itemSchema).max(24),
   })
   .superRefine((d, ctx) => {
@@ -199,7 +208,9 @@ export function brief(d: Draft): string {
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
     `Układ: ${d.layout === "u" ? "U z pustymi narożnikami po 650 mm na ścianach B i C" : d.layout === "l" ? "L z pustym narożnikiem 650 mm na ścianie B" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
-    `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,
+    d.decor
+      ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`
+      : `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,
     "Szafki od początku każdej ściany, osobno dolne i wiszące:",
     ...toAnalysis(d).projekt.moduly.map(
       (m) =>

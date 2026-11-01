@@ -1,3 +1,4 @@
+import { DecorPicker, type DecorChoice } from "../DecorCatalog";
 import {
   Component,
   lazy,
@@ -79,6 +80,31 @@ export function KitchenPlanner() {
   const [draft, setDraft] = useState<Draft>(initial.draft);
   const [history, setHistory] = useState<Draft[]>([]);
   const [step, setStep] = useState(0);
+  const [decorOpen, setDecorOpen] = useState(false);
+  const requestedDecor = new URLSearchParams(
+    location.hash.split("?")[1] ?? "",
+  ).get("dekor");
+  useEffect(() => {
+    if (!requestedDecor) return;
+    const c = new AbortController();
+    fetch("/api/demo/dekory", { signal: c.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
+      .then((rows: DecorChoice[]) => {
+        const d = rows.find((x) => x.key === requestedDecor);
+        if (d && !c.signal.aborted)
+          setDraft((old) => ({ ...old, decor: d as Draft["decor"] }));
+      })
+      .catch(() => {
+        if (!c.signal.aborted)
+          setError(
+            "Nie udało się wczytać wybranego dekoru. Otwórz katalog i wybierz ponownie.",
+          );
+      });
+    return () => c.abort();
+  }, [requestedDecor]);
   const [wall, setWall] = useState<"a" | "b" | "c">(
     initial.draft.items[0]?.wall ?? "a",
   );
@@ -613,7 +639,9 @@ export function KitchenPlanner() {
                       <dd>{draft.items.length}</dd>
                       <dt>Fronty</dt>
                       <dd>
-                        {finishes.find((f) => f.id === draft.finish)?.name}
+                        {draft.decor
+                          ? `${draft.decor.manufacturer} ${draft.decor.id} — ${draft.decor.name}`
+                          : finishes.find((f) => f.id === draft.finish)?.name}
                       </dd>
                     </dl>
                     <p>
@@ -737,7 +765,9 @@ export function KitchenPlanner() {
                       <button
                         key={f.id}
                         aria-pressed={draft.finish === f.id}
-                        onClick={() => change({ ...draft, finish: f.id })}
+                        onClick={() =>
+                          change({ ...draft, finish: f.id, decor: undefined })
+                        }
                       >
                         <span style={{ background: f.color }} />
                         {f.name}
@@ -745,6 +775,44 @@ export function KitchenPlanner() {
                     ))}
                   </div>
                 </div>
+                <section className="kp-decor-selection">
+                  <h2>Dekor frontów z katalogu</h2>
+                  {draft.decor && (
+                    <div>
+                      <img
+                        src={draft.decor.obraz}
+                        alt={draft.decor.name}
+                        width="160"
+                        height="90"
+                      />
+                      <p>
+                        {draft.decor.manufacturer} · {draft.decor.id} ·{" "}
+                        {draft.decor.name}
+                      </p>
+                    </div>
+                  )}
+                  <p>
+                    Wybór zapisujemy w szkicu i opisie zapytania. Model 3D
+                    pokazuje kolor poglądowy; zdjęcie próbki nie jest teksturą w
+                    skali.
+                  </p>
+                  <button
+                    className="ps-button secondary"
+                    aria-expanded={decorOpen}
+                    onClick={() => setDecorOpen((v) => !v)}
+                  >
+                    {decorOpen ? "Zamknij katalog" : "Wybierz dekor z katalogu"}
+                  </button>
+                  {decorOpen && (
+                    <DecorPicker
+                      selected={draft.decor?.key}
+                      onSelect={(d) => {
+                        change({ ...draft, decor: d as Draft["decor"] });
+                        setDecorOpen(false);
+                      }}
+                    />
+                  )}
+                </section>
                 <div className="kp-arrangement">
                   <h2>Szafki · ściana {wall.toUpperCase()}</h2>
                   {draft.layout !== "straight" && (

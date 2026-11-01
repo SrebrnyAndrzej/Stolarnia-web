@@ -55,6 +55,8 @@ app.post("/api/v2/requests", async (req, res) => {
     res.status(201).json({ id: data });
   } catch (error) { access.fail(res, error); }
 });
+app.get("/api/demo/dekory", (_req, res) => res.json(DEKORY.map(d => ({ key: kluczDekoru(d), id:d.id, name:d.name, manufacturer:d.manufacturer, obraz:obrazDekoru(d) }))));
+app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
 // Public stateless preview only. Never loads or persists workshop data.
 const drawerPreview = previewCalculator(s);
 app.get("/api/demo/systemy-szuflad", (_req, res) => res.json(drawerSystems()));
