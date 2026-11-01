@@ -87,7 +87,7 @@ export function KitchenPlanner() {
   useEffect(() => {
     if (!requestedDecor) return;
     const c = new AbortController();
-    fetch("/api/demo/dekory", { signal: c.signal })
+    fetch("/catalog/decors.json", { signal: c.signal })
       .then((r) => {
         if (!r.ok) throw new Error();
         return r.json();

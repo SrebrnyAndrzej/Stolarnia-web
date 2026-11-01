@@ -15,7 +15,7 @@ export function DecorPicker({
   onSelect?: (d: DecorChoice) => void;
   selected?: string;
 }) {
-  const list = useResource<DecorChoice[]>("/api/demo/dekory");
+  const list = useResource<DecorChoice[]>("/catalog/decors.json");
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("");
   const [limit, setLimit] = useState(24);
