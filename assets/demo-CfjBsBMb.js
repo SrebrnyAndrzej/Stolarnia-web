@@ -1,4 +1,4 @@
-import{c as M}from"./index-Be5o-CUm.js";import{z as k,d as u,U as d}from"./modules-C33UIaNG.js";/**
+import{c as M}from"./index-DZ1D0Rfp.js";import{z as k,d as u,U as d}from"./modules-C33UIaNG.js";/**
  * @license @tabler/icons-react v3.50.0 - MIT
  *
  * This source code is licensed under the MIT license.
