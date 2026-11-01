@@ -2749,3 +2749,8 @@ summary:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+.ps-task-form { display: grid; gap: 1rem; max-width: 42rem; margin-block: 2rem; }
+.ps-task-form label { display: grid; gap: .4rem; }
+.ps-task-card { border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-block: 1rem; background: var(--panel); }
+.ps-task-actions { display: flex; flex-wrap: wrap; gap: .75rem; }

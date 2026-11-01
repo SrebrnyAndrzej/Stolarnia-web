@@ -1,3 +1,4 @@
+import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
 import { PRODUKTY_OKUC } from "../core/catalog/hardware-products.js";
@@ -176,6 +177,41 @@ app.patch("/api/v2/members/:id", v2(async (req, person) => {
   if (error) throw new AccessError(503, "Nie udało się zapisać uprawnień.");
   if (!data) throw new AccessError(403, "Nie można zmienić tego konta.");
   return data;
+}));
+
+const taskFields = "id,project_id,assignee_id,title,status,version,created_at,updated_at";
+app.get("/api/v2/tasks", v2(async (_req, person) => {
+  requireWorkshop(person);
+  if (!access.admin) throw new AccessError(503, "Baza zadań jest niedostępna.");
+  let query = access.admin.from("pan_stolarz_tasks").select(taskFields).order("created_at", { ascending: false }).limit(100);
+  if (person.role === "employee") {
+    if (!person.project_ids.length) return [];
+    query = query.eq("assignee_id", person.user_id).in("project_id", person.project_ids);
+  }
+  const { data, error } = await query;
+  if (error) throw new AccessError(503, "Nie udało się pobrać zadań. Sprawdź konfigurację modułu.");
+  return data;
+}));
+app.post("/api/v2/tasks", v2(async (req, person) => {
+  requireWorkshop(person);
+  if (person.role !== "owner") throw new AccessError(403, "Tylko właściciel przydziela pracę.");
+  const parsed = taskCreate.safeParse(req.body);
+  if (!parsed.success) throw new AccessError(400, "Wybierz projekt, pracownika i tytuł zadania (2–160 znaków).");
+  const input = parsed.data;
+  if (!s.magazyn.odczytaj().projekty.some(p => p.id === input.project_id)) throw new AccessError(404, "Nie znaleziono projektu.");
+  if (!access.admin) throw new AccessError(503, "Baza zadań jest niedostępna.");
+  const { error } = await access.admin.rpc("pan_stolarz_task_command", { actor:person.user_id, task:null, expected_version:null, next_status:null, project:input.project_id, assignee:input.assignee_id, task_title:input.title, operation_id:input.operation_id });
+  if (error) taskFailure(error.message);
+  return { ok:true };
+}));
+app.patch("/api/v2/tasks/:id", v2(async (req, person) => {
+  requireWorkshop(person);
+  const parsed = taskUpdate.safeParse(req.body);
+  if (!parsed.success || !z.string().uuid().safeParse(p(req,"id")).success) throw new AccessError(400,"Sprawdź zadanie i jego wersję.");
+  if (!access.admin) throw new AccessError(503,"Baza zadań jest niedostępna.");
+  const { error } = await access.admin.rpc("pan_stolarz_task_command", { actor:person.user_id, task:p(req,"id"), expected_version:parsed.data.version, next_status:parsed.data.status });
+  if (error) taskFailure(error.message);
+  return { ok:true };
 }));
 
 // Katalogi i ustawienia

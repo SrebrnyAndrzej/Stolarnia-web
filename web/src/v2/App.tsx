@@ -1,3 +1,4 @@
+import { Tasks } from "./Tasks";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import {
   IconArrowLeft,
@@ -177,8 +178,17 @@ export function App() {
   const canSeeSection =
     owner ||
     ["projekty", ""].includes(section) ||
-    (employee && section === "szuflady");
+    (employee && ["szuflady", "zadania"].includes(section));
   const nav = [
+    ...(owner || employee
+      ? [
+          {
+            id: "zadania",
+            label: owner ? "Plan pracy" : "Moja praca",
+            icon: IconFolder,
+          },
+        ]
+      : []),
     {
       id: "projekty",
       label: person.role === "client" ? "Moje projekty" : "Projekty",
@@ -352,6 +362,8 @@ export function App() {
             ) : (
               <PrzelicznikSzuflad />
             )
+          ) : section === "zadania" && (owner || employee) ? (
+            <Tasks person={person} demo={demo} />
           ) : section === "pracownicy" && owner ? (
             <Members demo={demo} />
           ) : section === "zapytania" && owner ? (

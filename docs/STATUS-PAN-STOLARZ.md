@@ -10,6 +10,8 @@ Przed pracą sprawdź `git status`, pobierz zdalne zmiany i nie nadpisuj niezapi
 
 ## Decyzje użytkownika
 
+Aktualny priorytet 01.11.2026: praca stolarni dla właściciela oraz dwóch pracowników — Bartka i Kacpra. Faktury pozostają poza systemem; nie integrujemy teraz Erste, KSeF ani księgowości. Rozwijamy obecny backend Supabase/API zamiast wdrażać ERP. Bieżący plan: `docs/PLAN-praca-stolarni.md`. Zadania, czas i zgłoszenia opisane w planie wymagają implementacji; nie przedstawiać ich jako działających funkcji.
+
 Branding Pan Stolarz, wybrany wariant 2, język bezpośredni na Ty. Widoki klienta, właściciela i pracownika. Pracownik: przypisane dane techniczne i kalkulator szuflad; bez finansów i wycen. Silnik należy do Claude; Codex nie zmienia `src/core`. Claude przygotowuje rendery i animacje. Codex skupia się na układzie i treściach.
 
 ## Działa w podglądzie
@@ -53,3 +55,10 @@ Dodano lokalne treści, sześć etapów współpracy, sekcję o Mateuszu, obszar
 
 ## Uzupełnienie całej gotowej treści — 1.11.2026
 Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2 istniejących wizualizacji, 3 wyróżniki z działającymi przejściami, materiały/okucia i komplet 10 pytań FAQ. Galeria zastępuje osobny blok składania; zachowuje ten sam film oraz dodaje kadr kuchni z linkiem do animacji. Wyróżnik dokumentacji otwiera publiczny syntetyczny przykład PDF z oznaczeniem nieprodukcyjnym. Ceny opisano dla zatwierdzonego zakresu, bez zmiany umów i aktualizacji zapisanych kwot. Nie podano nieznanych terminów, cen pomiaru ani okresów gwarancji. Opinie, nieznane dane firmy i brakujące dokumenty prawne nie są zastępowane fikcyjną treścią.
+
+## Moduł zadań — pierwsza implementacja 01.11.2026
+Dodano `#/panel/zadania`: właściciel przydziela zadanie aktywnemu pracownikowi przypisanemu do projektu; pracownik odczytuje własne zadania i rozpoczyna/wstrzymuje/kończy pracę. Osobna tabela, wersjonowanie, historia zdarzeń i transakcyjna komenda SQL. Klucz operacji ogranicza duplikaty po ponowieniu tworzenia. Demo jawnie nie zapisuje zadań. Nie utworzono kont Bartka/Kacpra, nie dodano czasu, checklist ani zdjęć.
+
+Wymagane przed aktywacją: zastosowanie `supabase/migrations/202611010001_workshop_tasks.sql` po migracji kont, testy transakcji i uprawnień na testowym Postgres/Supabase, zaproszenie pracowników i przypisanie projektów. Migracja nie została wykonana na zdalnej bazie. Nie było deployu tej zmiany. Testy przeglądarkowe `tests/v2/tasks.spec.ts` używają atrapy API; nie potwierdzają reguł SQL.
+
+Weryfikacja przed deployem: migracja zadań została wykonana na izolowanym PostgreSQL/PGlite z testowymi rolami i członkami. Potwierdzono audyt, idempotentne tworzenie, kontrolę wykonawcy, konflikt wersji, przejścia stanów, dezaktywację konta i odmowę bezpośredniego dostępu authenticated. Nie jest to migracja zdalnego Supabase. Instrukcja aktywacji i przeniesienia: `docs/DEPLOY-i-przeniesienie-OVH.md`.
