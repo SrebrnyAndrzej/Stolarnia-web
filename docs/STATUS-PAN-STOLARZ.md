@@ -65,3 +65,6 @@ Weryfikacja przed deployem: migracja zadań została wykonana na izolowanym Post
 
 ## Kalkulator bez logowania — podgląd
 Podglądy `#/podglad/owner/szuflady` oraz `#/podglad/employee/szuflady` otwierają pełny kalkulator. Osobne publiczne endpointy `/api/demo/systemy-szuflad` i `/api/demo/przelicznik-szuflad` używają istniejącego silnika z domyślną konstrukcją przez adapter; nie ładują ani nie zapisują bazy stolarni. Zalogowani nadal korzystają z chronionych endpointów i własnych ustawień. Test Playwright uruchamia prawdziwe lokalne API bez sesji i potwierdza obliczenie oraz ochronę listy projektów. Nie zmieniano algorytmów src/core.
+
+## Biblioteka marek i dekory
+Przeniesiono 19 WebP marek z repo mussi-plyta do `web/public/brand/manufacturers`, z manifestem i SHA-256. Nie są automatycznie listą oferty ani partnerów Pan Stolarz. Dekory (644 zdjęcia) już były w repo. Kopiowanie obrazów dekorów/okuć włączono do standardowego `npm run build`, a nie tylko komendy Vercel, z myślą o OVH. Szczegóły: `docs/ASSETY-dekory-i-logotypy.md`.

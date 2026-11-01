@@ -8,7 +8,7 @@
     "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch src/server/index.ts",
     "dev:web": "vite",
-    "build": "npm run check:zgody && vite build && tsc -p tsconfig.json",
+    "build": "npm run check:zgody && vite build && tsc -p tsconfig.json && node scripts/kopiuj-zasoby-vercel.mjs",
     "start": "node dist/server/index.js",
     "mcp": "tsx src/mcp/stdio.ts",
     "mcp:build": "node dist/mcp/stdio.js",
