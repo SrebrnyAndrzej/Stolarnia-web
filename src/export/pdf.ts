@@ -351,6 +351,7 @@ class Kontekst {
       ["Termin montażu", mt.termin || "— (nie ustalono)"],
       ["Adres montażu", mt.adres || "— (brak w projekcie)"],
       ["Kontakt na miejscu", mt.kontakt || "—"],
+      ["Ekipa montażowa", "1. ______________  2. ______________"],
       ["Mebli do zamontowania", String(this.w.zbudowane.length)],
       ["Ściany z meblami", String(new Set(this.w.zbudowane.map((z) => z.modul.scianaId)).size)],
     ];
@@ -576,13 +577,13 @@ class Kontekst {
     let y = top;
     let nrK = 0;
     const krok = (_: number, tytul: string, linie: string[], brak = false) => {
-      if (y > H - 50) return;
+      if (y > H - 62) return;
       nrK += 1;
       doc.lineWidth(0.6).strokeColor("#000").rect(xK, y + 1, 8, 8).stroke();
       doc.font("B").fontSize(8.5).fillColor(brak ? "#b3261e" : "#000").text(`${nrK}. ${tytul}`, xK + 13, y, { width: wK - 13 });
       y = doc.y + 1;
       for (const t of linie) {
-        if (y > H - 40) break;
+        if (y > H - 54) break;
         doc.font("R").fontSize(7.5).fillColor(t.startsWith("!") ? "#b3261e" : "#222").text(t, xK + 13, y, { width: wK - 13 });
         y = doc.y + 1;
       }
@@ -651,10 +652,12 @@ class Kontekst {
       ...zm.ostrzezenia,
       ...new Set(this.d.diagnostyka.filter((dg) => dg.obiekty.some((id) => czesci.some((c) => c.id === id))).map((dg) => `[${dg.poziom}] ${dg.opis.replace(`${md.nazwa}: `, "")}`)),
     ];
-    if (braki.length && y < H - 50) {
+    if (braki.length && y < H - 62) {
       doc.font("B").fontSize(7.5).fillColor("#b3261e").text("Uwagi z konstrukcji", xK, y);
-      doc.font("R").fontSize(6.8).text(braki.join("\n"), xK, doc.y + 1, { width: wK, height: H - 34 - doc.y, ellipsis: true });
+      doc.font("R").fontSize(6.8).text(braki.join("\n"), xK, doc.y + 1, { width: wK, height: H - 48 - doc.y, ellipsis: true });
     }
+    // Ekipa dwóch osób: jedna składa, druga sprawdza (przekątne, połączenia, etykiety).
+    doc.font("R").fontSize(7.5).fillColor("#000").text("Złożył (inicjały): ________    Sprawdził (inicjały): ________", xK, H - 40, { lineBreak: false });
     doc.fillColor("#000");
   }
 
@@ -734,9 +737,14 @@ class Kontekst {
     yy += 14;
     doc.font("R").fontSize(8).text(`Wydanie: ${this.w.wydanie ? `nr ${this.w.wydanie.numer}, ` : ""}rew. ${this.d.rewizja}. Data odbioru: ____________`, m, yy);
     yy += 30;
-    const pol = (this.W - 2 * m - 40) / 2;
-    doc.lineWidth(0.5).moveTo(m, yy).lineTo(m + pol, yy).stroke().moveTo(m + pol + 40, yy).lineTo(this.W - m, yy).stroke();
-    doc.font("R").fontSize(7.5).text("Montażysta (imię, podpis)", m, yy + 3).text("Klient (podpis)", m + pol + 40, yy + 3);
+    // Ekipa dwóch montażystów + klient (Mateusz, 1.11.2026).
+    const pol = (this.W - 2 * m - 60) / 3;
+    doc.lineWidth(0.5);
+    ["Montażysta 1 (imię, podpis)", "Montażysta 2 (imię, podpis)", "Klient (podpis)"].forEach((t, i) => {
+      const x0 = m + i * (pol + 30);
+      doc.moveTo(x0, yy).lineTo(x0 + pol, yy).stroke();
+      doc.font("R").fontSize(7.5).text(t, x0, yy + 3, { lineBreak: false });
+    });
     doc.font("R").fontSize(7).fillColor("#555").text("Odbiór nie oznacza rezygnacji z roszczeń dotyczących wad i nie ogranicza ustawowych praw klienta.", m, yy + 18, { width: this.W - 2 * m });
     doc.fillColor("#000");
   }
