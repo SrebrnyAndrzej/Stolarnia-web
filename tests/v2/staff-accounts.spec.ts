@@ -12,6 +12,7 @@ test("owner can create employee and preserve data after failure on a narrow scre
       const input = route.request().postDataJSON();
       expect(input.role).toBeUndefined();
       expect(input.job_role).toBe("Montażysta");
+      expect(input.access_profile).toBe("montaz");
       attempts++;
       if (attempts === 1) { status = 503; body = { blad: "Błąd testowy. Spróbuj ponownie." }; }
       else body = { activation_url: "https://panstolarz.pro/#/aktywacja?token=example&type=invite" };
@@ -24,6 +25,7 @@ test("owner can create employee and preserve data after failure on a narrow scre
   await page.getByLabel("Imię i nazwisko", { exact: true }).fill("Jan Testowy");
   await page.getByLabel("E-mail pracownika", { exact: true }).fill("jan@example.com");
   await page.getByLabel("Funkcja w zespole", { exact: true }).fill("Montażysta");
+  await page.getByRole("radio", { name: /^Montaż/ }).check();
   await page.getByRole("button", { name: "Utwórz konto i link" }).click();
   await expect(page.getByRole("alert")).toContainText("Błąd testowy");
   await expect(page.getByLabel("E-mail pracownika", { exact: true })).toHaveValue("jan@example.com");
