@@ -72,7 +72,7 @@ export function FurnitureDrawers({
                       set({ [key]: e.target.value || undefined })
                     }
                   >
-                    <option value="">Bok korpusu — domyślnie</option>
+                    <option value="">Granica automatyczna</option>
                     {drawerBoundaryCandidates(model).map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name}

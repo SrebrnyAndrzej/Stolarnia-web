@@ -10,6 +10,9 @@ import {
   applyConstructionStandard,
   standardPlateSpecification,
   backDepth,
+  applySuggestedLayout,
+  layoutVariants,
+  type LayoutVariant,
   furnitureIssues,
   furnitureOutline,
   platePolygon,
@@ -36,7 +39,7 @@ const uid = () => crypto.randomUUID();
 const initial = () => {
   const m = freshFurniture();
   m.plates = carcass(m, uid);
-  return m;
+  return applySuggestedLayout(m, "auto", uid);
 };
 function NumberField({
   label,
@@ -241,6 +244,12 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           ? {
               ...p,
               ...patch,
+              ...(p.layoutSlot &&
+              ["x", "y", "z", "width", "height", "depth"].some(
+                (k) => k in patch,
+              )
+                ? { layoutCustomized: true }
+                : {}),
               ...(p.kind === "cap" && patch.kind === "board" && p.specification
                 ? {
                     specification: {
@@ -313,7 +322,13 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     const next = {
       ...model,
       drawerAssemblies: [],
-      plates: [...model.plates.filter((p) => p.kind !== "drawer"), ...plates],
+      suggestion: { variant: "empty" as const, excludedSlots: [] },
+      plates: [
+        ...model.plates.filter(
+          (p) => p.kind !== "drawer" && (!p.layoutSlot || p.layoutCustomized),
+        ),
+        ...plates,
+      ],
     };
     if (model.construction)
       next.plates = next.plates.map((p) =>
@@ -360,6 +375,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           : {
               ...p,
               anchor: undefined,
+              ...(p.layoutSlot ? { layoutCustomized: true } : {}),
               x: Math.max(
                 0,
                 Math.min(m.width - p.width, Math.round(d.startX + x - d.x)),
@@ -470,6 +486,60 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           </ul>
         </aside>
         <div className="fc-workbench">
+          <fieldset disabled={busy} className="fc-layout-choice">
+            <legend>Sugerowany układ startowy</legend>
+            <label>
+              Układ startowy
+              <select
+                aria-label="Układ startowy"
+                value={model.suggestion?.variant ?? "empty"}
+                onChange={(e) => {
+                  update((m) =>
+                    applySuggestedLayout(
+                      m,
+                      e.target.value as LayoutVariant,
+                      uid,
+                    ),
+                  );
+                  setSelected("");
+                }}
+              >
+                {layoutVariants.map((v) => (
+                  <option key={v.value} value={v.value}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p>
+              Nowy mebel od razu ma propozycję wnętrza dopasowaną do obrysu.
+              Półki, przegrody i fronty możesz przesuwać, usuwać i zmieniać.
+              Ręcznie zmienione elementy zachowują wymiary po zmianie gabarytów.
+            </p>
+            <button
+              onClick={() => {
+                update((m) =>
+                  applySuggestedLayout(m, m.suggestion?.variant ?? "auto", uid),
+                );
+                setSelected("");
+              }}
+            >
+              Przywróć sugerowany układ
+            </button>
+            <p>
+              Zmiana wariantu lub przywrócenie zastępuje wnętrze i przypisania
+              systemów szuflad. Cofnij odtwarza poprzedni projekt. Materiały
+              korpusu pozostają zachowane.
+            </p>
+            {model.suggestion &&
+              model.suggestion.variant !== "empty" &&
+              !model.plates.some((p) => p.layoutSlot) && (
+                <p role="status">
+                  W tych gabarytach brakuje miejsca na sugerowane wnętrze.
+                  Zwiększ wymiary lub dodaj elementy ręcznie.
+                </p>
+              )}
+          </fieldset>
           <ConstructionStandard
             model={model}
             disabled={busy}
@@ -903,6 +973,8 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                         id: uid(),
                         name: `${plate.name.slice(0, 88)} — kopia`,
                         anchor: undefined,
+                        layoutSlot: undefined,
+                        layoutCustomized: undefined,
                         y: Math.min(m.height - plate.height, plate.y + 100),
                       },
                     ],
@@ -920,6 +992,18 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                     drawerAssemblies: m.drawerAssemblies?.filter(
                       (p) => p.frontId !== selected,
                     ),
+                    suggestion:
+                      m.suggestion && plate.layoutSlot
+                        ? {
+                            ...m.suggestion,
+                            excludedSlots: [
+                              ...new Set([
+                                ...m.suggestion.excludedSlots,
+                                plate.layoutSlot,
+                              ]),
+                            ],
+                          }
+                        : m.suggestion,
                   }));
                   setSelected("");
                 }}

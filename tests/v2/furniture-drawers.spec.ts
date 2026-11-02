@@ -5,6 +5,9 @@ test("employee assigns a drawer system to a front and reopens the frozen calcula
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page.getByLabel("Liczba: średnie", { exact: true }).fill("0");
   await page.getByLabel("Liczba: wysokie", { exact: true }).fill("0");
   await page
@@ -52,6 +55,9 @@ test("selected partition narrows the drawer compartment and deleting it blocks r
   await staffApi(page);
   await page.goto("/#/panel/meble");
   await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
+  await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
   await page.getByRole("button", { name: "+ Przegroda", exact: true }).click();
@@ -92,6 +98,9 @@ test("drawer selections remain editable when saving fails on mobile", async ({
     return route.fallback();
   });
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();

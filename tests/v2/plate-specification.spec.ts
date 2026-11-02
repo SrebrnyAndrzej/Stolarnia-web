@@ -7,6 +7,9 @@ for (const role of ["owner", "employee"]) {
   }) => {
     await staffApi(page, role);
     await page.goto("/#/panel/meble");
+    await page
+      .getByLabel("Układ startowy", { exact: true })
+      .selectOption("empty");
     const select = page.getByLabel("Wybierz płytę", { exact: true });
     await select.selectOption({ label: "1. Bok lewy" });
     const id = await select.inputValue();
@@ -73,13 +76,11 @@ for (const role of ["owner", "employee"]) {
       .getByText("Karta części · dane materiałowe", { exact: true })
       .click();
     await expect(
-      page
-        .locator(".fc-part-review")
-        .filter({
-          has: page.getByText("Karta części · dane materiałowe", {
-            exact: true,
-          }),
+      page.locator(".fc-part-review").filter({
+        has: page.getByText("Karta części · dane materiałowe", {
+          exact: true,
         }),
+      }),
     ).toContainText("Dane materiałowe uzupełnione");
   });
 }
@@ -90,6 +91,9 @@ test("changing the local frame clears edge decisions, undo restores them on mobi
   await page.setViewportSize({ width: 390, height: 844 });
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page
     .getByLabel("Wybierz płytę", { exact: true })
     .selectOption({ label: "1. Bok lewy" });

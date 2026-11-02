@@ -5,6 +5,9 @@ test("employee applies a reusable standard, sizes the back and saves the resulti
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page.getByLabel("Plecy", { exact: true }).selectOption("applied");
   await page.getByLabel("Materiał korpusu", { exact: true }).fill("Laminat");
   await page.getByLabel("Dekor korpusu", { exact: true }).fill("Biały");

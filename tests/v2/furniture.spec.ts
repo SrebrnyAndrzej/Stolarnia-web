@@ -5,6 +5,9 @@ test("two side heights calculate saw limits and preserve them after saving", asy
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page.getByLabel("Obrys", { exact: true }).selectOption("slope");
   await page
     .getByLabel("Wysokość krótkiej ścianki", { exact: true })
@@ -38,6 +41,9 @@ test("employee creates a sloped model, edits a shelf, saves and reopens it", asy
   page.on("pageerror", (e) => errors.push(e.message));
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await expect(
     page.getByRole("heading", { name: "Kreator mebla", exact: true }),
   ).toBeVisible();
@@ -105,6 +111,9 @@ test("failed shared save keeps the draft and mobile view fits", async ({
     return route.fulfill({ json: [] });
   });
   await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
   await page.getByLabel("Nazwa mebla", { exact: true }).fill("Schody testowe");
   await page.getByLabel("Obrys", { exact: true }).selectOption("stairs");
   await page

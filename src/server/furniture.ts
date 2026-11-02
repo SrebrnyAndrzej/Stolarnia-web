@@ -41,6 +41,8 @@ const plate = z
     height: mm,
     depth: mm,
     specification: specification.optional(),
+    layoutSlot: z.string().min(1).max(100).optional(),
+    layoutCustomized: z.boolean().optional(),
   })
   .strict();
 export const furnitureSave = z
@@ -59,6 +61,20 @@ export const furnitureSave = z
         steps: z.number().int().min(2).max(20),
         reverse: z.boolean(),
         plates: z.array(plate).min(1).max(150),
+        suggestion: z
+          .object({
+            variant: z.enum([
+              "auto",
+              "wardrobe",
+              "shelves",
+              "drawers",
+              "mixed",
+              "empty",
+            ]),
+            excludedSlots: z.array(z.string().min(1).max(100)).max(150),
+          })
+          .strict()
+          .optional(),
         drawerAssemblies: z
           .array(
             z
@@ -117,6 +133,14 @@ export function saveFurniture(
       "Sprawdź nazwę, wymiary i płyty mebla. Dopuszczalne wymiary: 1–10000 mm, maksymalnie 150 płyt.",
     );
   const data = result.data;
+  const layoutSlots = data.model.plates.flatMap((p) =>
+    p.layoutSlot ? [p.layoutSlot] : [],
+  );
+  if (new Set(layoutSlots).size !== layoutSlots.length)
+    throw new AccessError(
+      400,
+      "Elementy sugerowanego układu muszą mieć różne oznaczenia.",
+    );
   const assemblies = data.model.drawerAssemblies ?? [];
   if (
     new Set(assemblies.map((a) => a.frontId)).size !== assemblies.length ||

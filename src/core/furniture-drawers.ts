@@ -24,12 +24,20 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
       const plan = m.drawerAssemblies?.find((p) => p.frontId === front.id);
       const profile = PROFILE_SZUFLAD.find((p) => p.id === plan?.profileId);
       const candidates = drawerBoundaryCandidates(m);
+      const inferredLeft = front.layoutSlot
+        ? candidates.find((p) => Math.abs(p.x + p.width - (front.x - 2)) < 0.01)
+        : undefined;
+      const inferredRight = front.layoutSlot
+        ? candidates.find(
+            (p) => Math.abs(p.x - (front.x + front.width + 2)) < 0.01,
+          )
+        : undefined;
       const left = plan?.leftBoundaryId
           ? candidates.find((p) => p.id === plan.leftBoundaryId)
-          : candidates.find((p) => p.anchor === "left"),
+          : (inferredLeft ?? candidates.find((p) => p.anchor === "left")),
         right = plan?.rightBoundaryId
           ? candidates.find((p) => p.id === plan.rightBoundaryId)
-          : candidates.find((p) => p.anchor === "right");
+          : (inferredRight ?? candidates.find((p) => p.anchor === "right"));
       const width = left && right ? right.x - left.x - left.width : null;
       const depth =
         left && right
@@ -37,6 +45,14 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
             Math.max(backDepth(m), left.z, right.z)
           : null;
       const blockers: string[] = [];
+      if (
+        front.layoutSlot &&
+        ((!plan?.leftBoundaryId && !inferredLeft) ||
+          (!plan?.rightBoundaryId && !inferredRight))
+      )
+        blockers.push(
+          "Brakuje granicy sugerowanej komory. Wybierz istniejące granice albo popraw położenie frontu.",
+        );
       if (!plan || !profile) blockers.push("Wybierz system szuflady.");
       if (width === null || width <= 0)
         blockers.push(
