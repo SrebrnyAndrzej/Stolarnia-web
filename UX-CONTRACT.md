@@ -109,3 +109,6 @@ Dwa jawne pola wysokości boków (krótki i długi, pomiar zewnętrzny) oraz sze
 
 ## Przejście z podglądu do kont zespołu (2026-11-02)
 Adres #/podglad/owner/pracownicy jest demonstracją; pokazuje jawne wyjaśnienie oraz odnośnik #/panel/pracownicy. Podgląd nie tworzy prawdziwych kont. Po logowaniu rozpoczętym z #/panel/... aplikacja zachowuje docelową sekcję, a autoryzacja roli nadal obowiązuje. Ekran startowy właściciela i pracownika ma widoczne szybkie przejście „Otwórz kreator mebla”, również gdy boczne menu jest schowane na telefonie.
+
+## Usunięcie publicznych podglądów ról — decyzja użytkownika 2026-11-02
+Podglądy owner/employee/client usunięte z ekranu logowania i wyłączone w aplikacji. Tożsamość i rola panelu pochodzą wyłącznie z sesji. Stare adresy #/podglad/{rola}/{sekcja} przekierowują do #/panel/{sekcja}; bez sesji pokazują logowanie, a po logowaniu obowiązują uprawnienia rzeczywistej roli. Nie ma możliwości wyboru roli przez URL. Publiczny kreator kuchni na stronie marketingowej pozostaje odrębną funkcją.

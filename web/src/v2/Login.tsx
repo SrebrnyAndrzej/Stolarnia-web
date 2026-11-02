@@ -149,15 +149,6 @@ export function Login({
             Nie masz konta lub nie pamiętasz hasła? Skontaktuj się z
             właścicielem stolarni.
           </p>
-          <details className="ps-demo-links">
-            <summary>Zobacz podgląd wersji 2.0</summary>
-            <p>
-              Podgląd nie wymaga logowania i zawiera wyłącznie dane przykładowe.
-            </p>
-            <a href="#/podglad/owner">Widok właściciela</a>
-            <a href="#/podglad/employee">Widok pracownika</a>
-            <a href="#/podglad/client">Widok klienta</a>
-          </details>
         </section>
       </main>
     </div>

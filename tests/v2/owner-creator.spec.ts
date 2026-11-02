@@ -28,12 +28,7 @@ test("demo staff page leads to real account management and keeps destination aft
   await expect(
     page.getByRole("button", { name: "Utwórz konto i link", exact: true }),
   ).toHaveCount(0);
-  await page
-    .getByRole("link", {
-      name: "Przejdź do zarządzania pracownikami",
-      exact: true,
-    })
-    .click();
+  await expect(page).toHaveURL(/#\/panel\/pracownicy$/);
   await page.getByLabel("E-mail", { exact: true }).fill("owner@example.com");
   await page.getByLabel("Hasło", { exact: true }).fill("test-only-password");
   await page.getByRole("button", { name: "Zaloguj się", exact: true }).click();

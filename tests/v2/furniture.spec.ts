@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { staffApi } from "./staff-api-fixture";
 test("two side heights calculate saw limits and preserve them after saving", async ({
   page,
 }) => {
-  await page.goto("/#/podglad/employee/meble");
+  await staffApi(page);
+  await page.goto("/#/panel/meble");
   await page.getByLabel("Obrys", { exact: true }).selectOption("slope");
   await page
     .getByLabel("Wysokość krótkiej ścianki", { exact: true })
@@ -34,7 +36,8 @@ test("employee creates a sloped model, edits a shelf, saves and reopens it", asy
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/#/podglad/employee/meble");
+  await staffApi(page);
+  await page.goto("/#/panel/meble");
   await expect(
     page.getByRole("heading", { name: "Kreator mebla", exact: true }),
   ).toBeVisible();
@@ -54,7 +57,7 @@ test("employee creates a sloped model, edits a shelf, saves and reopens it", asy
   await expect(
     page
       .getByRole("status")
-      .filter({ hasText: "Zapisano w bibliotece pokazowej" }),
+      .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
   await page

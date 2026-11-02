@@ -84,21 +84,16 @@ export function App() {
       window.removeEventListener("pan-stolarz-session-expired", expire);
     };
   }, []);
-  const demoMatch = hash.match(
-    /^#\/podglad\/(owner|employee|client)(?:\/([^?]*))?/,
-  );
-  const demo = !!demoMatch;
-  const demoRole = demoMatch?.[1] as Principal["role"] | undefined;
-  const person = demo
-    ? {
-        user_id: "demo",
-        role: demoRole!,
-        active: true,
-        display_name: "Podgląd",
-        project_ids: [],
-        email: "",
-      }
-    : session;
+  // Roles always come from the authenticated session, never from a preview URL.
+  const demo = false;
+  const person = session;
+  const previewRoute = hash.startsWith("#/podglad/");
+  useEffect(() => {
+    if (!previewRoute) return;
+    const section = hash.split("?")[0].split("/")[3] ?? "projekty";
+    const allowed = ["projekty", "pracownicy", "meble", "zadania", "szuflady", "zapytania"];
+    location.replace(`${location.pathname}${location.search}#/panel/${allowed.includes(section) ? section : "projekty"}`);
+  }, [hash, previewRoute]);
   const plannerRoute = hash.split("?")[0] === "#/kreator-kuchni";
   const publicRoute =
     hash === "#/" ||
@@ -107,15 +102,12 @@ export function App() {
     hash === "#/wizualizacja" ||
     hash === "#/uslugi" ||
     hash === "#/o-nas";
-  const section = demo
-    ? demoMatch?.[2] || "projekty"
-    : hash.split("?")[0].split("/")[2] || "projekty";
+  const section = hash.split("?")[0].split("/")[2] || "projekty";
   const isPanel =
     hash.startsWith("#/panel") ||
-    demo ||
+    previewRoute ||
     /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady|#\/szybki)/.test(hash);
-  const href = (page: string) =>
-    demo ? `#/podglad/${person!.role}/${page}` : `#/panel/${page}`;
+  const href = (page: string) => `#/panel/${page}`;
   useEffect(() => {
     const title =
       hash === "#/katalog-dekorow"

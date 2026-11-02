@@ -1,15 +1,13 @@
 import { test, expect } from "@playwright/test";
+import { staffApi } from "./staff-api-fixture";
 
 test("employee preview opens directly and from login without a blank screen", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/#/logowanie");
-  await page.getByText("Zobacz podgląd wersji 2.0", { exact: true }).click();
-  await page
-    .getByRole("link", { name: "Widok pracownika", exact: true })
-    .click();
+  await staffApi(page);
+  await page.goto("/#/panel/projekty");
   await expect(
     page.getByRole("heading", { name: "Panel pracownika", exact: true }),
   ).toBeVisible();
@@ -32,7 +30,8 @@ test("unavailable panel chunk shows recovery instead of a blank screen", async (
   await page.route("**/assets/Workspace-*.js", (route) =>
     route.abort("failed"),
   );
-  await page.goto("/#/podglad/employee");
+  await staffApi(page);
+  await page.goto("/#/panel/projekty");
   await expect(
     page.getByRole("heading", { name: "Nie udało się otworzyć panelu" }),
   ).toBeVisible();
