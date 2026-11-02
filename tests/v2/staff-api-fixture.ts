@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import type { FurnitureEntry } from "../../src/core/furniture";
+import { furnitureDrawerCalculations } from "../../src/core/furniture-drawers";
 export async function staffApi(page: Page, role = "employee") {
   let library: FurnitureEntry[] = [];
   await page.route("**/api/**", async (route) => {
@@ -24,6 +25,7 @@ export async function staffApi(page: Page, role = "employee") {
           createdBy: "staff-test",
           updatedBy: "staff-test",
           updatedAt: new Date().toISOString(),
+          drawerCalculations: furnitureDrawerCalculations(body.model),
         };
         library = [entry, ...library.filter((x) => x.id !== entry.id)];
         return route.fulfill({ json: entry });

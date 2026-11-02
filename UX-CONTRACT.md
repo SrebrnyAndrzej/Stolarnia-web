@@ -122,3 +122,6 @@ Użytkownik wybrał szkic narzędzia teraz, rzeczywisty silnik wraz z wdrożenie
 
 ## Standardy i zestawienie części — 2026-11-02
 Źródło: docs/STANDARDY-KONSTRUKCJI.md. Standard zapisany z modelem, ponowne użycie przez kopię biblioteki. Zmiana geometrii zachowuje ID i opisy; wyłączenie pleców usuwa wyłącznie generowane plecy. Braki i nieobsługiwane skosy nie stają się poprawną listą cięcia. Wymiar rdzenia wymaga jawnej konwencji wymiarowej. Własne płyty pozostają do indywidualnej edycji. Uprawnienia, wersje, Feedback i useDraftGuard bez zmian.
+
+## Przypisanie systemu szuflady — 2026-11-02
+Źródło: docs/SYSTEMY-SZUFLAD-KREATOR.md. Parametry są częścią modelu, obliczenia zamraża serwer przy zapisie. Otwieranie zapisanej wersji zachowuje migawkę, edycja przelicza szkic. Brak granicy komory nie uruchamia fallbacku do pełnej szerokości. Błąd zapisu zachowuje parametry. Zastąpienie frontów usuwa przypisania z obsługą Cofnij. Źródła profili nie stanowią dopuszczenia produkcyjnego. Wspólne uprawnienia, Feedback, useDraftGuard i request pozostają właścicielami zachowania.

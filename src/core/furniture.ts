@@ -120,6 +120,15 @@ export interface FurnitureModel {
   reverse: boolean;
   plates: FurniturePlate[];
   construction?: ConstructionStandard;
+  drawerAssemblies?: DrawerAssembly[];
+}
+export interface DrawerAssembly {
+  frontId: string;
+  profileId: string;
+  variant: string;
+  nominalLength: number | null;
+  leftBoundaryId?: string;
+  rightBoundaryId?: string;
 }
 export interface ConstructionStandard {
   version: 1;
@@ -226,6 +235,7 @@ export interface FurnitureEntry {
   createdBy: string;
   updatedBy: string;
   updatedAt: string;
+  drawerCalculations?: import("./furniture-drawers.js").FurnitureDrawerCalculation[];
 }
 export const freshFurniture = (): FurnitureModel => ({
   name: "Nowy mebel",

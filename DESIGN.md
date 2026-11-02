@@ -120,3 +120,6 @@ Doprecyzowanie układu karty części: formularz materiałów znajduje się w sz
 
 ## Standard konstrukcji — 2026-11-02
 ConstructionStandard używa istniejącego fieldset, fc-fields, natywnych selectów i tokenów w szerokiej kolumnie roboczej. Dwie jawne akcje uzupełnienia/zastąpienia opisów, wspólne Cofnij. FurnitureParts jest tabelą w przewijanym poziomo disclosure, bez nowej palety. Źródło: docs/STANDARDY-KONSTRUKCJI.md.
+
+## Systemy szuflad w kreatorze — 2026-11-02
+FurnitureDrawers korzysta z fc-fields, fieldsetów i natywnych selectów oraz tabel w fc-cut-table. Każdy front ma osobny system i granice komory. Źródła, braki oraz stan szkicu są czytelne; lista funkcji okuć nie wygląda jak przyjęte zamówienie. Bez nowych tokenów. Źródło: docs/SYSTEMY-SZUFLAD-KREATOR.md.

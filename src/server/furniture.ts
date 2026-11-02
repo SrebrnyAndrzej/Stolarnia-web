@@ -9,6 +9,7 @@ import {
 } from "../core/furniture.js";
 import type { Magazyn } from "../store/store.js";
 import { furnitureParts } from "../core/furniture-parts.js";
+import { furnitureDrawerCalculations } from "../core/furniture-drawers.js";
 const mm = z.number().finite().min(1).max(10000);
 const coordinate = z.number().finite().min(0).max(10000);
 const edge = z
@@ -58,6 +59,26 @@ export const furnitureSave = z
         steps: z.number().int().min(2).max(20),
         reverse: z.boolean(),
         plates: z.array(plate).min(1).max(150),
+        drawerAssemblies: z
+          .array(
+            z
+              .object({
+                frontId: z.string().uuid(),
+                profileId: z.string().trim().min(1).max(100),
+                variant: z.string().trim().max(30),
+                nominalLength: z
+                  .number()
+                  .finite()
+                  .positive()
+                  .max(3000)
+                  .nullable(),
+                leftBoundaryId: z.string().uuid().optional(),
+                rightBoundaryId: z.string().uuid().optional(),
+              })
+              .strict(),
+          )
+          .max(36)
+          .optional(),
         construction: z
           .object({
             version: z.literal(1),
@@ -96,6 +117,20 @@ export function saveFurniture(
       "Sprawdź nazwę, wymiary i płyty mebla. Dopuszczalne wymiary: 1–10000 mm, maksymalnie 150 płyt.",
     );
   const data = result.data;
+  const assemblies = data.model.drawerAssemblies ?? [];
+  if (
+    new Set(assemblies.map((a) => a.frontId)).size !== assemblies.length ||
+    assemblies.some(
+      (a) =>
+        !data.model.plates.some(
+          (p) => p.id === a.frontId && p.kind === "drawer",
+        ),
+    )
+  )
+    throw new AccessError(
+      400,
+      "System szuflady musi wskazywać istniejący, niepowtarzający się front.",
+    );
   if (
     data.model.plates.some(
       (p) =>
@@ -130,6 +165,7 @@ export function saveFurniture(
       createdBy: previous?.createdBy ?? person.user_id,
       updatedBy: person.user_id,
       updatedAt: new Date().toISOString(),
+      drawerCalculations: furnitureDrawerCalculations(data.model),
     };
     if (previous) entries[entries.indexOf(previous)] = next;
     else entries.push(next);
@@ -168,6 +204,9 @@ export function furnitureConstruction(
     savedAt: snapshot.updatedAt,
     model: snapshot.model,
     dimensionSummary: furnitureParts(snapshot.model),
+    drawerAssemblies:
+      snapshot.drawerCalculations ??
+      furnitureDrawerCalculations(snapshot.model),
     parts: snapshot.model.plates.map((p) => ({
       id: p.id,
       name: p.name,

@@ -20,7 +20,8 @@ export function FurnitureParts({
         U/V w płaszczyźnie części. Rdzeń po uwzględnieniu grubości obrzeży; bez
         naddatków obróbkowych. Skosy i kształty nieregularne wymagają
         technologii i pozostają bez automatycznego wymiaru rdzenia. Nie jest to
-        lista arkuszy do zakupu.
+        lista arkuszy do zakupu. Dna i plecy skrzynek są wyszczególnione osobno
+        w sekcji „Systemy szuflad”.
       </p>
       <div className="fc-cut-table">
         <table>

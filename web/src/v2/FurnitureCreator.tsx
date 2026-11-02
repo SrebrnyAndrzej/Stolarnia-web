@@ -25,6 +25,11 @@ import { useDraftGuard } from "./useDraftGuard";
 import { PlateSpecification } from "./PlateSpecification";
 import { ConstructionStandard } from "./ConstructionStandard";
 import { FurnitureParts } from "./FurnitureParts";
+import { FurnitureDrawers } from "./FurnitureDrawers";
+import {
+  furnitureDrawerCalculations,
+  type FurnitureDrawerCalculation,
+} from "../../../src/core/furniture-drawers";
 import "./furniture.css";
 
 const uid = () => crypto.randomUUID();
@@ -74,6 +79,9 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [savedDrawers, setSavedDrawers] = useState<
+    FurnitureDrawerCalculation[] | null
+  >(null);
   const [history, setHistory] = useState<FurnitureModel[]>([]);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"2d" | "3d">("2d");
@@ -134,6 +142,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       setId(uid());
       setVersion(0);
       setModel(initial());
+      setSavedDrawers(null);
       setHistory([]);
       setSelected("");
       setDirty(false);
@@ -145,6 +154,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       setId(e.id);
       setVersion(e.version);
       setModel(structuredClone(e.model));
+      setSavedDrawers(e.drawerCalculations ?? null);
       setHistory([]);
       setSelected("");
       setDirty(false);
@@ -179,6 +189,10 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
             body: JSON.stringify({ id, version, model }),
           });
       setVersion(entry.version);
+      setModel(structuredClone(entry.model));
+      setSavedDrawers(
+        entry.drawerCalculations ?? furnitureDrawerCalculations(entry.model),
+      );
       setLibrary((list) => [entry, ...list.filter((x) => x.id !== id)]);
       setDirty(false);
       setMessage(
@@ -265,6 +279,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
         ...p,
         anchor: vertical ? "left" : "bottom",
       });
+    else
+      p.specification = {
+        ...freshPlateSpecification(),
+        face: vertical ? "yz" : "xz",
+      };
     update((m) => ({ ...m, plates: [...m.plates, p] }));
     setSelected(p.id);
   };
@@ -293,6 +312,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     }
     const next = {
       ...model,
+      drawerAssemblies: [],
       plates: [...model.plates.filter((p) => p.kind !== "drawer"), ...plates],
     };
     if (model.construction)
@@ -771,8 +791,26 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               Zastępuje obecne fronty szuflad. Od dołu: niskie, średnie,
               wysokie; odstęp 2 mm. Każdy front możesz potem edytować osobno.
               Skrzynki, prowadnice i otworowanie wymagają osobnego doboru okuć.
+              Zastąpienie frontów usuwa ich przypisania systemów; Cofnij
+              przywraca poprzedni zestaw.
             </p>
           </fieldset>
+          <FurnitureDrawers
+            model={model}
+            disabled={busy}
+            saved={!dirty && version > 0 ? savedDrawers : null}
+            onChange={(frontId, selection) =>
+              update((m) => ({
+                ...m,
+                drawerAssemblies: [
+                  ...(m.drawerAssemblies ?? []).filter(
+                    (p) => p.frontId !== frontId,
+                  ),
+                  ...(selection ? [selection] : []),
+                ],
+              }))
+            }
+          />
           <p className="fc-hint">
             Model konstrukcyjny do dalszego opracowania. Nie stanowi
             zatwierdzonej dokumentacji CNC: połączenia, obrzeża, skrzynki
@@ -879,6 +917,9 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                   update((m) => ({
                     ...m,
                     plates: m.plates.filter((p) => p.id !== selected),
+                    drawerAssemblies: m.drawerAssemblies?.filter(
+                      (p) => p.frontId !== selected,
+                    ),
                   }));
                   setSelected("");
                 }}
