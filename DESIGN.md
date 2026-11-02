@@ -13,6 +13,8 @@ rounded:
 ---
 
 ## Overview
+
+Pliki od architekta są rozwijaną sekcją w szczegółach projektu, obok dokumentacji. Właściciel UI: `ProjectFiles.tsx`, wspólne `.field/.input`, `.ps-button`, `Feedback` i `useResource`. Przerywana ramka oznacza miejsce upuszczenia pojedynczego pliku; natywny input pozostaje alternatywą klawiaturową. Podgląd CAD jest monochromatycznym rzutem 2D w kolorach tokenów aplikacji, bez nowego motywu lub surowego SVG z pliku.
 Pan Stolarz 2.0: strona klienta i panel właściciela/pracownika. Użytkownik wybrał wariant 2 z oryginalnym brandingiem marki. Kontekst zatwierdzonego kierunku: grafitowa nawigacja, zielone zaznaczenia, jasny obszar projektu, lista po lewej i szczegóły po prawej. Dotychczasowy kalkulator i projektant zachowują logikę, dostają wspólne tokeny marki. UI po polsku; PLN, milimetry i Europe/Warsaw.
 
 ## Colors

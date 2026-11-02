@@ -20,6 +20,7 @@ import { documentSource, requireTechnicalDocuments, technicalDocuments } from ".
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
 import { saveFurniture, furnitureConstruction } from "./furniture.js";
+import { projectFileObjects, listProjectFiles, uploadProjectFile, readProjectFile } from "./project-files.js";
 import { createFurniturePresentation,readFurniturePresentation,commentFurniturePresentation,listFurniturePresentations,revokeFurniturePresentation } from "./furniture-presentations.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
 import { MUSSI_CONNECTION } from "../core/purchasing.js";
@@ -175,6 +176,10 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 };
 
 const p = (req: Request, k: string) => String(req.params[k]);
+const fileObjects = projectFileObjects(s.magazyn, access.admin);
+app.get("/api/v2/projects/:id/files", api(req => listProjectFiles(s.magazyn, osoba(req), p(req,"id"))));
+app.post("/api/v2/projects/:id/files", api(req => uploadProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
+app.get("/api/v2/projects/:id/files/:fid/content", api(req => readProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), p(req,"fid"))));
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/furniture/:id/construction", api(req => furnitureConstruction(s.magazyn, osoba(req), req.params.id, Number(req.query.version))));

@@ -2,6 +2,16 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Oryginały CAD od architekta
+
+`ProjectFiles.tsx` w szczegółach projektu: import jednego DXF/DWG, limit 3 MiB, do 50 oryginałów na projekt. Natywny input i drop target mają tę samą walidację. Stan wyboru jest zachowany po błędzie sieci/serwera; ponowienie z tym samym ID lub sumą SHA-256 nie tworzy drugiego oryginału. Postęp jest nieokreślony, przerwanie oznacza przerwanie oczekiwania (serwer mógł już zatwierdzić zapis). Odświeżenie listy rozstrzyga wynik. Zmiana projektu anuluje odczyty i zamyka sekcję; zamknięcie przywraca fokus.
+
+Oryginały są nieprzefiltrowaną treścią zewnętrzną, dlatego dostęp mają właściciel oraz projektant z profilem sprzedaży; produkcja i montaż zachowują dokumentację techniczną bez nowych praw do surowych plików. Każde pobranie sprawdza aktywną sesję, profil i projekt. Metadane są w bazie aplikacji, zawartość w prywatnym Supabase Storage (lokalnie obok lokalnej bazy), nie w publicznym katalogu. Lista nie ujawnia klucza obiektu, pobranie sprawdza SHA-256. Nazwy i rysunki nie są interpretowane jako HTML. Nie ma publicznych linków ani zmiany polityk dostępu Storage.
+
+DXF do 1 MiB ma ograniczony podgląd w osobnym workerze z limitem 5 sekund: przestrzeń modelu 2D, linie, proste polilinie, przybliżone koła i łuki. Ograniczona liczba elementów i punktów; pominięcia są opisane. Jednostka z INSUNITS lub jawny wybór użytkownika; brak nie staje się milimetrami. Wybór warstw i jednostki nie edytuje oryginału ani konstrukcji. DWG i binarny DXF są zachowywane; podgląd wymaga ASCII DXF. Nie ma automatycznej konwersji DWG ani tworzenia geometrii mebli z rysunku architekta.
+
+Weryfikacja: `src/project-files.test.ts`, test „pliki CAD HTTP” w macierzy dostępu, `tests/v2/project-files.spec.ts` (właściciel, projektant na telefonie, odmowa produkcji, ponowienie, oryginalne bajty, worker, warstwy, jednostki, axe).
+
 Źródła biznesowe: polecenia właściciela w rozmowie (2026-10-31), docs/RESEARCH-silnik-mebli-i-konta.md i docs/RESEARCH-macierz-autoryzacji-tras-2026-10-05.md. Nowe ustalenie: pracownik nie ma dostępu do wycen i finansów; ma kalkulator i podgląd udostępnionych projektów. Obsługujemy jedną stolarnię Pan Stolarz, nie produkt dla wielu warsztatów.
 
 | Zdolność            | Właściciel UI                   | Wariant                                                           | Weryfikacja                     |

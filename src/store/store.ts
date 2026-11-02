@@ -9,6 +9,7 @@ import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
 import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
 
 export interface BazaDanych {
+  projectFiles?: import("../core/project-files.js").StoredProjectFile[];
   furnitureLibrary?: FurnitureEntry[];
   furniturePresentations?: FurniturePresentation[];
   purchaseOrders?: PurchaseOrder[];

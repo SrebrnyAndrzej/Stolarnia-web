@@ -45,6 +45,8 @@ export interface Regula {
 
 /** Macierz tras chronionych (za bramką /api i /mcp). Metody oddzielone „|”; HEAD = GET. Ścieżki małymi literami. */
 export const REGULY_TRAS: Regula[] = [
+  { metody: "GET", sciezka: v2p("/files(/[^/]+/content)?"), profile: [S], opis: "oryginały architekta — właściciel i projektant; bez filtrowania treści" },
+  { metody: "POST", sciezka: v2p("/files"), profile: [S], opis: "import oryginałów CAD przez projektanta" },
   { metody:"GET|PUT",sciezka:/^\/api\/v2\/purchase-orders$/,profile:TYLKO_WLASCICIEL,opis:"zakup materiałów — wyłącznie właściciel" },
   { metody:"GET",sciezka:/^\/api\/v2\/purchase-orders\/(connection|projects|[^/]+\/export)$/,profile:TYLKO_WLASCICIEL,opis:"stan integracji i eksport koszyka Mussi" },
   { metody: "GET|PUT", sciezka: /^\/api\/v2\/furniture$/, profile: WSZYSCY, opis: "wspólna biblioteka mebli — zespół edytuje wszystkie modele" },

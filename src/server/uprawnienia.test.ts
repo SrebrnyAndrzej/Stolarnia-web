@@ -52,6 +52,7 @@ const CZLONKOWIE: Record<string, Record<string, unknown>> = {
 const TOKENY: Record<string, string> = { "t-owner": ID.owner, "t-sprzedaz": ID.sprzedaz, "t-produkcja": ID.produkcja, "t-montaz": ID.montaz };
 const zapytaniaCzlonkow: string[] = [];
 const oryginalnyFetch = globalThis.fetch;
+const cadObjects = new Map<string, Uint8Array>();
 
 process.env.SUPABASE_URL = "https://auth-test.invalid";
 process.env.SUPABASE_PUBLISHABLE_KEY = "test-public-key";
@@ -60,6 +61,13 @@ globalThis.fetch = (async (input: string | URL | Request, init: RequestInit = {}
   const url = String(input instanceof Request ? input.url : input);
   if (!url.startsWith("https://auth-test.invalid")) return oryginalnyFetch(input, init);
   const metoda = (init.method ?? "GET").toUpperCase();
+  if (url.includes("/storage/v1/bucket")) return Response.json({ id: "pan-stolarz-project-files", name: "pan-stolarz-project-files", public: false });
+  if (url.includes("/storage/v1/object/")) {
+    const key = new URL(url).pathname;
+    if (metoda === "POST") { cadObjects.set(key, new Uint8Array(init.body as ArrayBuffer)); return Response.json({ Key: key }); }
+    const bytes = cadObjects.get(key.replace("/object/authenticated/", "/object/"));
+    return bytes ? new Response(bytes, {headers:{"content-type":"application/octet-stream"}}) : Response.json({message:"not found"}, {status:404});
+  }
   if (url.includes("/auth/v1/user")) {
     const token = new Headers(init.headers).get("authorization")?.replace("Bearer ", "") ?? "";
     const id = TOKENY[token];
@@ -120,6 +128,27 @@ const tekstPdf = (bufor: Buffer, nazwa: string) => {
   writeFileSync(plik, bufor);
   return execFileSync("pdftotext", [plik, "-"], { encoding: "utf8" });
 };
+
+test("pliki CAD HTTP: prywatny zapis, pobranie, deduplikacja i zakres profili", async () => {
+  const { randomUUID } = await import("node:crypto");
+  const base = `/api/v2/projects/${P.szkic}/files`;
+  const text = "0\nSECTION\n2\nENTITIES\n0\nLINE\n8\nSCIANY\n10\n0\n20\n0\n11\n1000\n21\n2000\n0\nENDSEC\n0\nEOF\n";
+  const body = { id: randomUUID(), name: "architekt.dxf", base64: Buffer.from(text).toString("base64") };
+  assert.equal((await zadanie("GET", base)).status, 401);
+  assert.equal((await zadanie("POST", base, "t-produkcja", body)).status, 403);
+  assert.equal((await zadanie("GET", base, "t-produkcja")).status, 403);
+  const result = await zadanie("POST", base, "t-owner", body);
+  assert.equal(result.status, 200, result.tekst);
+  assert.ok(!result.tekst.includes("objectKey"));
+  const again = await zadanie("POST", base, "t-sprzedaz", { ...body, id: randomUUID() });
+  assert.equal(again.json.id, result.json.id);
+  assert.equal((await zadanie("GET", base, "t-sprzedaz")).json.length, 1);
+  const content = await zadanie("GET", `${base}/${result.json.id}/content`, "t-sprzedaz");
+  assert.equal(content.status, 200, content.tekst);
+  assert.equal(Buffer.from(content.json.base64, "base64").toString(), text);
+  assert.equal((await zadanie("GET", `/api/v2/projects/${P.mont}/files/${result.json.id}/content`, "t-owner")).status, 404);
+  assert.equal((await zadanie("GET", `${base}/${result.json.id}/content`, "t-montaz")).status, 403);
+});
 
 // ---------- Macierz: każda trasa ma regułę ----------
 

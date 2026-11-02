@@ -30,6 +30,9 @@ import { Elewacja } from "../views/Elewacja";
 import type { Analiza } from "../api";
 import { NAZWY_STATUSOW } from "../../../src/core/statusy";
 import { ProjectDocuments } from "./ProjectDocuments";
+const ProjectFiles = lazy(() =>
+  import("./ProjectFiles").then((m) => ({ default: m.ProjectFiles })),
+);
 import { Feedback } from "./ui";
 import { useResource } from "./useResource";
 import { demoProject, demoProjects } from "./demo";
@@ -348,6 +351,7 @@ export function Workspace({
             key={`${person.user_id}-${id}`}
             id={id}
             owner={owner}
+            architectFiles={owner || person.access_profile === "sprzedaz"}
             technicalOnly={employee}
             demo={demo}
           />
@@ -389,11 +393,13 @@ export function Workspace({
 function ProjectDetail({
   id,
   owner,
+  architectFiles,
   technicalOnly,
   demo,
 }: {
   id: string;
   owner: boolean;
+  architectFiles: boolean;
   technicalOnly: boolean;
   demo: boolean;
 }) {
@@ -412,6 +418,8 @@ function ProjectDetail({
     demo && !technicalOnly && id === "pokaz-kuchnia" ? "image" : "2d",
   );
   const [documentsOpen, setDocumentsOpen] = useState(false);
+  const [filesOpen, setFilesOpen] = useState(false);
+  const filesButton = useRef<HTMLButtonElement>(null);
   const documentsButton = useRef<HTMLButtonElement>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [wall, setWall] = useState("");
@@ -476,6 +484,30 @@ function ProjectDetail({
               documentsButton.current?.focus();
             }}
           />
+        )}
+        {architectFiles && !demo && (
+          <div className="ps-project-documents-entry">
+            <button
+              ref={filesButton}
+              className="ps-button secondary"
+              aria-expanded={filesOpen}
+              onClick={() => setFilesOpen((v) => !v)}
+            >
+              Pliki od architekta
+            </button>
+          </div>
+        )}
+        {architectFiles && !demo && filesOpen && (
+          <Suspense fallback={<p role="status">Wczytywanie plików…</p>}>
+            <ProjectFiles
+              key={id}
+              id={id}
+              onClose={() => {
+                setFilesOpen(false);
+                filesButton.current?.focus();
+              }}
+            />
+          </Suspense>
         )}
         {room ? (
           <>
