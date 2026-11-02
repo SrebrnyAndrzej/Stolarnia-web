@@ -1,4 +1,9 @@
 Options -Indexes
+<IfModule mod_headers.c>
+<FilesMatch "^(index\.html|release\.json)$">
+Header set Cache-Control "no-cache, must-revalidate"
+</FilesMatch>
+</IfModule>
 RewriteEngine On
 # Keep source/configuration files out of public access, including Git deployment metadata.
 RewriteRule (^|/)(\.git|\.env)(/|$|\.) - [F,L]
