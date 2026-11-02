@@ -24,6 +24,9 @@ import { profilOsoby } from "../../../src/server/uprawnienia";
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
 );
+const QuickProject = lazy(() =>
+  import("./QuickProject").then((m) => ({ default: m.QuickProject })),
+);
 const PrzelicznikSzuflad = lazy(() =>
   import("../views/PrzelicznikSzuflad").then((m) => ({
     default: m.PrzelicznikSzuflad,
@@ -109,7 +112,7 @@ export function App() {
   const isPanel =
     hash.startsWith("#/panel") ||
     demo ||
-    /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady)/.test(hash);
+    /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady|#\/szybki)/.test(hash);
   const href = (page: string) =>
     demo ? `#/podglad/${person!.role}/${page}` : `#/panel/${page}`;
   useEffect(() => {
@@ -192,15 +195,17 @@ export function App() {
   if (!person) return <Landing session={session} />;
   const owner = person.role === "owner";
   const employee = person.role === "employee";
-  const legacy = /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szybki|#\/warsztat)/.test(hash);
+  const quick = /^#\/szybki(\/|$)/.test(hash);
+  const legacy = /^(#\/p\/|#\/materialy|#\/ustawienia|#\/warsztat)/.test(hash);
   // Widoki starego panelu wg profilu (serwer i tak egzekwuje uprawnienia i filtruje pola).
   const profile = profilOsoby(person);
   const legacyAllowed =
     owner ||
-    (employee && profile === "sprzedaz" && /^(#\/p\/|#\/szybki)/.test(hash)) ||
+    (employee && profile === "sprzedaz" && /^#\/p\//.test(hash)) ||
     (employee && profile !== "sprzedaz" && /^#\/warsztat/.test(hash));
   const canSeeSection =
     owner ||
+    quick ||
     ["projekty", ""].includes(section) ||
     (employee && ["szuflady", "zadania"].includes(section));
   const nav = [
@@ -281,7 +286,7 @@ export function App() {
             <a
               key={id}
               href={href(id)}
-              aria-current={!legacy && section === id ? "page" : undefined}
+              aria-current={!legacy && !quick && section === id ? "page" : undefined}
             >
               <Icon size={21} stroke={1.6} />
               {label}
@@ -369,7 +374,9 @@ export function App() {
             </p>
           }
         >
-          {!canSeeSection || (legacy && !legacyAllowed) ? (
+          {!canSeeSection ||
+          (legacy && !legacyAllowed) ||
+          (quick && !(owner || (employee && profile === "sprzedaz"))) ? (
             <section className="ps-empty">
               <h1>Brak dostępu</h1>
               <p>Ten widok nie jest dostępny na Twoim koncie.</p>
@@ -377,6 +384,12 @@ export function App() {
                 Wróć do projektów
               </a>
             </section>
+          ) : quick ? (
+            <QuickProject
+              key={hash.split("/")[2] ?? "nowy"}
+              person={person}
+              projectId={hash.split("?")[0].split("/")[2] || undefined}
+            />
           ) : legacy ? (
             <div className="ps-legacy">
               <a href={href("projekty")} className="ps-back-link">
