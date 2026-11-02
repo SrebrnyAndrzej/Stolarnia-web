@@ -463,14 +463,16 @@ app.post("/api/projekty/:id/oferta.pdf", (req, res, next) => {
   s.ofertaPdf(p(req, "id"), req.body ?? {})
     .then((pdf) => {
       // Lokalnie kopia oferty trafia do katalogu danych (data/oferty); na Vercelu nie ma trwałego dysku.
-      if (!process.env.VERCEL) {
+      // Propozycja wstępna nie jest ofertą — nie trafia do archiwum ofert.
+      const wstepna = req.body?.wstepna === true;
+      if (!process.env.VERCEL && !wstepna) {
         const katalog = join(process.env.STOLARNIA_DATA ?? join(process.cwd(), "data"), "oferty");
         mkdirSync(katalog, { recursive: true });
         const plik = join(katalog, `oferta-${p(req, "id")}-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.pdf`);
         writeFileSync(plik, pdf);
       }
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="oferta-${p(req, "id")}.pdf"`);
+      res.setHeader("Content-Disposition", `attachment; filename="${wstepna ? "propozycja-wstepna" : "oferta"}-${p(req, "id")}.pdf"`);
       res.send(pdf);
     })
     .catch(next);

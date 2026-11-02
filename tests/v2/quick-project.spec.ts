@@ -269,3 +269,19 @@ test("sales profile has no client-mode switch", async ({ page }) => {
   await mockQuote(page, sales);
   await expect(page.getByRole("button", { name: /Przy kliencie|Koszty widoczne/ })).toHaveCount(0);
 });
+
+// Zmiana 4 z oceny: propozycja wstępna przy brakach cen.
+test("missing prices: full offer disabled, preliminary proposal requested with wstepna flag", async ({ page }) => {
+  const pdfCalls: Record<string, unknown>[] = [];
+  await mockQuote(page, owner, true, async (path, route) => {
+    if (!path.endsWith("/oferta.pdf")) return false;
+    pdfCalls.push(route.request().postDataJSON());
+    await route.fulfill({ contentType: "application/pdf", body: Buffer.from("%PDF-1.4\n%%EOF") });
+    return true;
+  });
+  await expect(page.getByRole("button", { name: "Oferta PDF", exact: true })).toBeDisabled();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Propozycja wstępna PDF" }).click();
+  expect((await download).suggestedFilename()).toMatch(/^Propozycja wstępna/);
+  expect(pdfCalls[0]).toMatchObject({ wariant: "standard", wstepna: true });
+});

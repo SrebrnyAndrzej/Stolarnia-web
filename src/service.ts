@@ -80,6 +80,8 @@ const DxfParser = ((dxfParserModul as unknown as { default?: unknown }).default 
 const id = () => randomUUID().slice(0, 8);
 const teraz = () => new Date().toISOString();
 const PROG_WISZACYCH_MM = 1000;
+/** Widełki propozycji wstępnej względem bieżącej kalkulacji (decyzja domyślna, odwracalna: OCENA-kreatora §7). */
+export const WIDELKI_WSTEPNE = { dol: 0.95, gora: 1.15 };
 
 export interface NowaSciana {
   nazwa?: string;
@@ -1269,14 +1271,17 @@ export class Stolarnia {
   /** Oferta dla klienta z wizualizacjami (JPEG renderowane w przeglądarce). */
   async ofertaPdf(
     projektId: string,
-    o: { wariant?: WariantWyceny; numer?: string; waznoscDni?: number; terminRealizacji?: string; uwagi?: string[]; wizualizacje?: { tytul: string; jpegBase64: string }[] },
+    o: { wariant?: WariantWyceny; numer?: string; waznoscDni?: number; terminRealizacji?: string; uwagi?: string[]; wizualizacje?: { tytul: string; jpegBase64: string }[]; wstepna?: boolean },
   ): Promise<Buffer> {
     const a = this.analiza(projektId);
     const b = this.magazyn.odczytaj();
     // Oferta dla klienta nie może zawierać cen zastępczych: brak ceny / pozycji w bazie blokuje PDF z listą braków.
     const wariantOferty = o.wariant ?? "standard";
     const braki = (a.warianty.find((w) => w.wariant === wariantOferty)?.pozycje ?? []).filter((x) => x.jestBledemWyceny);
-    if (braki.length)
+    // Propozycja wstępna (zmiana 4 z OCENA-kreatora): przy brakach dokument z widełkami i znakiem „cena do potwierdzenia”.
+    // Bez braków nie ma powodu do propozycji — wtedy powstaje zwykła oferta.
+    const wstepna = o.wstepna === true && braki.length > 0;
+    if (braki.length && !wstepna)
       throw new BladUslugi(
         `Oferty nie można wygenerować — w wariancie ${wariantOferty} są pozycje bez ceny lub bez rekordu w bazie: ` +
           braki.map((x) => x.nazwa.replace(/\s*"[^"]*"/g, "").replace(/\s*\(ID:[^)]*\)/g, "").trim()).join("; ") +
@@ -1297,7 +1302,8 @@ export class Stolarnia {
       firma: a.ustawienia.daneFirmy,
       materialy: new Map(b.materialy.map((m) => [m.id, m])),
       wizualizacje,
-      numer: o.numer || `OF/${teraz.getFullYear()}/${String(teraz.getMonth() + 1).padStart(2, "0")}/${projektId.slice(0, 4).toUpperCase()}`,
+      wstepna: wstepna ? { braki: braki.map((x) => x.nazwa), dol: WIDELKI_WSTEPNE.dol, gora: WIDELKI_WSTEPNE.gora } : undefined,
+      numer: o.numer || `${wstepna ? "PW" : "OF"}/${teraz.getFullYear()}/${String(teraz.getMonth() + 1).padStart(2, "0")}/${projektId.slice(0, 4).toUpperCase()}`,
       data: teraz,
       waznoscDni: o.waznoscDni && o.waznoscDni > 0 ? o.waznoscDni : 14,
       terminRealizacji: o.terminRealizacji || "do uzgodnienia po akceptacji projektu",

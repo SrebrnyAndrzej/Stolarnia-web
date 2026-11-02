@@ -451,20 +451,20 @@ export function QuickProject({
     });
   };
 
-  const downloadPdf = async () => {
+  const downloadPdf = async (wstepna = false) => {
     if (!id) return;
     setPdfBusy(true);
     setPdfError(null);
     try {
       const blob = await request<Blob>(
         `/api/projekty/${id}/oferta.pdf`,
-        { method: "POST", body: JSON.stringify({ wariant: variant }) },
+        { method: "POST", body: JSON.stringify({ wariant: variant, ...(wstepna ? { wstepna: true } : {}) }) },
         "pdf",
       );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Oferta — ${name}.pdf`;
+      a.download = `${wstepna ? "Propozycja wstępna" : "Oferta"} — ${name}.pdf`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     } catch (e) {
@@ -1319,8 +1319,9 @@ export function QuickProject({
                         wyceny
                       </b>
                       <p>
-                        Cena może być zaniżona lub przybliżona, a oferta PDF
-                        jest zablokowana, dopóki pozycje nie mają cen.{" "}
+                        Cena może być zaniżona lub przybliżona. Pełna oferta
+                        PDF czeka na ceny; klientowi możesz dać propozycję
+                        wstępną z widełkami.{" "}
                         {isOwner ? (
                           <>
                             Uzupełnij ceny w{" "}
@@ -1445,22 +1446,34 @@ export function QuickProject({
                     <a className="qp-btn secondary" href={`#/p/${id}`}>
                       Otwórz w projektancie
                     </a>
+                    {faulty.length > 0 && (
+                      <button
+                        type="button"
+                        className="qp-btn"
+                        onClick={() => void downloadPdf(true)}
+                        disabled={pdfBusy}
+                        aria-describedby="qp-pdf-hint"
+                      >
+                        {pdfBusy ? "Składam PDF…" : "Propozycja wstępna PDF"}
+                      </button>
+                    )}
                     <button
                       type="button"
-                      className="qp-btn"
-                      onClick={downloadPdf}
-                      disabled={pdfBusy}
+                      className={faulty.length ? "qp-btn secondary" : "qp-btn"}
+                      onClick={() => void downloadPdf(false)}
+                      disabled={pdfBusy || faulty.length > 0}
                       aria-describedby={
                         faulty.length ? "qp-pdf-hint" : undefined
                       }
                     >
-                      {pdfBusy ? "Składam PDF…" : "Oferta PDF"}
+                      {pdfBusy && !faulty.length ? "Składam PDF…" : "Oferta PDF"}
                     </button>
                   </div>
                   {faulty.length > 0 && (
                     <p id="qp-pdf-hint" className="qp-muted">
-                      Serwer zablokuje ofertę, dopóki w wybranym wariancie są
-                      pozycje bez ceny.
+                      Pełna oferta wymaga cen wszystkich pozycji. Propozycja
+                      wstępna pokazuje widełki (−5% / +15%) ze znakiem „cena
+                      do potwierdzenia” — nie jest ofertą ani podstawą umowy.
                     </p>
                   )}
                   <p className="qp-muted">
