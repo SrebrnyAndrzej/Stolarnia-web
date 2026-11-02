@@ -88,7 +88,8 @@
   margin-bottom: 12px;
 }
 .fc input,
-.fc select {
+.fc select,
+.fc textarea {
   width: 100%;
   min-width: 0;
   min-height: 42px;
@@ -455,6 +456,33 @@
     margin: 2px 0 8px;
   }
   .fc-cut .fc-fields {
+    grid-template-columns: 1fr;
+  }
+}
+.fc-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.fc-compare svg {
+  width: 100%;
+  height: 280px;
+}
+.fc-compartment-area {
+  cursor: pointer;
+}
+.fc-camera .fc-check {
+  margin: 0;
+}
+.fc-presentation {
+  max-width: 1200px;
+}
+.fc-presentation textarea {
+  min-height: 110px;
+  resize: none;
+}
+@media (max-width: 700px) {
+  .fc-compare {
     grid-template-columns: 1fr;
   }
 }

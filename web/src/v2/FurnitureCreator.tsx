@@ -44,6 +44,16 @@ import { ConstructionStandard } from "./ConstructionStandard";
 import { FurnitureParts } from "./FurnitureParts";
 import { FurnitureDrawers } from "./FurnitureDrawers";
 import { DeskStorage } from "./DeskStorage";
+import { FurnitureCompartments } from "./FurnitureCompartments";
+import { FurnitureTools } from "./FurnitureTools";
+import { FurnitureSharing } from "./FurnitureSharing";
+import { snapFurniturePlate } from "../../../src/core/furniture-snap";
+import {
+  compartmentBoxes,
+  rebuildCompartments,
+  changeCompartment,
+  splitCompartment,
+} from "../../../src/core/furniture-compartments";
 import {
   furnitureDrawerCalculations,
   type FurnitureDrawerCalculation,
@@ -59,7 +69,13 @@ const initial = () => {
   m.plates = carcass(m, uid);
   return applySuggestedLayout(m, "auto", uid);
 };
-export function FurnitureCreator({ demo }: { demo: boolean }) {
+export function FurnitureCreator({
+  demo,
+  owner = false,
+}: {
+  demo: boolean;
+  owner?: boolean;
+}) {
   const [model, setModel] = useState(initial);
   const [id, setId] = useState<string>(uid);
   const [version, setVersion] = useState(0);
@@ -76,6 +92,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const [history, setHistory] = useState<FurnitureModel[]>([]);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"2d" | "3d">("2d");
+  const [snap, setSnap] = useState(true),
+    [dimensions, setDimensions] = useState(false);
+  const [selectedCompartment, setSelectedCompartment] = useState("");
+  const [qrRequest, setQrRequest] = useState(location.hash);
+  const handledQr = useRef("");
   const [drawerCounts, setDrawerCounts] = useState([1, 1, 1]);
   const [drawerHeights, setDrawerHeights] = useState([140, 220, 320]);
   const draftGuard = useDraftGuard(
@@ -97,7 +118,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
     if (!drag.current)
       setHistory((h) => [...h.slice(-39), structuredClone(model)]);
-    setModel((m) => fitDrawerFronts(fn(m)));
+    setModel((m) => fitDrawerFronts(rebuildCompartments(fn(m), uid)));
     setDirty(true);
     setMessage("");
     setError("");
@@ -128,6 +149,38 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
         });
     return () => c.abort();
   }, [demo]);
+  useEffect(() => {
+    const onHash = () => setQrRequest(location.hash);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => {
+    if (loading || dirty || handledQr.current === qrRequest) return;
+    const query = new URLSearchParams(qrRequest.split("?")[1] ?? "");
+    const requested = query.get("model");
+    if (!requested) return;
+    handledQr.current = qrRequest;
+    const entry = library.find((e) => e.id === requested);
+    if (!entry) {
+      setError("Nie znaleziono mebla z etykiety w dostępnej bibliotece.");
+      return;
+    }
+    if (entry.version !== Number(query.get("version"))) {
+      setError(
+        "Etykieta wskazuje inną wersję modelu. Otwórz aktualny model z biblioteki i przygotuj nowe etykiety.",
+      );
+      return;
+    }
+    setId(entry.id);
+    setVersion(entry.version);
+    setModel(structuredClone(entry.model));
+    setSavedDrawers(entry.drawerCalculations ?? null);
+    setHistory([]);
+    setSelected(query.get("part") ?? "");
+    setDirty(false);
+    setError("");
+    setMessage(`Otworzono część z etykiety · wersja ${entry.version}.`);
+  }, [qrRequest, library, loading, dirty]);
   const reset = () =>
     guarded(() => {
       setId(uid());
@@ -264,6 +317,29 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       ),
     }));
   const addPlate = (vertical: boolean) => {
+    if (model.compartments) {
+      const node =
+        model.compartments.nodes.find((n) => n.id === selectedCompartment) ??
+        model.compartments.nodes[0];
+      if (node.split) {
+        setError("Wybierz komorę bez podziału, aby dodać wyposażenie.");
+        return;
+      }
+      update((m) =>
+        vertical
+          ? splitCompartment(m, node.id, "x", 2, uid)
+          : changeCompartment(
+              m,
+              node.id,
+              {
+                interior: "shelves",
+                count: node.interior === "shelves" ? node.count + 1 : 1,
+              },
+              uid,
+            ),
+      );
+      return;
+    }
     const p: FurniturePlate = {
       id: uid(),
       name: vertical ? "Przegroda" : "Półka",
@@ -382,6 +458,10 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   };
   const beginDrag = (e: PointerEvent<SVGPolygonElement>, p: FurniturePlate) => {
     setSelected(p.id);
+    if (p.layoutSlot?.startsWith("compartment/")) {
+      setSelectedCompartment(p.layoutSlot.split("/")[1]);
+      return;
+    }
     if (view !== "2d" || p.kind === "cap" || p.anchor === "back" || busy)
       return;
     const [x, y] = point(e);
@@ -413,6 +493,14 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 0,
                 Math.min(m.height - p.height, Math.round(d.startY + y - d.y)),
               ),
+              ...(snap
+                ? snapFurniturePlate(
+                    m,
+                    p,
+                    d.startX + x - d.x,
+                    d.startY + y - d.y,
+                  )
+                : {}),
             },
       ),
     }));
@@ -652,7 +740,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
             model.suggestion?.variant === "desk-hutch") && (
             <DeskStorage
               model={model}
-              disabled={busy}
+              disabled={busy || !!model.compartments}
               onChange={(patch, height) =>
                 update((m) => {
                   const oldFronts = new Set(
@@ -842,6 +930,22 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           </fieldset>
           {model.shape === "slope" && <SlopeCutting model={model} />}
           <div className="fc-toolbar">
+            <label className="fc-check">
+              <input
+                type="checkbox"
+                checked={dimensions}
+                onChange={(e) => setDimensions(e.target.checked)}
+              />
+              Pokaż wymiary
+            </label>
+            <label className="fc-check">
+              <input
+                type="checkbox"
+                checked={snap}
+                onChange={(e) => setSnap(e.target.checked)}
+              />
+              Przyciąganie do krawędzi i siatki 10 mm
+            </label>
             <button
               disabled={busy || !history.length}
               onClick={() => {
@@ -909,6 +1013,70 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                   points={points(furnitureOutline(model))}
                   className="fc-outline"
                 />
+                {dimensions && (
+                  <g
+                    fill="#1c2b30"
+                    stroke="#717780"
+                    strokeWidth="1"
+                    fontSize="24"
+                  >
+                    <path
+                      d={`M0 -12 H${model.width} M-12 0 V${model.height}`}
+                      fill="none"
+                    />
+                    <text
+                      x={model.width / 2}
+                      y={-25}
+                      textAnchor="middle"
+                      stroke="none"
+                    >
+                      {model.width} mm
+                    </text>
+                    <text
+                      transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
+                      textAnchor="middle"
+                      stroke="none"
+                    >
+                      {model.height} mm
+                    </text>
+                  </g>
+                )}
+                {compartmentBoxes(model)
+                  .boxes.filter((b) => !b.node.split)
+                  .map((b) => (
+                    <g
+                      key={b.node.id}
+                      className="fc-compartment-area"
+                      onClick={() => setSelectedCompartment(b.node.id)}
+                    >
+                      <rect
+                        x={b.x}
+                        y={model.height - b.y - b.height}
+                        width={b.width}
+                        height={b.height}
+                        fill={
+                          selectedCompartment === b.node.id
+                            ? "#a5b859"
+                            : "transparent"
+                        }
+                        fillOpacity={
+                          selectedCompartment === b.node.id ? 0.14 : 1
+                        }
+                        stroke="#717780"
+                        strokeDasharray="5 5"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={b.x + 8}
+                        y={model.height - b.y - b.height + 30}
+                        fontSize="22"
+                        fill="#1c2b30"
+                      >
+                        {Math.round(b.width)} × {Math.round(b.height)} mm
+                      </text>
+                    </g>
+                  ))}
                 {[...model.plates]
                   .sort((a, b) => a.z - b.z)
                   .map((p) => {
@@ -934,7 +1102,27 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               </svg>
             )}
           </div>
+          <FurnitureCompartments
+            model={model}
+            selected={selectedCompartment}
+            onSelect={setSelectedCompartment}
+            onChange={update}
+            disabled={busy}
+          />
           <FurnitureParts model={model} onSelect={setSelected} />
+          <FurnitureTools
+            model={model}
+            library={library}
+            id={id}
+            version={version}
+            onChange={update}
+            onSelect={setSelected}
+            disabled={busy}
+            dirty={dirty}
+          />
+          {owner && !demo && (
+            <FurnitureSharing id={id} version={version} dirty={dirty} />
+          )}
           <details className="fc-part-review">
             <summary>Karta części · dane materiałowe</summary>
             <p>
@@ -1001,6 +1189,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               <input
                 type="checkbox"
                 checked={model.drawerFit === "fill"}
+                disabled={!!model.compartments}
                 onChange={(e) =>
                   update((m) => ({
                     ...m,
@@ -1041,7 +1230,15 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 </div>
               ))}
             </div>
-            <button onClick={addDrawers}>Ustaw zestaw szuflad</button>
+            <button onClick={addDrawers} disabled={!!model.compartments}>
+              Ustaw zestaw szuflad
+            </button>
+            {model.compartments && (
+              <p>
+                W układzie komór liczbę szuflad ustawiasz dla wybranej komory
+                powyżej.
+              </p>
+            )}
             <p>
               Zastępuje obecne fronty szuflad. Od dołu: niskie, średnie,
               wysokie; odstęp 2 mm. Każdy front możesz potem edytować osobno.
@@ -1147,7 +1344,10 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                   ),
                 )}
               <button
-                disabled={plate.anchor === "back"}
+                disabled={
+                  plate.anchor === "back" ||
+                  plate.layoutSlot?.startsWith("compartment/")
+                }
                 onClick={() =>
                   update((m) => ({
                     ...m,
@@ -1169,7 +1369,10 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Duplikuj płytę
               </button>
               <button
-                disabled={plate.anchor === "back"}
+                disabled={
+                  plate.anchor === "back" ||
+                  plate.layoutSlot?.startsWith("compartment/")
+                }
                 onClick={() => {
                   update((m) => ({
                     ...m,
@@ -1195,6 +1398,29 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               >
                 Usuń płytę
               </button>
+              {plate.layoutSlot?.startsWith("compartment/") && (
+                <p>
+                  Wyposażenie tej części usuwasz w komorze. Ręczna zmiana
+                  wymiarów tworzy własną korektę.
+                </p>
+              )}
+              {plate.layoutSlot?.startsWith("compartment/") &&
+                plate.layoutCustomized && (
+                  <button
+                    onClick={() =>
+                      update((m) => ({
+                        ...m,
+                        plates: m.plates.map((p) =>
+                          p.id === plate.id
+                            ? { ...p, layoutCustomized: undefined }
+                            : p,
+                        ),
+                      }))
+                    }
+                  >
+                    Przywróć zależność od komory
+                  </button>
+                )}
               <p>Płytę można przywrócić przyciskiem „Cofnij”.</p>
             </fieldset>
           ) : (

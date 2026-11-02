@@ -110,6 +110,8 @@ export function DeskStorage({
         blatu; sprawdź miejsce na monitor. Zmiana typu frontu zastępuje fronty
         szafki i ich przypisania systemów, z możliwością Cofnij. Pozostałe
         ręczne korekty części pozostają zachowane.
+        {model.compartments &&
+          " Stronę i szerokość szafek ustal przed projektowaniem komór. Aby zmienić konfigurację, przywróć układ startowy; Cofnij odtworzy dotychczasowy projekt."}
       </p>
     </fieldset>
   );

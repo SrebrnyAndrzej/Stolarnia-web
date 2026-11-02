@@ -110,6 +110,8 @@ Publiczny `DecorCatalog.tsx` i wybór w kreatorze współdzielą `DecorPicker`. 
 ## Kreator mebla (2026-11-02)
 Kreator w panelu właściciela i pracownika dziedziczy tokeny `web/src/v2/styles.css`; `furniture.css` odpowiada za układ biblioteka / rysunek / inspektor. Geometryczny rysunek płyt jest wyróżnikiem narzędzia. Brak zmian globalnej identyfikacji. Na telefonie biblioteka, rysunek i inspektor układają się pionowo. Pola liczbowe zapewniają alternatywę dla przeciągania.
 
+Komory korzystają z istniejących fieldsetów, fc-fields, FurnitureNumberField i natywnych selectów, pod rysunkiem. Wymiary światła oraz zaznaczenie przestrzeni uzupełniają dotychczasową geometrię. FurnitureTools używa disclosure, przycisków i Feedback. Porównanie A/B: dwie kolumny na desktopie, jedna na telefonie. Prezentacja klienta korzysta z tej samej sceny 3D, bez nawigacji personelu. Textarea używa istniejącego resize-none i odpowiedniej wysokości. Bez nowej palety. Źródło: docs/KREATOR-KOMORY-I-PREZENTACJE.md.
+
 Widok 3D: FurnitureScene używa rzeczywistych nieprzezroczystych brył, perspektywy, zasłaniania i cienia na neutralnym tle panelu. Kolor płyty #C5AB83 i frontu #E2D9C8 pochodzi z dotychczasowego rysunku; zaznaczenie #A5B859 z marki. Bez fototekstur ani automatycznej animacji. Pasek kamery dziedziczy przyciski i tokeny kreatora. Źródło: docs/KREATOR-WIDOK-3D.md.
 
 ## Szkice zamówień Mussi (2026-11-02)

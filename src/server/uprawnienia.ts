@@ -49,6 +49,8 @@ export const REGULY_TRAS: Regula[] = [
   { metody:"GET",sciezka:/^\/api\/v2\/purchase-orders\/(connection|projects|[^/]+\/export)$/,profile:TYLKO_WLASCICIEL,opis:"stan integracji i eksport koszyka Mussi" },
   { metody: "GET|PUT", sciezka: /^\/api\/v2\/furniture$/, profile: WSZYSCY, opis: "wspólna biblioteka mebli — zespół edytuje wszystkie modele" },
   { metody: "GET", sciezka: /^\/api\/v2\/furniture\/[^/]+\/construction$/, profile: WSZYSCY, opis: "karta konstrukcji zapisanej wersji — zespół" },
+  { metody: "GET|POST", sciezka: /^\/api\/v2\/furniture\/[^/]+\/presentations$/, profile: [], opis: "prezentacje dla klienta — właściciel" },
+  { metody: "DELETE", sciezka: /^\/api\/v2\/presentations\/[^/]+$/, profile: [], opis: "wycofanie prezentacji — właściciel" },
   // ---- v2: panel pracownika, zespół, zadania
   { metody: "GET", sciezka: /^\/api\/v2\/projects$/, profile: WSZYSCY, opis: "lista projektów (technicznie, wg przydziału)" },
   { metody: "GET", sciezka: v2p(), profile: WSZYSCY, opis: "widok techniczny projektu" },

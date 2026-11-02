@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
+import {
+  compartmentSchema,
+  rebuildCompartments,
+} from "../core/furniture-compartments.js";
 import { AccessError, isWorkshopMember, type Principal } from "./access.js";
 import {
   furnitureIssues,
@@ -63,6 +68,63 @@ export const furnitureSave = z
         plates: z.array(plate).min(1).max(150),
         drawerFit: z.enum(["fill", "fixed"]).optional(),
         customDrawerSet: z.boolean().optional(),
+        compartments: compartmentSchema.optional(),
+        installation: z
+          .object({
+            width: mm,
+            height: mm,
+            depth: mm,
+            left: coordinate,
+            right: coordinate,
+            top: coordinate,
+            furniture: z
+              .array(
+                z
+                  .object({
+                    id: z.string().uuid(),
+                    sourceId: z.string().uuid(),
+                    sourceVersion: z.number().int().positive(),
+                    x: coordinate,
+                    y: coordinate,
+                    z: coordinate,
+                    geometry: z
+                      .object({
+                        name: z.string().trim().min(2).max(100),
+                        width: mm,
+                        height: mm,
+                        depth: mm,
+                        thickness: mm.max(100),
+                        shape: z.enum(["rectangle", "slope", "stairs"]),
+                        lowHeight: mm,
+                        steps: z.number().int().min(2).max(20),
+                        reverse: z.boolean(),
+                        plates: z.array(plate).min(1).max(150),
+                      })
+                      .strict(),
+                  })
+                  .strict(),
+              )
+              .max(12)
+              .optional(),
+            obstacles: z
+              .array(
+                z
+                  .object({
+                    id: z.string().uuid(),
+                    name: z.string().trim().min(1).max(80),
+                    x: coordinate,
+                    y: coordinate,
+                    z: coordinate,
+                    width: mm,
+                    height: mm,
+                    depth: mm,
+                  })
+                  .strict(),
+              )
+              .max(20),
+          })
+          .strict()
+          .optional(),
         desk: z
           .object({
             worktopHeight: z.number().finite().min(100).max(3000),
@@ -148,6 +210,7 @@ export function saveFurniture(
       "Sprawdź nazwę, wymiary i płyty mebla. Dopuszczalne wymiary: 1–10000 mm, maksymalnie 150 płyt.",
     );
   const data = result.data;
+  data.model = rebuildCompartments(data.model, randomUUID);
   const layoutSlots = data.model.plates.flatMap((p) =>
     p.layoutSlot ? [p.layoutSlot] : [],
   );

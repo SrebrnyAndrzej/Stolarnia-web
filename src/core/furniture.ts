@@ -1,4 +1,10 @@
 /** Parametric library models in millimetres; both views consume these polygons. */
+import {
+  rebuildCompartments,
+  compartmentIssues,
+  compartmentStructurePlate,
+  type CompartmentLayout,
+} from "./furniture-compartments.js";
 export type Point = [number, number];
 /** Local U/V axes belong to the explicitly selected broad face, not the screen. */
 export interface PlateSpecification {
@@ -118,6 +124,33 @@ export function resizeFurniture(
     }),
     ...m.plates.filter((p) => !p.anchor && p.kind !== "cap"),
   ];
+  if (next.compartments) {
+    const base = next.suggestion
+      ? refreshSuggestedLayout(
+          {
+            ...next,
+            compartments: undefined,
+            plates: next.plates.filter(
+              (p) => !p.layoutSlot?.startsWith("compartment/"),
+            ),
+          },
+          id,
+        )
+      : next;
+    return rebuildCompartments(
+      {
+        ...base,
+        compartments: next.compartments,
+        plates: [
+          ...base.plates.filter(compartmentStructurePlate),
+          ...next.plates.filter((p) =>
+            p.layoutSlot?.startsWith("compartment/"),
+          ),
+        ],
+      },
+      id,
+    );
+  }
   return next.suggestion
     ? refreshSuggestedLayout(next, id)
     : fitDrawerFronts(next);
@@ -137,6 +170,34 @@ export interface FurnitureModel {
   drawerAssemblies?: DrawerAssembly[];
   drawerFit?: "fill" | "fixed";
   customDrawerSet?: boolean;
+  compartments?: CompartmentLayout;
+  installation?: {
+    width: number;
+    height: number;
+    depth: number;
+    left: number;
+    right: number;
+    top: number;
+    furniture?: Array<{
+      id: string;
+      sourceId: string;
+      sourceVersion: number;
+      x: number;
+      y: number;
+      z: number;
+      geometry: FurnitureGeometry;
+    }>;
+    obstacles: Array<{
+      id: string;
+      name: string;
+      x: number;
+      y: number;
+      z: number;
+      width: number;
+      height: number;
+      depth: number;
+    }>;
+  };
   suggestion?: { variant: LayoutVariant; excludedSlots: string[] };
   desk?: {
     worktopHeight: number;
@@ -156,6 +217,35 @@ export type LayoutVariant =
   | "desk-storage"
   | "desk-hutch"
   | "empty";
+export type FurnitureGeometry = Pick<
+  FurnitureModel,
+  | "name"
+  | "width"
+  | "height"
+  | "depth"
+  | "thickness"
+  | "shape"
+  | "lowHeight"
+  | "steps"
+  | "reverse"
+  | "plates"
+>;
+export function furnitureGeometrySnapshot(
+  m: FurnitureModel,
+): FurnitureGeometry {
+  return {
+    name: m.name,
+    width: m.width,
+    height: m.height,
+    depth: m.depth,
+    thickness: m.thickness,
+    shape: m.shape,
+    lowHeight: m.lowHeight,
+    steps: m.steps,
+    reverse: m.reverse,
+    plates: structuredClone(m.plates),
+  };
+}
 export const layoutVariants: { value: LayoutVariant; label: string }[] = [
   { value: "auto", label: "Automatycznie do obrysu" },
   { value: "wardrobe", label: "Szafa — półki i wysoka komora" },
@@ -413,6 +503,7 @@ export function polygonArea(p: Point[]) {
 }
 export function furnitureIssues(m: FurnitureModel): string[] {
   const issues: string[] = [];
+  issues.push(...compartmentIssues(m));
   if (m.drawerFit === "fill") {
     for (const group of drawerCompartments(m)) {
       if (
@@ -607,7 +698,7 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
 }
 
 /** Conservative inner ceiling, accounting for the normal thickness of each cap. */
-function layoutCeiling(m: FurnitureModel, x: number, end: number) {
+export function layoutCeiling(m: FurnitureModel, x: number, end: number) {
   return Math.min(
     ...topSegments(m)
       .filter((s) => s.end > x + 0.001 && s.x < end - 0.001)
@@ -621,7 +712,9 @@ function layoutCeiling(m: FurnitureModel, x: number, end: number) {
 }
 function drawerCompartments(m: FurnitureModel) {
   const columns = new Map<string, FurniturePlate[]>();
-  for (const p of m.plates.filter((p) => p.kind === "drawer")) {
+  for (const p of m.plates.filter(
+    (p) => p.kind === "drawer" && !p.layoutSlot?.startsWith("compartment/"),
+  )) {
     const key = `${p.x.toFixed(3)}/${p.width.toFixed(3)}`;
     columns.set(key, [...(columns.get(key) ?? []), p]);
   }
@@ -928,6 +1021,7 @@ export function applySuggestedLayout(
     ...m,
     drawerFit: "fill" as const,
     customDrawerSet: false,
+    compartments: undefined,
     height: isDeskVariant(variant)
       ? isHutch
         ? m.suggestion?.variant === "desk-hutch"

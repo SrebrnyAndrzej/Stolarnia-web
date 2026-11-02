@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "
 import { dirname, join, resolve } from "node:path";
 import { OKUCIA_STARTOWE } from "../core/catalog/hardware.js";
 import type { FurnitureEntry } from "../core/furniture.js";
+import type { FurniturePresentation } from "../server/furniture-presentations.js";
 import type { PurchaseOrder } from "../core/purchasing.js";
 import { MATERIALY_STARTOWE } from "../core/catalog/materials.js";
 import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
@@ -9,6 +10,7 @@ import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } 
 
 export interface BazaDanych {
   furnitureLibrary?: FurnitureEntry[];
+  furniturePresentations?: FurniturePresentation[];
   purchaseOrders?: PurchaseOrder[];
   wersja: number;
   ustawienia: UstawieniaStolarni;

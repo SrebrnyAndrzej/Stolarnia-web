@@ -20,6 +20,7 @@ import { documentSource, requireTechnicalDocuments, technicalDocuments } from ".
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
 import { saveFurniture, furnitureConstruction } from "./furniture.js";
+import { createFurniturePresentation,readFurniturePresentation,commentFurniturePresentation,listFurniturePresentations,revokeFurniturePresentation } from "./furniture-presentations.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
 import { MUSSI_CONNECTION } from "../core/purchasing.js";
 import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZapisSprzedazy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
@@ -72,7 +73,14 @@ app.get("/api/demo/przelicznik-szuflad", (req, res) => {
   catch (error) { res.status(400).json({ blad: error instanceof BladUslugi ? error.message : "Nie udało się przeliczyć szuflady." }); }
 });
 // Owner-only by default, including legacy PDF/CSV exports and HTTP MCP.
-app.use(["/api", "/mcp"], access.guard);
+app.use(["/api", "/mcp"],(req,res,next)=>{
+  const path=req.baseUrl+req.path;
+  if((req.method==="GET"&&/^\/api\/v2\/presentation\/[a-f0-9]{64}$/.test(path))||(req.method==="POST"&&/^\/api\/v2\/presentation\/[a-f0-9]{64}\/comments$/.test(path))) {
+    res.setHeader("Cache-Control","private, no-store");res.setHeader("Referrer-Policy","no-referrer");
+    try{access.checkOrigin(req);next();}catch(e){access.fail(res,e);}return;
+  }
+  return access.guard(req,res,next);
+});
 if (brakBazyWChmurze) {
   app.use(["/api", "/mcp"], (_req, res) => {
     res.status(503).json({ blad: "Brak konfiguracji bazy danych: ustaw SUPABASE_URL i SUPABASE_SECRET_KEY w ustawieniach projektu Vercel (Settings → Environment Variables) i wdroż ponownie." });
@@ -170,6 +178,11 @@ const p = (req: Request, k: string) => String(req.params[k]);
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/furniture/:id/construction", api(req => furnitureConstruction(s.magazyn, osoba(req), req.params.id, Number(req.query.version))));
+app.post("/api/v2/furniture/:id/presentations",api(req=>createFurniturePresentation(s.magazyn,osoba(req),req.params.id,Number(req.body?.version))));
+app.get("/api/v2/furniture/:id/presentations",api(req=>listFurniturePresentations(s.magazyn,osoba(req),req.params.id)));
+app.delete("/api/v2/presentations/:id",api(req=>revokeFurniturePresentation(s.magazyn,osoba(req),req.params.id)));
+app.get("/api/v2/presentation/:token",(req,res)=>{try{res.json(readFurniturePresentation(s.magazyn,req.params.token));}catch(e){access.fail(res,e);}});
+app.post("/api/v2/presentation/:token/comments",async(req,res)=>{try{const result=commentFurniturePresentation(s.magazyn,req.params.token,req.body);await s.magazyn.utrwal();res.json(result);}catch(e){access.fail(res,e);}});
 app.get("/api/v2/purchase-orders", api(() => s.magazyn.odczytaj().purchaseOrders ?? []));
 app.put("/api/v2/purchase-orders", api(req => savePurchaseOrder(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/purchase-orders/connection", api(() => MUSSI_CONNECTION));

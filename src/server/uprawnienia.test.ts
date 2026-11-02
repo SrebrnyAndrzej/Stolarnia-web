@@ -125,7 +125,7 @@ const tekstPdf = (bufor: Buffer, nazwa: string) => {
 
 test("każda chroniona trasa aplikacji ma regułę w macierzy (nowa trasa bez reguły = błąd testu)", () => {
   // Publiczne, rejestrowane przed bramką dostępu: logowanie, aktywacja, formularz zapytań, podgląd demo, healthz.
-  const PUBLICZNE = new Set(["GET /healthz", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/demo/systemy-szuflad", "GET /api/demo/przelicznik-szuflad"]);
+  const PUBLICZNE = new Set(["GET /healthz", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/demo/systemy-szuflad", "GET /api/demo/przelicznik-szuflad", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments"]);
   type Warstwa = { route?: { path: string | RegExp; methods: Record<string, boolean> } };
   const stos = (app as unknown as { _router: { stack: Warstwa[] } })._router.stack;
   const brak: string[] = [];
@@ -446,4 +446,32 @@ test("przejścia statusów (czysta funkcja)", () => {
   assert.ok(sprawdzZmianeProjektu("sprzedaz", "produkcja", { cenaUzgodnionaBrutto: 5 }));
   assert.equal(sprawdzZmianeProjektu("sprzedaz", "produkcja", { status: "produkcja", nazwa: "x" }), null, "status bez zmiany");
   assert.equal(sprawdzZmianeProjektu("wlasciciel", "zakonczony", { status: "szkic" }), null);
+});
+
+test("prezentacje HTTP: właściciel tworzy, klient odczytuje tylko migawkę, pracownik nie udostępnia",async()=>{
+  const {randomUUID}=await import("node:crypto");
+  const {freshFurniture,carcass}=await import("../core/furniture.js");
+  const model=freshFurniture();model.plates=carcass(model,randomUUID);
+  const id=randomUUID();
+  assert.equal((await zadanie("PUT","/api/v2/furniture","t-owner",{id,version:0,model})).status,200);
+  const created=await zadanie("POST",`/api/v2/furniture/${id}/presentations`,"t-owner",{version:1});
+  assert.equal(created.status,200);
+  assert.match(created.json.token,/^[a-f0-9]{64}$/);
+  assert.equal((await zadanie("POST",`/api/v2/furniture/${id}/presentations`,"t-produkcja",{version:1})).status,403);
+  assert.equal((await zadanie("GET",`/api/v2/furniture/${id}/presentations`,"t-produkcja")).status,403);
+  const path=`/api/v2/presentation/${created.json.token}`;
+  const publicView=await zadanie("GET",path);
+  assert.equal(publicView.status,200);
+  assert.equal(publicView.json.model.name,model.name);
+  assert.ok(!publicView.tekst.includes("tokenHash"));
+  assert.ok(!publicView.tekst.includes("createdBy"));
+  const origin=process.env.PAN_STOLARZ_ORIGIN??adres;
+  const response=await oryginalnyFetch(adres+path+"/comments",{method:"POST",headers:{origin,"content-type":"application/json"},body:JSON.stringify({id:randomUUID(),text:"Proszę zmienić front"})});
+  assert.equal(response.status,200);
+  const hostile=await oryginalnyFetch(adres+path+"/comments",{method:"POST",headers:{origin:"https://evil.invalid","content-type":"application/json"},body:JSON.stringify({id:randomUUID(),text:"Błąd"})});
+  assert.equal(hostile.status,403);
+  assert.equal((await zadanie("GET",path)).json.comments.length,1);
+  assert.equal((await zadanie("DELETE",`/api/v2/presentations/${created.json.id}`,"t-owner")).status,200);
+  assert.equal((await zadanie("GET",path)).status,404);
+  assert.equal((await zadanie("GET","/api/v2/furniture")).status,401);
 });

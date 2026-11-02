@@ -21,8 +21,17 @@ import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
 import { Logo, Feedback } from "./ui";
 import { profilOsoby } from "../../../src/server/uprawnienia";
-const FurnitureCreator = lazy(() => import("./FurnitureCreator").then(m => ({ default: m.FurnitureCreator })));
-const Purchasing = lazy(() => import("./Purchasing").then(m => ({ default: m.Purchasing })));
+const FurnitureCreator = lazy(() =>
+  import("./FurnitureCreator").then((m) => ({ default: m.FurnitureCreator })),
+);
+const FurniturePresentation = lazy(() =>
+  import("./FurnitureSharing").then((m) => ({
+    default: m.FurniturePresentation,
+  })),
+);
+const Purchasing = lazy(() =>
+  import("./Purchasing").then((m) => ({ default: m.Purchasing })),
+);
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
 );
@@ -92,8 +101,17 @@ export function App() {
   useEffect(() => {
     if (!previewRoute) return;
     const section = hash.split("?")[0].split("/")[3] ?? "projekty";
-    const allowed = ["projekty", "pracownicy", "meble", "zadania", "szuflady", "zapytania"];
-    location.replace(`${location.pathname}${location.search}#/panel/${allowed.includes(section) ? section : "projekty"}`);
+    const allowed = [
+      "projekty",
+      "pracownicy",
+      "meble",
+      "zadania",
+      "szuflady",
+      "zapytania",
+    ];
+    location.replace(
+      `${location.pathname}${location.search}#/panel/${allowed.includes(section) ? section : "projekty"}`,
+    );
   }, [hash, previewRoute]);
   const plannerRoute = hash.split("?")[0] === "#/kreator-kuchni";
   const publicRoute =
@@ -110,8 +128,9 @@ export function App() {
     /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady|#\/szybki)/.test(hash);
   const href = (page: string) => `#/panel/${page}`;
   useEffect(() => {
-    const title =
-      hash === "#/katalog-dekorow"
+    const title = hash.startsWith("#/prezentacja/")
+      ? "Prezentacja mebla"
+      : hash === "#/katalog-dekorow"
         ? "Katalog dekorów"
         : plannerRoute
           ? "Kreator kuchni"
@@ -143,6 +162,14 @@ export function App() {
     }
   };
   if (hash === "#/katalog-dekorow") return <DecorCatalog />;
+  if (hash.startsWith("#/prezentacja/"))
+    return (
+      <Suspense fallback={<p role="status">Ładowanie prezentacji…</p>}>
+        <FurniturePresentation
+          token={hash.slice("#/prezentacja/".length).split("?")[0]}
+        />
+      </Suspense>
+    );
   if (hash.startsWith("#/aktywacja"))
     return (
       <ActivateAccount
@@ -181,7 +208,9 @@ export function App() {
         onLogin={(p) => {
           setSession(p);
           setSessionError("");
-          location.hash = hash.startsWith("#/panel/") ? hash : "#/panel/projekty";
+          location.hash = hash.startsWith("#/panel/")
+            ? hash
+            : "#/panel/projekty";
         }}
       />
     );
@@ -203,7 +232,9 @@ export function App() {
     ["projekty", ""].includes(section) ||
     (employee && ["szuflady", "zadania", "meble"].includes(section));
   const nav = [
-    ...(owner || employee ? [{ id: "meble", label: "Kreator mebla", icon: IconStack2 }] : []),
+    ...(owner || employee
+      ? [{ id: "meble", label: "Kreator mebla", icon: IconStack2 }]
+      : []),
     ...(owner || employee
       ? [
           {
@@ -282,7 +313,9 @@ export function App() {
             <a
               key={id}
               href={href(id)}
-              aria-current={!legacy && !quick && section === id ? "page" : undefined}
+              aria-current={
+                !legacy && !quick && section === id ? "page" : undefined
+              }
             >
               <Icon size={21} stroke={1.6} />
               {label}
@@ -396,7 +429,7 @@ export function App() {
           ) : section === "zamowienia" && owner ? (
             <Purchasing />
           ) : section === "meble" && (owner || employee) ? (
-            <FurnitureCreator demo={demo} />
+            <FurnitureCreator demo={demo} owner={person?.role === "owner"} />
           ) : section === "szuflady" ? (
             <>
               {demo && (

@@ -131,6 +131,10 @@ Nowe układy wypełniają wysokość komory do pełnej półki/wieńca, z luzami
 ## Propozycje do ustalania projektu — 2026-11-02
 Źródło: docs/SUGEROWANE-UKLADY.md. Nowy model startuje automatycznie; zapisane modele bez suggestion nie są przebudowywane. Ręczne pozycje i wymiary zachowują się po zmianie gabarytów, usunięte sugestie nie wracają. Wariant i wykluczenia zapisują się z modelem. Zmiana wariantu zastępuje wnętrze i przypisania szuflad z obsługą Cofnij, bez dodatkowego potwierdzenia dla tej odwracalnej operacji. Nie zmienia to dostępu do biblioteki ani ról.
 
+Komory są jawnym wariantem projektowania: uruchomienie zastępuje wnętrze zgodnie z opisem, Cofnij odtwarza model. Zależności i blokady są zapisywane oraz sprawdzane po stronie serwera. Niejednoznaczne stare modele nie są automatycznie konwertowane. Błędy blokad pozostają w formularzu do poprawy. Źródło: docs/KREATOR-KOMORY-I-PREZENTACJE.md.
+
+Prezentacja klienta: tworzenie/lista/wycofanie tylko właściciel; publiczny odczyt i uwagi wyłącznie przez losowy, wygasający token konkretnej migawki. Brak dostępu do biblioteki, finansów i innych projektów. Uwagi nie oznaczają akceptacji. useResource, request i Feedback są właścicielami pobierania, ponawiania oraz anulowania starych odczytów. Kod QR etykiety wymaga sesji i zgodnej wersji; nie udostępnia modelu publicznie. Eksporty pozostają szkicem.
+
 Widok 3D wybiera najbliższą widoczną płytę; przeciąganie obraca kamerę bez modyfikacji modelu. Przyciski kamery i lista płyt zapewniają obsługę klawiaturą. Przełączenie 2D/3D nie zapisuje i nie usuwa zmian. Brak WebGL i utrata kontekstu mają Feedback, ponowienie i dostępne przełączenie 2D. Renderowanie bez automatycznej animacji, zwolnienie zasobów po zamknięciu widoku. Źródło: docs/KREATOR-WIDOK-3D.md.
 
 ## Biurko — 2026-11-02

@@ -7,6 +7,7 @@ import {
   type FurnitureModel,
 } from "../../../src/core/furniture";
 import { Feedback } from "./ui";
+import { frontMotion } from "../../../src/core/furniture-review";
 
 type View = "right" | "left" | "front";
 const MM = 0.001;
@@ -16,6 +17,7 @@ type Runtime = {
   camera: THREE.PerspectiveCamera;
   controls: OrbitControls;
   parts: THREE.Group;
+  context: THREE.Group;
   bounds: THREE.Box3;
   draw: () => void;
   fit: (view?: View) => void;
@@ -49,6 +51,9 @@ export function FurnitureScene({
   select.current = onSelect;
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [showFronts, setShowFronts] = useState(true),
+    [openFronts, setOpenFronts] = useState(false),
+    [exploded, setExploded] = useState(false);
 
   useEffect(() => {
     const el = host.current!;
@@ -95,6 +100,8 @@ export function FurnitureScene({
     scene.add(fill);
     const parts = new THREE.Group();
     scene.add(parts);
+    const context = new THREE.Group();
+    scene.add(context);
     const ground = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
       new THREE.ShadowMaterial({ opacity: 0.16 }),
@@ -110,6 +117,7 @@ export function FurnitureScene({
       camera,
       controls,
       parts,
+      context,
       bounds: new THREE.Box3(),
       draw,
       fit: (view = "right") => {
@@ -212,7 +220,12 @@ export function FurnitureScene({
       );
       const hit = ray
         .intersectObjects(parts.children, false)
-        .find((h) => h.object instanceof THREE.Mesh);
+        .find(
+          (h) =>
+            h.object instanceof THREE.Mesh &&
+            h.object.visible &&
+            h.object.userData.plateId,
+        );
       if (hit) select.current(hit.object.userData.plateId as string);
     };
     const lost = (e: Event) => {
@@ -235,6 +248,7 @@ export function FurnitureScene({
       renderer.domElement.removeEventListener("pointercancel", cancel);
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       clearParts(parts);
+      clearParts(context);
       ground.geometry.dispose();
       ground.material.dispose();
       key.shadow.map?.dispose();
@@ -250,6 +264,78 @@ export function FurnitureScene({
     if (!state) return;
     const initial = state.bounds.isEmpty();
     clearParts(state.parts);
+    clearParts(state.context);
+    if (model.installation) {
+      const room = model.installation;
+      const geometry = new THREE.BoxGeometry(
+        room.width * MM,
+        room.height * MM,
+        room.depth * MM,
+      );
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geometry),
+        new THREE.LineBasicMaterial({
+          color: 0x717780,
+          transparent: true,
+          opacity: 0.65,
+        }),
+      );
+      geometry.dispose();
+      edges.position.set(
+        (room.width / 2 - room.left) * MM,
+        (room.height / 2) * MM,
+        (room.depth / 2) * MM,
+      );
+      state.context.add(edges);
+      for (const obstacle of room.obstacles) {
+        const mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(
+            obstacle.width * MM,
+            obstacle.height * MM,
+            obstacle.depth * MM,
+          ),
+          new THREE.MeshStandardMaterial({
+            color: 0xb5634b,
+            transparent: true,
+            opacity: 0.55,
+          }),
+        );
+        mesh.position.set(
+          (obstacle.x + obstacle.width / 2) * MM,
+          (obstacle.y + obstacle.height / 2) * MM,
+          (obstacle.z + obstacle.depth / 2) * MM,
+        );
+        state.context.add(mesh);
+      }
+      for (const instance of room.furniture ?? [])
+        for (const plate of instance.geometry.plates) {
+          const polygon = platePolygon(instance.geometry, plate);
+          if (polygon.length < 3 || polygonArea(polygon) < 0.01) continue;
+          const shape = new THREE.Shape(
+            polygon.map(([x, y]) => new THREE.Vector2(x * MM, y * MM)),
+          );
+          const geometry = new THREE.ExtrudeGeometry(shape, {
+            depth: plate.depth * MM,
+            bevelEnabled: false,
+            steps: 1,
+            curveSegments: 1,
+          });
+          geometry.translate(
+            instance.x * MM,
+            instance.y * MM,
+            (instance.z + plate.z) * MM,
+          );
+          const mesh = new THREE.Mesh(
+            geometry,
+            new THREE.MeshStandardMaterial({
+              color: 0xc9c6bd,
+              roughness: 0.85,
+            }),
+          );
+          mesh.castShadow = mesh.receiveShadow = true;
+          state.context.add(mesh);
+        }
+    }
     for (const plate of model.plates) {
       const polygon = platePolygon(model, plate);
       if (polygon.length < 3 || polygonArea(polygon) < 0.01 || plate.depth <= 0)
@@ -264,6 +350,10 @@ export function FurnitureScene({
         curveSegments: 1,
       });
       geometry.translate(0, 0, plate.z * MM);
+      const isFront = plate.kind === "door" || plate.kind === "drawer";
+      const motion = frontMotion(model, plate);
+      if (plate.kind === "door")
+        geometry.translate(-motion.pivotX * MM, 0, -motion.pivotZ * MM);
       const color =
         plate.kind === "drawer" || plate.kind === "door" ? 0xe2d9c8 : 0xc5ab83;
       const material = new THREE.MeshStandardMaterial({
@@ -276,6 +366,22 @@ export function FurnitureScene({
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.userData = { plateId: plate.id, color };
+      if (plate.kind === "door") {
+        mesh.position.set(motion.pivotX * MM, 0, motion.pivotZ * MM);
+        if (openFronts)
+          mesh.rotation.y = ((motion.hinge === "right" ? 1 : -1) * Math.PI) / 2;
+      }
+      if (openFronts && plate.kind === "drawer")
+        mesh.position.z += motion.travel * MM;
+      if (isFront && !showFronts) mesh.visible = false;
+      if (exploded) {
+        mesh.position.x +=
+          (plate.x + plate.width / 2 - model.width / 2) * MM * 0.18;
+        mesh.position.y +=
+          (plate.y + plate.height / 2 - model.height / 2) * MM * 0.18;
+        mesh.position.z +=
+          (plate.z + plate.depth / 2 - model.depth / 2) * MM * 0.3;
+      }
       mesh.castShadow = mesh.receiveShadow = true;
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geometry, 25),
@@ -289,9 +395,11 @@ export function FurnitureScene({
       state.parts.add(mesh);
     }
     state.bounds.setFromObject(state.parts);
+    if (model.installation)
+      state.bounds.union(new THREE.Box3().setFromObject(state.context));
     if (initial) state.fit();
     else state.draw();
-  }, [model, attempt]);
+  }, [model, attempt, showFronts, openFronts, exploded]);
 
   useEffect(() => {
     const state = runtime.current;
@@ -308,7 +416,7 @@ export function FurnitureScene({
       mesh.material.emissive.setHex(active ? 0x172000 : 0x000000);
     }
     state.draw();
-  }, [selected, model, attempt]);
+  }, [selected, model, attempt, showFronts, openFronts, exploded]);
 
   const turn = (angle: number) => {
     const state = runtime.current;
@@ -335,6 +443,30 @@ export function FurnitureScene({
   return (
     <div className="fc-scene">
       <div className="fc-camera" role="group" aria-label="Kamera 3D">
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={showFronts}
+            onChange={(e) => setShowFronts(e.target.checked)}
+          />
+          Pokaż fronty
+        </label>
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={openFronts}
+            onChange={(e) => setOpenFronts(e.target.checked)}
+          />
+          Otwórz fronty
+        </label>
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={exploded}
+            onChange={(e) => setExploded(e.target.checked)}
+          />
+          Widok rozstrzelony
+        </label>
         <button
           disabled={!!error}
           onClick={() => runtime.current?.fit("right")}
@@ -392,6 +524,8 @@ export function FurnitureScene({
         Przeciągnij, aby obrócić. Kliknij płytę, aby ją wybrać. Przybliżaj
         przyciskami lub gestem dwóch palców. Wymiary i pozycje zmieniaj w
         inspektorze.
+        {openFronts &&
+          " Ruch frontów jest poglądowy: drzwi 90°, szuflady według NL lub poglądowego wysuwu. Skrzynki i okucia nie są jeszcze modelowane."}
       </p>
     </div>
   );
