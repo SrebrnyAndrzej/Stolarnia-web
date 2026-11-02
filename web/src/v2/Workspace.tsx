@@ -147,6 +147,10 @@ export function Workspace({
               </p>
             </div>
             <div className="ps-role-shortcuts" aria-label="Szybkie przejścia">
+              <a className="ps-button" href={panelHref("meble")}>
+                <IconCube size={20} aria-hidden="true" />
+                Otwórz kreator mebla
+              </a>
               {owner && (
                 <>
                   <a

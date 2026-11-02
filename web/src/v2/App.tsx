@@ -188,7 +188,7 @@ export function App() {
         onLogin={(p) => {
           setSession(p);
           setSessionError("");
-          location.hash = "#/panel/projekty";
+          location.hash = hash.startsWith("#/panel/") ? hash : "#/panel/projekty";
         }}
       />
     );

@@ -106,3 +106,6 @@ Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2
 
 ## Skos i cięcie (2026-11-02)
 Dwa jawne pola wysokości boków (krótki i długi, pomiar zewnętrzny) oraz szerokość pozioma. SlopeCutting używa geometrii slopeCut; rysunek przedstawia wieniec między bokami. Porównanie uciosów jest oddzielnie oznaczone i nie zmienia konstrukcji. Nastawa0°=cięcie prostopadłe przy płycie płasko. Przekroczenie45° jest jawne i blokuje wskazówki ustawiania do bezpośredniego cięcia. Dane nie są instrukcją konkretnego modelu Mac Allister; nie znamy jego identyfikatora ani dopuszczalnej głębokości. Zmiana wysokości aktualizuje kalkulator i zapisuje się z modelem; wybór piły i wariantu porównania jest lokalnym ustawieniem widoku.
+
+## Przejście z podglądu do kont zespołu (2026-11-02)
+Adres #/podglad/owner/pracownicy jest demonstracją; pokazuje jawne wyjaśnienie oraz odnośnik #/panel/pracownicy. Podgląd nie tworzy prawdziwych kont. Po logowaniu rozpoczętym z #/panel/... aplikacja zachowuje docelową sekcję, a autoryzacja roli nadal obowiązuje. Ekran startowy właściciela i pracownika ma widoczne szybkie przejście „Otwórz kreator mebla”, również gdy boczne menu jest schowane na telefonie.

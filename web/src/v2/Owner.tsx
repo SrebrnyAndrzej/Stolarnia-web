@@ -178,6 +178,10 @@ export function Members({ demo }: { demo: boolean }) {
     <section className="ps-owner-page">
       <span className="ps-eyebrow">Dostęp do pracowni</span>
       <h1>Pracownicy i dostęp</h1>
+      {demo && <div className="ps-feedback" role="status">
+        <p>To demonstracja właściciela. Dodawanie prawdziwych kont jest dostępne po zalogowaniu.</p>
+        <a className="ps-button" href="#/panel/pracownicy">Przejdź do zarządzania pracownikami</a>
+      </div>}
       {!demo && <CreateEmployee onCreated={members.retry} />}
       <p className="ps-page-intro">
         Pracownik korzysta z kalkulatora szuflad i widzi udostępnione projekty.
@@ -213,7 +217,7 @@ export function Members({ demo }: { demo: boolean }) {
           <h2>Nie dodano jeszcze kont</h2>
           <p>
             {demo
-              ? "Konta pojawią się po skonfigurowaniu dostępu do stolarni."
+              ? "Podgląd nie pokazuje prawdziwych kont zespołu. Otwórz panel zarządzania pracownikami powyżej."
               : "Dodaj pierwszego pracownika formularzem powyżej."}
           </p>
         </div>
