@@ -333,6 +333,26 @@
   gap: 12px;
   margin-top: 20px;
 }
+.fc-part-review + .fc-part-review {
+  margin-top: 16px;
+}
+.fc-cut-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.fc-cut-table th,
+.fc-cut-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.fc-cut-table caption {
+  text-align: left;
+  padding: 12px 0;
+  font-weight: 600;
+}
 .fc-specification > p,
 .fc-specification > svg {
   grid-column: 1 / -1;

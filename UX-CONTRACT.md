@@ -119,3 +119,6 @@ Użytkownik wybrał szkic narzędzia teraz, rzeczywisty silnik wraz z wdrożenie
 
 ## Materiały części i eksport konstrukcji — 2026-11-02
 Źródło: docs/KARTA-KONSTRUKCJI.md. Właściciel i aktywny pracownik uzupełniają dane wszystkich modeli. Braki nie blokują zapisu szkicu. Zmiana płaszczyzny resetuje usłojenie i krawędzie; wspólne Cofnij odtwarza je. Grubość jest wyliczana z geometrii. Eksport wymaga zapisanej zgodnej wersji, jest blokowany przy dirty i nigdy nie nadaje statusu produkcyjnego. Błąd pozostawia edytor. CRUD, Feedback, useDraftGuard, NumberField, natywne selecty i tokeny pozostają kanonicznymi właścicielami.
+
+## Standardy i zestawienie części — 2026-11-02
+Źródło: docs/STANDARDY-KONSTRUKCJI.md. Standard zapisany z modelem, ponowne użycie przez kopię biblioteki. Zmiana geometrii zachowuje ID i opisy; wyłączenie pleców usuwa wyłącznie generowane plecy. Braki i nieobsługiwane skosy nie stają się poprawną listą cięcia. Wymiar rdzenia wymaga jawnej konwencji wymiarowej. Własne płyty pozostają do indywidualnej edycji. Uprawnienia, wersje, Feedback i useDraftGuard bez zmian.

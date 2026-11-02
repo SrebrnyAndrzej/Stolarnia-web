@@ -72,9 +72,15 @@ for (const role of ["owner", "employee"]) {
     await page
       .getByText("Karta części · dane materiałowe", { exact: true })
       .click();
-    await expect(page.locator(".fc-part-review")).toContainText(
-      "Dane materiałowe uzupełnione",
-    );
+    await expect(
+      page
+        .locator(".fc-part-review")
+        .filter({
+          has: page.getByText("Karta części · dane materiałowe", {
+            exact: true,
+          }),
+        }),
+    ).toContainText("Dane materiałowe uzupełnione");
   });
 }
 

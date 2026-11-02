@@ -117,3 +117,6 @@ Purchasing korzysta z istniejących tokenów i powłoki ps-owner-page. Lista szk
 Inspektor kreatora rozszerza istniejące natywne pola i selecty o materiał, dekor, lokalną płaszczyznę, usłojenie i krawędzie U0/U1/V0/V1. Schemat osi jest oznaczeniem, nie obietnicą rozkroju. Karta części w disclosure używa tokenów panelu, pokazuje braki i przechodzi do wybranego elementu. Eksport JSON zapisanej wersji jest akcją drugorzędną; stan niezatwierdzony pozostaje jawny. Źródło domenowe: docs/KARTA-KONSTRUKCJI.md.
 
 Doprecyzowanie układu karty części: formularz materiałów znajduje się w szerokiej kolumnie roboczej, a inspektor wymiarów ma przycisk przejścia z ustawieniem fokusu na pierwszym polu. Na telefonie pola układają się w jedną kolumnę.
+
+## Standard konstrukcji — 2026-11-02
+ConstructionStandard używa istniejącego fieldset, fc-fields, natywnych selectów i tokenów w szerokiej kolumnie roboczej. Dwie jawne akcje uzupełnienia/zastąpienia opisów, wspólne Cofnij. FurnitureParts jest tabelą w przewijanym poziomo disclosure, bez nowej palety. Źródło: docs/STANDARDY-KONSTRUKCJI.md.

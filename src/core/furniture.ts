@@ -19,7 +19,7 @@ export interface FurniturePlate {
   id: string;
   name: string;
   kind: "board" | "drawer" | "cap";
-  anchor?: "left" | "right" | "bottom" | "top";
+  anchor?: "left" | "right" | "bottom" | "top" | "back";
   x: number;
   y: number;
   z: number;
@@ -119,6 +119,105 @@ export interface FurnitureModel {
   steps: number;
   reverse: boolean;
   plates: FurniturePlate[];
+  construction?: ConstructionStandard;
+}
+export interface ConstructionStandard {
+  version: 1;
+  back: "none" | "applied";
+  backThickness: number;
+  dimensionMode: "unset" | "finished" | "substrate";
+  bodyMaterial: string;
+  bodyDecor: string;
+  frontMaterial: string;
+  frontDecor: string;
+  backMaterial: string;
+  backDecor: string;
+  edgeMaterial: string;
+  edgeThickness: number;
+}
+export const freshConstructionStandard = (): ConstructionStandard => ({
+  version: 1,
+  back: "none",
+  backThickness: 3,
+  dimensionMode: "unset",
+  bodyMaterial: "",
+  bodyDecor: "",
+  frontMaterial: "",
+  frontDecor: "",
+  backMaterial: "",
+  backDecor: "",
+  edgeMaterial: "",
+  edgeThickness: 1,
+});
+export const backDepth = (m: FurnitureModel) =>
+  m.construction?.back === "applied" ? m.construction.backThickness : 0;
+export function standardPlateSpecification(
+  m: FurnitureModel,
+  p: FurniturePlate,
+): PlateSpecification {
+  const s = m.construction ?? freshConstructionStandard();
+  const result = freshPlateSpecification();
+  const back = p.anchor === "back",
+    front = p.kind === "drawer";
+  result.material = back
+    ? s.backMaterial
+    : front
+      ? s.frontMaterial
+      : s.bodyMaterial;
+  result.decor = back ? s.backDecor : front ? s.frontDecor : s.bodyDecor;
+  result.face =
+    back || front
+      ? "xy"
+      : p.kind === "cap"
+        ? "slope"
+        : p.anchor === "left" || p.anchor === "right"
+          ? "yz"
+          : "xz";
+  // Grain is intentionally not guessed from a free-text decor name.
+  for (const [key, edge] of Object.entries(result.edges)) {
+    const exposed =
+      !back && (front || key === (result.face === "yz" ? "u1" : "v1"));
+    edge.state = exposed ? "band" : "none";
+    edge.material = exposed ? s.edgeMaterial : "";
+    edge.thickness = s.edgeThickness;
+  }
+  return result;
+}
+export function applyConstructionStandard(
+  m: FurnitureModel,
+  standard: ConstructionStandard,
+  id: () => string,
+  replace: boolean,
+): FurnitureModel {
+  const next = resizeFurniture(
+    m,
+    { construction: structuredClone(standard) },
+    id,
+  );
+  next.plates = next.plates.map((p) => {
+    if (!p.anchor && p.kind !== "drawer") return p;
+    const defaults = standardPlateSpecification(next, p),
+      old = p.specification;
+    if (replace || !old) return { ...p, specification: defaults };
+    return {
+      ...p,
+      specification: {
+        ...old,
+        material: old.material.trim() ? old.material : defaults.material,
+        decor: old.decor.trim() ? old.decor : defaults.decor,
+        face: old.face === "unset" ? defaults.face : old.face,
+        edges: Object.fromEntries(
+          Object.entries(old.edges).map(([k, e]) => [
+            k,
+            e.state === "unset"
+              ? defaults.edges[k as keyof typeof defaults.edges]
+              : e,
+          ]),
+        ) as PlateSpecification["edges"],
+      },
+    };
+  });
+  return next;
 }
 export interface FurnitureEntry {
   id: string;
@@ -239,6 +338,10 @@ export function furnitureIssues(m: FurnitureModel): string[] {
   if (m.lowHeight > m.height && m.shape !== "rectangle")
     issues.push("Dolna wysokość obrysu nie może przekraczać wysokości mebla.");
   for (const p of m.plates) {
+    if (p.anchor !== "back" && p.z < backDepth(m) - 0.01)
+      issues.push(
+        `${p.name}: nachodzi na plecy. Ustaw Z co najmniej ${backDepth(m)} mm.`,
+      );
     if (polygonArea(platePolygon(m, p)) < 1)
       issues.push(`${p.name}: płyta znajduje się poza obrysem.`);
     if (p.z < 0 || p.z + p.depth > m.depth + m.thickness + 0.1)
@@ -260,7 +363,8 @@ export function furnitureIssues(m: FurnitureModel): string[] {
 }
 export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
   const t = m.thickness;
-  return [
+  const b = backDepth(m);
+  const generated: FurniturePlate[] = [
     {
       id: id(),
       name: "Bok lewy",
@@ -268,10 +372,10 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
       anchor: "left",
       x: 0,
       y: 0,
-      z: 0,
+      z: b,
       width: t,
       height: m.height,
-      depth: m.depth,
+      depth: m.depth - b,
     },
     {
       id: id(),
@@ -280,10 +384,10 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
       anchor: "right",
       x: m.width - t,
       y: 0,
-      z: 0,
+      z: b,
       width: t,
       height: m.height,
-      depth: m.depth,
+      depth: m.depth - b,
     },
     {
       id: id(),
@@ -292,10 +396,10 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
       anchor: "bottom",
       x: t,
       y: 0,
-      z: 0,
+      z: b,
       width: m.width - 2 * t,
       height: t,
-      depth: m.depth,
+      depth: m.depth - b,
     },
     ...topSegments(m).map((s) => ({
       id: id(),
@@ -304,10 +408,29 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
       anchor: "top" as const,
       x: Math.max(t, s.x),
       y: Math.min(s.a, s.b) - t,
-      z: 0,
+      z: b,
       width: Math.min(m.width - t, s.end) - Math.max(t, s.x),
       height: Math.abs(s.b - s.a) + t,
-      depth: m.depth,
+      depth: m.depth - b,
     })),
   ];
+  if (b > 0)
+    generated.push({
+      id: id(),
+      name: "Plecy nakładane",
+      kind: "board",
+      anchor: "back",
+      x: 0,
+      y: 0,
+      z: 0,
+      width: m.width,
+      height: m.height,
+      depth: b,
+    });
+  return m.construction
+    ? generated.map((p) => ({
+        ...p,
+        specification: standardPlateSpecification(m, p),
+      }))
+    : generated;
 }

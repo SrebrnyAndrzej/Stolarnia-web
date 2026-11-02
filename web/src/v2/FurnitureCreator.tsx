@@ -6,6 +6,10 @@ import {
   plateSpecificationIssues,
   plateThickness,
   freshPlateSpecification,
+  freshConstructionStandard,
+  applyConstructionStandard,
+  standardPlateSpecification,
+  backDepth,
   furnitureIssues,
   furnitureOutline,
   platePolygon,
@@ -19,6 +23,8 @@ import { Feedback } from "./ui";
 import { SlopeCutting } from "./SlopeCutting";
 import { useDraftGuard } from "./useDraftGuard";
 import { PlateSpecification } from "./PlateSpecification";
+import { ConstructionStandard } from "./ConstructionStandard";
+import { FurnitureParts } from "./FurnitureParts";
 import "./furniture.css";
 
 const uid = () => crypto.randomUUID();
@@ -249,11 +255,16 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       kind: "board",
       x: vertical ? Math.round(model.width / 2) : model.thickness,
       y: model.thickness + (vertical ? 0 : Math.round(model.lowHeight / 2)),
-      z: 0,
+      z: backDepth(model),
       width: vertical ? model.thickness : model.width - 2 * model.thickness,
       height: vertical ? model.height - model.thickness : model.thickness,
-      depth: model.depth,
+      depth: model.depth - backDepth(model),
     };
+    if (model.construction)
+      p.specification = standardPlateSpecification(model, {
+        ...p,
+        anchor: vertical ? "left" : "bottom",
+      });
     update((m) => ({ ...m, plates: [...m.plates, p] }));
     setSelected(p.id);
   };
@@ -284,6 +295,12 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       ...model,
       plates: [...model.plates.filter((p) => p.kind !== "drawer"), ...plates],
     };
+    if (model.construction)
+      next.plates = next.plates.map((p) =>
+        p.kind === "drawer"
+          ? { ...p, specification: standardPlateSpecification(model, p) }
+          : p,
+      );
     const problems = furnitureIssues(next);
     if (problems.length) {
       setError(problems[0]);
@@ -304,7 +321,8 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   };
   const beginDrag = (e: PointerEvent<SVGPolygonElement>, p: FurniturePlate) => {
     setSelected(p.id);
-    if (view !== "2d" || p.kind === "cap" || busy) return;
+    if (view !== "2d" || p.kind === "cap" || p.anchor === "back" || busy)
+      return;
     const [x, y] = point(e);
     setHistory((h) => [...h.slice(-39), structuredClone(model)]);
     drag.current = { id: p.id, x, y, startX: p.x, startY: p.y };
@@ -432,6 +450,34 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           </ul>
         </aside>
         <div className="fc-workbench">
+          <ConstructionStandard
+            model={model}
+            disabled={busy}
+            onChange={(patch) =>
+              update((m) =>
+                resizeFurniture(
+                  m,
+                  {
+                    construction: {
+                      ...(m.construction ?? freshConstructionStandard()),
+                      ...patch,
+                    },
+                  },
+                  uid,
+                ),
+              )
+            }
+            onApply={(replace) =>
+              update((m) =>
+                applyConstructionStandard(
+                  m,
+                  m.construction ?? freshConstructionStandard(),
+                  uid,
+                  replace,
+                ),
+              )
+            }
+          />
           <fieldset disabled={busy}>
             <legend>Gabaryty i obrys</legend>
             <div className="fc-fields">
@@ -631,6 +677,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 })}
             </svg>
           </div>
+          <FurnitureParts model={model} onSelect={setSelected} />
           <details className="fc-part-review">
             <summary>Karta części · dane materiałowe</summary>
             <p>
@@ -772,34 +819,42 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                   onChange={(e) => modifyPlate({ name: e.target.value })}
                 />
               </label>
-              {(["x", "y", "z", "width", "height", "depth"] as const).map(
-                (k, i) => (
-                  <NumberField
-                    key={k}
-                    label={
-                      [
-                        "Pozycja X",
-                        "Pozycja Y",
-                        "Pozycja Z",
-                        "Szerokość płyty",
-                        "Wysokość płyty",
-                        "Głębokość płyty",
-                      ][i]
-                    }
-                    value={plate[k]}
-                    min={i < 3 ? 0 : 1}
-                    onChange={(v) =>
-                      modifyPlate({
-                        [k]: v,
-                        ...(plate.kind === "cap" && k !== "z" && k !== "depth"
-                          ? { kind: "board" as const }
-                          : {}),
-                      })
-                    }
-                  />
-                ),
+              {plate.anchor === "back" && (
+                <p>
+                  Plecy dopasowują się do obrysu. Zmieniaj je w standardzie
+                  konstrukcji, a gabaryty w wymiarach mebla.
+                </p>
               )}
+              {plate.anchor !== "back" &&
+                (["x", "y", "z", "width", "height", "depth"] as const).map(
+                  (k, i) => (
+                    <NumberField
+                      key={k}
+                      label={
+                        [
+                          "Pozycja X",
+                          "Pozycja Y",
+                          "Pozycja Z",
+                          "Szerokość płyty",
+                          "Wysokość płyty",
+                          "Głębokość płyty",
+                        ][i]
+                      }
+                      value={plate[k]}
+                      min={i < 3 ? 0 : 1}
+                      onChange={(v) =>
+                        modifyPlate({
+                          [k]: v,
+                          ...(plate.kind === "cap" && k !== "z" && k !== "depth"
+                            ? { kind: "board" as const }
+                            : {}),
+                        })
+                      }
+                    />
+                  ),
+                )}
               <button
+                disabled={plate.anchor === "back"}
                 onClick={() =>
                   update((m) => ({
                     ...m,
@@ -819,6 +874,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Duplikuj płytę
               </button>
               <button
+                disabled={plate.anchor === "back"}
                 onClick={() => {
                   update((m) => ({
                     ...m,

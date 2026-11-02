@@ -8,6 +8,7 @@ import {
   type FurnitureEntry,
 } from "../core/furniture.js";
 import type { Magazyn } from "../store/store.js";
+import { furnitureParts } from "../core/furniture-parts.js";
 const mm = z.number().finite().min(1).max(10000);
 const coordinate = z.number().finite().min(0).max(10000);
 const edge = z
@@ -31,7 +32,7 @@ const plate = z
     id: z.string().uuid(),
     name: z.string().trim().min(1).max(100),
     kind: z.enum(["board", "drawer", "cap"]),
-    anchor: z.enum(["left", "right", "bottom", "top"]).optional(),
+    anchor: z.enum(["left", "right", "bottom", "top", "back"]).optional(),
     x: coordinate,
     y: coordinate,
     z: coordinate,
@@ -57,6 +58,23 @@ export const furnitureSave = z
         steps: z.number().int().min(2).max(20),
         reverse: z.boolean(),
         plates: z.array(plate).min(1).max(150),
+        construction: z
+          .object({
+            version: z.literal(1),
+            back: z.enum(["none", "applied"]),
+            backThickness: z.number().finite().min(1).max(30),
+            dimensionMode: z.enum(["unset", "finished", "substrate"]),
+            bodyMaterial: z.string().trim().max(120),
+            bodyDecor: z.string().trim().max(120),
+            frontMaterial: z.string().trim().max(120),
+            frontDecor: z.string().trim().max(120),
+            backMaterial: z.string().trim().max(120),
+            backDecor: z.string().trim().max(120),
+            edgeMaterial: z.string().trim().max(120),
+            edgeThickness: z.number().finite().min(0.1).max(10),
+          })
+          .strict()
+          .optional(),
       })
       .strict(),
   })
@@ -149,6 +167,7 @@ export function furnitureConstruction(
     libraryVersion: snapshot.version,
     savedAt: snapshot.updatedAt,
     model: snapshot.model,
+    dimensionSummary: furnitureParts(snapshot.model),
     parts: snapshot.model.plates.map((p) => ({
       id: p.id,
       name: p.name,
