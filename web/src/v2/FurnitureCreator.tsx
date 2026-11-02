@@ -1,3 +1,4 @@
+import { NumberField } from "./FurnitureNumberField";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   freshFurniture,
@@ -12,6 +13,10 @@ import {
   backDepth,
   applySuggestedLayout,
   deskStartingModel,
+  isDeskVariant,
+  deskWorktopHeight,
+  deskLegWidth,
+  deskCabinetWidth,
   layoutVariants,
   type LayoutVariant,
   furnitureIssues,
@@ -30,6 +35,7 @@ import { PlateSpecification } from "./PlateSpecification";
 import { ConstructionStandard } from "./ConstructionStandard";
 import { FurnitureParts } from "./FurnitureParts";
 import { FurnitureDrawers } from "./FurnitureDrawers";
+import { DeskStorage } from "./DeskStorage";
 import {
   furnitureDrawerCalculations,
   type FurnitureDrawerCalculation,
@@ -42,36 +48,6 @@ const initial = () => {
   m.plates = carcass(m, uid);
   return applySuggestedLayout(m, "auto", uid);
 };
-function NumberField({
-  label,
-  value,
-  onChange,
-  min = 0,
-  max = 10000,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <label>
-      {label}
-      <input
-        type="number"
-        min={min}
-        max={max}
-        step="1"
-        value={value}
-        onChange={(e) => {
-          const n = e.target.valueAsNumber;
-          if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
-        }}
-      />
-    </label>
-  );
-}
 export function FurnitureCreator({ demo }: { demo: boolean }) {
   const [model, setModel] = useState(initial);
   const [id, setId] = useState<string>(uid);
@@ -323,17 +299,16 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     const next = {
       ...model,
       drawerAssemblies: [],
-      suggestion:
-        model.suggestion?.variant === "desk"
-          ? model.suggestion
-          : { variant: "empty" as const, excludedSlots: [] },
+      suggestion: isDeskVariant(model.suggestion?.variant)
+        ? model.suggestion
+        : { variant: "empty" as const, excludedSlots: [] },
       plates: [
         ...model.plates.filter(
           (p) =>
             p.kind !== "drawer" &&
             (!p.layoutSlot ||
               p.layoutCustomized ||
-              model.suggestion?.variant === "desk"),
+              isDeskVariant(model.suggestion?.variant)),
         ),
         ...plates,
       ],
@@ -503,8 +478,19 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 value={model.suggestion?.variant ?? "empty"}
                 onChange={(e) => {
                   update((m) =>
-                    e.target.value === "desk"
-                      ? deskStartingModel(m, uid)
+                    isDeskVariant(e.target.value)
+                      ? isDeskVariant(m.suggestion?.variant)
+                        ? applySuggestedLayout(
+                            m,
+                            e.target.value as LayoutVariant,
+                            uid,
+                          )
+                        : deskStartingModel(
+                            m,
+                            uid,
+                            1600,
+                            e.target.value as LayoutVariant,
+                          )
                       : applySuggestedLayout(
                           m,
                           e.target.value as LayoutVariant,
@@ -550,7 +536,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 </p>
               )}
           </fieldset>
-          {model.suggestion?.variant === "desk" && (
+          {isDeskVariant(model.suggestion?.variant) && (
             <fieldset disabled={busy}>
               <legend>Biurko — wymiary startowe</legend>
               <p>
@@ -584,14 +570,17 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               </p>
               <p>
                 Światło między bokami:{" "}
-                {(model.width - 2 * model.thickness).toLocaleString("pl-PL")} mm
-                · wysokość pod blatem:{" "}
-                {(model.height - model.thickness).toLocaleString("pl-PL")} mm.
+                {deskLegWidth(model).toLocaleString("pl-PL")} mm · wysokość pod
+                blatem:{" "}
+                {(deskWorktopHeight(model) - model.thickness).toLocaleString(
+                  "pl-PL",
+                )}{" "}
+                mm.
               </p>
               {(model.depth < 800 ||
-                model.height < 720 ||
-                model.height > 760 ||
-                model.width - 2 * model.thickness < 850) && (
+                deskWorktopHeight(model) < 720 ||
+                deskWorktopHeight(model) > 760 ||
+                deskLegWidth(model) < 850) && (
                 <p role="status">
                   Wymiary odbiegają od punktu startowego ergonomicznego biurka.
                   Sprawdź dopasowanie do osoby, odległość od ekranu i wolną
@@ -616,6 +605,62 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 </a>
               </p>
             </fieldset>
+          )}
+          {(model.suggestion?.variant === "desk-storage" ||
+            model.suggestion?.variant === "desk-hutch") && (
+            <DeskStorage
+              model={model}
+              disabled={busy}
+              onChange={(patch, height) =>
+                update((m) => {
+                  const oldFronts = new Set(
+                    m.plates
+                      .filter(
+                        (p) =>
+                          patch.cabinetFront &&
+                          p.layoutSlot?.startsWith("desk/cabinet/") &&
+                          (p.layoutSlot.includes("/drawer/") ||
+                            p.layoutSlot.endsWith("/door")),
+                      )
+                      .map((p) => p.id),
+                  );
+                  return resizeFurniture(
+                    {
+                      ...m,
+                      plates: m.plates.filter((p) => !oldFronts.has(p.id)),
+                      drawerAssemblies: m.drawerAssemblies?.filter(
+                        (a) => !oldFronts.has(a.frontId),
+                      ),
+                    },
+                    {
+                      ...(height === undefined ? {} : { height }),
+                      desk: {
+                        worktopHeight: deskWorktopHeight(m),
+                        cabinetWidth: deskCabinetWidth(m),
+                        hutchDepth: m.desk?.hutchDepth ?? 300,
+                        side: m.desk?.side ?? "right",
+                        cabinetFront: m.desk?.cabinetFront ?? "door",
+                        ...patch,
+                        ...(patch.side
+                          ? {
+                              cabinetWidth: Math.min(
+                                deskCabinetWidth(m),
+                                Math.max(
+                                  140,
+                                  patch.side === "both"
+                                    ? (m.width - 850) / 2
+                                    : m.width - 850 - m.thickness,
+                                ),
+                              ),
+                            }
+                          : {}),
+                      },
+                    },
+                    uid,
+                  );
+                })
+              }
+            />
           )}
           <ConstructionStandard
             model={model}
@@ -662,7 +707,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Obrys
                 <select
                   aria-label="Obrys"
-                  disabled={model.suggestion?.variant === "desk"}
+                  disabled={isDeskVariant(model.suggestion?.variant)}
                   value={model.shape}
                   onChange={(e) =>
                     shapeChange({
@@ -685,7 +730,9 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 label={
                   model.shape === "slope"
                     ? "Wysokość długiej ścianki"
-                    : "Wysokość"
+                    : model.suggestion?.variant === "desk-hutch"
+                      ? "Wysokość całkowita z nadstawką"
+                      : "Wysokość"
                 }
                 min={100}
                 value={model.height}

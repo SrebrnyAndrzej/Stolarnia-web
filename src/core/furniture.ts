@@ -18,7 +18,7 @@ export interface PlateSpecification {
 export interface FurniturePlate {
   id: string;
   name: string;
-  kind: "board" | "drawer" | "cap";
+  kind: "board" | "drawer" | "door" | "cap";
   anchor?: "left" | "right" | "bottom" | "top" | "back";
   x: number;
   y: number;
@@ -134,9 +134,24 @@ export interface FurnitureModel {
   construction?: ConstructionStandard;
   drawerAssemblies?: DrawerAssembly[];
   suggestion?: { variant: LayoutVariant; excludedSlots: string[] };
+  desk?: {
+    worktopHeight: number;
+    cabinetWidth: number;
+    hutchDepth: number;
+    side: "left" | "right" | "both";
+    cabinetFront: "open" | "door" | "drawers";
+  };
 }
 export type LayoutVariant =
-  "auto" | "wardrobe" | "shelves" | "drawers" | "mixed" | "desk" | "empty";
+  | "auto"
+  | "wardrobe"
+  | "shelves"
+  | "drawers"
+  | "mixed"
+  | "desk"
+  | "desk-storage"
+  | "desk-hutch"
+  | "empty";
 export const layoutVariants: { value: LayoutVariant; label: string }[] = [
   { value: "auto", label: "Automatycznie do obrysu" },
   { value: "wardrobe", label: "Szafa — półki i wysoka komora" },
@@ -144,8 +159,26 @@ export const layoutVariants: { value: LayoutVariant; label: string }[] = [
   { value: "drawers", label: "Komoda z szufladami" },
   { value: "mixed", label: "Półki i szuflady" },
   { value: "desk", label: "Biurko" },
+  { value: "desk-storage", label: "Biurko z szafką boczną" },
+  { value: "desk-hutch", label: "Biurko z szafką i nadstawką" },
   { value: "empty", label: "Sam korpus" },
 ];
+export const isDeskVariant = (variant?: string) =>
+  variant === "desk" || variant === "desk-storage" || variant === "desk-hutch";
+export const deskWorktopHeight = (m: FurnitureModel) =>
+  m.suggestion?.variant === "desk-hutch"
+    ? (m.desk?.worktopHeight ?? 740)
+    : m.height;
+export const deskCabinetWidth = (m: FurnitureModel) =>
+  m.desk?.cabinetWidth ??
+  Math.min(420, Math.max(180, m.width - 850 - m.thickness));
+export const deskLegWidth = (m: FurnitureModel) =>
+  m.width -
+  (m.suggestion?.variant === "desk"
+    ? 2 * m.thickness
+    : m.desk?.side === "both"
+      ? 2 * deskCabinetWidth(m)
+      : deskCabinetWidth(m) + m.thickness);
 export interface DrawerAssembly {
   frontId: string;
   profileId: string;
@@ -190,8 +223,11 @@ export function standardPlateSpecification(
 ): PlateSpecification {
   const s = m.construction ?? freshConstructionStandard();
   const result = freshPlateSpecification();
-  const back = p.anchor === "back",
-    front = p.kind === "drawer";
+  const back =
+      p.anchor === "back" ||
+      (p.layoutSlot?.startsWith("desk/cabinet/") &&
+        p.layoutSlot.endsWith("/back")),
+    front = p.kind === "drawer" || p.kind === "door";
   result.material = back
     ? s.backMaterial
     : front
@@ -215,7 +251,7 @@ export function standardPlateSpecification(
     const exposed =
       !back &&
       (front ||
-        (m.suggestion?.variant === "desk" && p.anchor === "top") ||
+        (isDeskVariant(m.suggestion?.variant) && p.anchor === "top") ||
         key === (result.face === "yz" ? "u1" : "v1"));
     edge.state = exposed ? "band" : "none";
     edge.material = exposed ? s.edgeMaterial : "";
@@ -373,8 +409,32 @@ export function polygonArea(p: Point[]) {
 }
 export function furnitureIssues(m: FurnitureModel): string[] {
   const issues: string[] = [];
+  if (isDeskVariant(m.suggestion?.variant)) {
+    if (
+      deskWorktopHeight(m) <= 2 * m.thickness ||
+      deskWorktopHeight(m) > m.height
+    )
+      issues.push(
+        "Wysokość blatu musi mieścić się w wysokości całkowitej biurka.",
+      );
+    if (
+      m.suggestion?.variant !== "desk" &&
+      (deskCabinetWidth(m) <= 2 * m.thickness ||
+        deskCabinetWidth(m) >= m.width - 2 * m.thickness ||
+        deskLegWidth(m) <= m.thickness)
+    )
+      issues.push(
+        "Szafka boczna musi pozostawiać miejsce pomiędzy bokami biurka.",
+      );
+    if (
+      m.suggestion?.variant === "desk-hutch" &&
+      (m.height - deskWorktopHeight(m) <= 2 * m.thickness ||
+        (m.desk?.hutchDepth ?? 300) > m.depth)
+    )
+      issues.push("Sprawdź wysokość i głębokość nadstawki.");
+  }
   if (
-    m.suggestion?.variant === "desk" &&
+    isDeskVariant(m.suggestion?.variant) &&
     (m.shape !== "rectangle" || backDepth(m) > 0)
   )
     issues.push("Biurko wymaga poziomego blatu i wyłączonych pełnych pleców.");
@@ -392,7 +452,7 @@ export function furnitureIssues(m: FurnitureModel): string[] {
       issues.push(`${p.name}: płyta znajduje się poza obrysem.`);
     if (p.z < 0 || p.z + p.depth > m.depth + m.thickness + 0.1)
       issues.push(`${p.name}: płyta wychodzi poza głębokość mebla.`);
-    if (p.kind === "drawer") {
+    if (p.kind === "drawer" || p.kind === "door") {
       const top = Math.min(
         ...topSegments(m)
           .filter((s) => s.end > p.x && s.x < p.x + p.width)
@@ -409,7 +469,8 @@ export function furnitureIssues(m: FurnitureModel): string[] {
 }
 export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
   const t = m.thickness;
-  if (m.suggestion?.variant === "desk") {
+  if (isDeskVariant(m.suggestion?.variant)) {
+    const worktop = deskWorktopHeight(m);
     const parts: FurniturePlate[] = [
       {
         id: id(),
@@ -420,7 +481,7 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
         y: 0,
         z: 0,
         width: t,
-        height: m.height - t,
+        height: worktop - t,
         depth: m.depth,
       },
       {
@@ -432,7 +493,7 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
         y: 0,
         z: 0,
         width: t,
-        height: m.height - t,
+        height: worktop - t,
         depth: m.depth,
       },
       {
@@ -441,7 +502,7 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
         kind: "board",
         anchor: "top",
         x: 0,
-        y: m.height - t,
+        y: worktop - t,
         z: 0,
         width: m.width,
         height: t,
@@ -552,8 +613,9 @@ function suggestedInterior(
   const t = m.thickness,
     b = backDepth(m),
     parts: FurniturePlate[] = [];
-  if (choice === "desk") {
-    const h = Math.min(150, m.height - 3 * t);
+  if (isDeskVariant(choice)) {
+    const worktop = deskWorktopHeight(m),
+      h = Math.min(150, worktop - 3 * t);
     if (h > 0 && m.width > 2 * t)
       parts.push({
         id: id(),
@@ -561,7 +623,7 @@ function suggestedInterior(
         kind: "board",
         layoutSlot: "desk/apron",
         x: t,
-        y: m.height - t - h,
+        y: worktop - t - h,
         z: 0,
         width: m.width - 2 * t,
         height: h,
@@ -573,7 +635,7 @@ function suggestedInterior(
           decor: m.construction?.bodyDecor ?? "",
         },
       });
-    return parts;
+    return [...parts, ...deskStorageInterior(m, id)];
   }
   const kind =
     choice === "auto"
@@ -757,11 +819,37 @@ export function applySuggestedLayout(
   id: () => string,
 ): FurnitureModel {
   const suggestion = { variant, excludedSlots: [] as string[] };
+  const worktop = deskWorktopHeight(m),
+    isHutch = variant === "desk-hutch";
   const target = {
     ...m,
-    shape: variant === "desk" ? ("rectangle" as const) : m.shape,
+    height: isDeskVariant(variant)
+      ? isHutch
+        ? m.suggestion?.variant === "desk-hutch"
+          ? m.height
+          : worktop + 600
+        : worktop
+      : m.height,
+    desk: isDeskVariant(variant)
+      ? {
+          worktopHeight: worktop,
+          cabinetWidth: Math.min(
+            deskCabinetWidth(m),
+            Math.max(
+              140,
+              m.desk?.side === "both"
+                ? (m.width - 850) / 2
+                : m.width - 850 - m.thickness,
+            ),
+          ),
+          hutchDepth: m.desk?.hutchDepth ?? Math.min(300, m.depth),
+          side: m.desk?.side ?? ("right" as const),
+          cabinetFront: m.desk?.cabinetFront ?? ("door" as const),
+        }
+      : m.desk,
+    shape: isDeskVariant(variant) ? ("rectangle" as const) : m.shape,
     construction:
-      variant === "desk" && m.construction
+      isDeskVariant(variant) && m.construction
         ? { ...m.construction, back: "none" as const }
         : m.construction,
   };
@@ -785,10 +873,231 @@ export function deskStartingModel(
   m: FurnitureModel,
   id: () => string,
   width = 1600,
+  variant: LayoutVariant = isDeskVariant(m.suggestion?.variant)
+    ? m.suggestion!.variant
+    : "desk",
 ): FurnitureModel {
   return applySuggestedLayout(
-    { ...m, width, height: 740, depth: 800, thickness: 28 },
-    "desk",
+    {
+      ...m,
+      width,
+      height: variant === "desk-hutch" ? 1340 : 740,
+      depth: 800,
+      thickness: 28,
+      suggestion: { variant, excludedSlots: [] },
+      desk: {
+        worktopHeight: 740,
+        cabinetWidth: Math.min(
+          isDeskVariant(m.suggestion?.variant) ? deskCabinetWidth(m) : 420,
+          Math.max(
+            140,
+            m.desk?.side === "both" ? (width - 850) / 2 : width - 850 - 28,
+          ),
+        ),
+        hutchDepth: 300,
+        side: m.desk?.side ?? "right",
+        cabinetFront: m.desk?.cabinetFront ?? "door",
+      },
+    },
+    variant,
     id,
   );
+}
+
+function deskStorageInterior(
+  m: FurnitureModel,
+  id: () => string,
+): FurniturePlate[] {
+  if (m.suggestion?.variant === "desk") return [];
+  if (m.desk?.side === "both") {
+    const outer = new Set([
+      "desk/hutch/left",
+      "desk/hutch/right",
+      "desk/hutch/top",
+    ]);
+    return (["left", "right"] as const).flatMap((side, index) =>
+      deskStorageInterior({ ...m, desk: { ...m.desk!, side } }, id)
+        .filter((p) => index === 0 || !outer.has(p.layoutSlot!))
+        .map((p) =>
+          outer.has(p.layoutSlot!)
+            ? p
+            : {
+                ...p,
+                name: `${p.name} (${side === "left" ? "lewa" : "prawa"})`,
+                layoutSlot: p
+                  .layoutSlot!.replace("desk/cabinet/", `desk/cabinet/${side}/`)
+                  .replace("desk/hutch/", `desk/hutch/${side}/`),
+              },
+        ),
+    );
+  }
+  const t = m.thickness,
+    h = deskWorktopHeight(m),
+    cw = deskCabinetWidth(m),
+    right = m.desk?.side !== "left",
+    x = right ? m.width - cw : 0,
+    inner = x + t,
+    sideX = right ? x : x + cw - t,
+    parts: FurniturePlate[] = [];
+  const add = (
+    slot: string,
+    name: string,
+    px: number,
+    y: number,
+    z: number,
+    w: number,
+    ph: number,
+    d: number,
+    face: PlateSpecification["face"],
+    kind: FurniturePlate["kind"] = "board",
+  ) => {
+    if (w <= 0 || ph <= 0 || d <= 0) return;
+    const p: FurniturePlate = {
+      id: id(),
+      name,
+      kind,
+      layoutSlot: `desk/${slot}`,
+      x: px,
+      y,
+      z,
+      width: w,
+      height: ph,
+      depth: d,
+      specification: { ...freshPlateSpecification(), face },
+    };
+    if (m.construction) p.specification = standardPlateSpecification(m, p);
+    parts.push(p);
+  };
+  add(
+    "cabinet/side",
+    "Wewnętrzny bok szafki",
+    sideX,
+    0,
+    0,
+    t,
+    h - t,
+    m.depth,
+    "yz",
+  );
+  add(
+    "cabinet/bottom",
+    "Dno szafki bocznej",
+    inner,
+    0,
+    3,
+    cw - 2 * t,
+    t,
+    m.depth - 3,
+    "xz",
+  );
+  add(
+    "cabinet/back",
+    "Plecy szafki bocznej",
+    inner,
+    t,
+    0,
+    cw - 2 * t,
+    h - 2 * t,
+    3,
+    "xy",
+  );
+  const front = m.desk?.cabinetFront ?? "door";
+  if (front !== "drawers")
+    add(
+      "cabinet/shelf",
+      "Półka szafki bocznej",
+      inner,
+      Math.round((h - t) / 2),
+      3,
+      cw - 2 * t,
+      t,
+      m.depth - 3,
+      "xz",
+    );
+  if (front === "door")
+    add(
+      "cabinet/door",
+      "Drzwi szafki bocznej",
+      inner + 2,
+      t + 2,
+      m.depth,
+      cw - 2 * t - 4,
+      h - 2 * t - 4,
+      t,
+      "xy",
+      "door",
+    );
+  if (front === "drawers") {
+    const total = h - 2 * t - 8;
+    let y = t + 2;
+    if (total >= 180)
+      [140 / 680, 220 / 680, 320 / 680].forEach((r, i) => {
+        const ph = i === 2 ? h - t - 2 - y : Math.floor(total * r);
+        if (ph >= 30) {
+          add(
+            `cabinet/drawer/${i}`,
+            `Szuflada szafki ${i + 1}`,
+            inner + 2,
+            y,
+            m.depth,
+            cw - 2 * t - 4,
+            ph,
+            t,
+            "xy",
+            "drawer",
+          );
+          y += ph + 2;
+        }
+      });
+  }
+  if (m.suggestion?.variant === "desk-hutch") {
+    const depth = m.desk?.hutchDepth ?? 300,
+      up = m.height - h;
+    add("hutch/left", "Lewy bok nadstawki", 0, h, 0, t, up - t, depth, "yz");
+    add(
+      "hutch/right",
+      "Prawy bok nadstawki",
+      m.width - t,
+      h,
+      0,
+      t,
+      up - t,
+      depth,
+      "yz",
+    );
+    add(
+      "hutch/top",
+      "Wieniec nadstawki",
+      0,
+      m.height - t,
+      0,
+      m.width,
+      t,
+      depth,
+      "xz",
+    );
+    add(
+      "hutch/divider",
+      "Przegroda nadstawki",
+      sideX,
+      h,
+      0,
+      t,
+      up - t,
+      depth,
+      "yz",
+    );
+    add(
+      "hutch/shelf",
+      "Półka nadstawki",
+      inner,
+      h + (up - t) / 2,
+      0,
+      cw - 2 * t,
+      t,
+      depth,
+      "xz",
+    );
+  }
+  return parts;
 }

@@ -39,10 +39,28 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
           ? candidates.find((p) => p.id === plan.rightBoundaryId)
           : (inferredRight ?? candidates.find((p) => p.anchor === "right"));
       const width = left && right ? right.x - left.x - left.width : null;
+      const rearPanels = m.plates.filter(
+        (p) =>
+          left &&
+          right &&
+          p.kind === "board" &&
+          p.specification?.face === "xy" &&
+          p.z + p.depth <=
+            Math.min(left.z + left.depth, right.z + right.depth) / 2 &&
+          p.x <= left.x + left.width + 0.01 &&
+          p.x + p.width >= right.x - 0.01 &&
+          p.y < front.y + front.height &&
+          p.y + p.height > front.y,
+      );
       const depth =
         left && right
           ? Math.min(m.depth, left.z + left.depth, right.z + right.depth) -
-            Math.max(backDepth(m), left.z, right.z)
+            Math.max(
+              backDepth(m),
+              left.z,
+              right.z,
+              ...rearPanels.map((p) => p.z + p.depth),
+            )
           : null;
       const blockers: string[] = [];
       if (
@@ -106,6 +124,7 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
       const obstacles = m.plates.filter(
         (p) =>
           !p.anchor &&
+          !rearPanels.some((rear) => rear.id === p.id) &&
           p.kind === "board" &&
           p.y < front.y + front.height &&
           p.y + p.height > front.y &&

@@ -32,7 +32,7 @@ const plate = z
   .object({
     id: z.string().uuid(),
     name: z.string().trim().min(1).max(100),
-    kind: z.enum(["board", "drawer", "cap"]),
+    kind: z.enum(["board", "drawer", "door", "cap"]),
     anchor: z.enum(["left", "right", "bottom", "top", "back"]).optional(),
     x: coordinate,
     y: coordinate,
@@ -61,6 +61,16 @@ export const furnitureSave = z
         steps: z.number().int().min(2).max(20),
         reverse: z.boolean(),
         plates: z.array(plate).min(1).max(150),
+        desk: z
+          .object({
+            worktopHeight: z.number().finite().min(100).max(3000),
+            cabinetWidth: z.number().finite().min(100).max(3000),
+            hutchDepth: z.number().finite().min(50).max(2000),
+            side: z.enum(["left", "right", "both"]),
+            cabinetFront: z.enum(["open", "door", "drawers"]),
+          })
+          .strict()
+          .optional(),
         suggestion: z
           .object({
             variant: z.enum([
@@ -70,6 +80,8 @@ export const furnitureSave = z
               "drawers",
               "mixed",
               "desk",
+              "desk-storage",
+              "desk-hutch",
               "empty",
             ]),
             excludedSlots: z.array(z.string().min(1).max(100)).max(150),

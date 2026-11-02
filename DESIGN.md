@@ -129,3 +129,5 @@ Nowy model pokazuje wnętrze bez ręcznego dodawania płyt. Pierwsze pole Układ
 
 ## Biurko — 2026-11-02
 Wariant Biurko korzysta z tego samego selektora układu, rysunku i inspektora. Panel wymiarów podaje punkt startowy oraz źródła, a przyciski 160×80 i 120×80 są jawnie opisane. Wysokość oznacza górną powierzchnię blatu. Wskazówki są informacyjne, bez deklaracji certyfikacji. Źródło: docs/BIURKO-WYMIARY.md.
+
+Biurka z szafkami i nadstawką rozszerzają ten sam wybór wariantu. DeskStorage używa wspólnego FurnitureNumberField, fc-fields i natywnych selectów. Wysokość całkowita z nadstawką jest wyraźnie oddzielona od wysokości blatu. Bez nowych tokenów i zmian powłoki. Źródło: docs/BIURKO-SZAFKI-NADSTAWKA.md.

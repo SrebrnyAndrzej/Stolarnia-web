@@ -131,3 +131,5 @@ Użytkownik wybrał szkic narzędzia teraz, rzeczywisty silnik wraz z wdrożenie
 
 ## Biurko — 2026-11-02
 Źródło: docs/BIURKO-WYMIARY.md. Wybór wariantu stosuje jawne wymiary startowe i poziomy blat. Kolejna edycja gabarytów pozostaje możliwa; przywrócenie układu nie resetuje gabarytów. Presety są odwracalne wspólnym Cofnij. Serwer sprawdza obrys i brak pełnych pleców, zachowuje wersje oraz uprawnienia. Zalecenia ergonomiczne nie są dopuszczeniem produkcyjnym.
+
+Szafki po jednej lub obu stronach mają wspólny wybór frontu; nadstawka osobną wysokość i głębokość. Zmiana frontu usuwa stare fronty i przypisania systemów z możliwością Cofnij. Zmiana strony ogranicza szerokość szafki, aby pozostawić sugerowane miejsce na nogi; kolejne ręczne wymiary są dozwolone z informacją o prześwicie. Zachowane role, zapis wersji, błędy, ochrona szkicu i ręczne korekty części. Źródło: docs/BIURKO-SZAFKI-NADSTAWKA.md.

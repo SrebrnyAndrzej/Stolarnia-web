@@ -10,8 +10,70 @@ import {
   furnitureIssues,
   applyConstructionStandard,
   freshConstructionStandard,
+  deskWorktopHeight,
+  deskLegWidth,
 } from "./core/furniture.js";
+import { furnitureDrawerCalculations } from "./core/furniture-drawers.js";
 import { furnitureSave } from "./server/furniture.js";
+test("storage desks preserve working height, generate both cabinets and valid drawer compartments", () => {
+  const base = freshFurniture();
+  base.plates = carcass(base, randomUUID);
+  for (const variant of ["desk-storage", "desk-hutch"] as const) {
+    for (const side of ["left", "right", "both"] as const) {
+      let m = deskStartingModel(base, randomUUID, 1600, variant);
+      m = resizeFurniture(
+        m,
+        {
+          desk: {
+            ...m.desk!,
+            side,
+            cabinetWidth: side === "both" ? 375 : 420,
+            cabinetFront: "drawers",
+          },
+        },
+        randomUUID,
+      );
+      assert.equal(deskWorktopHeight(m), 740);
+      assert.ok(deskLegWidth(m) >= 850);
+      assert.deepEqual(furnitureIssues(m), []);
+      assert.equal(new Set(m.plates.map((p) => p.id)).size, m.plates.length);
+      const slots = m.plates
+        .filter((p) => p.layoutSlot)
+        .map((p) => p.layoutSlot);
+      assert.equal(new Set(slots).size, slots.length);
+      const fronts = m.plates.filter((p) => p.kind === "drawer");
+      assert.equal(fronts.length, side === "both" ? 6 : 3);
+      m.drawerAssemblies = fronts.map((p) => ({
+        frontId: p.id,
+        profileId: "amix-elite-standard",
+        variant: "84",
+        nominalLength: 500,
+      }));
+      for (const c of furnitureDrawerCalculations(m)) {
+        assert.deepEqual(c.blockers, []);
+        assert.equal(c.openingWidth, m.desk!.cabinetWidth - 56);
+        assert.ok(c.usableDepth <= 797);
+      }
+      assert.ok(
+        furnitureSave.safeParse({ id: randomUUID(), version: 0, model: m })
+          .success,
+      );
+      if (variant === "desk-hutch") {
+        const resized = resizeFurniture(m, { height: 1500 }, randomUUID);
+        assert.equal(resized.plates.find((p) => p.anchor === "top")!.y, 712);
+        assert.equal(
+          resized.plates.filter((p) => p.layoutSlot === "desk/hutch/top")
+            .length,
+          1,
+        );
+        assert.equal(
+          resized.plates.find((p) => p.layoutSlot === "desk/hutch/top")!.y,
+          1472,
+        );
+      }
+    }
+  }
+});
 test("desk preset creates a full-width horizontal top and unobstructed floor without cabinet bottom", () => {
   const base = freshFurniture();
   base.plates = carcass(base, randomUUID);
