@@ -137,6 +137,7 @@ export function QuickProject({
 
   // krok 3: styl
   const [decors, setDecors] = useState<Decor[] | null>(null);
+  const [featured, setFeatured] = useState<{ zrodlo: string; klucze: string[] } | null>(null);
   const [picks, setPicks] = useState<PicksMap>({});
   const [openRole, setOpenRole] = useState<RolaStylu | null>(null);
   const [styleResult, setStyleResult] = useState<WynikStylu | null>(null);
@@ -147,6 +148,8 @@ export function QuickProject({
   const [options, setOptions] = useState<OpcjeOkucProjektu | null>(null);
   const [hardware, setHardware] = useState<OkuciaProjektu>({});
   const [hardwareWarnings, setHardwareWarnings] = useState<string[]>([]);
+  // Krok okuć zwinięty do jednej linii, dopóki nikt nie chce zmieniać doboru automatycznego.
+  const [hardwareOpen, setHardwareOpen] = useState(false);
 
   // krok 5: wycena
   const [analysis, setAnalysis] = useState<Analiza | null>(null);
@@ -250,6 +253,10 @@ export function QuickProject({
     const c = new AbortController();
     const fail = (e: unknown) =>
       !c.signal.aborted && setError((e as Error).message);
+    if (step === "styl" && !featured)
+      request<{ zrodlo: string; klucze: string[] }>("/api/dekory-stolarni", { signal: c.signal })
+        .then(setFeatured)
+        .catch(() => !c.signal.aborted && setFeatured({ zrodlo: "brak", klucze: [] }));
     if (step === "styl" && !decors)
       request<Decor[]>("/api/dekory", { signal: c.signal })
         .then(setDecors)
@@ -276,7 +283,7 @@ export function QuickProject({
         .catch(() => undefined);
     }
     return () => c.abort();
-  }, [step, id, decors, options]);
+  }, [step, id, decors, options, featured]);
 
   const run = async (label: string, fn: () => Promise<void>) => {
     setBusy(label);
@@ -561,7 +568,14 @@ export function QuickProject({
               disabled={i > Math.max(maxStep, stepIndex)}
               aria-current={s.id === step ? "step" : undefined}
               aria-label={`Krok ${i + 1}: ${s.name}`}
-              onClick={() => goTo(s.id)}
+              onClick={() => {
+                // Pasek kroków pilnuje niezapisanych dekorów tak samo jak przyciski karty.
+                if (step === "styl" && s.id !== "styl" && pendingPicks)
+                  return setError(
+                    "Wybrane dekory nie są zapisane. Kliknij „Zastosuj dekory” albo „Odrzuć wybór i dalej”.",
+                  );
+                goTo(s.id);
+              }}
             >
               <span className="qp-step-n" aria-hidden>
                 {i < stepIndex ? "✓" : i + 1}
@@ -1158,6 +1172,12 @@ export function QuickProject({
               role={openRole}
               title={ROLES.find((r) => r.rola === openRole)!.nazwa}
               current={picks[openRole]?.key ?? current?.[openRole]?.dekor}
+              featured={featured?.klucze}
+              featuredLabel={
+                featured?.zrodlo === "projekty"
+                  ? "Najczęściej w projektach"
+                  : "Dekory stolarni"
+              }
               onClose={closePicker}
               onPick={(d) => {
                 setPicks((w) => ({ ...w, [openRole]: d }));
@@ -1185,7 +1205,24 @@ export function QuickProject({
               Wczytuję opcje okuć…
             </div>
           )}
-          {options && (
+          {options && !hardwareOpen && (
+            <div className="qp-note" role="status">
+              <b>
+                Okucia:{" "}
+                {Object.values(hardware).some(Boolean)
+                  ? "wybór projektu"
+                  : "automatycznie wg wariantu wyceny"}
+              </b>{" "}
+              <button
+                type="button"
+                className="qp-link"
+                onClick={() => setHardwareOpen(true)}
+              >
+                (zmień)
+              </button>
+            </div>
+          )}
+          {options && hardwareOpen && (
             <>
               <HardwareGroup
                 hidePrices={clientMode}

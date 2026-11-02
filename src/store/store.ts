@@ -19,6 +19,8 @@ export interface BazaDanych {
   cennikMaterialow?: CennikMaterialow;
   okucia: Okucie[];
   projekty: Projekt[];
+  /** Krótka lista dekorów na start galerii szybkiego projektu (klucze „Producent:id”), ustawia właściciel. */
+  dekoryStolarni?: string[];
 }
 
 export class KonfliktZapisu extends Error {}

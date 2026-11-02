@@ -171,6 +171,9 @@ export const api = {
   okucia: () => zadanie<Okucie[]>("GET", "/api/okucia"),
   zapiszOkucie: (o: Partial<Okucie> & { id: string }) => zadanie<Okucie>("PUT", `/api/okucia/${o.id}`, o),
   ustawienia: () => zadanie<UstawieniaStolarni>("GET", "/api/ustawienia"),
+  dekoryGaleria: () => zadanie<unknown[]>("GET", "/api/dekory"),
+  dekoryStolarni: () => zadanie<{ zrodlo: "stolarnia" | "projekty" | "brak"; klucze: string[] }>("GET", "/api/dekory-stolarni"),
+  ustawDekoryStolarni: (klucze: string[]) => zadanie<{ zrodlo: "stolarnia" | "projekty" | "brak"; klucze: string[] }>("PUT", "/api/dekory-stolarni", { klucze }),
   zmienUstawienia: (u: unknown) => zadanie<{ ustawienia: UstawieniaStolarni; ostrzezenia: string[] }>("PATCH", "/api/ustawienia", u),
 
   projekty: () => zadanie<ProjektSkrot[]>("GET", "/api/projekty"),

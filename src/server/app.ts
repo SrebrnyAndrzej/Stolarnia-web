@@ -322,6 +322,8 @@ app.post("/api/okucia-katalog/:id/dodaj", api(r => s.dodajProduktOkucia(p(r, "id
 app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
 // maBlat: dekor ma artykuł blatu roboczego (Egger PG_WORKTOPS) — galeria blatów filtruje po tej fladze.
 app.get("/api/dekory", api(() => DEKORY.map(d => ({ ...d, key: kluczDekoru(d), obraz: obrazDekoru(d), maBlat: artykulyDekoru(d, "PG_WORKTOPS").length > 0 }))));
+app.get("/api/dekory-stolarni", api(() => s.dekoryStolarni()));
+app.put("/api/dekory-stolarni", api((r) => s.ustawDekoryStolarni(r.body?.klucze)));
 app.get("/api/dekory/:key", api(r => {
   const d = DEKORY.find(x => kluczDekoru(x) === p(r, "key"));
   if (!d) throw new BladUslugi("Nieznany dekor.");

@@ -70,6 +70,8 @@ export const REGULY_TRAS: Regula[] = [
   { metody: "POST", sciezka: new RegExp(`^/api/okucia-katalog/${ID}/dodaj$`), profile: TYLKO_WLASCICIEL, opis: "dodanie okucia z ceną zakupu" },
   { metody: "GET", sciezka: /^\/api\/(okucia-katalog|dekory)\/obrazy\/.+$/, profile: WSZYSCY, opis: "zdjęcia katalogów" },
   { metody: "GET", sciezka: /^\/api\/dekory$/, profile: [S], opis: "galeria dekorów" },
+  { metody: "GET", sciezka: /^\/api\/dekory-stolarni$/, profile: [S], opis: "dekory stolarni (start galerii szybkiego projektu)" },
+  { metody: "PUT", sciezka: /^\/api\/dekory-stolarni$/, profile: TYLKO_WLASCICIEL, opis: "lista dekorów stolarni" },
   { metody: "GET", sciezka: new RegExp(`^/api/dekory/${ID}$`), profile: [S], opis: "dekor" },
   { metody: "POST", sciezka: new RegExp(`^/api/dekory/${ID}/material$`), profile: TYLKO_WLASCICIEL, opis: "aktywacja dekoru jako materiału (cena zakupu)" },
   { metody: "GET", sciezka: /^\/api\/katalog$/, profile: [S], opis: "katalog modułów" },

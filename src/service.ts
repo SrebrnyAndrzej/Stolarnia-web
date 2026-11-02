@@ -829,6 +829,44 @@ export class Stolarnia {
   }
 
   /** Okucia do wyboru na projekcie: pozycje bazy okuć (z informacją o cenie) i profile konstrukcyjne szuflad. */
+  /**
+   * Dekory na start galerii szybkiego projektu (OCENA-kreatora §4, zmiana 6): lista właściciela,
+   * a gdy pusta — najczęściej używane dekory z projektów (płyty korpusu/frontu i blaty z galerii).
+   */
+  dekoryStolarni(): { zrodlo: "stolarnia" | "projekty" | "brak"; klucze: string[] } {
+    const b = this.magazyn.odczytaj();
+    const znane = new Set(DEKORY.map(kluczDekoru));
+    const wlasne = (b.dekoryStolarni ?? []).filter((k) => znane.has(k));
+    if (wlasne.length) return { zrodlo: "stolarnia", klucze: wlasne };
+    const mat = new Map(b.materialy.map((m) => [m.id, m]));
+    const licz = new Map<string, number>();
+    for (const p of b.projekty) {
+      const ids = [
+        ...p.pomieszczenia.flatMap((r) => [r.materialKorpusuId, r.materialFrontuId, r.materialBlatuId]),
+        ...p.moduly.flatMap((m) => [m.materialKorpusuId, m.materialFrontuId]),
+      ];
+      for (const id of new Set(ids)) {
+        const m = id ? mat.get(id) : undefined;
+        const k = m?.kod && m.producent ? `${m.producent}:${m.kod}` : undefined;
+        if (k && znane.has(k)) licz.set(k, (licz.get(k) ?? 0) + 1);
+      }
+    }
+    const klucze = [...licz].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).slice(0, 15).map(([k]) => k);
+    return { zrodlo: klucze.length ? "projekty" : "brak", klucze };
+  }
+
+  ustawDekoryStolarni(klucze: unknown): { zrodlo: "stolarnia" | "projekty" | "brak"; klucze: string[] } {
+    if (!Array.isArray(klucze) || klucze.length > 60 || !klucze.every((k) => typeof k === "string"))
+      throw new BladUslugi("klucze: lista do 60 kluczy dekorów „Producent:id”.");
+    const znane = new Set(DEKORY.map(kluczDekoru));
+    const nieznane = klucze.filter((k) => !znane.has(k));
+    if (nieznane.length) throw new BladUslugi(`Nieznane dekory: ${nieznane.slice(0, 5).join(", ")}.`);
+    this.magazyn.zmien((b) => {
+      b.dekoryStolarni = [...new Set(klucze as string[])];
+    });
+    return this.dekoryStolarni();
+  }
+
   opcjeOkuc() {
     const b = this.magazyn.odczytaj();
     const skrot = (o: Okucie) => ({ id: o.id, nazwa: o.nazwa, producent: o.producent, system: o.system, typ: o.typ, poziomWyceny: o.poziomWyceny, aktywne: o.aktywne, cenaNetto: o.cenaNetto, maCene: o.aktywne && o.cenaNetto * (1 - o.rabatProcent / 100) > 0 });

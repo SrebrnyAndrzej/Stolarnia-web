@@ -296,3 +296,38 @@ test("propozycja wstępna: przy brakach cen PDF z widełkami i znakiem „cena d
   writeFileSync(plik, pelna);
   assert.doesNotMatch(execFileSync("pdftotext", ["-enc", "UTF-8", plik, "-"], { encoding: "utf8" }), /CENA DO POTWIERDZENIA/);
 });
+
+test("styl Kronospan: wszystkie brakujące dane (wymiary i struktura) w pierwszej odpowiedzi", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Krono", sciany: [{ dlugoscMM: 3000 }] });
+  s.szybkiUklad(p.id, { typ: "I" });
+  const krono = DEKORY.find((d) => d.manufacturer === "Kronospan" && !d.surface_label && (d.textures?.length ?? 0) > 1)!;
+  const w = s.ustawStyl(p.id, { front: { dekor: kluczDekoru(krono) } });
+  assert.equal(w.braki.length, 1);
+  assert.match(w.braki[0].komunikat, /grubości\/formatu oraz strukturę \(/);
+  for (const t of krono.textures!) assert.ok(w.braki[0].komunikat.includes(t));
+  // Komplet wymiarów bez struktury — dalej jedna, jasna prośba o strukturę.
+  const w2 = s.ustawStyl(p.id, { front: { dekor: kluczDekoru(krono), gruboscMM: 18, szerokoscArkuszaMM: 2070, wysokoscArkuszaMM: 2800 } });
+  assert.match(w2.braki[0].komunikat, /wybierz strukturę/);
+  const w3 = s.ustawStyl(p.id, { front: { dekor: kluczDekoru(krono), gruboscMM: 18, szerokoscArkuszaMM: 2070, wysokoscArkuszaMM: 2800, struktura: krono.textures![0] } });
+  assert.deepEqual(w3.braki, []);
+});
+
+test("dekory stolarni: lista właściciela, a bez niej najczęstsze dekory z projektów", () => {
+  const s = nowa();
+  assert.deepEqual(s.dekoryStolarni(), { zrodlo: "brak", klucze: [] });
+  const egger = DEKORY.find((d) => d.manufacturer === "Egger" && wariantyDekoru(d).length)!;
+  for (const n of ["A", "B"]) {
+    const p = s.utworzProjekt({ nazwa: n, sciany: [{ dlugoscMM: 3000 }] });
+    s.szybkiUklad(p.id, { typ: "I" });
+    s.ustawStyl(p.id, { front: { dekor: kluczDekoru(egger) } });
+  }
+  const z = s.dekoryStolarni();
+  assert.equal(z.zrodlo, "projekty");
+  assert.equal(z.klucze[0], kluczDekoru(egger));
+  const inne = DEKORY.filter((d) => d !== egger).slice(0, 3).map(kluczDekoru);
+  assert.deepEqual(s.ustawDekoryStolarni(inne), { zrodlo: "stolarnia", klucze: inne });
+  assert.throws(() => s.ustawDekoryStolarni(["Nie:ma"]), /Nieznane dekory/);
+  assert.throws(() => s.ustawDekoryStolarni("x"), /lista/);
+  assert.deepEqual(s.ustawDekoryStolarni([]).zrodlo, "projekty");
+});

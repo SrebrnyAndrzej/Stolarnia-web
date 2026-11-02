@@ -308,3 +308,52 @@ test("3D: full screen and a saved shot travel with the PDF request", async ({ pa
   expect(pdfCalls[0].wizualizacje?.length).toBe(1);
   expect(pdfCalls[0].wizualizacje?.[0].jpegBase64).toMatch(/^data:image\/jpeg;base64,/);
 });
+
+// Zmiana 6 z oceny: krótsza ścieżka.
+const decor2 = { ...decor, key: "egger-F186", id: "F186 ST9", name: "Beton Chicago jasnoszary" };
+async function mockShort(page: import("@playwright/test").Page) {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    let body: unknown = {};
+    if (path.endsWith("/session")) body = sales;
+    else if (path.endsWith("/analiza")) body = savedProject;
+    else if (path.endsWith("/styl")) body = { pomieszczenieId: "r1", korpus: null, front: null, blat: null, modulyZWlasnymMaterialem: 0, okucia: null };
+    else if (path === "/api/dekory") body = [decor, decor2];
+    else if (path === "/api/dekory-stolarni") body = { zrodlo: "stolarnia", klucze: [decor.key] };
+    else if (path.endsWith("/okucia-projektu/opcje"))
+      body = { systemySzuflad: [], zawiasy: [], podnosniki: [], profileSzuflad: [], profilDomyslny: "domyślny" };
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+  });
+  await page.goto("/#/szybki/p1");
+  await expect(page.getByRole("heading", { name: "Dekory" })).toBeVisible();
+}
+
+test("gallery starts from the workshop list; 'show all' and family/colour filters reach the full catalogue", async ({ page }) => {
+  await mockShort(page);
+  await page.getByRole("button", { name: /Fronty/ }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Dekory stolarni: 1" })).toBeVisible();
+  await expect(page.locator(".qp-decor")).toHaveCount(1);
+  await page.getByRole("button", { name: "Pokaż wszystkie (2)" }).click();
+  await expect(page.locator(".qp-decor")).toHaveCount(2);
+  await page.getByRole("group", { name: "Rodzina dekoru" }).getByRole("button", { name: "Kamień, beton" }).click();
+  await expect(page.locator(".qp-decor")).toHaveCount(1);
+  await expect(page.locator(".qp-decor")).toContainText("Beton Chicago");
+  await page.getByRole("group", { name: "Rodzina dekoru" }).getByRole("button", { name: "Każda rodzina" }).click();
+  await page.getByRole("group", { name: "Kolor dekoru" }).getByRole("button", { name: "Szare" }).click();
+  await expect(page.locator(".qp-decor")).toHaveCount(1);
+});
+
+test("step bar guards unsaved decors; hardware step is collapsed to one line", async ({ page }) => {
+  await mockShort(page);
+  await page.getByRole("button", { name: /Fronty/ }).click();
+  await page.locator(".qp-decor").first().click();
+  await page.getByRole("button", { name: "Krok 4: Okucia" }).click();
+  await expect(page.getByText("Wybrane dekory nie są zapisane. Kliknij „Zastosuj dekory”")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dekory" })).toBeVisible();
+  await page.getByRole("button", { name: "Odrzuć wybór i dalej" }).click();
+  await expect(page.getByText("Okucia: automatycznie wg wariantu wyceny")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "System szuflad" })).toHaveCount(0);
+  await page.getByRole("button", { name: "(zmień)" }).click();
+  await expect(page.getByRole("heading", { name: "System szuflad" })).toBeVisible();
+});

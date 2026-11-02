@@ -44,10 +44,13 @@ export function plytaZDekoru(rola: "korpus" | "front", w: Exclude<WyborMaterialu
   const d = znajdzDekor(w.dekor);
   if (!d) return { rola, brak: `Nieznany dekor "${w.dekor}" — sprawdź galerię dekorów.` };
   const jawne = w.gruboscMM !== undefined || w.szerokoscArkuszaMM !== undefined || w.wysokoscArkuszaMM !== undefined;
+  // Wszystkie brakujące dane w jednej odpowiedzi (OCENA-kreatora §4, zmiana 6): wymiary i struktura razem.
+  const strukturaWpisana = w.struktura ?? (d.textures?.length === 1 ? d.textures[0] : undefined);
+  const brakStruktury = !d.surface_label && !strukturaWpisana ? ` oraz strukturę (${(d.textures ?? []).join(", ") || "brak listy struktur"})` : "";
   try {
     if (w.artykul) return { rola, material: materialDekoru(w.dekor, { artykul: w.artykul, struktura: w.struktura }), zrodlo: `artykuł producenta ${w.artykul}` };
     if (jawne) {
-      if (!(w.gruboscMM && w.szerokoscArkuszaMM && w.wysokoscArkuszaMM)) return { rola, brak: `${d.name}: podaj komplet — grubość, szerokość i wysokość arkusza.` };
+      if (!(w.gruboscMM && w.szerokoscArkuszaMM && w.wysokoscArkuszaMM)) return { rola, brak: `${d.name}: podaj komplet — grubość, szerokość i wysokość arkusza${brakStruktury}.` };
       const struktura = w.struktura ?? (d.textures?.length === 1 ? d.textures[0] : undefined);
       if (!d.surface_label && !struktura) return { rola, brak: `${d.name}: wybierz strukturę (${(d.textures ?? []).join(", ") || "brak listy struktur"}).` };
       const m = materialDekoru(w.dekor, { gruboscMM: w.gruboscMM, szerokoscArkuszaMM: w.szerokoscArkuszaMM, wysokoscArkuszaMM: w.wysokoscArkuszaMM, struktura });
@@ -57,7 +60,7 @@ export function plytaZDekoru(rola: "korpus" | "front", w: Exclude<WyborMaterialu
     return { rola, brak: `${d.name}: ${(e as Error).message}` };
   }
   const warianty = wariantyDekoru(d);
-  if (!warianty.length) return { rola, brak: `${d.name} (${d.manufacturer}): producent nie podaje grubości i formatu w danych katalogu — wymaga wpisania grubości/formatu.` };
+  if (!warianty.length) return { rola, brak: `${d.name} (${d.manufacturer}): producent nie podaje grubości i formatu w danych katalogu — wymaga wpisania grubości/formatu${brakStruktury}.` };
   const pasujace = warianty.filter((x) => wymiaryWariantu(x).gruboscMM === gruboscDocelowaMM);
   if (!pasujace.length) {
     const grubosci = [...new Set(warianty.map((x) => wymiaryWariantu(x).gruboscMM))].sort((a, b) => a - b);

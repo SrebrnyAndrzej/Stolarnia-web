@@ -473,6 +473,23 @@ export function HardwareGroup({
 
 const PAGE = 48;
 
+// Filtry galerii (OCENA-kreatora §4, zmiana 6). Katalog nie ma pól koloru i rodziny — klasyfikacja po nazwie
+// i strukturze (PL i EN, bo Kronospan ma nazwy angielskie). Heurystyka: „Inne” zamiast zgadywania.
+const WOOD = /dąb|dab|buk|orzech|jesion|modrzew|sosn|świerk|swierk|wiąz|wiaz|olch|klon|czereśn|czeresn|akacj|drewn|teak|oak|walnut|ash\b|elm|pine|wood|hickory|maple|cherry|beech|larch|spruce|halifax|casella|lancelot|gladstone|whiteriver/i;
+const STONE = /beton|kamie|marmur|łupek|lupek|granit|trawertyn|terrazzo|ceram|concrete|stone|marble|slate|onyx|granite|travertine|chicago|metal|rdza|rust|stal\b|steel/i;
+const DARK = /czarn|grafit|antracyt|ciemn|brąz|braz|wenge|tabak|marone|black|anthracite|dark|graphite|brown|tobacco|espresso/i;
+const GREY = /szar|beton|stal|alumin|grey|gray|silver|concrete|steel|cement/i;
+const LIGHT = /biał|bial|krem|jasn|alpin|kość|kosc|beż|bez\b|piask|white|cream|light|beige|ivory|sand|natural|naturaln|kaszmir|cashmere|vanilla|wanili/i;
+export type Family = "drewno" | "kamien" | "jednolite";
+export type Tone = "jasne" | "szare" | "ciemne" | "inne";
+export const decorFamily = (d: Decor): Family => {
+  const t = `${d.name} ${d.surface_label ?? ""}`;
+  return WOOD.test(t) ? "drewno" : STONE.test(t) ? "kamien" : "jednolite";
+};
+export const decorTone = (d: Decor): Tone => (DARK.test(d.name) ? "ciemne" : GREY.test(d.name) ? "szare" : LIGHT.test(d.name) ? "jasne" : "inne");
+const FAMILIES: [Family | "", string][] = [["", "Każda rodzina"], ["drewno", "Drewno"], ["kamien", "Kamień, beton"], ["jednolite", "Jednolite"]];
+const TONES: [Tone | "", string][] = [["", "Każdy kolor"], ["jasne", "Jasne"], ["szare", "Szare"], ["ciemne", "Ciemne"]];
+
 export function DecorPicker({
   decors,
   role,
@@ -480,6 +497,8 @@ export function DecorPicker({
   current,
   onClose,
   onPick,
+  featured,
+  featuredLabel = "Dekory stolarni",
 }: {
   decors: Decor[];
   role: RolaStylu;
@@ -487,26 +506,40 @@ export function DecorPicker({
   current?: string;
   onClose: () => void;
   onPick: (d: Decor) => void;
+  /** Krótka lista na start (dekory stolarni albo najczęstsze z projektów); pełna lista pod „Pokaż wszystkie”. */
+  featured?: string[];
+  featuredLabel?: string;
 }) {
   const [query, setQuery] = useState("");
   const [maker, setMaker] = useState("");
   const [onlyWorktop, setOnlyWorktop] = useState(role === "blat");
+  const [family, setFamily] = useState<Family | "">("");
+  const [tone, setTone] = useState<Tone | "">("");
+  const [all, setAll] = useState(false);
   const [shown, setShown] = useState(PAGE);
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Tryb startowy: krótka lista, dopóki nikt nie szuka ani nie filtruje i nie kliknął „Pokaż wszystkie”.
+  const shortList = !all && !query.trim() && !maker && !family && !tone && (featured?.length ?? 0) > 0;
   const result = useMemo(() => {
+    if (shortList) {
+      const byKey = new Map(decors.map((d) => [d.key, d]));
+      return featured!.map((k) => byKey.get(k)).filter((d): d is Decor => !!d);
+    }
     const q = query.trim().toLocaleLowerCase("pl");
     return decors.filter(
       (d) =>
         (!maker || d.manufacturer === maker) &&
         (!onlyWorktop || d.maBlat) &&
+        (!family || decorFamily(d) === family) &&
+        (!tone || decorTone(d) === tone) &&
         (!q ||
           `${d.id} ${d.name} ${d.surface_label ?? ""} ${(d.textures ?? []).join(" ")}`
             .toLocaleLowerCase("pl")
             .includes(q)),
     );
-  }, [decors, query, maker, onlyWorktop]);
-  useEffect(() => setShown(PAGE), [query, maker, onlyWorktop]);
+  }, [decors, query, maker, onlyWorktop, family, tone, shortList, featured]);
+  useEffect(() => setShown(PAGE), [query, maker, onlyWorktop, family, tone, all]);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
@@ -589,9 +622,33 @@ export function DecorPicker({
             </span>
           </div>
         )}
-        <p className="qp-muted" role="status">
-          {result.length} dekorów
-        </p>
+        <div className="qp-bar">
+          <div className="qp-seg" role="group" aria-label="Rodzina dekoru">
+            {FAMILIES.map(([v, t]) => (
+              <button key={v} type="button" aria-pressed={family === v} onClick={() => setFamily(v)}>
+                {t}
+              </button>
+            ))}
+          </div>
+          <div className="qp-seg" role="group" aria-label="Kolor dekoru">
+            {TONES.map(([v, t]) => (
+              <button key={v} type="button" aria-pressed={tone === v} onClick={() => setTone(v)}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="qp-bar">
+          <p className="qp-muted" role="status" style={{ margin: 0 }}>
+            {shortList ? `${featuredLabel}: ${result.length}` : `${result.length} dekorów`}
+          </p>
+          <span className="qp-spacer" />
+          {(featured?.length ?? 0) > 0 && (
+            <button type="button" className="qp-btn secondary" onClick={() => setAll((x) => !x)}>
+              {shortList || !all ? `Pokaż wszystkie (${decors.length})` : featuredLabel}
+            </button>
+          )}
+        </div>
         <div className="qp-gallery">
           {result.slice(0, shown).map((d) => (
             <button
