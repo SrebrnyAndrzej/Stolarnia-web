@@ -112,3 +112,4 @@ Adres #/podglad/owner/pracownicy jest demonstracją; pokazuje jawne wyjaśnienie
 
 ## Usunięcie publicznych podglądów ról — decyzja użytkownika 2026-11-02
 Podglądy owner/employee/client usunięte z ekranu logowania i wyłączone w aplikacji. Tożsamość i rola panelu pochodzą wyłącznie z sesji. Stare adresy #/podglad/{rola}/{sekcja} przekierowują do #/panel/{sekcja}; bez sesji pokazują logowanie, a po logowaniu obowiązują uprawnienia rzeczywistej roli. Nie ma możliwości wyboru roli przez URL. Publiczny kreator kuchni na stronie marketingowej pozostaje odrębną funkcją.
+2026-11-02 — decyzja użytkownika: strona publiczna nie pokazuje wejścia do logowania ani panelu w nagłówku i stopce, również po rozpoznaniu sesji. Bezpośrednie adresy #/logowanie i #/panel/... działają nadal; autoryzacja pozostaje bez zmian.

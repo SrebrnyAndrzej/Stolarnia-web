@@ -22,7 +22,7 @@ import {
   BUSINESS_SCHEMA,
 } from "./landing-content";
 const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
-import { request, type Principal } from "./api";
+import { request } from "./api";
 
 const initial = {
   name: "",
@@ -32,7 +32,7 @@ const initial = {
   description: "",
   website: "",
 };
-export function Landing({ session }: { session: Principal | null }) {
+export function Landing() {
   const [form, setForm] = useState(() => {
     try {
       const description = sessionStorage.getItem(HANDOFF_KEY);
@@ -156,13 +156,6 @@ export function Landing({ session }: { session: Principal | null }) {
         </nav>
         <a className="ps-button ps-header-call" href={PHONE.href}>
           Zadzwoń: {PHONE.label}
-        </a>
-        <a
-          className="ps-text-button"
-          href={session ? "#/panel/projekty" : "#/logowanie"}
-        >
-          {session ? "Twój panel" : "Zaloguj się"}
-          <IconArrowUpRight size={18} />
         </a>
       </header>
       <main>
@@ -633,10 +626,6 @@ export function Landing({ session }: { session: Principal | null }) {
           <small>{AREAS.join(" · ")}</small>
           <small>@panstolarz.meble</small>
         </div>
-        <a href="#/logowanie">
-          Panel stolarni
-          <IconArrowUpRight size={17} />
-        </a>
       </footer>
     </div>
   );

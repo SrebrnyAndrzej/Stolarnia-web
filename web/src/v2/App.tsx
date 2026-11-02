@@ -165,7 +165,7 @@ export function App() {
         <KitchenPlanner />
       </Suspense>
     );
-  if (publicRoute && !demo) return <Landing session={session} />;
+  if (publicRoute && !demo) return <Landing />;
   if (!demo && (hash === "#/logowanie" || (isPanel && !session))) {
     if (loading)
       return (
@@ -185,7 +185,7 @@ export function App() {
       />
     );
   }
-  if (!person) return <Landing session={session} />;
+  if (!person) return <Landing />;
   const owner = person.role === "owner";
   const employee = person.role === "employee";
   const quick = /^#\/szybki(\/|$)/.test(hash);
