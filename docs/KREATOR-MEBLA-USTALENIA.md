@@ -1,6 +1,6 @@
 # Kreator mebla — ustalenia użytkownika, 2 listopada 2026
 
-Status: wymagania zatwierdzone; ten dokument nie potwierdza implementacji ani wdrożenia.
+Status: pierwsza implementacja kreatora przygotowana 2 listopada 2026: `FurnitureCreator`, geometria `src/core/furniture.ts`, biblioteka `GET|PUT /api/v2/furniture`. Zapis w istniejącym wersjonowanym dokumencie Supabase, bez osobnej migracji. Nie jest to zatwierdzone wydanie produkcyjne mebla.
 
 ## Dostęp i biblioteka
 
@@ -30,4 +30,4 @@ Status: wymagania zatwierdzone; ten dokument nie potwierdza implementacji ani wd
 6. Konto nieaktywne i osoba niezalogowana nie mogą czytać ani zmieniać biblioteki przez API.
 7. Edycja biblioteki nie zmienia wcześniej zapisanej konstrukcji projektu.
 
-Dokument uzupełnia istniejące briefy kreatora i nie zmienia opisanej w CLAUDE.md odpowiedzialności za implementację silnika.
+Aktualne polecenie użytkownika: uruchomić działający kreator. Dodany model biblioteczny nie zastępuje starego silnika i nie zmienia zapisanych projektów. Podgląd bryły jest izometryczny; w tej wersji nie ma obracanej sceny, automatycznego doboru skrzynek/okuć, pełnej kontroli kolizji, dokumentacji CNC ani wstawiania szablonu do starego projektu. Te zakresy pozostają do integracji. Cofnięcie działa w bieżącej karcie; biblioteka zapisuje aktualną wersję z metadanymi, nie pełną historię rewizji.

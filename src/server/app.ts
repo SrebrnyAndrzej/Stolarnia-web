@@ -19,6 +19,7 @@ import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
+import { saveFurniture } from "./furniture.js";
 import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZapisSprzedazy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
@@ -146,7 +147,7 @@ app.use("/api/projekty", (req, res, next) => {
       req.body.tekst = podpisUwagi(pr, person.display_name, req.body.tekst);
     next();
   } catch (e) {
-    next(e);
+    if (e instanceof AccessError) access.fail(res, e); else next(e);
   }
 });
 
@@ -159,11 +160,13 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
     // Pola niewidoczne dla profilu (koszty zakupu, marża, ceny, umowy, kontakt klienta) są odcinane po stronie serwera.
     res.type("application/json").send(jsonBezMigawek(filtrujOdpowiedz(profil(req), wynik ?? { ok: true })));
   } catch (e) {
-    next(e);
+    if (e instanceof AccessError) access.fail(res, e); else next(e);
   }
 };
 
 const p = (req: Request, k: string) => String(req.params[k]);
+app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
+app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
 
 const v2 = (fn: (req: Request, person: Principal) => unknown) => async (req: Request, res: Response) => {
   try {

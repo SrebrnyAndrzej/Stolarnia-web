@@ -92,3 +92,14 @@ Dotychczasowy formularz i adapter nie oznaczają uruchomienia przyjmowania danyc
 
 ## Uzupełnienie całej gotowej treści — 1.11.2026
 Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2 istniejących wizualizacji, 3 wyróżniki z działającymi przejściami, materiały/okucia i komplet 10 pytań FAQ. Galeria zastępuje osobny blok składania; zachowuje ten sam film oraz dodaje kadr kuchni z linkiem do animacji. Wyróżnik dokumentacji otwiera publiczny syntetyczny przykład PDF z oznaczeniem nieprodukcyjnym. Ceny opisano dla zatwierdzonego zakresu, bez zmiany umów i aktualizacji zapisanych kwot. Nie podano nieznanych terminów, cen pomiaru ani okresów gwarancji. Opinie, nieznane dane firmy i brakujące dokumenty prawne nie są zastępowane fikcyjną treścią.
+
+## Biblioteka mebli (2026-11-02)
+- Kanoniczny widok: `FurnitureCreator`; pola mm: `NumberField`; błąd API: wspólny `Feedback`; zapis sieciowy: `request`.
+- Decyzja użytkownika: wszyscy aktywni pracownicy, niezależnie od profilu, edytują wszystkie modele warsztatu. Nie rozszerza to dostępu do innych tras. `GET|PUT /api/v2/furniture` ma jawną regułę serwera.
+- Biblioteka przechowuje wyłącznie model i metadane zmian; dane klientów, ceny i projekty nie są dołączane. Serwer nadaje autora z sesji.
+- Zapis wymaga wersji modelu i istniejącego CAS całej bazy. Konflikt pozostawia szkic; użytkownik otwiera aktualną wersję lub tworzy kopię. Nie ma automatycznego nadpisania.
+- Nieudany zapis zachowuje formularz. Zapis blokuje edycję. Odejście linkiem lub nowy model z niezapisanym szkicem wymaga potwierdzenia; przeładowanie chroni beforeunload. Cofnij zachowuje do 40 kroków w karcie.
+- Podgląd demonstracyjny zapisuje jedynie w pamięci bieżącej karty, co interfejs jawnie opisuje.
+- Półki i przegrody są przycinane do obrysu. Front szuflady wychodzący poza obrys blokuje zapis. 2D i izometryczna bryła 3D używają identycznych polygonów.
+- To model do dalszego opracowania, bez automatycznie zatwierdzonych połączeń, skrzynek szuflad, obrzeży i otworowania; nie jest wydaniem produkcyjnym ani eksportem CNC.
+- Główna granica błędów `PanelBoundary` pokazuje odzyskanie po błędzie komponentu lub pliku lazy; wydanie OVH zachowuje starsze zasoby z hashami i wymusza rewalidację index.html.

@@ -106,3 +106,6 @@ Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2
 
 ## Katalog dekorów i marki
 Publiczny `DecorCatalog.tsx` i wybór w kreatorze współdzielą `DecorPicker`. Natywny select producenta, wyszukiwanie lokalne z czyszczeniem, po 24 wyniki i przycisk kolejnych. `Feedback` oraz style paneli pozostają wspólne. Katalog jest dostępny bez konta, zawiera tylko publiczne nazwy, kody i zdjęcia. Karuzela `BrandCarousel` ma ręczne przyciski, natywny scroll, focus i brak autoplay; reduced-motion wyłącza płynne przewijanie. Wybór dekoru zapisuje referencję i próbkę w szkicu, nie udaje tekstury PBR ani zatwierdzenia materiału do produkcji. Ponowny wybór koloru poglądowego usuwa wcześniejszy dekor.
+
+## Kreator mebla (2026-11-02)
+Kreator w panelu właściciela i pracownika dziedziczy tokeny `web/src/v2/styles.css`; `furniture.css` odpowiada za układ biblioteka / rysunek / inspektor. Geometryczny rysunek płyt jest wyróżnikiem narzędzia. Brak zmian globalnej identyfikacji. Na telefonie biblioteka, rysunek i inspektor układają się pionowo. Pola liczbowe zapewniają alternatywę dla przeciągania.

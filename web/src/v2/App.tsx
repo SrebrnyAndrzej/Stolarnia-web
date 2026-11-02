@@ -21,6 +21,7 @@ import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
 import { Logo, Feedback } from "./ui";
 import { profilOsoby } from "../../../src/server/uprawnienia";
+const FurnitureCreator = lazy(() => import("./FurnitureCreator").then(m => ({ default: m.FurnitureCreator })));
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
 );
@@ -207,8 +208,9 @@ export function App() {
     owner ||
     quick ||
     ["projekty", ""].includes(section) ||
-    (employee && ["szuflady", "zadania"].includes(section));
+    (employee && ["szuflady", "zadania", "meble"].includes(section));
   const nav = [
+    ...(owner || employee ? [{ id: "meble", label: "Kreator mebla", icon: IconStack2 }] : []),
     ...(owner || employee
       ? [
           {
@@ -397,6 +399,8 @@ export function App() {
               </a>
               <LegacyApp />
             </div>
+          ) : section === "meble" && (owner || employee) ? (
+            <FurnitureCreator demo={demo} />
           ) : section === "szuflady" ? (
             <>
               {demo && (

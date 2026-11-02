@@ -1,0 +1,214 @@
+/** Parametric library models in millimetres; both views consume these polygons. */
+export type Point = [number, number];
+export interface FurniturePlate {
+  id: string;
+  name: string;
+  kind: "board" | "drawer" | "cap";
+  anchor?: "left" | "right" | "bottom" | "top";
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
+  depth: number;
+}
+export interface FurnitureModel {
+  name: string;
+  width: number;
+  height: number;
+  depth: number;
+  thickness: number;
+  shape: "rectangle" | "slope" | "stairs";
+  lowHeight: number;
+  steps: number;
+  reverse: boolean;
+  plates: FurniturePlate[];
+}
+export interface FurnitureEntry {
+  id: string;
+  version: number;
+  model: FurnitureModel;
+  createdBy: string;
+  updatedBy: string;
+  updatedAt: string;
+}
+export const freshFurniture = (): FurnitureModel => ({
+  name: "Nowy mebel",
+  width: 1000,
+  height: 2000,
+  depth: 560,
+  thickness: 18,
+  shape: "rectangle",
+  lowHeight: 900,
+  steps: 4,
+  reverse: false,
+  plates: [],
+});
+export function topSegments(m: FurnitureModel) {
+  const n = m.shape === "stairs" ? m.steps : 1;
+  return Array.from({ length: n }, (_, i) => {
+    const a =
+      m.shape === "rectangle"
+        ? m.height
+        : m.shape === "slope"
+          ? m.lowHeight
+          : m.lowHeight + ((m.height - m.lowHeight) * i) / (n - 1);
+    const b = m.shape === "slope" ? m.height : a;
+    const s = { x: (m.width * i) / n, end: (m.width * (i + 1)) / n, a, b };
+    return m.reverse
+      ? { x: m.width - s.end, end: m.width - s.x, a: b, b: a }
+      : s;
+  }).sort((a, b) => a.x - b.x);
+}
+export function furnitureOutline(m: FurnitureModel): Point[] {
+  return [
+    [0, 0],
+    [m.width, 0],
+    ...topSegments(m)
+      .reverse()
+      .flatMap(
+        (s) =>
+          [
+            [s.end, s.b],
+            [s.x, s.a],
+          ] as Point[],
+      ),
+  ];
+}
+export function availableHeight(m: FurnitureModel, x: number) {
+  const segments = topSegments(m).filter(
+    (s) => x >= s.x - 0.001 && x <= s.end + 0.001,
+  );
+  return segments.length
+    ? Math.min(
+        ...segments.map((s) => s.a + ((s.b - s.a) * (x - s.x)) / (s.end - s.x)),
+      )
+    : 0;
+}
+export function platePolygon(m: FurnitureModel, p: FurniturePlate): Point[] {
+  let poly = furnitureOutline(m);
+  const clip = (axis: 0 | 1, bound: number, greater: boolean) => {
+    const out: Point[] = [];
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i],
+        b = poly[(i + 1) % poly.length];
+      const ain = greater ? a[axis] >= bound : a[axis] <= bound;
+      const bin = greater ? b[axis] >= bound : b[axis] <= bound;
+      if (ain) out.push(a);
+      if (ain !== bin) {
+        const t = (bound - a[axis]) / (b[axis] - a[axis]);
+        out.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]);
+      }
+    }
+    poly = out;
+  };
+  clip(0, p.x, true);
+  clip(0, p.x + p.width, false);
+  clip(1, p.y, true);
+  clip(1, p.y + p.height, false);
+  if (p.kind === "cap") {
+    const s = topSegments(m).find(
+      (s) => Math.abs(s.x - p.x) < 0.1 && Math.abs(s.end - p.x - p.width) < 0.1,
+    );
+    if (s) {
+      const t = m.thickness * Math.sqrt(1 + ((s.b - s.a) / (s.end - s.x)) ** 2);
+      poly = [
+        [s.x, Math.max(0, s.a - t)],
+        [s.end, Math.max(0, s.b - t)],
+        [s.end, s.b],
+        [s.x, s.a],
+      ];
+    }
+  }
+  return poly;
+}
+export function polygonArea(p: Point[]) {
+  return (
+    Math.abs(
+      p.reduce((sum, a, i) => {
+        const b = p[(i + 1) % p.length];
+        return sum + a[0] * b[1] - b[0] * a[1];
+      }, 0),
+    ) / 2
+  );
+}
+export function furnitureIssues(m: FurnitureModel): string[] {
+  const issues: string[] = [];
+  if (m.width <= 2 * m.thickness || m.height <= 2 * m.thickness)
+    issues.push("Gabaryty muszą być większe niż dwie grubości płyty.");
+  if (!m.plates.length) issues.push("Dodaj co najmniej jedną płytę.");
+  if (m.lowHeight > m.height && m.shape !== "rectangle")
+    issues.push("Dolna wysokość obrysu nie może przekraczać wysokości mebla.");
+  for (const p of m.plates) {
+    if (polygonArea(platePolygon(m, p)) < 1)
+      issues.push(`${p.name}: płyta znajduje się poza obrysem.`);
+    if (p.z < 0 || p.z + p.depth > m.depth + m.thickness + 0.1)
+      issues.push(`${p.name}: płyta wychodzi poza głębokość mebla.`);
+    if (p.kind === "drawer") {
+      const top = Math.min(
+        ...topSegments(m)
+          .filter((s) => s.end > p.x && s.x < p.x + p.width)
+          .flatMap((s) => [
+            availableHeight(m, Math.max(s.x, p.x)),
+            availableHeight(m, Math.min(s.end, p.x + p.width)),
+          ]),
+      );
+      if (p.y + p.height > top + 0.1 || p.x < 0 || p.x + p.width > m.width)
+        issues.push(`${p.name}: front nie mieści się pod skosem lub schodami.`);
+    }
+  }
+  return [...new Set(issues)];
+}
+export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
+  const t = m.thickness;
+  return [
+    {
+      id: id(),
+      name: "Bok lewy",
+      kind: "board",
+      anchor: "left",
+      x: 0,
+      y: 0,
+      z: 0,
+      width: t,
+      height: m.height,
+      depth: m.depth,
+    },
+    {
+      id: id(),
+      name: "Bok prawy",
+      kind: "board",
+      anchor: "right",
+      x: m.width - t,
+      y: 0,
+      z: 0,
+      width: t,
+      height: m.height,
+      depth: m.depth,
+    },
+    {
+      id: id(),
+      name: "Dno",
+      kind: "board",
+      anchor: "bottom",
+      x: t,
+      y: 0,
+      z: 0,
+      width: m.width - 2 * t,
+      height: t,
+      depth: m.depth,
+    },
+    ...topSegments(m).map((s) => ({
+      id: id(),
+      name: "Wieniec górny",
+      kind: "cap" as const,
+      anchor: "top" as const,
+      x: s.x,
+      y: Math.min(s.a, s.b) - t,
+      z: 0,
+      width: s.end - s.x,
+      height: Math.abs(s.b - s.a) + t,
+      depth: m.depth,
+    })),
+  ];
+}
