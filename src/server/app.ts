@@ -19,7 +19,7 @@ import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
-import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
+import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZapisSprzedazy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
 // Oba interfejsy używają tej samej usługi i tego samego magazynu. Uruchamiana lokalnie przez index.ts,
@@ -138,6 +138,10 @@ app.use("/api/projekty", (req, res, next) => {
       const blad = sprawdzZmianeProjektu(pr, projekt.status, req.body);
       if (blad) return res.status(403).json({ blad });
     }
+    if (pr === "sprzedaz") {
+      const blad = sprawdzZapisSprzedazy(projekt.status, req.method, reszta);
+      if (blad) return res.status(403).json({ blad });
+    }
     if (req.method === "POST" && /^\/notatki$/i.test(reszta) && req.body && typeof req.body.tekst === "string" && pr !== "sprzedaz")
       req.body.tekst = podpisUwagi(pr, person.display_name, req.body.tekst);
     next();
@@ -194,6 +198,8 @@ app.get("/api/v2/projects/:id/documents.pdf", async (req, res) => {
     const parsed = technicalDocumentQuery.safeParse(req.query);
     if (!parsed.success || parsed.data.rewizja === undefined) throw new AccessError(400, "Wybierz rewizję dokumentacji przed wydrukiem.");
     const q = parsed.data;
+    // Montaż drukuje tylko skrócone karty montażowe; pełna dokumentacja techniczna (pakiet P) to produkcja.
+    if (profilOsoby(person) === "montaz" && q.rodzaj !== "montazowe") throw new AccessError(403, "Na koncie montażu drukujesz karty montażowe.");
     const source = documentSource(s, person, id, q.wydanie);
     if (source.document.rewizja !== q.rewizja) throw new AccessError(409, "Projekt zmienił się. Odśwież dokumentację i ponownie wybierz wydruk.");
     if (q.modul && !source.document.czesci.some(c => c.modulId === q.modul)) throw new AccessError(404, "Nie znaleziono szafki w tej dokumentacji.");
@@ -329,7 +335,12 @@ app.get("/api/projekty/:id/umowy/:uid/pdf", async (req, res, next) => {
 app.get("/api/projekty", api((r) => { const person = osoba(r); return s.projekty().filter((x) => mayReadProject(person, x.id)); }));
 app.post("/api/projekty", api((r) => s.utworzProjekt(r.body)));
 app.get("/api/projekty/:id", api((r) => s.projekt(p(r, "id"))));
-app.patch("/api/projekty/:id", api((r) => s.zmienProjekt(p(r, "id"), r.body)));
+// Produkcja i montaż zmieniają tylko status — w odpowiedzi tylko id i status (bez pozostałych danych projektu).
+app.patch("/api/projekty/:id", api((r) => {
+  const w = s.zmienProjekt(p(r, "id"), r.body);
+  const pr = profil(r);
+  return pr === "produkcja" || pr === "montaz" ? { id: w.id, status: w.status } : w;
+}));
 app.delete("/api/projekty/:id", api((r) => s.usunProjekt(p(r, "id"))));
 // Notatki robocze tematu (mikro CRM)
 app.post("/api/projekty/:id/notatki", api((r) => s.dodajNotatke(p(r, "id"), r.body?.tekst)));
@@ -428,7 +439,6 @@ app.post("/api/projekty/:id/oferta.pdf", (req, res, next) => {
         mkdirSync(katalog, { recursive: true });
         const plik = join(katalog, `oferta-${p(req, "id")}-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.pdf`);
         writeFileSync(plik, pdf);
-        res.setHeader("X-Oferta-Plik", encodeURIComponent(plik));
       }
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="oferta-${p(req, "id")}.pdf"`);
@@ -470,7 +480,10 @@ if (existsSync(web)) {
 }
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  const status = err instanceof BladUslugi ? 400 : err instanceof KonfliktZapisu ? 409 : 500;
+  // Niepoprawny JSON w żądaniu (body-parser) to błąd klienta, nie serwera.
+  const zlyJson = (err as { type?: string }).type === "entity.parse.failed";
+  const status = err instanceof BladUslugi || zlyJson ? 400 : err instanceof KonfliktZapisu ? 409 : 500;
   if (status === 500) console.error(err);
-  res.status(status).json({ blad: err.message });
+  // Błąd wewnętrzny: szczegóły tylko w logu serwera (ścieżki, zapytania, dane), klient dostaje ogólny komunikat.
+  res.status(status).json({ blad: status === 500 ? "Wystąpił błąd serwera. Spróbuj ponownie; jeśli się powtarza, powiadom właściciela." : zlyJson ? "Niepoprawny format danych (JSON)." : err.message });
 });

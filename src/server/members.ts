@@ -16,7 +16,7 @@ export const memberCreate = z
     job_role: z.string().trim().min(1).max(80).default("Pracownik"),
     project_ids: z.array(z.string().min(1).max(80)).max(1000).default([]),
     // Profil dostępu decyduje o uprawnieniach (src/server/uprawnienia.ts); funkcja (job_role) jest tylko opisem.
-    access_profile: z.enum(PROFILE_DOSTEPU).default("sprzedaz"),
+    access_profile: z.enum(PROFILE_DOSTEPU),
   })
   .strict();
 export const memberUpdate = z
@@ -61,7 +61,7 @@ export async function createEmployee(
   requireOwner(person);
   const input = memberCreate.safeParse(body);
   if (!input.success)
-    throw new AccessError(400, "Sprawdź imię, e-mail i funkcję pracownika.");
+    throw new AccessError(400, "Sprawdź imię, e-mail, funkcję i profil dostępu pracownika.");
   const value = input.data;
   if (value.project_ids.some((id) => !projectIds.has(id)))
     throw new AccessError(400, "Wybrany projekt nie istnieje. Odśwież listę.");

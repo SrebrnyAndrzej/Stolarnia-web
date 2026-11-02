@@ -15,6 +15,7 @@ const input = {
   display_name: "Test Employee",
   email: "Employee@example.com",
   job_role: "Montażysta",
+  access_profile: "montaz",
   project_ids: ["p1"],
 };
 test("employee creation never accepts owner privilege or unknown fields", () => {
@@ -23,6 +24,8 @@ test("employee creation never accepts owner privilege or unknown fields", () => 
     false,
   );
   assert.equal(memberCreate.parse(input).email, "employee@example.com");
+  const { access_profile: _p, ...bezProfilu } = input;
+  assert.equal(memberCreate.safeParse(bezProfilu).success, false, "profil dostępu wymagany");
 });
 test("only active owners can create accounts or activation links", async () => {
   const admin = {} as never;
@@ -96,6 +99,7 @@ test("creates an employee, never sends mail, and returns an activation fragment 
   );
   assert.equal(saved.role, "employee");
   assert.equal(saved.job_role, "Montażysta");
+  assert.equal(saved.access_profile, "montaz");
   assert.deepEqual(saved.project_ids, ["p1"]);
   const url = new URL(result.activation_url);
   assert.equal(url.search, "");

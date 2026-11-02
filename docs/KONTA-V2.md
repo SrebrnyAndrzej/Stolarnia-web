@@ -15,7 +15,9 @@ Stan: 2026-11-02, gałąź `v2-integracja` (lokalnie, bez push i bez deployu). N
 | Produkcja | przydzielone projekty: wydania, pakiet P (PDF bez danych klienta), uwagi, status Produkcja → Gotowe do montażu, kalkulator szuflad, zadania | cen, umów, nazwy/telefonu/adresu/e-maila klienta, notatek CRM, wyceny, konstrukcji, pakietu M |
 | Montaż | przydzielone projekty: wydania, pakiet M (z adresem i kontaktem), uwagi, status Gotowe do montażu → Zakończony, zadania | cen, umów, notatek CRM, wyceny, konstrukcji, pakietu P |
 
-Pracownik bez profilu (np. przed migracją) dostaje najwęższy profil: produkcja. Konta właściciela nie da się zmienić przez API (aktualizacja dotyczy tylko wierszy `role = 'employee'`, własnego konta nie zmienisz) — ostatni właściciel jest chroniony.
+Pracownik bez profilu (np. przed migracją) dostaje najwęższy profil: produkcja; migracja też ustawia `produkcja` jako domyślny.
+
+Dodatkowo: sprzedaż zapisuje konstrukcję (moduły, ściany, szybki projekt, okucia, cofnij/przywróć) tylko na etapie Szkic/Wycena — po akceptacji robi to właściciel (wyjątki: dane tematu przez PATCH projektu, uwagi, oferta PDF, kopia projektu). Montaż drukuje z dokumentacji v2 tylko karty montażowe. Produkcja i montaż widzą z uwag roboczych tylko wpisy podpisane „[Produkcja…]” / „[Montaż…]”, a zmiana statusu zwraca im tylko id i status. Konta właściciela nie da się zmienić przez API (aktualizacja dotyczy tylko wierszy `role = 'employee'`, własnego konta nie zmienisz) — ostatni właściciel jest chroniony.
 
 ## Kolejność
 
@@ -29,7 +31,7 @@ Pracownik bez profilu (np. przed migracją) dostaje najwęższy profil: produkcj
 ### Migracja 0003 (addytywna, można uruchomić ponownie)
 
 ```sql
-alter table public.pan_stolarz_members add column if not exists access_profile text not null default 'sprzedaz';
+alter table public.pan_stolarz_members add column if not exists access_profile text not null default 'produkcja';
 do $$
 begin
   if not exists (
@@ -44,8 +46,20 @@ begin
 end $$;
 ```
 
-Uwaga: istniejący pracownicy dostaną `sprzedaz` (wartość domyślna). Jeśli masz już konta montażystów, ustaw im profil w panelu „Pracownicy” albo:
+Istniejący pracownicy dostaną najwęższy profil `produkcja` (bez cen i danych klienta). Właściwy profil nadaj w panelu „Pracownicy” albo:
 `update public.pan_stolarz_members set access_profile = 'montaz' where user_id = '<uuid>' and role = 'employee';`
+Nowe konto zawsze wymaga jawnego wyboru profilu (serwer odrzuca utworzenie bez profilu).
+
+### Jeśli uruchomiono już wcześniejszą wersję migracji (default 'sprzedaz')
+
+Wersja z commita cec8d76 miała domyślnie `'sprzedaz'`. Profil nie był jeszcze nigdzie nadawany jawnie (panel z wyborem profilu nie był wdrożony), więc wszyscy pracownicy z `'sprzedaz'` dostali go z wartości domyślnej. Przed uruchomieniem sprawdź listę (zapytanie „Sprawdzenie” niżej); jeśli komuś świadomie nadano już `sprzedaz`, wyklucz go warunkiem `and user_id <> '<uuid>'`.
+
+```sql
+alter table public.pan_stolarz_members alter column access_profile set default 'produkcja';
+update public.pan_stolarz_members
+  set access_profile = 'produkcja'
+  where role = 'employee' and access_profile = 'sprzedaz';
+```
 
 ### Wiersz właściciela
 

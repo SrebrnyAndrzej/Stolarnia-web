@@ -190,23 +190,29 @@ const KLUCZ_CENOWY = /^(cen[ay]|koszt|marz|narzut|rabat|vat|stawk|minimalnaWarto
 const KLUCZ_KONTAKTOWY = /^(klient|telefon|email|e-mail|adres|kodPocztowy|miasto|nip)$/i;
 /** Koszty zakupu, marża, narzut i ceny jednostkowe — niewidoczne dla sprzedaży (ceny ofertowe zostają). */
 const KLUCZ_KOSZTU_ZAKUPU = /^(koszt|marza|narzut|zapasKoszt|korektaHandlowa|cenaJednostkowa|cenaReferencyjna|cenaKalkulowana|rabat|stawka|minimalnaWartosc|cenaCiecia|cenaOklejania|zrodloCeny|cennikMaterialow)/i;
-/** Notatki CRM projektu — niewidoczne dla produkcji i montażu; uwagi robocze (notatkiRobocze) zostają. */
+/** Notatki CRM projektu — niewidoczne dla produkcji i montażu (uwagi robocze filtruje tylkoUwagiWarsztatu). */
 const KLUCZ_CRM = /^(notatki|ostatniaNotatka)$/;
 /** Kwoty wpisane w opisy (np. „Średnia rynkowa brutto 12.34 zł”) — wycinane dla pracowników. */
 const ZDANIE_CENY_RYNKOWEJ = /\s*Średnia rynkowa brutto[^)]*\)\.?/g;
 const KWOTA_W_OPISIE = /\d[\d\s.,]*\s*(zł|PLN)/gi;
 const POLA_OPISOWE = new Set(["opis", "uwagi"]);
-const bezKwot = (k: string, v: unknown) => (POLA_OPISOWE.has(k) && typeof v === "string" ? v.replace(ZDANIE_CENY_RYNKOWEJ, "").replace(KWOTA_W_OPISIE, "[kwota ukryta]").trim() : v);
+/** Notatki pozycji materiału lub okucia (obiekt z rabatem zakupu) — także z maskowaniem kwot; notatki projektu nie. */
+const bezKwot = (k: string, v: unknown, o?: Obiekt) => ((POLA_OPISOWE.has(k) || (k === "notatki" && !!o && "rabatProcent" in o)) && typeof v === "string" ? v.replace(ZDANIE_CENY_RYNKOWEJ, "").replace(KWOTA_W_OPISIE, "[kwota ukryta]").trim() : v);
+/** Uwaga z warsztatu: podpisana profilem produkcji lub montażu (podpisUwagi; starsze wpisy „[Produkcja]”, „[Montaż]”). */
+export const czyUwagaWarsztatu = (n: unknown) =>
+  !!n && typeof n === "object" && typeof (n as { tekst?: unknown }).tekst === "string" && /^\[(Produkcja|Montaż)[\]\s·]/.test((n as { tekst: string }).tekst);
+/** Produkcja i montaż: z uwag roboczych tylko wpisy warsztatu (reszta to rozmowy z klientem / CRM). */
+const tylkoUwagiWarsztatu = (k: string, v: unknown, o?: Obiekt) => (k === "notatkiRobocze" && Array.isArray(v) ? v.filter(czyUwagaWarsztatu) : bezKwot(k, v, o));
 
 type Obiekt = Record<string, unknown>;
-function przefiltruj(x: unknown, usun: (klucz: string, obiekt: Obiekt) => boolean, przeksztalc: (klucz: string, wartosc: unknown) => unknown): unknown {
+function przefiltruj(x: unknown, usun: (klucz: string, obiekt: Obiekt) => boolean, przeksztalc: (klucz: string, wartosc: unknown, obiekt: Obiekt) => unknown): unknown {
   if (Array.isArray(x)) return x.map((y) => przefiltruj(y, usun, przeksztalc));
   if (!x || typeof x !== "object") return x;
   const o = x as Obiekt;
   const wynik: Obiekt = {};
   for (const [k, v] of Object.entries(o)) {
     if (usun(k, o)) continue;
-    wynik[k] = przefiltruj(przeksztalc(k, v), usun, przeksztalc);
+    wynik[k] = przefiltruj(przeksztalc(k, v, o), usun, przeksztalc);
   }
   return wynik;
 }
@@ -220,15 +226,29 @@ export function filtrujOdpowiedz(profil: Profil, dane: unknown): unknown {
       czyste,
       // cenaNetto zostaje wyłącznie w podsumowaniu wariantu oferty (obiekt z polem „wariant”); wszędzie indziej to cena zakupu.
       (k, o) => KLUCZ_KOSZTU_ZAKUPU.test(k) || (k === "cenaNetto" && !("wariant" in o)),
-      (k, v) => (k === "finanse" && v && typeof v === "object" ? { vatProcent: (v as { vatProcent?: unknown }).vatProcent } : bezKwot(k, v)),
+      (k, v, o) => (k === "finanse" && v && typeof v === "object" ? { vatProcent: (v as { vatProcent?: unknown }).vatProcent } : bezKwot(k, v, o)),
     );
   }
-  return przefiltruj(czyste, (k) => KLUCZ_CENOWY.test(k) || KLUCZ_CRM.test(k) || (profil === "produkcja" && KLUCZ_KONTAKTOWY.test(k)), bezKwot);
+  return przefiltruj(czyste, (k) => KLUCZ_CENOWY.test(k) || KLUCZ_CRM.test(k) || (profil === "produkcja" && KLUCZ_KONTAKTOWY.test(k)), tylkoUwagiWarsztatu);
 }
 
 /** Podpis uwagi z warsztatu: profil i imię z konta, niezależnie od tego, co wpisze przeglądarka. */
 export function podpisUwagi(profil: Profil, imie: string, tekst: string): string {
   const podpis = `[${NAZWY_PROFILI[profil]}${imie ? ` · ${imie}` : ""}]`;
-  const t = tekst.replace(/^\[(Właściciel|Produkcja|Montaż|Sprzedaż[^\]]*)\]\s*/, "");
-  return t.startsWith(podpis) ? t : `${podpis} ${t}`;
+  // Każdy podpis wpisany przez przeglądarkę jest usuwany — zostaje tylko podpis z konta.
+  const t = tekst.replace(/^(\s*\[(Właściciel|Produkcja|Montaż|Sprzedaż)[^\]]*\]\s*)+/, "");
+  return `${podpis} ${t}`;
+}
+
+/**
+ * Sprzedaż: zapis konstrukcji i wyceny projektu (/api/projekty/:id/...) tylko na etapie sprzedaży (Szkic, Wycena).
+ * Po akceptacji konstrukcję zmienia właściciel. Wyjątki (nie zmieniają konstrukcji): PATCH projektu (sprawdzany przez
+ * sprawdzZmianeProjektu), uwagi, oferta PDF i kopia projektu. `reszta` = ścieżka po /api/projekty/:id.
+ */
+const WYJATKI_ZAPISU_SPRZEDAZY = /^(\/notatki(\/[^/]+)?|\/oferta\.pdf|\/duplikuj)$/i;
+export function sprawdzZapisSprzedazy(status: StatusProjektu, metoda: string, reszta: string): string | null {
+  const m = metoda.toUpperCase();
+  if (m === "GET" || m === "HEAD" || reszta === "" || WYJATKI_ZAPISU_SPRZEDAZY.test(reszta)) return null;
+  if (STATUSY_SPRZEDAZY.includes(status)) return null;
+  return "Po akceptacji konstrukcję projektu zmienia tylko właściciel.";
 }

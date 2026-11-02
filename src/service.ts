@@ -41,6 +41,7 @@ import { walidujProjekt } from "./core/validation.js";
 import { scianyNaRzucie } from "./core/geometry.js";
 import { OPIS_ZALOZEN_UKLADU, opisSciany, planSzybkiegoUkladu, planWypelnieniaSciany, zajeteNaScianie, type OpcjeSzybkiegoUkladu, type OpcjeWypelnienia } from "./core/uklad.js";
 import { opisBleduZod, schematOkucProjektu, schematStylu, schematSzybkiegoUkladu, schematWypelnienia } from "./schematy-szybki.js";
+import { schematStanuProjektu } from "./schematy-stanu.js";
 import { DEKORY, kluczDekoru } from "./core/catalog/decors.js";
 import type { z } from "zod";
 import { blatZDekoru, plytaZDekoru, type RolaStylu, type RozstrzygniecieStylu, type WyborMaterialu } from "./core/styl.js";
@@ -898,10 +899,17 @@ export class Stolarnia {
 
   /** Przywraca pomieszczenia i moduły z wcześniejszego stanu (cofnij/ponów w aplikacji). */
   przywrocStan(projektId: string, stan: Pick<Projekt, "pomieszczenia" | "moduly">): Projekt {
-    if (!Array.isArray(stan?.pomieszczenia) || !Array.isArray(stan?.moduly)) throw new BladUslugi("Nieprawidłowy stan projektu.");
-    return this.edytuj(projektId, (p) => {
-      p.pomieszczenia = stan.pomieszczenia;
-      p.moduly = stan.moduly;
+    const wynik = schematStanuProjektu.safeParse(stan);
+    if (!wynik.success) throw new BladUslugi(`Nieprawidłowy stan projektu: ${wynik.error.issues.slice(0, 3).map((i) => `${i.path.join(".") || "stan"}: ${i.message}`).join("; ")}`);
+    const poprawny = wynik.data as unknown as Pick<Projekt, "pomieszczenia" | "moduly">;
+    return this.edytuj(projektId, (p, b) => {
+      // Odwołania do materiałów sprawdzane przed zmianą projektu (wyjątek nie zostawia częściowego stanu).
+      const materialy = new Set(b.materialy.map((m) => m.id));
+      const uzyte = [...poprawny.pomieszczenia.flatMap((r) => [r.materialKorpusuId, r.materialFrontuId, r.materialBlatuId]), ...poprawny.moduly.flatMap((m) => [m.materialKorpusuId, m.materialFrontuId])];
+      const brak = uzyte.find((x) => x && !materialy.has(x));
+      if (brak) throw new BladUslugi(`Nieprawidłowy stan projektu: nie ma materiału „${brak}”.`);
+      p.pomieszczenia = poprawny.pomieszczenia;
+      p.moduly = poprawny.moduly;
     });
   }
 

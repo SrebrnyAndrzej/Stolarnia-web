@@ -27,6 +27,9 @@ function projekt(nazwa: string, status: "szkic" | "produkcja" | "gotoweDoMontazu
   const p = svc.utworzProjekt({ nazwa, sciany: [{ dlugoscMM: 3000 }], klient: KLIENT, materialKorpusuId: mat.id } as never);
   svc.dodajModul(p.id, { katalogId: "base-drawers-600" });
   svc.zmienProjekt(p.id, { cenaUzgodnionaBrutto: 98765.43, notatki: "CRM-TAJNE-7Q" });
+  // Uwaga robocza z rozmowy z klientem (CRM) i uwaga z warsztatu — produkcja/montaż widzą tylko drugą.
+  svc.dodajNotatke(p.id, "Klient dzwonił: CRM-UWAGA-55, chce rabat");
+  svc.dodajNotatke(p.id, "[Produkcja · Kuba] brak zawiasów");
   svc.utworzWydanie(p.id, {});
   if (status !== "szkic") svc.zmienProjekt(p.id, { status });
   return p.id;
@@ -202,6 +205,11 @@ test("macierz HTTP: profil × trasa (403 = odmowa bramki)", async () => {
     ["t-montaz", "GET", `/api/projekty/${P.prod}/wydania`, 404],
     ["t-montaz", "GET", "/api/cennik/materialow", 403],
     ["t-montaz", "POST", "/mcp", 403, {}],
+    // montaż: z dokumentacji v2 tylko skrócone karty montażowe, pełna techniczna = 403
+    ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=montazowe`, "ok"],
+    ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=techniczne`, 403],
+    ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}`, 403],
+    ["t-produkcja", "GET", `/api/v2/projects/${P.prod}/documents.pdf?wydanie=${w}&rewizja=${svc.wydania(P.prod)[0].rewizja}&rodzaj=techniczne`, "ok"],
     // wielkość liter i ukośniki nie omijają reguł
     ["t-montaz", "GET", `/API/Projekty/${P.mont}/Umowy`, 403],
     ["t-montaz", "GET", `/api//projekty/${P.mont}/umowy/`, 403],
@@ -218,10 +226,15 @@ test("macierz HTTP: profil × trasa (403 = odmowa bramki)", async () => {
     if (!ok) zle.push(`${token} ${metoda} ${sciezka}: ${r.status} (oczekiwano ${oczek}) ${r.tekst.slice(0, 120)}`);
   }
   assert.deepEqual(zle, []);
+  // Oferta nie ujawnia ścieżki pliku na serwerze.
+  const of = await oryginalnyFetch(`${adres}/api/projekty/${s}/oferta.pdf`, { method: "POST", headers: { authorization: "Bearer t-sprzedaz", "content-type": "application/json" }, body: "{}" });
+  assert.equal(of.status, 200);
+  assert.equal(of.headers.get("x-oferta-plik"), null);
+  await of.arrayBuffer();
 });
 
 test("sonda wycieków: charakterystyczne kwoty, kontakt i notatka CRM w odpowiedziach każdego profilu", async () => {
-  const KWOTY: [string, RegExp][] = [["cena uzgodniona", /98765[.,]43/], ["cena zakupu", /4321[.,]77/], ["stawka", /123[.,]45/], ["notatka CRM", /CRM-TAJNE/], ["umowy", /"umovy"/]];
+  const KWOTY: [string, RegExp][] = [["cena uzgodniona", /98765[.,]43/], ["cena zakupu", /4321[.,]77/], ["stawka", /123[.,]45/], ["notatka CRM", /CRM-TAJNE/], ["uwaga CRM", /CRM-UWAGA/], ["umowy", /"umovy"/]];
   const KONTAKT: [string, RegExp][] = [["telefon", /731-555-019/], ["adres", /Sondy 9/], ["e-mail", /sonda@example/]];
   const KOSZTY: [string, RegExp][] = [
     ["cena zakupu", /4321[.,]77/],
@@ -301,11 +314,41 @@ test("przejścia statusów: produkcja Produkcja→Gotowe do montażu, montaż Go
   assert.equal(projektW(P.prod).status, "produkcja", "odrzucone żądania nie zmieniają danych");
   assert.equal(projektW(P.prod).nazwa, "Sonda produkcja");
 
-  assert.equal((await pm(P.prod, "t-produkcja", { status: "gotoweDoMontazu" })).status, 200);
+  const ok = await pm(P.prod, "t-produkcja", { status: "gotoweDoMontazu" });
+  assert.equal(ok.status, 200);
+  // Odpowiedź PATCH dla warsztatu: tylko id i status — bez cen, klienta, CRM i uwag roboczych.
+  assert.deepEqual(ok.json, { id: P.prod, status: "gotoweDoMontazu" });
+  assert.ok(!/98765|CRM-|Sonda Klient|731-555|notatkiRobocze/.test(ok.tekst));
   assert.equal(projektW(P.prod).status, "gotoweDoMontazu");
   assert.equal((await pm(P.prod, "t-produkcja", { status: "zakonczony" })).status, 403, "produkcja nie zamyka montażu");
-  assert.equal((await pm(P.mont, "t-montaz", { status: "zakonczony" })).status, 200);
+  const okM = await pm(P.mont, "t-montaz", { status: "zakonczony" });
+  assert.equal(okM.status, 200);
+  assert.deepEqual(okM.json, { id: P.mont, status: "zakonczony" });
   assert.equal(projektW(P.mont).status, "zakonczony");
+});
+
+test("sprzedaż: przywracanie stanu (cofnij) sprawdzane schematem; konstrukcja tylko na etapie Szkic/Wycena", async () => {
+  const sciezka = `/api/projekty/${P.szkic}/stan`;
+  const stan = { pomieszczenia: projektW(P.szkic).pomieszczenia, moduly: projektW(P.szkic).moduly };
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", { pomieszczenia: [], moduly: [] })).status, 400, "brak pomieszczeń");
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", { pomieszczenia: stan.pomieszczenia, moduly: [{ ...stan.moduly[0], szerokoscMM: "600" }] })).status, 400, "liczba jako tekst");
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", { pomieszczenia: stan.pomieszczenia, moduly: [{ ...stan.moduly[0], scianaId: "nie-ma" }] })).status, 400, "nieistniejąca ściana");
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", { pomieszczenia: stan.pomieszczenia, moduly: [stan.moduly[0], stan.moduly[0]] })).status, 400, "powtórzone id");
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", { pomieszczenia: stan.pomieszczenia, moduly: [{ ...stan.moduly[0], materialKorpusuId: "nie-ma" }] })).status, 400, "nieznany materiał");
+  assert.equal(projektW(P.szkic).moduly.length, stan.moduly.length, "odrzucony stan nie zmienia projektu");
+  assert.equal((await zadanie("PUT", sciezka, "t-sprzedaz", stan)).status, 200, "poprawna migawka");
+
+  // Projekt po akceptacji: konstrukcja tylko właściciel; uwagi, oferta i kopia — tak.
+  const pid = P.inny; // status produkcja
+  assert.equal((await zadanie("POST", `/api/projekty/${pid}/moduly`, "t-sprzedaz", { katalogId: "base-drawers-600" })).status, 403);
+  assert.equal((await zadanie("PUT", `/api/projekty/${pid}/stan`, "t-sprzedaz", { pomieszczenia: projektW(pid).pomieszczenia, moduly: [] })).status, 403);
+  assert.equal((await zadanie("POST", `/api/projekty/${pid}/szybki-uklad`, "t-sprzedaz", { typ: "I" })).status, 403);
+  assert.equal((await zadanie("PUT", `/api/projekty/${pid}/okucia`, "t-sprzedaz", { okucia: null })).status, 403);
+  assert.equal((await zadanie("PUT", `/api/projekty/${pid}/okucia`, "t-sprzedaz", null)).status, 400, "zły JSON = 400, nie 500");
+  assert.equal(projektW(pid).moduly.length, 1, "konstrukcja bez zmian");
+  assert.equal((await zadanie("POST", `/api/projekty/${pid}/notatki`, "t-sprzedaz", { tekst: "Klient pyta o termin" })).status, 200);
+  assert.notEqual((await zadanie("POST", `/api/projekty/${pid}/oferta.pdf`, "t-sprzedaz", {})).status, 403);
+  assert.equal((await zadanie("POST", `/api/projekty/${pid}/moduly`, "t-owner", { katalogId: "base-drawers-600" })).status, 200, "właściciel tak");
 });
 
 test("sprzedaż: cena uzgodniona i status tylko na etapie Szkic/Wycena; akceptacja i dalej — właściciel", async () => {
@@ -327,6 +370,12 @@ test("uwagi z warsztatu są podpisane profilem i imieniem z konta", async () => 
   assert.equal(r.json.tekst, "[Produkcja · Kuba] brak zawiasów");
   assert.equal((await zadanie("PATCH", `/api/projekty/${P.prod}/notatki/${r.json.id}`, "t-produkcja", { zalatwiona: true })).status, 403);
   assert.equal(podpisUwagi("montaz", "Tomek", "[Montaż · Tomek] ok"), "[Montaż · Tomek] ok");
+  assert.equal(podpisUwagi("montaz", "Tomek", "[Produkcja · Kuba] [Właściciel] podszycie"), "[Montaż · Tomek] podszycie");
+  const pr = filtrujOdpowiedz("produkcja", { notatkiRobocze: [{ tekst: "Klient chce rabat CRM" }, { tekst: "[Produkcja · Kuba] brak" }, { tekst: "[Montaż] front" }, { tekst: "[Produkcjaxx] nie" }] }) as { notatkiRobocze: { tekst: string }[] };
+  assert.deepEqual(pr.notatkiRobocze.map((n) => n.tekst), ["[Produkcja · Kuba] brak", "[Montaż] front"]);
+  const sp = filtrujOdpowiedz("sprzedaz", { materialy: [{ nazwa: "P", rabatProcent: 0, notatki: "zakup 45,10 zł/m2" }], projekt: { notatki: "umówione 15 000 zł" } }) as any;
+  assert.equal(sp.materialy[0].notatki, "zakup [kwota ukryta]/m2", "kwoty w notatkach materiału ukryte");
+  assert.equal(sp.projekt.notatki, "umówione 15 000 zł", "notatki projektu sprzedaży bez zmian");
 });
 
 test("konta: tylko właściciel; własne konto i wiersze właściciela nie są zmieniane (ochrona ostatniego właściciela)", async () => {
@@ -339,6 +388,8 @@ test("konta: tylko właściciel; własne konto i wiersze właściciela nie są z
   assert.ok(aktualizacja?.includes("role=eq.employee"), `aktualizacja tylko wierszy pracowników: ${aktualizacja}`);
   const utworz = await zadanie("POST", "/api/v2/members", "t-owner", { operation_id: "00000000-0000-4000-8000-000000000099", display_name: "Nowy", email: "n@example.test", access_profile: "kierownik" });
   assert.equal(utworz.status, 400, "nieznany profil odrzucony");
+  const bezProfilu = await zadanie("POST", "/api/v2/members", "t-owner", { operation_id: "00000000-0000-4000-8000-000000000098", display_name: "Nowy", email: "n2@example.test" });
+  assert.equal(bezProfilu.status, 400, "profil dostępu jest wymagany");
 });
 
 // ---------- Czyste funkcje ----------

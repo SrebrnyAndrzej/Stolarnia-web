@@ -10,13 +10,13 @@ export const OPISY_PROFILI: Record<ProfilDostepu, string> = {
 };
 
 /** Wybór profilu dostępu — o uprawnieniach decyduje serwer (src/server/uprawnienia.ts). */
-export function ProfileSelect({ value, onChange, disabled, name }: { value: ProfilDostepu; onChange: (v: ProfilDostepu) => void; disabled?: boolean; name: string }) {
+export function ProfileSelect({ value, onChange, disabled, name, invalid }: { value: ProfilDostepu | ""; onChange: (v: ProfilDostepu) => void; disabled?: boolean; name: string; invalid?: boolean }) {
   return (
-    <fieldset disabled={disabled}>
-      <legend>Profil dostępu</legend>
+    <fieldset disabled={disabled} aria-invalid={invalid || undefined}>
+      <legend>Profil dostępu (wymagany)</legend>
       {PROFILE_DOSTEPU.map((p) => (
         <label className="ps-check" key={p}>
-          <input type="radio" name={name} value={p} checked={value === p} onChange={() => onChange(p)} />
+          <input id={`${name}-${p}`} type="radio" name={name} value={p} checked={value === p} required onChange={() => onChange(p)} />
           <span>
             <strong>{NAZWY_PROFILI[p]}</strong> — {OPISY_PROFILI[p]}
           </span>
@@ -82,7 +82,8 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [job, setJob] = useState("Pracownik");
-  const [profile, setProfile] = useState<ProfilDostepu>("sprzedaz");
+  // Bez wartości domyślnej: właściciel świadomie wybiera profil (serwer też go wymaga).
+  const [profile, setProfile] = useState<ProfilDostepu | "">("");
   const [operation, setOperation] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -99,11 +100,13 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
           ? "staff-email"
           : !job.trim()
             ? "staff-job"
-            : "";
+            : !profile
+              ? "staff-profile-sprzedaz"
+              : "";
     setInvalid(field);
     setError("");
     if (field) {
-      setError("Uzupełnij imię, poprawny e-mail i funkcję pracownika.");
+      setError("Uzupełnij imię, poprawny e-mail, funkcję i wybierz profil dostępu pracownika.");
       form.current?.querySelector<HTMLInputElement>(`#${field}`)?.focus();
       return;
     }
@@ -127,7 +130,7 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
       setName("");
       setEmail("");
       setJob("Pracownik");
-      setProfile("sprzedaz");
+      setProfile("");
       setOperation(crypto.randomUUID());
       onCreated();
     } catch (e) {
@@ -184,7 +187,7 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
             dostępu — o uprawnieniach decyduje profil dostępu.
           </p>
         </fieldset>
-        <ProfileSelect name="staff-profile" value={profile} onChange={setProfile} disabled={busy} />
+        <ProfileSelect name="staff-profile" value={profile} onChange={setProfile} disabled={busy} invalid={invalid === "staff-profile-sprzedaz"} />
         {error && (
           <p id="staff-create-error" role="alert" className="ps-field-error">
             {error}
