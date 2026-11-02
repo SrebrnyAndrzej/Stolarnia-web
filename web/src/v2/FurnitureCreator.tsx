@@ -1,5 +1,12 @@
 import { NumberField } from "./FurnitureNumberField";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 import {
   freshFurniture,
   carcass,
@@ -42,6 +49,9 @@ import {
 } from "../../../src/core/furniture-drawers";
 import "./furniture.css";
 
+const FurnitureScene = lazy(() =>
+  import("./FurnitureScene").then((m) => ({ default: m.FurnitureScene })),
+);
 const uid = () => crypto.randomUUID();
 const initial = () => {
   const m = freshFurniture();
@@ -371,12 +381,8 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       ),
     }));
   };
-  const project = ([x, y]: Point, z = 0): Point =>
-    view === "2d"
-      ? [x, model.height - y]
-      : [x + z * 0.5, model.height - y + (model.depth - z) * 0.28];
-  const points = (poly: Point[], z = 0) =>
-    poly.map((p) => project(p, z).join(",")).join(" ");
+  const points = (poly: Point[]) =>
+    poly.map(([x, y]) => `${x},${model.height - y}`).join(" ");
   return (
     <section className="fc">
       <header className="fc-header">
@@ -833,64 +839,57 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
             </span>
           </div>
           <div className="fc-drawing">
-            <svg
-              ref={svg}
-              role="img"
-              aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
-              viewBox={`-60 -60 ${model.width + (view === "3d" ? model.depth * 0.5 : 0) + 120} ${model.height + (view === "3d" ? model.depth * 0.28 : 0) + 120}`}
-              onPointerMove={move}
-              onPointerUp={() => {
-                drag.current = null;
-              }}
-              onPointerCancel={() => {
-                drag.current = null;
-              }}
-            >
-              <polygon
-                points={points(furnitureOutline(model))}
-                className="fc-outline"
-              />
-              {[...model.plates]
-                .sort((a, b) => a.z - b.z)
-                .map((p) => {
-                  const poly = platePolygon(model, p);
-                  return (
-                    <g
-                      key={p.id}
-                      className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
-                      onPointerDown={(e) => {
-                        if (e.target instanceof SVGPolygonElement)
-                          beginDrag(
-                            e as unknown as PointerEvent<SVGPolygonElement>,
-                            p,
-                          );
-                      }}
-                    >
-                      {view === "3d" &&
-                        poly.map((a, i) => {
-                          const b = poly[(i + 1) % poly.length];
-                          return (
-                            <polygon
-                              key={i}
-                              className="fc-edge"
-                              points={[
-                                project(a, p.z),
-                                project(b, p.z),
-                                project(b, p.z + p.depth),
-                                project(a, p.z + p.depth),
-                              ]
-                                .map((q) => q.join(","))
-                                .join(" ")}
-                            />
-                          );
-                        })}
-                      <polygon points={points(poly, p.z + p.depth)}>
-                        <title>{p.name}</title>
-                      </polygon>
-                    </g>
-                  );
-                })}
-            </svg>
+            {view === "3d" ? (
+              <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
+                <FurnitureScene
+                  key={id}
+                  model={model}
+                  selected={selected}
+                  onSelect={setSelected}
+                />
+              </Suspense>
+            ) : (
+              <svg
+                ref={svg}
+                role="img"
+                aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
+                viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
+                onPointerMove={move}
+                onPointerUp={() => {
+                  drag.current = null;
+                }}
+                onPointerCancel={() => {
+                  drag.current = null;
+                }}
+              >
+                <polygon
+                  points={points(furnitureOutline(model))}
+                  className="fc-outline"
+                />
+                {[...model.plates]
+                  .sort((a, b) => a.z - b.z)
+                  .map((p) => {
+                    const poly = platePolygon(model, p);
+                    return (
+                      <g
+                        key={p.id}
+                        className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
+                        onPointerDown={(e) => {
+                          if (e.target instanceof SVGPolygonElement)
+                            beginDrag(
+                              e as unknown as PointerEvent<SVGPolygonElement>,
+                              p,
+                            );
+                        }}
+                      >
+                        <polygon points={points(poly)}>
+                          <title>{p.name}</title>
+                        </polygon>
+                      </g>
+                    );
+                  })}
+              </svg>
+            )}
           </div>
           <FurnitureParts model={model} onSelect={setSelected} />
           <details className="fc-part-review">

@@ -129,6 +129,8 @@ Użytkownik wybrał szkic narzędzia teraz, rzeczywisty silnik wraz z wdrożenie
 ## Propozycje do ustalania projektu — 2026-11-02
 Źródło: docs/SUGEROWANE-UKLADY.md. Nowy model startuje automatycznie; zapisane modele bez suggestion nie są przebudowywane. Ręczne pozycje i wymiary zachowują się po zmianie gabarytów, usunięte sugestie nie wracają. Wariant i wykluczenia zapisują się z modelem. Zmiana wariantu zastępuje wnętrze i przypisania szuflad z obsługą Cofnij, bez dodatkowego potwierdzenia dla tej odwracalnej operacji. Nie zmienia to dostępu do biblioteki ani ról.
 
+Widok 3D wybiera najbliższą widoczną płytę; przeciąganie obraca kamerę bez modyfikacji modelu. Przyciski kamery i lista płyt zapewniają obsługę klawiaturą. Przełączenie 2D/3D nie zapisuje i nie usuwa zmian. Brak WebGL i utrata kontekstu mają Feedback, ponowienie i dostępne przełączenie 2D. Renderowanie bez automatycznej animacji, zwolnienie zasobów po zamknięciu widoku. Źródło: docs/KREATOR-WIDOK-3D.md.
+
 ## Biurko — 2026-11-02
 Źródło: docs/BIURKO-WYMIARY.md. Wybór wariantu stosuje jawne wymiary startowe i poziomy blat. Kolejna edycja gabarytów pozostaje możliwa; przywrócenie układu nie resetuje gabarytów. Presety są odwracalne wspólnym Cofnij. Serwer sprawdza obrys i brak pełnych pleców, zachowuje wersje oraz uprawnienia. Zalecenia ergonomiczne nie są dopuszczeniem produkcyjnym.
 
