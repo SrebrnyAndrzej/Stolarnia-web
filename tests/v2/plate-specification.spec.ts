@@ -11,6 +11,15 @@ for (const role of ["owner", "employee"]) {
     await select.selectOption({ label: "1. Bok lewy" });
     const id = await select.inputValue();
     await page
+      .getByRole("button", {
+        name: "Materiał i obrzeża tej płyty",
+        exact: true,
+      })
+      .click();
+    await expect(
+      page.getByLabel("Materiał płyty", { exact: true }),
+    ).toBeFocused();
+    await page
       .getByLabel("Materiał płyty", { exact: true })
       .fill("Płyta laminowana");
     await page

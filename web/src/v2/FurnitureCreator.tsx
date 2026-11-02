@@ -86,6 +86,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     startY: number;
   } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
+  const specificationPanel = useRef<HTMLDivElement>(null);
   const plate = model.plates.find((p) => p.id === selected);
   const issues = furnitureIssues(model);
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
@@ -665,6 +666,16 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               })}
             </ul>
           </details>
+          {plate && (
+            <div ref={specificationPanel}>
+              <PlateSpecification
+                model={model}
+                plate={plate}
+                disabled={busy}
+                onChange={(specification) => modifyPlate({ specification })}
+              />
+            </div>
+          )}
           <p className="fc-hint">
             Wybierz płytę w rysunku lub na liście. W 2D przeciągnij ją, a
             dokładną pozycję ustaw polami X i Y. X od lewej, Y od dołu, Z od
@@ -741,6 +752,18 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           {plate ? (
             <fieldset disabled={busy}>
               <legend>Parametry płyty</legend>
+              <button
+                onClick={() => {
+                  specificationPanel.current?.scrollIntoView({
+                    block: "start",
+                  });
+                  specificationPanel.current
+                    ?.querySelector<HTMLInputElement>("input")
+                    ?.focus({ preventScroll: true });
+                }}
+              >
+                Materiał i obrzeża tej płyty
+              </button>
               <label>
                 Nazwa płyty
                 <input
@@ -807,11 +830,6 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Usuń płytę
               </button>
               <p>Płytę można przywrócić przyciskiem „Cofnij”.</p>
-              <PlateSpecification
-                model={model}
-                plate={plate}
-                onChange={(specification) => modifyPlate({ specification })}
-              />
             </fieldset>
           ) : (
             <p>Wybierz element, aby zmienić wymiary lub pozycję.</p>

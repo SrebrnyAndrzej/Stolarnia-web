@@ -328,6 +328,19 @@
 }
 .fc-specification {
   min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.fc-specification > p,
+.fc-specification > svg {
+  grid-column: 1 / -1;
+}
+@media (max-width: 700px) {
+  .fc-specification {
+    grid-template-columns: 1fr;
+  }
 }
 .fc-cut-diagram {
   display: block;

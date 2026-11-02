@@ -10,17 +10,19 @@ export function PlateSpecification({
   model,
   plate,
   onChange,
+  disabled,
 }: {
   model: FurnitureModel;
   plate: FurniturePlate;
   onChange: (specification: Specification) => void;
+  disabled: boolean;
 }) {
   const s = plate.specification ?? freshPlateSpecification();
   const set = (patch: Partial<Specification>) => onChange({ ...s, ...patch });
   const t = plateThickness(model, plate);
   return (
-    <fieldset className="fc-specification">
-      <legend>Materiał i krawędzie</legend>
+    <fieldset className="fc-specification" disabled={disabled}>
+      <legend>Materiał i krawędzie · {plate.name}</legend>
       <label>
         Materiał płyty
         <input
