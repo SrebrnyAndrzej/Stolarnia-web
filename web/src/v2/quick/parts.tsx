@@ -258,8 +258,14 @@ export function Elevation({
         />
         {reserves.map((r, i) => {
           const hang = r.rzad === "wiszacy";
+          // Opis rezerwacji mieści się w jej szerokości (~0,55 em na znak); za wąski — tylko podpowiedź (title).
+          const width = r.doMM - r.odMM;
+          const fits = (t: string) => Math.min(70, (width * 0.9) / (t.length * 0.55));
+          const label = fits(r.opis) >= 30 ? r.opis : "zajęte";
+          const fontSize = fits(label);
           return (
             <g key={i}>
+              <title>{r.opis}</title>
               <rect
                 x={r.odMM}
                 y={hang ? Y(2120) : Y(900)}
@@ -270,15 +276,17 @@ export function Elevation({
                 strokeWidth={8}
                 strokeDasharray="40 30"
               />
-              <text
-                x={(r.odMM + r.doMM) / 2}
-                y={hang ? Y(1760) : Y(450)}
-                textAnchor="middle"
-                fontSize={70}
-                fill="var(--muted)"
-              >
-                {r.opis}
-              </text>
+              {fontSize >= 30 && (
+                <text
+                  x={(r.odMM + r.doMM) / 2}
+                  y={hang ? Y(1760) : Y(450)}
+                  textAnchor="middle"
+                  fontSize={fontSize}
+                  fill="var(--muted)"
+                >
+                  {label}
+                </text>
+              )}
             </g>
           );
         })}

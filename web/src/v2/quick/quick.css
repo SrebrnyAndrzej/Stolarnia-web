@@ -242,25 +242,26 @@
 }
 .qp-seg {
   display: flex;
+  /* Długie etykiety (np. „Wolnostojąca”, „Kronospan”) przechodzą do drugiego wiersza zamiast nachodzić na siebie. */
+  flex-wrap: wrap;
+  gap: 1px;
   border: 1px solid var(--line-strong);
   border-radius: 5px;
   overflow: hidden;
-  background: var(--panel-2);
+  background: var(--line);
 }
 .qp-seg button {
-  flex: 1;
+  flex: 1 1 auto;
+  white-space: nowrap;
   min-height: var(--qp-target);
   padding: 6px 10px;
   border: 0;
-  background: transparent;
+  background: var(--panel-2);
   color: var(--text);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
-}
-.qp-seg button + button {
-  border-left: 1px solid var(--line);
 }
 .qp-seg button[aria-pressed="true"] {
   background: var(--text);

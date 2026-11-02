@@ -4,6 +4,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -134,6 +135,11 @@ export function QuickProject({
   const [showAll, setShowAll] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  // Stała tożsamość mapy: nowa Map przy każdym renderze przebudowywała całą scenę 3D (Widok3D zależy od matMap).
+  const matMap = useMemo(
+    () => new Map(materials.map((m) => [m.id, m])),
+    [materials],
+  );
 
   const top = useRef<HTMLDivElement>(null);
   const goTo = (s: Step) => {
@@ -399,6 +405,7 @@ export function QuickProject({
   const stepIndex = STEPS.findIndex((s) => s.id === step);
   const maxStep = applied ? 4 : id ? 1 : 0;
   const closePicker = useCallback(() => setOpenRole(null), []);
+  const pendingPicks = Object.keys(picks).length > 0;
   const roleTile = (rola: RolaStylu) => {
     const pick = picks[rola];
     const now = current?.[rola] ?? null;
@@ -690,11 +697,43 @@ export function QuickProject({
         </section>
       )}
 
+      {step === "podglad" && !preview && (
+        // Po ponownym wejściu w projekt podgląd nie jest w pamięci: zamiast pustej karty mówimy, co dalej.
+        <section className="qp-card" aria-labelledby="qp-h-preview-none">
+          <h2 id="qp-h-preview-none">Podgląd układu</h2>
+          <p className="qp-muted">
+            {applied
+              ? "Układ jest już zapisany w projekcie. Aby ułożyć szafki od nowa, wróć do kroku Układ i kliknij „Dalej: podgląd”."
+              : "Podgląd jeszcze nie powstał. Wróć do kroku Układ i kliknij „Dalej: podgląd”."}
+          </p>
+          <div className="qp-bar">
+            <button
+              type="button"
+              className="qp-btn secondary"
+              onClick={() => goTo("uklad")}
+            >
+              ← Zmień układ
+            </button>
+            <span className="qp-spacer" />
+            {applied && (
+              <button
+                type="button"
+                className="qp-btn"
+                onClick={() => goTo("styl")}
+              >
+                Dalej: styl →
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
       {step === "styl" && (
         <section className="qp-card" aria-labelledby="qp-h-style">
           <h2 id="qp-h-style">Dekory</h2>
           <p className="qp-muted">
-            Wybierz z galerii 644 dekorów (Egger, Kronospan). Grubości i formaty
+            Wybierz z galerii{decors ? ` ${decors.length} dekorów` : " dekorów"}{" "}
+            (Egger, Kronospan). Grubości i formaty
             Egger pochodzą z artykułów producenta; dla pozostałych wpiszesz je
             sam.
           </p>
@@ -794,12 +833,18 @@ export function QuickProject({
             </>
           )}
 
+          {pendingPicks && !styleResult?.braki.length && (
+            <div className="qp-note warn" role="status">
+              Wybrane dekory nie są jeszcze zapisane w projekcie. Kliknij
+              „Zastosuj dekory”, aby wycena i 3D je uwzględniły.
+            </div>
+          )}
+
           <div className="qp-bar qp-sticky">
             <button
               type="button"
               className="qp-btn secondary"
               onClick={() => goTo("podglad")}
-              disabled={!preview}
             >
               ← Wróć
             </button>
@@ -807,11 +852,17 @@ export function QuickProject({
             <button
               type="button"
               className="qp-btn secondary"
-              onClick={() => goTo("okucia")}
+              onClick={() => {
+                // Jawne odrzucenie: niezapisany wybór nie może po cichu zniknąć ani wisieć jako „zmiana niezapisana”.
+                setPicks({});
+                goTo("okucia");
+              }}
             >
-              {current?.korpus || current?.front
-                ? "Dalej bez zmian"
-                : "Pomiń styl"}
+              {pendingPicks
+                ? "Odrzuć wybór i dalej"
+                : current?.korpus || current?.front
+                  ? "Dalej bez zmian"
+                  : "Pomiń styl"}
             </button>
             <button
               type="button"
@@ -826,6 +877,7 @@ export function QuickProject({
               className="qp-btn"
               onClick={() => goTo("okucia")}
               disabled={
+                pendingPicks ||
                 !!styleResult?.braki.length ||
                 (!Object.keys(styleResult?.ustawiono ?? {}).length &&
                   !current?.korpus &&
@@ -1134,7 +1186,7 @@ export function QuickProject({
                             pomieszczenieId={room.id}
                             scianaId={room.sciany[0]?.id ?? ""}
                             wybrany={null}
-                            matMap={new Map(materials.map((m) => [m.id, m]))}
+                            matMap={matMap}
                             onWybierz={() => undefined}
                           />
                         </Suspense>
