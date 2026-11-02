@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AccessError, type Principal } from "./access.js";
+import { PROFILE_DOSTEPU } from "./uprawnienia.js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const memberCreate = z
@@ -14,10 +15,20 @@ export const memberCreate = z
       .transform((v) => v.toLowerCase()),
     job_role: z.string().trim().min(1).max(80).default("Pracownik"),
     project_ids: z.array(z.string().min(1).max(80)).max(1000).default([]),
+    // Profil dostępu decyduje o uprawnieniach (src/server/uprawnienia.ts); funkcja (job_role) jest tylko opisem.
+    access_profile: z.enum(PROFILE_DOSTEPU).default("sprzedaz"),
+  })
+  .strict();
+export const memberUpdate = z
+  .object({
+    active: z.boolean(),
+    project_ids: z.array(z.string().max(80)).max(1000),
+    job_role: z.string().trim().min(1).max(80).optional(),
+    access_profile: z.enum(PROFILE_DOSTEPU).optional(),
   })
   .strict();
 export const memberFields =
-  "user_id,display_name,role,active,project_ids,job_role";
+  "user_id,display_name,role,active,project_ids,job_role,access_profile";
 export function requireOwner(person: Principal) {
   if (!person.active || person.role !== "owner")
     throw new AccessError(403, "Tylko właściciel może zarządzać kontami.");
@@ -93,6 +104,7 @@ export async function createEmployee(
         display_name: value.display_name,
         project_ids: [...new Set(value.project_ids)],
         job_role: value.job_role,
+        access_profile: value.access_profile,
         creation_id: value.operation_id,
       });
     if (saveError)

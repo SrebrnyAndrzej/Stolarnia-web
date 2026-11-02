@@ -11,7 +11,8 @@ import {
 } from "./api";
 import { useResource } from "./useResource";
 import { demoProjects } from "./demo";
-import { ActivationLink, CreateEmployee } from "./StaffAccounts";
+import { ActivationLink, CreateEmployee, ProfileSelect } from "./StaffAccounts";
+import { NAZWY_PROFILI, profilOsoby, type ProfilDostepu } from "../../../src/server/uprawnienia";
 
 export function Requests({ demo }: { demo: boolean }) {
   const list = useResource<CustomerRequest[]>(
@@ -198,7 +199,7 @@ export function Members({ demo }: { demo: boolean }) {
         <div className="ps-member-list">
           {members.data.map((m) => (
             <Member
-              key={`${m.user_id}-${m.active}-${m.job_role ?? ""}-${m.project_ids.join()}`}
+              key={`${m.user_id}-${m.active}-${m.job_role ?? ""}-${m.project_ids.join()}-${m.access_profile ?? ""}`}
               member={m}
               projects={projects.data ?? []}
               demo={demo}
@@ -234,6 +235,7 @@ function Member({
   const [ids, setIds] = useState(member.project_ids);
   const [active, setActive] = useState(member.active);
   const [job, setJob] = useState(member.job_role ?? "Pracownik");
+  const [profile, setProfile] = useState<ProfilDostepu>(member.access_profile ?? "produkcja");
   const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -246,7 +248,7 @@ function Member({
     try {
       await request(`/api/v2/members/${encodeURIComponent(member.user_id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ active, project_ids: ids, job_role: job }),
+        body: JSON.stringify({ active, project_ids: ids, job_role: job, access_profile: profile }),
       });
       setSaved(true);
       onSaved();
@@ -267,7 +269,7 @@ function Member({
           <p>
             {roles[member.role]}
             {member.role === "employee"
-              ? ` · ${member.job_role ?? "Pracownik"}`
+              ? ` · ${member.job_role ?? "Pracownik"} · ${NAZWY_PROFILI[profilOsoby(member)]}`
               : ""}
           </p>
         </div>
@@ -303,9 +305,10 @@ function Member({
             />
             Aktywny dostęp do stolarni
           </label>
+          <ProfileSelect name={`staff-profile-${member.user_id}`} value={profile} onChange={setProfile} disabled={demo || busy} />
           <fieldset disabled={demo || busy}>
             <legend>Udostępnione projekty</legend>
-            <p>Podgląd techniczny bez wycen i danych finansowych.</p>
+            <p>Produkcja i montaż widzą tylko udostępnione projekty. Sprzedaż widzi wszystkie projekty (projektuje także nowe przy kliencie).</p>
             {projects.length ? (
               projects.map((p) => (
                 <label className="ps-check" key={p.id}>

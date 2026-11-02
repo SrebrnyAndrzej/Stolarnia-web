@@ -18,7 +18,8 @@ import { AccessError, createAccess, mayReadProject, type Principal } from "./acc
 import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
-import { createEmployee, employeeActivation, memberFields } from "./members.js";
+import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
+import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
 // Oba interfejsy używają tej samej usługi i tego samego magazynu. Uruchamiana lokalnie przez index.ts,
@@ -113,13 +114,46 @@ if (s.magazyn.wChmurze) {
   });
 }
 
+// Osoba i profil żądania (ustawia access.guard). Brak osoby to błąd konfiguracji — nigdy prawa właściciela.
+const osoba = (req: Request): Principal => {
+  const person = req.res?.locals.person as Principal | undefined;
+  if (!person) throw new Error("Brak osoby w żądaniu (bramka dostępu nie zadziałała).");
+  return person;
+};
+const profil = (req: Request): Profil => profilOsoby(osoba(req));
+
+// Dostęp do obiektu (stary panel /api/projekty/:id/...): produkcja i montaż tylko przydzielone projekty; zmiany projektu
+// (PATCH) wg profilu; uwagi z warsztatu podpisane profilem i imieniem z konta. Po wczytaniu bazy (tryb chmurowy).
+app.use("/api/projekty", (req, res, next) => {
+  try {
+    const person = osoba(req);
+    const pr = profilOsoby(person);
+    if (pr === "wlasciciel") return next();
+    const id = projektZTrasy(req.baseUrl + req.path);
+    if (!id) return next();
+    const projekt = s.magazyn.odczytaj().projekty.find((x) => x.id === id);
+    if (!projekt || !mayReadProject(person, id)) return res.status(404).json({ blad: `Nie ma projektu o id "${id}".` });
+    const reszta = req.path.replace(/^\/[^/]+/, "").replace(/\/+$/, "");
+    if (req.method === "PATCH" && reszta === "") {
+      const blad = sprawdzZmianeProjektu(pr, projekt.status, req.body);
+      if (blad) return res.status(403).json({ blad });
+    }
+    if (req.method === "POST" && /^\/notatki$/i.test(reszta) && req.body && typeof req.body.tekst === "string" && pr !== "sprzedaz")
+      req.body.tekst = podpisUwagi(pr, person.display_name, req.body.tekst);
+    next();
+  } catch (e) {
+    next(e);
+  }
+});
+
 type Handler = (req: Request) => unknown;
 const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunction) => {
   try {
     const wynik = await fn(req);
     // Zapis przed odpowiedzią, żeby konflikt zapisu wrócił jako błąd (409), a nie po cichu.
     await s.magazyn.utrwal();
-    res.type("application/json").send(jsonBezMigawek(wynik ?? { ok: true }));
+    // Pola niewidoczne dla profilu (koszty zakupu, marża, ceny, umowy, kontakt klienta) są odcinane po stronie serwera.
+    res.type("application/json").send(jsonBezMigawek(filtrujOdpowiedz(profil(req), wynik ?? { ok: true })));
   } catch (e) {
     next(e);
   }
@@ -128,7 +162,10 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 const p = (req: Request, k: string) => String(req.params[k]);
 
 const v2 = (fn: (req: Request, person: Principal) => unknown) => async (req: Request, res: Response) => {
-  try { res.json(await fn(req, res.locals.person)); }
+  try {
+    const person = res.locals.person as Principal;
+    res.json(filtrujOdpowiedz(profilOsoby(person), await fn(req, person)));
+  }
   catch (error) { access.fail(res, error); }
 };
 app.get("/api/v2/projects", v2((_req, person) => s.magazyn.odczytaj().projekty.filter(p => mayReadProject(person, p.id)).map(projectSummary)));
@@ -190,7 +227,10 @@ app.get("/api/v2/members", v2(async (_req, person) => {
 }));
 app.patch("/api/v2/members/:id", v2(async (req, person) => {
   if (person.role !== "owner") throw new AccessError(403, "Tylko właściciel może zmieniać dostęp.");
-  const parsed = z.object({ active: z.boolean(), project_ids: z.array(z.string().max(80)).max(1000), job_role: z.string().trim().min(1).max(80).optional() }).strict().safeParse(req.body);
+  // Konto właściciela (także własne) nie jest zmieniane tą trasą: aktualizacja dotyczy tylko wierszy role = employee,
+  // więc ostatniego właściciela nie da się zawiesić ani zdegradować przez API.
+  if (p(req, "id") === person.user_id) throw new AccessError(400, "Nie zmieniasz dostępu własnego konta.");
+  const parsed = memberUpdate.safeParse(req.body);
   if (!parsed.success) throw new AccessError(400, "Sprawdź ustawienia dostępu.");
   const projects = new Set(s.magazyn.odczytaj().projekty.map(p => p.id));
   if (parsed.data.project_ids.some(id => !projects.has(id))) throw new AccessError(400, "Wybrany projekt już nie istnieje. Odśwież listę.");
@@ -286,7 +326,7 @@ app.get("/api/projekty/:id/umowy/:uid/pdf", async (req, res, next) => {
 });
 
 // Projekty
-app.get("/api/projekty", api(() => s.projekty()));
+app.get("/api/projekty", api((r) => { const person = osoba(r); return s.projekty().filter((x) => mayReadProject(person, x.id)); }));
 app.post("/api/projekty", api((r) => s.utworzProjekt(r.body)));
 app.get("/api/projekty/:id", api((r) => s.projekt(p(r, "id"))));
 app.patch("/api/projekty/:id", api((r) => s.zmienProjekt(p(r, "id"), r.body)));
@@ -305,8 +345,8 @@ app.delete("/api/projekty/:id/sciany/:sid", api((r) => s.usunSciane(p(r, "id"), 
 
 // Import CAD: klient wysyła plik (DXF lub DWG) jako base64; DWG jest konwertowany po stronie serwera.
 const trescCad = (body: { tresc?: string; base64?: string }) => (body.base64 ? s.trescCad(Buffer.from(body.base64, "base64")) : Promise.resolve(body.tresc ?? ""));
-app.post("/api/cad/analiza", (req, res, next) => trescCad(req.body).then((t) => res.json(s.analizaDxf(t, req.body))).catch(next));
-app.post("/api/projekty/:id/import-cad", (req, res, next) => trescCad(req.body).then((t) => res.json(s.importujDxf(p(req, "id"), t, req.body))).catch(next));
+app.post("/api/cad/analiza", (req, res, next) => trescCad(req.body).then((t) => res.json(filtrujOdpowiedz(profil(req), s.analizaDxf(t, req.body)))).catch(next));
+app.post("/api/projekty/:id/import-cad", (req, res, next) => trescCad(req.body).then((t) => res.json(filtrujOdpowiedz(profil(req), s.importujDxf(p(req, "id"), t, req.body)))).catch(next));
 app.get("/api/cad/konwerter", api(() => ({ dwg: konwerterDwg() })));
 app.put("/api/projekty/:id/stan", api((r) => s.przywrocStan(p(r, "id"), r.body)));
 app.post("/api/projekty/:id/luka", api((r) => s.wypelnijLuke(p(r, "id"), r.body.scianaId, r.body.xMM, r.body.szerokoscMM, !!r.body.wiszacy)));
@@ -335,7 +375,8 @@ app.post("/api/projekty/:id/wydania", api((r) => s.utworzWydanie(p(r, "id"), r.b
 app.get("/api/projekty/:id/wydania/:wid/dokumentacja", api((r) => s.wydanieDokumentacja(p(r, "id"), p(r, "wid"))));
 app.get("/api/projekty/:id/wydania/:wid/dokumentacja.pdf", (req, res, next) => {
   const lista = (k: string) => (typeof req.query[k] === "string" ? String(req.query[k]).split(",").filter(Boolean) : undefined);
-  s.wydaniePdf(p(req, "id"), p(req, "wid"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1" })
+  // Produkcja: pakiet P bez danych klienta (tylko właściciel i sprzedaż widzą nazwę klienta na karcie).
+  s.wydaniePdf(p(req, "id"), p(req, "wid"), { czesci: lista("czesc"), moduly: lista("modul"), skrocony: req.query.skrocony === "1", ukryjDaneKlienta: profil(req) === "produkcja" })
     .then(({ pdf, numer, rewizja }) => {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `inline; filename="wydanie-${numer}-${p(req, "id")}-rew${rewizja}.pdf"`);

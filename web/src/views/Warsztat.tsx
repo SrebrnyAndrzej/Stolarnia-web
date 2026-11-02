@@ -95,7 +95,7 @@ export function Warsztat() {
           {rola === "produkcja" && "Zlecenia do wykonania. Drukuj z wydania: pakiet produkcyjny P (sekcje T, R, E, I, S, C). Bez cen i danych kontaktowych klienta."}
           {rola === "montaz" && "Zlecenia gotowe do montażu. Pakiet montażowy (sekcje T, R, E, M, K) zawiera kolejność, wymiary montażowe, okucia i protokół odbioru."}
           <div className="alert ostrzezenie" style={{ marginTop: 8 }}>
-            Widok roli porządkuje ekran, ale nie jest zabezpieczeniem — konta i uprawnienia pracowników to osobny etap.
+            Przełącznik porządkuje ekran. Uprawnienia egzekwuje serwer wg profilu dostępu konta (produkcja / montaż).
           </div>
         </div>
       </div>

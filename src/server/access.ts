@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import { PROFILE_DOSTEPU, PROFIL_ZAPASOWY, dostepDoTrasy, normalizujSciezke, profilOsoby, type ProfilDostepu } from "./uprawnienia.js";
 
 export type Role = "owner" | "employee" | "client";
 export interface Membership {
@@ -10,6 +11,8 @@ export interface Membership {
   project_ids: string[];
   display_name: string;
   job_role?: string;
+  /** Profil dostępu pracownika (migracja 202611010003). Brak = najwęższy profil (produkcja). */
+  access_profile?: ProfilDostepu;
 }
 export interface Principal extends Membership {
   email: string;
@@ -21,6 +24,7 @@ const membershipSchema = z.object({
   project_ids: z.array(z.string()),
   display_name: z.string(),
   job_role: z.string().optional(),
+  access_profile: z.enum(PROFILE_DOSTEPU).optional(),
 });
 const COOKIE = "pan_stolarz_session";
 export class AccessError extends Error {
@@ -31,9 +35,12 @@ export class AccessError extends Error {
     super(message);
   }
 }
+// Sprzedaż projektuje przy kliencie (także nowe projekty) — widzi wszystkie projekty; produkcja i montaż tylko przydzielone.
 export const mayReadProject = (person: Membership, id: string) =>
   isWorkshopMember(person) &&
-  (person.role === "owner" || person.project_ids.includes(id));
+  (person.role === "owner" ||
+    profilOsoby(person) === "sprzedaz" ||
+    person.project_ids.includes(id));
 // Legacy client rows may remain in the database, but only staff can log in.
 export const isWorkshopMember = (person: Membership) =>
   person.active && (person.role === "owner" || person.role === "employee");
@@ -72,11 +79,26 @@ export function createAccess(env = process.env) {
   };
   const membership = async (id: string): Promise<Membership> => {
     if (!admin) throw new AccessError(503, "Usługa kont jest niedostępna.");
-    const { data, error } = await admin
-      .from("pan_stolarz_members")
-      .select("user_id,role,active,project_ids,display_name,job_role")
-      .eq("user_id", id)
-      .maybeSingle();
+    const select = (fields: string) =>
+      admin
+        .from("pan_stolarz_members")
+        .select(fields)
+        .eq("user_id", id)
+        .maybeSingle();
+    let { data, error } = await select(
+      "user_id,role,active,project_ids,display_name,job_role,access_profile",
+    );
+    // Przed migracją 202611010003 kolumny nie ma: logowanie działa dalej, pracownik dostaje najwęższy profil.
+    if (
+      error &&
+      (error.code === "42703" || /access_profile/.test(error.message ?? ""))
+    ) {
+      ({ data, error } = await select(
+        "user_id,role,active,project_ids,display_name,job_role",
+      ));
+      if (data && typeof data === "object")
+        data = { ...(data as object), access_profile: PROFIL_ZAPASOWY } as never;
+    }
     if (error)
       throw new AccessError(
         503,
@@ -131,15 +153,10 @@ export function createAccess(env = process.env) {
       checkOrigin(req);
       const person = await identify(req);
       res.locals.person = person;
-      // Mounted under /api or /mcp, so req.path is relative to that mount.
-      const technicalCalculator =
-        req.method === "GET" &&
-        ["/systemy-szuflad", "/przelicznik-szuflad"].includes(req.path);
-      const scopedV2 = req.path.startsWith("/v2/");
-      if (
-        person.role !== "owner" &&
-        !(scopedV2 || (person.role === "employee" && technicalCalculator))
-      ) {
+      // Mounted under /api or /mcp: full path = baseUrl + path. Default deny: route without a rule = 403
+      // (src/server/uprawnienia.ts, REGULY_TRAS). Owner: everything.
+      const path = normalizujSciezke(req.baseUrl + req.path);
+      if (!dostepDoTrasy(profilOsoby(person), req.method, path)) {
         throw new AccessError(403, "Nie masz dostępu do tej funkcji.");
       }
       next();

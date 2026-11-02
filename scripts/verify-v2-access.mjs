@@ -51,6 +51,8 @@ const ids = {
 };
 let active = true;
 let role = "employee";
+// Employee profile (migration 202611010003). "produkcja" is the narrowest: no prices, contracts or customer data.
+const profile = "produkcja";
 const originalFetch = globalThis.fetch;
 globalThis.fetch = async (input, init = {}) => {
   const url = String(input);
@@ -76,6 +78,7 @@ globalThis.fetch = async (input, init = {}) => {
         active,
         display_name: "Test",
         project_ids: [project.id],
+        access_profile: profile,
       },
     ]);
   if (url.includes("stolarnia_baza"))
@@ -98,8 +101,15 @@ try {
   const anonymous = await originalFetch(base + "/api/projekty");
   assert.equal(anonymous.status, 401);
   checks++;
+  // Production profile: legacy project list is scoped to assigned projects, without customer or price data.
+  const legacyList = await get("/api/projekty");
+  assert.equal(legacyList.response.status, 200);
+  assert.deepEqual(JSON.parse(legacyList.text).map((p) => p.id), [project.id]);
+  for (const forbidden of ["PRIVATE NAME", "private@example", "99999", "FINANCIAL SECRET"])
+    assert.equal(legacyList.text.includes(forbidden), false, forbidden);
+  checks++;
   for (const path of [
-    "/api/projekty",
+    `/api/projekty/${project.id}`,
     `/api/projekty/${project.id}/analiza`,
     `/api/projekty/${project.id}/umowy`,
     `/api/projekty/${project.id}/dokumentacja.pdf`,

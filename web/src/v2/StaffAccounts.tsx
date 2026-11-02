@@ -1,6 +1,30 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { request, type Principal } from "./api";
 import { Logo } from "./ui";
+import { NAZWY_PROFILI, PROFILE_DOSTEPU, type ProfilDostepu } from "../../../src/server/uprawnienia";
+
+export const OPISY_PROFILI: Record<ProfilDostepu, string> = {
+  sprzedaz: "Projekt i szybki projekt przy kliencie, wycena i oferta. Bez kosztów zakupu i marży; umowy tylko do odczytu.",
+  produkcja: "Wydania i pakiet produkcyjny P, uwagi, status „Gotowe do montażu”. Bez cen, umów i danych klienta.",
+  montaz: "Wydania i pakiet montażowy M z adresem i kontaktem, uwagi, status „Zakończony”. Bez cen i umów.",
+};
+
+/** Wybór profilu dostępu — o uprawnieniach decyduje serwer (src/server/uprawnienia.ts). */
+export function ProfileSelect({ value, onChange, disabled, name }: { value: ProfilDostepu; onChange: (v: ProfilDostepu) => void; disabled?: boolean; name: string }) {
+  return (
+    <fieldset disabled={disabled}>
+      <legend>Profil dostępu</legend>
+      {PROFILE_DOSTEPU.map((p) => (
+        <label className="ps-check" key={p}>
+          <input type="radio" name={name} value={p} checked={value === p} onChange={() => onChange(p)} />
+          <span>
+            <strong>{NAZWY_PROFILI[p]}</strong> — {OPISY_PROFILI[p]}
+          </span>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
 
 export function ActivationLink({ value }: { value: string }) {
   const id = useId();
@@ -58,6 +82,7 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [job, setJob] = useState("Pracownik");
+  const [profile, setProfile] = useState<ProfilDostepu>("sprzedaz");
   const [operation, setOperation] = useState(() => crypto.randomUUID());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -93,6 +118,7 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
             display_name: name.trim(),
             email: email.trim(),
             job_role: job.trim(),
+            access_profile: profile,
             project_ids: [],
           }),
         },
@@ -101,6 +127,7 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
       setName("");
       setEmail("");
       setJob("Pracownik");
+      setProfile("sprzedaz");
       setOperation(crypto.randomUUID());
       onCreated();
     } catch (e) {
@@ -154,9 +181,10 @@ export function CreateEmployee({ onCreated }: { onCreated: () => void }) {
           />
           <p id="staff-job-help">
             Np. projektant, produkcja lub montażysta. Nazwa funkcji nie nadaje
-            dostępu do finansów ani zarządzania kontami.
+            dostępu — o uprawnieniach decyduje profil dostępu.
           </p>
         </fieldset>
+        <ProfileSelect name="staff-profile" value={profile} onChange={setProfile} disabled={busy} />
         {error && (
           <p id="staff-create-error" role="alert" className="ps-field-error">
             {error}

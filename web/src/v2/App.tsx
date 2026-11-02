@@ -20,6 +20,7 @@ import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
 import { Logo, Feedback } from "./ui";
+import { profilOsoby } from "../../../src/server/uprawnienia";
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
 );
@@ -191,7 +192,13 @@ export function App() {
   if (!person) return <Landing session={session} />;
   const owner = person.role === "owner";
   const employee = person.role === "employee";
-  const legacy = /^(#\/p\/|#\/materialy|#\/ustawienia)/.test(hash);
+  const legacy = /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szybki|#\/warsztat)/.test(hash);
+  // Widoki starego panelu wg profilu (serwer i tak egzekwuje uprawnienia i filtruje pola).
+  const profile = profilOsoby(person);
+  const legacyAllowed =
+    owner ||
+    (employee && profile === "sprzedaz" && /^(#\/p\/|#\/szybki)/.test(hash)) ||
+    (employee && profile !== "sprzedaz" && /^#\/warsztat/.test(hash));
   const canSeeSection =
     owner ||
     ["projekty", ""].includes(section) ||
@@ -280,6 +287,24 @@ export function App() {
               {label}
             </a>
           ))}
+          {!demo && (owner || (employee && profile === "sprzedaz")) && (
+            <a
+              href="#/szybki"
+              aria-current={hash.startsWith("#/szybki") ? "page" : undefined}
+            >
+              <IconCalculator size={21} stroke={1.6} />
+              Szybki projekt
+            </a>
+          )}
+          {!demo && (owner || (employee && profile !== "sprzedaz")) && (
+            <a
+              href="#/warsztat"
+              aria-current={hash.startsWith("#/warsztat") ? "page" : undefined}
+            >
+              <IconFolder size={21} stroke={1.6} />
+              Warsztat
+            </a>
+          )}
           {owner && !demo && (
             <>
               <a
@@ -344,7 +369,7 @@ export function App() {
             </p>
           }
         >
-          {!canSeeSection || (legacy && !owner) ? (
+          {!canSeeSection || (legacy && !legacyAllowed) ? (
             <section className="ps-empty">
               <h1>Brak dostępu</h1>
               <p>Ten widok nie jest dostępny na Twoim koncie.</p>
