@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { KIERUNEK_KLUCZA, studioEnvironment } from "./studio3d";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -14,6 +14,47 @@ interface Props {
   wybrany: string | null;
   matMap: Map<string, VisualMaterial | Material>;
   onWybierz: (id: string | null) => void;
+  /**
+   * Widok dla klienta (szybki projekt): tekstury dekorów zamiast samych kolorów, blat jako ciągła płyta
+   * na ciąg, poglądowe zlew / płyta grzewcza / okap. Projektant korzysta z widoku bez tej flagi.
+   */
+  klient?: boolean;
+  /** Ujęcie do oferty: funkcja zwraca JPEG (data URL) bieżącego widoku na nieprzezroczystym tle. */
+  ujecieRef?: MutableRefObject<(() => string | null) | null>;
+}
+
+// Tekstury dekorów: ładowane leniwie (dopiero gdy 3D jest otwarte), wspólne dla wszystkich materiałów.
+const tekstury = new Map<string, THREE.Texture>();
+const KAFEL_MM = 600; // ile mm płyty obejmuje jedno zdjęcie dekoru
+function tekstura(url: string, gotowa: (t: THREE.Texture) => void) {
+  const jest = tekstury.get(url);
+  if (jest) {
+    if (jest.image) gotowa(jest);
+    else jest.userData.czekaja.push(gotowa);
+    return;
+  }
+  const t = new THREE.TextureLoader().load(
+    url,
+    (x) => (x.userData.czekaja as ((t: THREE.Texture) => void)[]).splice(0).forEach((f) => f(x)),
+    undefined,
+    () => tekstury.delete(url), // brak obrazu = zostaje kolor
+  );
+  t.userData.czekaja = [gotowa];
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 4;
+  tekstury.set(url, t);
+}
+/** UV ścian prostopadłościanu w skali KAFEL_MM — dekor ma tę samą skalę na dużych i małych elementach. */
+function uvWSkali(geo: THREE.BoxGeometry, sx: number, sy: number, sz: number) {
+  const uv = geo.attributes.uv as THREE.BufferAttribute;
+  const wymiary: [number, number][] = [[sz, sy], [sz, sy], [sx, sz], [sx, sz], [sx, sy], [sx, sy]];
+  for (let f = 0; f < 6; f++)
+    for (let v = 0; v < 4; v++) {
+      const i = f * 4 + v;
+      uv.setXY(i, (uv.getX(i) * wymiary[f][0]) / KAFEL_MM, (uv.getY(i) * wymiary[f][1]) / KAFEL_MM);
+    }
+  uv.needsUpdate = true;
 }
 
 const M = 1 / 1000; // mm → m
@@ -22,7 +63,7 @@ const M = 1 / 1000; // mm → m
  * Wizualizacja 3D (three.js). Układ: X = rzut X, Z = rzut Y, Y = wysokość.
  * Moduł stoi tyłem do lica ściany; elementy z buildera (boki, półki, fronty, blat) jako bryły.
  */
-export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz, fitContainer = false }: Props) {
+export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz, fitContainer = false, klient = false, ujecieRef }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const stan = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -104,6 +145,17 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     renderer.domElement.addEventListener("pointerdown", down);
     renderer.domElement.addEventListener("pointerup", up);
 
+    if (ujecieRef)
+      ujecieRef.current = () => {
+        // Przezroczyste tło dałoby czarny JPEG — na czas zrzutu tło jak w podglądzie.
+        const tlo = scene.background;
+        scene.background = new THREE.Color(0xefe9e1);
+        renderer.render(scene, camera);
+        const url = renderer.domElement.toDataURL("image/jpeg", 0.86);
+        scene.background = tlo;
+        return url.startsWith("data:image/jpeg") ? url : null;
+      };
+
     let raf = 0;
     const petla = () => {
       raf = requestAnimationFrame(petla);
@@ -125,6 +177,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
 
     return () => {
       cancelAnimationFrame(raf);
+      if (ujecieRef) ujecieRef.current = null;
       ro.disconnect();
       controls.dispose();
       stan.current?.srodowisko?.dispose();
@@ -214,6 +267,39 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       return materialy.get(k)!;
     };
     const krawedz = new THREE.LineBasicMaterial({ color: 0x3b3128, transparent: true, opacity: 0.35 });
+    const zdjecie = (id: string | undefined) => (klient && id ? (matMap.get(id) as { zdjecieURL?: string } | undefined)?.zdjecieURL : undefined);
+    const matDekoru = (id: string | undefined, zapas: string, rola: string) => {
+      const url = zdjecie(id);
+      const baza = mat(kolor(id, zapas), false, rola);
+      if (!url) return baza;
+      const k = `tex|${url}|${rola}`;
+      if (!materialy.has(k)) {
+        const m = baza.clone();
+        materialy.set(k, m);
+        tekstura(url, (t) => {
+          m.map = t;
+          m.color.set(0xffffff);
+          m.needsUpdate = true;
+        });
+      }
+      return materialy.get(k)!;
+    };
+    type Zb = (typeof analiza.zbudowane)[number]["modul"];
+    const idMaterialu = (m: Zb, rola: string) =>
+      rola === "front" ? m.materialFrontuId ?? pom.materialFrontuId : rola === "blat" ? pom.materialBlatuId : rola === "plecy" ? undefined : m.materialKorpusuId ?? pom.materialKorpusuId;
+    // Blat ciągły: odcinki blatu zbierane per ściana i łączone, gdy stykają się (do 5 mm).
+    const odcinkiBlatu = new Map<string, { a: number; b: number; odLica: number; gl: number; y: number; wys: number }[]>();
+    const dodajSymbol = (w: (typeof rzut)[number], geo: THREE.BufferGeometry, material: THREE.Material, wzdluz: number, odLica: number, y: number) => {
+      const mesh = new THREE.Mesh(geo, material);
+      const [px, pz] = punktNaRzucie(w, wzdluz, odLica);
+      mesh.position.set(px * M, y * M, pz * M);
+      mesh.rotation.y = Math.atan2(-w.dy, w.dx);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      zawartosc.add(mesh);
+      return mesh;
+    };
+    const okapy = klient ? analiza.zbudowane.filter((z) => z.modul.katalogId?.startsWith("wall-hood")).map((z) => z.modul) : [];
 
     for (const z of analiza.zbudowane) {
       const m = z.modul;
@@ -230,10 +316,20 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       };
       const grupa = new THREE.Group();
       grupa.rotation.y = Math.atan2(-w.dy, w.dx);
+      let blatGora = 0;
       for (const e of z.elementy) {
         if (e.rola === "drawerSide" || e.rola === "drawerFrontBack" || e.rola === "drawerBottom") continue; // niewidoczne za frontem
+        if (klient && e.materialRola === "blat") {
+          const lista = odcinkiBlatu.get(w.sciana.id) ?? [];
+          lista.push({ a: m.pozycjaXMM + e.x, b: m.pozycjaXMM + e.x + e.szer, odLica: m.glebokoscMM - (e.z + e.gl / 2), gl: e.gl, y: m.pozycjaYMM + e.y + e.wys / 2, wys: e.wys });
+          odcinkiBlatu.set(w.sciana.id, lista);
+          blatGora = Math.max(blatGora, m.pozycjaYMM + e.y + e.wys);
+          continue;
+        }
         const geo = new THREE.BoxGeometry(Math.max(e.szer, 1) * M, Math.max(e.wys, 1) * M, Math.max(e.gl, 1) * M);
-        const mesh = new THREE.Mesh(geo, mat(barwy[e.materialRola], sel, e.materialRola));
+        const tex = klient && !sel && !!zdjecie(idMaterialu(m, e.materialRola));
+        if (tex) uvWSkali(geo, e.szer, e.wys, e.gl);
+        const mesh = new THREE.Mesh(geo, tex ? matDekoru(idMaterialu(m, e.materialRola), "#c9b28f", e.materialRola) : mat(barwy[e.materialRola], sel, e.materialRola));
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.userData.modulId = m.id;
@@ -249,6 +345,21 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         kr.rotation.y = grupa.rotation.y;
         kr.userData.modulId = m.id;
         zawartosc.add(mesh, kr);
+      }
+      // Poglądowe AGD dla klienta: zlew, płyta grzewcza (pod okapem albo na szafce piekarnikowej), okap.
+      if (klient && m.pozycjaYMM < 1000) {
+        const srodek = m.pozycjaXMM + m.szerokoscMM / 2;
+        const gora = blatGora || m.pozycjaYMM + m.wysokoscMM + 38;
+        const podOkapem = okapy.some((o) => o.scianaId === m.scianaId && srodek > o.pozycjaXMM && srodek < o.pozycjaXMM + o.szerokoscMM);
+        if (m.katalogId?.startsWith("base-sink")) {
+          dodajSymbol(w, new THREE.BoxGeometry(Math.min(500, m.szerokoscMM - 100) * M, 8 * M, 420 * M), new THREE.MeshStandardMaterial({ color: 0x8d9296, roughness: 0.25, metalness: 0.8 }), srodek, m.glebokoscMM / 2 + 20, gora - 2);
+          dodajSymbol(w, new THREE.CylinderGeometry(14 * M, 14 * M, 260 * M, 16), new THREE.MeshStandardMaterial({ color: 0xc8cbce, roughness: 0.2, metalness: 0.9 }), srodek, m.glebokoscMM - 60, gora + 130);
+        } else if (podOkapem || m.katalogId?.startsWith("base-oven")) {
+          dodajSymbol(w, new THREE.BoxGeometry(Math.min(580, m.szerokoscMM - 20) * M, 6 * M, 510 * M), new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.15, metalness: 0.2 }), srodek, m.glebokoscMM / 2 + 20, gora + 3);
+        }
+      }
+      if (klient && m.katalogId?.startsWith("wall-hood")) {
+        dodajSymbol(w, new THREE.BoxGeometry(m.szerokoscMM * M, 40 * M, 300 * M), new THREE.MeshStandardMaterial({ color: 0xb9bdc1, roughness: 0.3, metalness: 0.85 }), m.pozycjaXMM + m.szerokoscMM / 2, m.glebokoscMM - 150 + 20, m.pozycjaYMM - 20);
       }
       // Sanitariat (wizualizacja): miska WC wisząca przed frontem modułu i przycisk spłukujący na maskownicy
       if (m.konfiguracja.sanitariat?.typ === "wcWiszace") {
@@ -317,6 +428,28 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       }
     }
 
+    // Blat jako ciągła płyta na ciąg (klient): sąsiednie odcinki tej samej wysokości łączone w jedną bryłę.
+    for (const [scId, lista] of odcinkiBlatu) {
+      const w = rzut.find((q) => q.sciana.id === scId)!;
+      const ciag: typeof lista = [];
+      for (const o of [...lista].sort((x, y) => x.a - y.a)) {
+        const ost = ciag[ciag.length - 1];
+        if (ost && o.a <= ost.b + 5 && Math.abs(o.y - ost.y) < 1 && Math.abs(o.gl - ost.gl) < 1) ost.b = Math.max(ost.b, o.b);
+        else ciag.push({ ...o });
+      }
+      const id = pom.materialBlatuId;
+      const obiekty: THREE.Object3D[] = [];
+      for (const c of ciag) {
+        const geo = new THREE.BoxGeometry((c.b - c.a) * M, c.wys * M, c.gl * M);
+        if (zdjecie(id)) uvWSkali(geo, c.b - c.a, c.wys, c.gl);
+        obiekty.push(dodajSymbol(w, geo, zdjecie(id) ? matDekoru(id, "#a98f6e", "blat") : mat(kolor(id, "#a98f6e"), false, "blat"), (c.a + c.b) / 2, c.odLica, c.y));
+      }
+      if (!w.sciana.wirtualna) {
+        const [lx, lz] = punktNaRzucie(w, 0, 0);
+        s.moduly.push({ obiekty, cx: lx * M, cz: lz * M, nx: w.nx, nz: w.ny });
+      }
+    }
+
     // Kamera — ustaw raz na pomieszczenie, potem zostaw użytkownikowi
     if (s.kamUstawiona !== pom.id) {
       const cx = (g.x + g.w / 2) * M;
@@ -333,7 +466,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       s.controls.update();
       s.kamUstawiona = pom.id;
     }
-  }, [analiza, pomieszczenieId, scianaId, wybrany, matMap]);
+  }, [analiza, pomieszczenieId, scianaId, wybrany, matMap, klient]);
 
   return (
     <div style={{ position: "relative" }}>

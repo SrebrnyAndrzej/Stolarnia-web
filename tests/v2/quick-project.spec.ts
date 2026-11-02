@@ -285,3 +285,26 @@ test("missing prices: full offer disabled, preliminary proposal requested with w
   expect((await download).suggestedFilename()).toMatch(/^Propozycja wstępna/);
   expect(pdfCalls[0]).toMatchObject({ wariant: "standard", wstepna: true });
 });
+
+// Zmiana 5 z oceny: 3D dla klienta — pełny ekran i ujęcie do oferty (JPEG trafia do PDF).
+test("3D: full screen and a saved shot travel with the PDF request", async ({ page }) => {
+  const pdfCalls: { wizualizacje?: { jpegBase64: string }[] }[] = [];
+  await mockQuote(page, owner, false, async (path, route) => {
+    if (!path.endsWith("/oferta.pdf")) return false;
+    pdfCalls.push(route.request().postDataJSON());
+    await route.fulfill({ contentType: "application/pdf", body: Buffer.from("%PDF-1.4\n%%EOF") });
+    return true;
+  });
+  await page.getByRole("button", { name: "Podgląd 3D" }).click();
+  await page.getByRole("button", { name: "Pełny ekran" }).click();
+  await expect(page.getByRole("dialog", { name: "Widok 3D na pełnym ekranie" })).toBeVisible();
+  await page.getByRole("button", { name: "Zapisz ujęcie do oferty" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Widok 3D na pełnym ekranie" })).toHaveCount(0);
+  await expect(page.getByRole("img", { name: "Ujęcie 1" })).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Oferta PDF", exact: true }).click();
+  await download;
+  expect(pdfCalls[0].wizualizacje?.length).toBe(1);
+  expect(pdfCalls[0].wizualizacje?.[0].jpegBase64).toMatch(/^data:image\/jpeg;base64,/);
+});

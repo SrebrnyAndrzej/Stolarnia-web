@@ -68,7 +68,8 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   const cena = (v: number) => {
     if (!pw) return zl(v);
     const [a, b] = widelki(v, pw.dol, pw.gora);
-    return `${zl(a)} – ${zl(b)}`;
+    const c = (x: number) => x.toLocaleString("pl-PL", { maximumFractionDigits: 0 });
+    return `${c(a)}–${c(b)} zł`;
   };
 
   const stopka = () => {
@@ -110,7 +111,7 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   };
   wiersz(pw ? "Numer propozycji" : "Numer oferty", w.numer, heroH + 28);
   wiersz("Data", dataPL(w.data), heroH + 46);
-  if (pw) wiersz("Status", "do potwierdzenia — nie jest ofertą", heroH + 64);
+  if (pw) wiersz("Status", "cena do potwierdzenia", heroH + 64);
   else wiersz("Ważna do", dataPL(new Date(w.data.getTime() + w.waznoscDni * 86400000)), heroH + 64);
   wiersz(`Cena (${wybrany.nazwa})`, `${cena(wybrany.cenaBrutto)} brutto`, heroH + 82);
   wiersz("Przygotował", firma, heroH + 100);

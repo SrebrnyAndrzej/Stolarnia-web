@@ -44,6 +44,7 @@ import {
   type Kind,
 } from "./quick/parts";
 import "./quick/quick.css";
+import { createPortal } from "react-dom";
 
 // Szybki projekt kuchni przy kliencie (tablet, dotyk): układ → podgląd → styl → okucia → wycena.
 // Cała logika (układ, styl, okucia, ceny) jest w silniku; ten widok zbiera wybory i pokazuje wyniki.
@@ -152,10 +153,43 @@ export function QuickProject({
   const [variant, setVariant] = useState("standard");
   const [materials, setMaterials] = useState<Material[]>([]);
   const [show3D, setShow3D] = useState(false);
+  const [full3D, setFull3D] = useState(false);
+  const ujecieRef = useRef<(() => string | null) | null>(null);
+  // Ujęcia do oferty: w pamięci sesji przeglądarki dla projektu (przeżywają odświeżenie, nie trafiają do bazy).
+  const [shots, setShots] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   // Stała tożsamość mapy: nowa Map przy każdym renderze przebudowywała całą scenę 3D (Widok3D zależy od matMap).
+  useEffect(() => {
+    if (!id) return;
+    try {
+      setShots(JSON.parse(sessionStorage.getItem(`qp-ujecia-${id}`) ?? "[]"));
+    } catch {
+      setShots([]);
+    }
+  }, [id]);
+  const saveShots = (next: string[]) => {
+    setShots(next);
+    try {
+      if (id) sessionStorage.setItem(`qp-ujecia-${id}`, JSON.stringify(next));
+    } catch {
+      /* brak miejsca w pamięci sesji — ujęcia zostają do zamknięcia karty */
+    }
+  };
+  // Pełny ekran przez portal: rodzice karty tworzą własny blok zawierający i ucinały nakładkę.
+  const portal3D = (node: ReactNode) => (full3D ? createPortal(node, document.body) : node);
+  const takeShot = () => {
+    const url = ujecieRef.current?.();
+    if (!url) return setError("Nie udało się zapisać ujęcia (brak widoku 3D).");
+    saveShots([...shots, url].slice(-3));
+  };
+  useEffect(() => {
+    if (!full3D) return;
+    const key = (e: KeyboardEvent) => e.key === "Escape" && setFull3D(false);
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [full3D]);
   const matMap = useMemo(
     () => new Map(materials.map((m) => [m.id, m])),
     [materials],
@@ -458,7 +492,14 @@ export function QuickProject({
     try {
       const blob = await request<Blob>(
         `/api/projekty/${id}/oferta.pdf`,
-        { method: "POST", body: JSON.stringify({ wariant: variant, ...(wstepna ? { wstepna: true } : {}) }) },
+        {
+          method: "POST",
+          body: JSON.stringify({
+            wariant: variant,
+            ...(wstepna ? { wstepna: true } : {}),
+            wizualizacje: shots.map((u, i) => ({ tytul: `Wizualizacja ${i + 1}`, jpegBase64: u })),
+          }),
+        },
         "pdf",
       );
       const url = URL.createObjectURL(blob);
@@ -1406,8 +1447,17 @@ export function QuickProject({
                       {show3D ? "Ukryj 3D" : "Podgląd 3D"}
                     </button>
                   </div>
-                  {show3D && room && (
-                    <div className="qp-3d">
+                  {show3D && room && portal3D(
+                    <div className={`qp-3d${full3D ? " qp-3d-full" : ""}`} role={full3D ? "dialog" : undefined} aria-label={full3D ? "Widok 3D na pełnym ekranie" : undefined}>
+                      <div className="qp-bar qp-3d-bar">
+                        <button type="button" className="qp-btn secondary" onClick={() => setFull3D((x) => !x)}>
+                          {full3D ? "Zamknij pełny ekran" : "Pełny ekran"}
+                        </button>
+                        <button type="button" className="qp-btn secondary" onClick={takeShot}>
+                          Zapisz ujęcie do oferty
+                        </button>
+                        <span className="qp-muted">{shots.length ? `Ujęcia w ofercie: ${shots.length}/3` : "Ujęcie trafi na okładkę PDF"}</span>
+                      </div>
                       <Boundary>
                         <Suspense
                           fallback={
@@ -1423,9 +1473,24 @@ export function QuickProject({
                             wybrany={null}
                             matMap={matMap}
                             onWybierz={() => undefined}
+                            klient
+                            fitContainer
+                            ujecieRef={ujecieRef}
                           />
                         </Suspense>
                       </Boundary>
+                    </div>
+                  )}
+                  {shots.length > 0 && (
+                    <div className="qp-shots" aria-label="Ujęcia do oferty">
+                      {shots.map((u, i) => (
+                        <figure key={i}>
+                          <img src={u} alt={`Ujęcie ${i + 1}`} />
+                          <button type="button" className="qp-btn secondary" onClick={() => saveShots(shots.filter((_, j) => j !== i))}>
+                            Usuń
+                          </button>
+                        </figure>
+                      ))}
                     </div>
                   )}
                   {pdfError && (
@@ -1477,8 +1542,8 @@ export function QuickProject({
                     </p>
                   )}
                   <p className="qp-muted">
-                    Oferta PDF bez wizualizacji; zdjęcia do oferty wygenerujesz
-                    w zakładce Oferta projektu.
+                    Zapisane ujęcia 3D (do 3, najnowsze) trafiają do PDF; bez
+                    ujęć oferta ma okładkę bez wizualizacji.
                   </p>
                 </>
               );
