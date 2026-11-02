@@ -33,6 +33,8 @@ import {
   MissingData,
   Notes,
   NumField,
+  PlanView,
+  type PlanMarker,
   ROLES,
   ShapeIcon,
   mm,
@@ -60,6 +62,13 @@ const STEPS: { id: Step; name: string }[] = [
 ];
 type Fridge = "slupek" | "wolnostojaca" | "brak";
 type PicksMap = Partial<Record<RolaStylu, Decor>>;
+type FixedPoint = "zlew" | "plyta" | "lodowka";
+type FixedPos = { wall: number | null; from: string };
+const FIXED: { id: FixedPoint; name: string; short: string; widthMM: number }[] = [
+  { id: "zlew", name: "Zlew (przyłącze wody), razem ze zmywarką", short: "Z", widthMM: 600 },
+  { id: "plyta", name: "Płyta (gaz / 400 V)", short: "P", widthMM: 600 },
+  { id: "lodowka", name: "Lodówka", short: "L", widthMM: 600 },
+];
 
 const post = <T,>(url: string, body: unknown) =>
   request<T>(url, { method: "POST", body: JSON.stringify(body) });
@@ -108,6 +117,14 @@ export function QuickProject({
   const [ovenTower, setOvenTower] = useState(false);
   const [hanging, setHanging] = useState(true);
   const [corner, setCorner] = useState<"slepa" | "L">("slepa");
+  // Położenia punktów stałych (opcja B: pola liczbowe). wall = null → silnik wybiera sam.
+  const [fixedPos, setFixedPos] = useState<Record<FixedPoint, FixedPos>>({
+    zlew: { wall: null, from: "" },
+    plyta: { wall: null, from: "" },
+    lodowka: { wall: null, from: "" },
+  });
+  const [windows, setWindows] = useState<{ wall: number; from: string; width: string }[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string>>>({});
 
   // krok 2: podgląd
   const [preview, setPreview] = useState<WynikSzybkiegoUkladu | null>(null);
@@ -236,17 +253,52 @@ export function QuickProject({
     }
   };
 
+  const planMarkers: PlanMarker[] = [
+    ...FIXED.filter(
+      (f) =>
+        ((f.id === "zlew" && sink) || (f.id === "plyta" && hob) || (f.id === "lodowka" && fridge !== "brak")) &&
+        fixedPos[f.id].from.trim() !== "",
+    ).map((f) => ({
+      id: f.id,
+      kind: f.id,
+      label: f.short,
+      wall: Math.min(fixedPos[f.id].wall ?? 0, wallCount - 1),
+      xMM: num(fixedPos[f.id].from),
+      // Zlew stoi w jednym bloku ze zmywarką — tak liczy silnik (uklad.ts: skład zlewu).
+      widthMM: f.id === "zlew" && dishwasher !== "brak" ? f.widthMM + num(dishwasher) : f.widthMM,
+    })),
+    ...windows
+      .map((w, i) => ({ w, i }))
+      .filter(({ w }) => w.wall < wallCount && num(w.width) > 0)
+      .map(({ w, i }) => ({
+        id: `okno${i}`,
+        kind: "okno" as const,
+        label: `okno ${i + 1}`,
+        wall: w.wall,
+        xMM: num(w.from),
+        widthMM: num(w.width),
+      })),
+  ];
+  const placed = (k: FixedPoint) => {
+    const f = fixedPos[k];
+    const wall = f.wall !== null && f.wall < wallCount ? f.wall : f.from ? 0 : null;
+    if (wall === null) return {};
+    return f.from.trim() ? { sciana: wall, xMM: num(f.from) } : { sciana: wall };
+  };
   const buildRequest = (): ZadanieSzybkiegoUkladu => ({
     typ: kind,
     dlugosciScianMM: lengths.slice(0, wallCount).map(num),
     wysokoscMM: num(height),
-    zlew: sink ? {} : null,
+    zlew: sink ? placed("zlew") : null,
     zmywarka:
       sink && dishwasher !== "brak"
         ? { szerokoscMM: dishwasher === "450" ? 450 : 600 }
         : null,
-    plyta: hob ? {} : null,
-    lodowka: fridge === "brak" ? null : { rodzaj: fridge },
+    plyta: hob ? placed("plyta") : null,
+    lodowka: fridge === "brak" ? null : { rodzaj: fridge, ...placed("lodowka") },
+    przerwyWiszacych: windows
+      .filter((w) => w.wall < wallCount && num(w.width) > 0)
+      .map((w) => ({ sciana: w.wall, odMM: num(w.from), doMM: num(w.from) + num(w.width) })),
     slupki: ovenTower ? ["tall-oven-600"] : [],
     wiszace: hanging,
     okap: hanging ? "szafka" : "brak",
@@ -260,6 +312,9 @@ export function QuickProject({
         return `Ściana ${i + 1}: podaj długość w mm (min. 1000).`;
     if (num(height) < 2000)
       return "Podaj wysokość pomieszczenia w mm (min. 2000).";
+    for (const [i, w] of windows.entries())
+      if (w.wall < wallCount && num(w.from) + num(w.width) > num(lengths[w.wall]))
+        return `Okno ${i + 1} wychodzi poza ścianę ${w.wall + 1}.`;
     return null;
   };
 
@@ -277,14 +332,28 @@ export function QuickProject({
 
   const showPreview = () => {
     const problem = validate();
+    setFieldErrors({});
     if (problem) return setError(problem);
     void run("Układam szafki…", async () => {
       const pid = await ensureProject();
       // Podgląd niczego nie zapisuje; liczba usuniętych modułów mówi, czy trzeba potwierdzenia.
-      const r = await post<WynikSzybkiegoUkladu>(
-        `/api/projekty/${pid}/szybki-uklad`,
-        { ...buildRequest(), zastap: true, podglad: true },
-      );
+      let r: WynikSzybkiegoUkladu;
+      try {
+        r = await post<WynikSzybkiegoUkladu>(
+          `/api/projekty/${pid}/szybki-uklad`,
+          { ...buildRequest(), zastap: true, podglad: true },
+        );
+      } catch (e) {
+        // Komunikat silnika o braku miejsca trafia przy pole elementu, którego dotyczy.
+        const msg = (e as Error).message;
+        const hit = (["zlew", "plyta", "lodowka"] as FixedPoint[]).filter((k) => new RegExp(`(^|[^a-ząćęłńóśźż])${k}($|[^a-ząćęłńóśźż])`, "i").test(msg));
+        if (hit.length) {
+          setFieldErrors(Object.fromEntries(hit.map((k) => [k, msg])));
+          document.getElementById(`qp-pos-${hit[0]}`)?.focus();
+          throw new Error("Silnik nie zmieścił punktów stałych — szczegóły przy polach położenia.");
+        }
+        throw e;
+      }
       setPreview(r);
       setConfirmReplace(false);
       setApplied(false);
@@ -595,6 +664,129 @@ export function QuickProject({
               />
             )}
           </div>
+          <h3>Położenie na ścianach (opcjonalnie)</h3>
+          <p className="qp-muted">
+            Puste pole = silnik dobierze miejsce sam. Odległość mierzysz od
+            punktu ● na rzucie (początek ściany) do lewej krawędzi elementu.
+            Stuknij element na rzucie, żeby przejść do jego pola.
+          </p>
+          <PlanView
+            kind={kind}
+            lengths={lengths.map(num)}
+            markers={planMarkers}
+            onPick={(k) => document.getElementById(`qp-pos-${k}`)?.focus()}
+          />
+          {FIXED.filter(
+            (f) =>
+              (f.id === "zlew" && sink) ||
+              (f.id === "plyta" && hob) ||
+              (f.id === "lodowka" && fridge !== "brak"),
+          ).map((f) => {
+            const v = fixedPos[f.id];
+            const set = (n: Partial<FixedPos>) =>
+              setFixedPos((o) => ({ ...o, [f.id]: { ...o[f.id], ...n } }));
+            return (
+              <div className="qp-pos" key={f.id}>
+                <span className="qp-pos-name">{f.name}</span>
+                <Choice
+                  label="Ściana"
+                  value={v.wall === null || v.wall >= wallCount ? "auto" : String(v.wall)}
+                  options={[
+                    ["auto", "Auto"],
+                    ...Array.from(
+                      { length: wallCount },
+                      (_, i) => [String(i), String(i + 1)] as [string, string],
+                    ),
+                  ]}
+                  onChange={(x) => set({ wall: x === "auto" ? null : Number(x) })}
+                />
+                <Field label="Od ● [mm]">
+                  <input
+                    id={`qp-pos-${f.id}`}
+                    className="qp-input"
+                    inputMode="numeric"
+                    placeholder="auto"
+                    value={v.from}
+                    aria-invalid={!!fieldErrors[f.id]}
+                    onChange={(e) =>
+                      set({
+                        from: e.target.value.replace(/[^\d]/g, ""),
+                        wall: v.wall ?? 0,
+                      })
+                    }
+                  />
+                </Field>
+                {fieldErrors[f.id] && (
+                  <p className="qp-field-error" role="alert">
+                    {fieldErrors[f.id]}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+          {windows.map((w, i) => (
+            <div className="qp-pos" key={`okno${i}`}>
+              <span className="qp-pos-name">Okno {i + 1}</span>
+              <Choice
+                label="Ściana"
+                value={String(Math.min(w.wall, wallCount - 1))}
+                options={Array.from(
+                  { length: wallCount },
+                  (_, j) => [String(j), String(j + 1)] as [string, string],
+                )}
+                onChange={(x) =>
+                  setWindows((o) => o.map((y, j) => (j === i ? { ...y, wall: Number(x) } : y)))
+                }
+              />
+              <div className="qp-grid-2">
+                <Field label="Od ● [mm]">
+                  <input
+                    id={`qp-pos-okno${i}`}
+                    className="qp-input"
+                    inputMode="numeric"
+                    value={w.from}
+                    onChange={(e) =>
+                      setWindows((o) =>
+                        o.map((y, j) => (j === i ? { ...y, from: e.target.value.replace(/[^\d]/g, "") } : y)),
+                      )
+                    }
+                  />
+                </Field>
+                <Field label="Szerokość [mm]">
+                  <input
+                    className="qp-input"
+                    inputMode="numeric"
+                    value={w.width}
+                    onChange={(e) =>
+                      setWindows((o) =>
+                        o.map((y, j) => (j === i ? { ...y, width: e.target.value.replace(/[^\d]/g, "") } : y)),
+                      )
+                    }
+                  />
+                </Field>
+              </div>
+              <button
+                type="button"
+                className="qp-btn secondary"
+                onClick={() => setWindows((o) => o.filter((_, j) => j !== i))}
+              >
+                Usuń okno
+              </button>
+            </div>
+          ))}
+          <div className="qp-bar">
+            <button
+              type="button"
+              className="qp-btn secondary"
+              onClick={() =>
+                setWindows((o) => [...o, { wall: wallCount - 1 >= 1 ? 1 : 0, from: "1000", width: "1200" }])
+              }
+              disabled={windows.length >= 4}
+            >
+              + Okno (bez szafek wiszących nad nim)
+            </button>
+          </div>
+
           <p className="qp-muted">
             Układ proponuje silnik wg założeń ergonomii (blat między zlewem a
             płytą ≥ 600 mm, płyta ≥ 300 mm od narożnika). Szczegóły zobaczysz w
@@ -622,6 +814,21 @@ export function QuickProject({
             Tak silnik ułożył szafki. Nic nie jest jeszcze zapisane. Sprawdź
             ostrzeżenia i zatwierdź.
           </p>
+          <PlanView
+            kind={kind}
+            lengths={preview.sciany.map((s) => s.dlugoscMM)}
+            walls={preview.sciany.map((s) => s.nazwa)}
+            modules={preview.moduly
+              .filter((m) => m.pozycjaYMM < 1000)
+              .map((m) => ({
+                wall: preview.sciany.findIndex((s) => s.id === m.scianaId),
+                xMM: m.pozycjaXMM,
+                widthMM: m.szerokoscMM,
+                rola: m.rola,
+              }))
+              .filter((m) => m.wall >= 0)}
+            markers={planMarkers.filter((k) => k.kind === "okno")}
+          />
           {preview.sciany.map((s) => (
             <Elevation
               key={s.id}

@@ -618,3 +618,124 @@ export function DecorPicker({
     </div>
   );
 }
+
+// ---------- Rzut z góry (OCENA-kreatora §4, zmiana 2) ----------
+
+export type FixedKind = "zlew" | "plyta" | "lodowka" | "okno";
+export interface PlanMarker {
+  id: string;
+  kind: FixedKind;
+  label: string;
+  wall: number;
+  xMM: number;
+  widthMM: number;
+}
+const FIXED_COLOR: Record<FixedKind, string> = {
+  zlew: "#9fc1d6",
+  plyta: "#d6a09a",
+  lodowka: "#c9d3d9",
+  okno: "#7fb3d5",
+};
+const DEPTH = 600;
+
+/**
+ * Geometria rzutu zgodna z ikonami kształtu: L = ściana 1 po lewej (od dołu do narożnika), ściana 2 u góry;
+ * U = dodatkowo ściana 3 po prawej (od narożnika w dół). Początek ściany (x = 0) oznaczony kropką ●.
+ * Kolejna ściana zaczyna się w końcu poprzedniej — tak samo liczy silnik (service.ts, narożniki 90°).
+ */
+export function wallFrame(kind: Kind, lengths: number[], i: number) {
+  const [a = 0, b = 0] = lengths;
+  if (kind === "I" || i === 1) {
+    // pozioma u góry, od lewej do prawej, wnętrze w dół
+    return { at: (x: number) => [x, 0] as const, dir: [1, 0] as const, n: [0, 1] as const };
+  }
+  if (i === 0) return { at: (x: number) => [0, a - x] as const, dir: [0, -1] as const, n: [1, 0] as const };
+  return { at: (x: number) => [b, x] as const, dir: [0, 1] as const, n: [-1, 0] as const };
+}
+
+export function PlanView({
+  kind,
+  lengths,
+  markers,
+  modules,
+  walls,
+  onPick,
+}: {
+  kind: Kind;
+  lengths: number[];
+  markers: PlanMarker[];
+  /** Po podglądzie: moduły dolne silnika (rola, ściana jako indeks). */
+  modules?: { wall: number; xMM: number; widthMM: number; rola: string }[];
+  walls?: string[];
+  onPick?: (id: string) => void;
+}) {
+  const n = kind === "I" ? 1 : kind === "L" ? 2 : 3;
+  const L = lengths.slice(0, n);
+  const width = kind === "I" ? L[0] : L[1] ?? 0;
+  const height = kind === "I" ? DEPTH * 2 : Math.max(L[0] ?? 0, kind === "U" ? L[2] ?? 0 : 0);
+  const M = 260;
+  const rect = (wall: number, x: number, w: number, d: number, inset = 0) => {
+    const f = wallFrame(kind, L, wall);
+    const p = [f.at(x), f.at(x + w)];
+    const q = p.map(([px, py]) => [px + f.n[0] * (inset + d), py + f.n[1] * (inset + d)]);
+    const xs = [...p, ...q].map((v) => v[0]);
+    const ys = [...p, ...q].map((v) => v[1]);
+    return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+  };
+  return (
+    <figure className="qp-plan">
+      <figcaption>
+        <b>Rzut z góry</b> · ● = początek ściany, od niego liczysz „od ● [mm]”
+      </figcaption>
+      <svg viewBox={`${-M} ${-M} ${width + 2 * M} ${height + 2 * M}`} role="img" aria-label="Rzut kuchni z góry">
+        {L.map((len, i) => {
+          const f = wallFrame(kind, L, i);
+          const [x1, y1] = f.at(0);
+          const [x2, y2] = f.at(len);
+          const [mx, my] = f.at(len / 2);
+          return (
+            <g key={`w${i}`}>
+              <rect {...(() => { const r = rect(i, 0, len, DEPTH); return { x: r.x, y: r.y, width: r.w, height: r.h }; })()} fill="var(--panel)" stroke="var(--line)" strokeWidth={6} />
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--text)" strokeWidth={40} strokeLinecap="square" />
+              <circle cx={x1 + f.n[0] * 90 + f.dir[0] * 90} cy={y1 + f.n[1] * 90 + f.dir[1] * 90} r={45} fill="var(--text)" />
+              <text
+                x={mx - f.n[0] * 70}
+                y={my - f.n[1] * 110}
+                textAnchor={f.n[0] > 0 ? "end" : f.n[0] < 0 ? "start" : "middle"}
+                dominantBaseline={f.n[1] > 0 ? "auto" : "middle"}
+                fontSize={110}
+                fill="var(--muted)"
+              >
+                {walls?.[i] ?? `Ściana ${i + 1} (${String.fromCharCode(65 + i)})`} · {mm(len)}
+              </text>
+            </g>
+          );
+        })}
+        {modules?.map((m, i) => {
+          const r = rect(m.wall, m.xMM, m.widthMM, DEPTH);
+          return <rect key={`m${i}`} x={r.x} y={r.y} width={r.w} height={r.h} fill={ROLE_COLOR[m.rola] ?? "#d9c4a3"} stroke="#3b3128" strokeWidth={6} />;
+        })}
+        {markers.map((k) => {
+          const okno = k.kind === "okno";
+          const r = okno ? rect(k.wall, k.xMM, k.widthMM, 60, -30) : rect(k.wall, k.xMM, k.widthMM, DEPTH);
+          return (
+            <g
+              key={k.id}
+              role={onPick ? "button" : undefined}
+              aria-label={onPick ? `${k.label}: zmień położenie` : k.label}
+              tabIndex={onPick ? 0 : undefined}
+              onClick={() => onPick?.(k.id)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onPick?.(k.id)}
+              style={{ cursor: onPick ? "pointer" : undefined }}
+            >
+              <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={FIXED_COLOR[k.kind]} fillOpacity={modules ? 0 : 0.9} stroke={okno ? "#2f6f99" : "#1d1812"} strokeWidth={okno ? 14 : modules ? 18 : 8} strokeDasharray={modules && !okno ? "50 30" : undefined} />
+              <text x={r.x + r.w / 2} y={r.y + r.h / 2} textAnchor="middle" dominantBaseline="middle" fontSize={okno ? 90 : 100} fill="#1d1812" fontWeight={700}>
+                {k.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </figure>
+  );
+}

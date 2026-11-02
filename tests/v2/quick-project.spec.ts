@@ -179,3 +179,39 @@ test("unsaved decor picks block 'Dalej' and can only be discarded explicitly", a
   await expect(page.getByText("Egger H1385 ST40 · Dąb Casella naturalny")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Dalej bez zmian|Pomiń styl/ })).toBeVisible();
 });
+
+// Zmiana 2 z oceny: rzut z góry i położenia punktów stałych (opcja B — pola liczbowe).
+test("fixed points: positions and windows go to the engine; engine error lands at the field", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  const calls: Record<string, any>[] = [];
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    const method = route.request().method();
+    if (path.endsWith("/session")) return route.fulfill({ json: sales });
+    if (path === "/api/projekty" && method === "POST") return route.fulfill({ json: { id: "p1" } });
+    if (path.endsWith("/szybki-uklad")) {
+      const input = route.request().postDataJSON();
+      calls.push(input);
+      if (input.zlew?.xMM === 1600)
+        return route.fulfill({ status: 400, json: { blad: "zlew: pozycja 1600–2800 mm poza wolnym odcinkiem (Ściana B: 628–2400 mm)." } });
+      return route.fulfill({ json: preview(0, true) });
+    }
+    return route.fulfill({ json: {} });
+  });
+  await page.goto("/#/szybki");
+  await expect(page.getByRole("img", { name: "Rzut kuchni z góry" })).toBeVisible();
+  await page.locator("#qp-pos-zlew").fill("1600");
+  await page.getByRole("group", { name: "Ściana", exact: true }).first().getByRole("button", { name: "2" }).click();
+  await page.getByRole("button", { name: /\+ Okno/ }).click();
+  // Element na rzucie przenosi do swojego pola.
+  await page.getByRole("button", { name: "Z: zmień położenie" }).click();
+  await expect(page.locator("#qp-pos-zlew")).toBeFocused();
+  await page.getByRole("button", { name: /Dalej: podgląd/ }).click();
+  await expect(page.getByText("zlew: pozycja 1600–2800 mm poza wolnym odcinkiem")).toBeVisible();
+  await expect(page.locator("#qp-pos-zlew")).toHaveAttribute("aria-invalid", "true");
+  expect(calls[0]).toMatchObject({ zlew: { sciana: 1, xMM: 1600 }, przerwyWiszacych: [{ sciana: 1, odMM: 1000, doMM: 2200 }] });
+  await page.locator("#qp-pos-zlew").fill("700");
+  await page.getByRole("button", { name: /Dalej: podgląd/ }).click();
+  await expect(page.getByRole("heading", { name: "Podgląd układu" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "Rzut kuchni z góry" })).toBeVisible();
+});
