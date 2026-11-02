@@ -11,6 +11,7 @@ import {
   standardPlateSpecification,
   backDepth,
   applySuggestedLayout,
+  deskStartingModel,
   layoutVariants,
   type LayoutVariant,
   furnitureIssues,
@@ -322,10 +323,17 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     const next = {
       ...model,
       drawerAssemblies: [],
-      suggestion: { variant: "empty" as const, excludedSlots: [] },
+      suggestion:
+        model.suggestion?.variant === "desk"
+          ? model.suggestion
+          : { variant: "empty" as const, excludedSlots: [] },
       plates: [
         ...model.plates.filter(
-          (p) => p.kind !== "drawer" && (!p.layoutSlot || p.layoutCustomized),
+          (p) =>
+            p.kind !== "drawer" &&
+            (!p.layoutSlot ||
+              p.layoutCustomized ||
+              model.suggestion?.variant === "desk"),
         ),
         ...plates,
       ],
@@ -495,11 +503,13 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 value={model.suggestion?.variant ?? "empty"}
                 onChange={(e) => {
                   update((m) =>
-                    applySuggestedLayout(
-                      m,
-                      e.target.value as LayoutVariant,
-                      uid,
-                    ),
+                    e.target.value === "desk"
+                      ? deskStartingModel(m, uid)
+                      : applySuggestedLayout(
+                          m,
+                          e.target.value as LayoutVariant,
+                          uid,
+                        ),
                   );
                   setSelected("");
                 }}
@@ -540,6 +550,73 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 </p>
               )}
           </fieldset>
+          {model.suggestion?.variant === "desk" && (
+            <fieldset disabled={busy}>
+              <legend>Biurko — wymiary startowe</legend>
+              <p>
+                Wybór biurka ustawia 1600 × 800 × 740 mm (szerokość × głębokość
+                × wysokość górnej powierzchni). Wszystkie wymiary możesz zmienić
+                poniżej. Grubość 28 mm jest założeniem projektu.
+              </p>
+              <div className="fc-actions">
+                <button
+                  onClick={() => {
+                    update((m) => deskStartingModel(m, uid));
+                    setSelected("");
+                  }}
+                >
+                  Biurko 160 × 80 cm
+                </button>
+                <button
+                  onClick={() => {
+                    update((m) => deskStartingModel(m, uid, 1200));
+                    setSelected("");
+                  }}
+                >
+                  Biurko kompaktowe 120 × 80 cm
+                </button>
+              </div>
+              <p>
+                DGUV wskazuje 740 ± 20 mm dla stałej wysokości i 800 mm
+                głębokości. Wysokość dopasuj do użytkownika oraz krzesła;
+                regulacja jest korzystniejsza dla różnych osób. Wariant 120 cm
+                jest przeznaczony do ograniczonej ilości sprzętu i dokumentów.
+              </p>
+              <p>
+                Światło między bokami:{" "}
+                {(model.width - 2 * model.thickness).toLocaleString("pl-PL")} mm
+                · wysokość pod blatem:{" "}
+                {(model.height - model.thickness).toLocaleString("pl-PL")} mm.
+              </p>
+              {(model.depth < 800 ||
+                model.height < 720 ||
+                model.height > 760 ||
+                model.width - 2 * model.thickness < 850) && (
+                <p role="status">
+                  Wymiary odbiegają od punktu startowego ergonomicznego biurka.
+                  Sprawdź dopasowanie do osoby, odległość od ekranu i wolną
+                  przestrzeń na nogi.
+                </p>
+              )}
+              <p>
+                <a
+                  href="https://publikationen.dguv.de/widgets/pdf/download/article/409"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Zalecenia DGUV
+                </a>{" "}
+                ·{" "}
+                <a
+                  href="https://www.worksafe.qld.gov.au/safety-and-prevention/hazards/hazardous-manual-tasks/working-with-computers/setting-up-your-workstation"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ustawienie stanowiska — WorkSafe
+                </a>
+              </p>
+            </fieldset>
+          )}
           <ConstructionStandard
             model={model}
             disabled={busy}
@@ -585,6 +662,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Obrys
                 <select
                   aria-label="Obrys"
+                  disabled={model.suggestion?.variant === "desk"}
                   value={model.shape}
                   onChange={(e) =>
                     shapeChange({

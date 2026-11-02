@@ -126,3 +126,6 @@ FurnitureDrawers korzysta z fc-fields, fieldsetów i natywnych selectów oraz ta
 
 ## Automatyczny układ startowy — 2026-11-02
 Nowy model pokazuje wnętrze bez ręcznego dodawania płyt. Pierwsze pole Układ startowy wybiera propozycję, a rysunek i istniejący inspektor pozostają miejscem edycji. Przywrócenie i zmiana wariantu mają jawną informację o zastąpieniu wnętrza i wspólne Cofnij. Natywny select, fc-fields i tokeny bez zmian. Źródło: docs/SUGEROWANE-UKLADY.md.
+
+## Biurko — 2026-11-02
+Wariant Biurko korzysta z tego samego selektora układu, rysunku i inspektora. Panel wymiarów podaje punkt startowy oraz źródła, a przyciski 160×80 i 120×80 są jawnie opisane. Wysokość oznacza górną powierzchnię blatu. Wskazówki są informacyjne, bez deklaracji certyfikacji. Źródło: docs/BIURKO-WYMIARY.md.

@@ -19,15 +19,18 @@ export function ConstructionStandard({
     <fieldset disabled={disabled} className="fc-standard">
       <legend>Standard konstrukcji</legend>
       <p>
-        Boki pełne, dno i wieniec między bokami. Głębokość korpusu obejmuje
-        plecy; fronty są przed korpusem. Standard zapisuje się z meblem — użyj
-        kopii z biblioteki do kolejnej realizacji.
+        {model.suggestion?.variant === "desk"
+          ? "Biurko: blat nad bokami, bez dna i pełnych pleców. "
+          : "Boki pełne, dno i wieniec między bokami. Głębokość korpusu obejmuje plecy; fronty są przed korpusem. "}
+        Standard zapisuje się z meblem — użyj kopii z biblioteki do kolejnej
+        realizacji.
       </p>
       <div className="fc-fields">
         <label>
           Plecy
           <select
             aria-label="Plecy"
+            disabled={model.suggestion?.variant === "desk"}
             value={s.back}
             onChange={(e) =>
               onChange({ back: e.target.value as Standard["back"] })

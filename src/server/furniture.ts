@@ -69,6 +69,7 @@ export const furnitureSave = z
               "shelves",
               "drawers",
               "mixed",
+              "desk",
               "empty",
             ]),
             excludedSlots: z.array(z.string().min(1).max(100)).max(150),

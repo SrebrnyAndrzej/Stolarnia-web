@@ -93,7 +93,7 @@ export function resizeFurniture(
   const next = { ...m, ...patch };
   const used = new Set<string>();
   next.plates = [
-    ...carcass(next, id).map((generated) => {
+    ...carcass(next, id).map((generated): FurniturePlate => {
       const old = m.plates.find(
         (p) => p.anchor === generated.anchor && !used.has(p.id),
       );
@@ -102,8 +102,18 @@ export function resizeFurniture(
       return {
         ...generated,
         id: old.id,
-        name: old.name,
-        specification: old.specification,
+        name: old.kind === generated.kind ? old.name : generated.name,
+        specification:
+          old.kind === generated.kind
+            ? old.specification
+            : old.specification
+              ? {
+                  ...old.specification,
+                  face: generated.kind === "cap" ? "slope" : "xz",
+                  grain: "unset",
+                  edges: freshPlateSpecification().edges,
+                }
+              : generated.specification,
       };
     }),
     ...m.plates.filter((p) => !p.anchor && p.kind !== "cap"),
@@ -126,13 +136,14 @@ export interface FurnitureModel {
   suggestion?: { variant: LayoutVariant; excludedSlots: string[] };
 }
 export type LayoutVariant =
-  "auto" | "wardrobe" | "shelves" | "drawers" | "mixed" | "empty";
+  "auto" | "wardrobe" | "shelves" | "drawers" | "mixed" | "desk" | "empty";
 export const layoutVariants: { value: LayoutVariant; label: string }[] = [
   { value: "auto", label: "Automatycznie do obrysu" },
   { value: "wardrobe", label: "Szafa — półki i wysoka komora" },
   { value: "shelves", label: "Regał z półkami" },
   { value: "drawers", label: "Komoda z szufladami" },
   { value: "mixed", label: "Półki i szuflady" },
+  { value: "desk", label: "Biurko" },
   { value: "empty", label: "Sam korpus" },
 ];
 export interface DrawerAssembly {
@@ -196,11 +207,16 @@ export function standardPlateSpecification(
             p.anchor === "right" ||
             p.specification?.face === "yz"
           ? "yz"
-          : "xz";
+          : p.specification?.face === "xy"
+            ? "xy"
+            : "xz";
   // Grain is intentionally not guessed from a free-text decor name.
   for (const [key, edge] of Object.entries(result.edges)) {
     const exposed =
-      !back && (front || key === (result.face === "yz" ? "u1" : "v1"));
+      !back &&
+      (front ||
+        (m.suggestion?.variant === "desk" && p.anchor === "top") ||
+        key === (result.face === "yz" ? "u1" : "v1"));
     edge.state = exposed ? "band" : "none";
     edge.material = exposed ? s.edgeMaterial : "";
     edge.thickness = s.edgeThickness;
@@ -357,6 +373,11 @@ export function polygonArea(p: Point[]) {
 }
 export function furnitureIssues(m: FurnitureModel): string[] {
   const issues: string[] = [];
+  if (
+    m.suggestion?.variant === "desk" &&
+    (m.shape !== "rectangle" || backDepth(m) > 0)
+  )
+    issues.push("Biurko wymaga poziomego blatu i wyłączonych pełnych pleców.");
   if (m.width <= 2 * m.thickness || m.height <= 2 * m.thickness)
     issues.push("Gabaryty muszą być większe niż dwie grubości płyty.");
   if (!m.plates.length) issues.push("Dodaj co najmniej jedną płytę.");
@@ -388,6 +409,55 @@ export function furnitureIssues(m: FurnitureModel): string[] {
 }
 export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
   const t = m.thickness;
+  if (m.suggestion?.variant === "desk") {
+    const parts: FurniturePlate[] = [
+      {
+        id: id(),
+        name: "Bok lewy biurka",
+        kind: "board",
+        anchor: "left",
+        x: 0,
+        y: 0,
+        z: 0,
+        width: t,
+        height: m.height - t,
+        depth: m.depth,
+      },
+      {
+        id: id(),
+        name: "Bok prawy biurka",
+        kind: "board",
+        anchor: "right",
+        x: m.width - t,
+        y: 0,
+        z: 0,
+        width: t,
+        height: m.height - t,
+        depth: m.depth,
+      },
+      {
+        id: id(),
+        name: "Blat biurka",
+        kind: "board",
+        anchor: "top",
+        x: 0,
+        y: m.height - t,
+        z: 0,
+        width: m.width,
+        height: t,
+        depth: m.depth,
+      },
+    ];
+    return parts.map((p) => ({
+      ...p,
+      specification: m.construction
+        ? standardPlateSpecification(m, p)
+        : {
+            ...freshPlateSpecification(),
+            face: p.anchor === "top" ? "xz" : "yz",
+          },
+    }));
+  }
   const b = backDepth(m);
   const generated: FurniturePlate[] = [
     {
@@ -482,6 +552,29 @@ function suggestedInterior(
   const t = m.thickness,
     b = backDepth(m),
     parts: FurniturePlate[] = [];
+  if (choice === "desk") {
+    const h = Math.min(150, m.height - 3 * t);
+    if (h > 0 && m.width > 2 * t)
+      parts.push({
+        id: id(),
+        name: "Tylna poprzeczka biurka",
+        kind: "board",
+        layoutSlot: "desk/apron",
+        x: t,
+        y: m.height - t - h,
+        z: 0,
+        width: m.width - 2 * t,
+        height: h,
+        depth: t,
+        specification: {
+          ...freshPlateSpecification(),
+          face: "xy",
+          material: m.construction?.bodyMaterial ?? "",
+          decor: m.construction?.bodyDecor ?? "",
+        },
+      });
+    return parts;
+  }
   const kind =
     choice === "auto"
       ? m.shape === "rectangle"
@@ -663,7 +756,20 @@ export function applySuggestedLayout(
   variant: LayoutVariant,
   id: () => string,
 ): FurnitureModel {
-  const base = resizeFurniture({ ...m, suggestion: undefined }, {}, id);
+  const suggestion = { variant, excludedSlots: [] as string[] };
+  const target = {
+    ...m,
+    shape: variant === "desk" ? ("rectangle" as const) : m.shape,
+    construction:
+      variant === "desk" && m.construction
+        ? { ...m.construction, back: "none" as const }
+        : m.construction,
+  };
+  const base = resizeFurniture(
+    { ...target, suggestion: undefined },
+    { suggestion },
+    id,
+  );
   return refreshSuggestedLayout(
     {
       ...base,
@@ -671,6 +777,18 @@ export function applySuggestedLayout(
       drawerAssemblies: [],
       suggestion: { variant, excludedSlots: [] },
     },
+    id,
+  );
+}
+/** Project starting dimensions, not a declaration of standard compliance. */
+export function deskStartingModel(
+  m: FurnitureModel,
+  id: () => string,
+  width = 1600,
+): FurnitureModel {
+  return applySuggestedLayout(
+    { ...m, width, height: 740, depth: 800, thickness: 28 },
+    "desk",
     id,
   );
 }
