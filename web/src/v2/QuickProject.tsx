@@ -35,6 +35,7 @@ import {
   NumField,
   PlanView,
   type PlanMarker,
+  variantInside,
   ROLES,
   ShapeIcon,
   mm,
@@ -98,6 +99,8 @@ export function QuickProject({
   projectId?: string;
 }) {
   const isOwner = person.role === "owner";
+  // Tryb „przy kliencie” (domyślnie włączony): ukrywa koszty i ceny zakupu także właścicielowi.
+  const [clientMode, setClientMode] = useState(true);
   const [id, setId] = useState<string | undefined>(projectId);
   const [step, setStep] = useState<Step>("uklad");
   const [busy, setBusy] = useState<string | null>(null);
@@ -488,11 +491,24 @@ export function QuickProject({
           <span className="qp-kicker">Szybki projekt kuchni</span>
           <h1>{id ? name : "Nowa kuchnia przy kliencie"}</h1>
         </div>
-        {id && (
-          <a className="qp-btn secondary" href={`#/p/${id}`}>
-            Otwórz w projektancie
-          </a>
-        )}
+        <div className="qp-bar">
+          {isOwner && (
+            <button
+              type="button"
+              className="qp-btn secondary"
+              aria-pressed={clientMode}
+              onClick={() => setClientMode((x) => !x)}
+              title="Ukrywa koszty netto i ceny zakupu okuć"
+            >
+              {clientMode ? "Przy kliencie: koszty ukryte" : "Koszty widoczne"}
+            </button>
+          )}
+          {id && (
+            <a className="qp-btn secondary" href={`#/p/${id}`}>
+              Otwórz w projektancie
+            </a>
+          )}
+        </div>
       </header>
 
       <ol className="qp-steps" aria-label="Kroki szybkiego projektu">
@@ -1131,6 +1147,7 @@ export function QuickProject({
           {options && (
             <>
               <HardwareGroup
+                hidePrices={clientMode}
                 name="System szuflad"
                 list={options.systemySzuflad}
                 value={hardware.systemSzuflad}
@@ -1139,12 +1156,14 @@ export function QuickProject({
                 }
               />
               <HardwareGroup
+                hidePrices={clientMode}
                 name="Zawiasy"
                 list={options.zawiasy}
                 value={hardware.zawiasy}
                 onChange={(v) => setHardware((o) => ({ ...o, zawiasy: v }))}
               />
               <HardwareGroup
+                hidePrices={clientMode}
                 name="Podnośniki (szafki wiszące)"
                 list={options.podnosniki}
                 value={hardware.podnosniki}
@@ -1240,9 +1259,10 @@ export function QuickProject({
                 );
               const faulty = w.pozycje.filter((p) => p.jestBledemWyceny);
               const rows = showAll ? w.pozycje : faulty;
-              const showCost = w.pozycje.some(
-                (p) => typeof p.kosztNetto === "number",
-              );
+              const showCost =
+                !clientMode &&
+                w.pozycje.some((p) => typeof p.kosztNetto === "number");
+              const inside = variantInside(analysis.warianty);
               const room = analysis.projekt.pomieszczenia[0];
               return (
                 <>
@@ -1268,6 +1288,13 @@ export function QuickProject({
                           <span className="qp-muted">
                             brutto · netto {currency(v.cenaNetto)}
                           </span>
+                          {(inside[v.wariant] ?? []).length > 0 && (
+                            <ul className="qp-inside" aria-label={`Co w środku: ${v.nazwa}`}>
+                              {inside[v.wariant].map((t) => (
+                                <li key={t}>{t}</li>
+                              ))}
+                            </ul>
+                          )}
                           {count > 0 && (
                             <span className="qp-tag error">
                               {count} do uzupełnienia

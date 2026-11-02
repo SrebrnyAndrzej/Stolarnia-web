@@ -215,3 +215,57 @@ test("fixed points: positions and windows go to the engine; engine error lands a
   await expect(page.getByRole("heading", { name: "Podgląd układu" })).toBeVisible();
   await expect(page.getByRole("img", { name: "Rzut kuchni z góry" })).toBeVisible();
 });
+
+// Zmiana 3 z oceny: tryb „przy kliencie” i opis wariantów.
+const owner = { ...sales, user_id: "owner", role: "owner", access_profile: undefined };
+const pos = (nazwa: string, kategoria: string, koszt = 100, blad = false) => ({ nazwa, kategoria, ilosc: 1, jednostka: "szt.", kosztNetto: koszt, jestBledemWyceny: blad });
+const variant = (wariant: string, nazwa: string, cena: number, hw: string[], blad = false) => ({
+  wariant,
+  nazwa,
+  cenaBrutto: cena,
+  cenaNetto: cena / 1.23,
+  pozycje: [pos("Korpus • Egger W1100", "plyty", 900, blad), ...hw.map((h) => pos(h, "okucia")), pos("Produkcja", "robocizna")],
+});
+const quote = (blad = false) => ({
+  ...savedProject,
+  warianty: [
+    variant("eco", "Eco", 35000, ["GTV Zawias puszkowy — 110°", "GTV Modern Box — L=450"], blad),
+    variant("standard", "Standard", 38000, ["GTV Zawias puszkowy — 110°", "GTV Modern Box — L=450"], blad),
+    variant("premium", "Premium", 48000, ["Blum Clip Top Blumotion — 110°", "Blum Tandembox — Antaro"], blad),
+    variant("vip", "VIP", 54000, ["Blum Clip Top — 155°", "Blum Legrabox — Pure"], blad),
+  ],
+});
+async function mockQuote(page: import("@playwright/test").Page, person: unknown, blad = false, extra?: (path: string, route: import("@playwright/test").Route) => Promise<boolean>) {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (extra && (await extra(path, route))) return;
+    let body: unknown = {};
+    if (path.endsWith("/session")) body = person;
+    else if (path.endsWith("/analiza")) body = quote(blad);
+    else if (path.endsWith("/styl")) body = { pomieszczenieId: "r1", korpus: null, front: null, blat: null, modulyZWlasnymMaterialem: 0, okucia: null };
+    else if (path === "/api/dekory" || path === "/api/materialy") body = [];
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
+  });
+  await page.goto("/#/szybki/p1");
+  await expect(page.getByRole("heading", { name: "Dekory" })).toBeVisible();
+  await page.getByRole("button", { name: "Krok 5: Wycena" }).click();
+  await expect(page.getByRole("heading", { name: "Wycena" })).toBeVisible();
+}
+
+test("client mode is on by default: owner sees no purchase costs until switching it off; variants explain differences", async ({ page }) => {
+  await mockQuote(page, owner);
+  await expect(page.getByRole("list", { name: "Co w środku: Standard" })).toContainText("Te same okucia co Eco");
+  await expect(page.getByRole("list", { name: "Co w środku: Standard" })).toContainText("Różnica: zakres robocizny");
+  await expect(page.getByRole("list", { name: "Co w środku: Premium" })).toContainText("+ Blum Tandembox");
+  await expect(page.getByRole("list", { name: "Co w środku: Eco" })).toContainText("GTV Modern Box");
+  await page.getByRole("button", { name: /Pokaż wszystkie pozycje/ }).click();
+  await expect(page.getByRole("columnheader", { name: "Koszt netto" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Przy kliencie: koszty ukryte" }).click();
+  await expect(page.getByRole("columnheader", { name: "Koszt netto" })).toBeVisible();
+});
+
+test("sales profile has no client-mode switch", async ({ page }) => {
+  await mockQuote(page, sales);
+  await expect(page.getByRole("button", { name: /Przy kliencie|Koszty widoczne/ })).toHaveCount(0);
+});

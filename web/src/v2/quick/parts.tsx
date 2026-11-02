@@ -418,11 +418,14 @@ export function HardwareGroup({
   list,
   value,
   onChange,
+  hidePrices,
 }: {
   name: string;
   list: OpcjaOkucia[];
   value?: string;
   onChange: (v: string | undefined) => void;
+  /** Tryb „przy kliencie”: bez cen zakupu. */
+  hidePrices?: boolean;
 }) {
   return (
     <div style={{ display: "grid", gap: 8 }}>
@@ -450,6 +453,7 @@ export function HardwareGroup({
               {o.producent} · {o.system}
             </span>
             {o.maCene ? (
+              !hidePrices &&
               typeof o.cenaNetto === "number" && (
                 <span className="qp-muted">{currency(o.cenaNetto)} netto</span>
               )
@@ -738,4 +742,41 @@ export function PlanView({
       </svg>
     </figure>
   );
+}
+
+// ---------- Warianty: „co w środku” (OCENA-kreatora §4, zmiana 3) ----------
+
+type VariantLike = {
+  wariant: string;
+  nazwa: string;
+  pozycje: { nazwa: string; kategoria: string }[];
+};
+const HARDWARE = new Set(["okucia", "akcesoria"]);
+/** „Blum Legrabox — Pure H86 L=500” → „Blum Legrabox”; bez sztucznego producenta „Generic”. */
+export const shortItem = (n: string) =>
+  n.split(" — ")[0].replace(/^Generic\s+/i, "").replace(/\s*\(ID:[^)]*\)/g, "").trim();
+
+/**
+ * 2–3 linie dla klienta wyliczone z różnic pozycji wyceny: pierwszy wariant — główne okucia,
+ * kolejne — co dochodzi względem poprzedniego. Te same okucia = uczciwe „różnica: zakres robocizny”.
+ * Dobór okuć w wariantach się nie zmienia (decyzja biznesowa); to tylko opis.
+ */
+export function variantInside(warianty: VariantLike[]): Record<string, string[]> {
+  const hw = (v: VariantLike) => [...new Set(v.pozycje.filter((p) => HARDWARE.has(p.kategoria)).map((p) => shortItem(p.nazwa)))];
+  const out: Record<string, string[]> = {};
+  warianty.forEach((v, i) => {
+    const mine = hw(v);
+    if (i === 0) {
+      out[v.wariant] = mine.slice(0, 2);
+      return;
+    }
+    const prev = warianty[i - 1];
+    const before = new Set(hw(prev));
+    const added = mine.filter((x) => !before.has(x));
+    const removed = [...before].filter((x) => !mine.includes(x));
+    out[v.wariant] = !added.length && !removed.length
+      ? [`Te same okucia co ${prev.nazwa}`, "Różnica: zakres robocizny"]
+      : [`Względem ${prev.nazwa}:`, ...added.slice(0, 2).map((x) => `+ ${x}`)];
+  });
+  return out;
 }
