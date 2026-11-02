@@ -109,3 +109,6 @@ Publiczny `DecorCatalog.tsx` i wybór w kreatorze współdzielą `DecorPicker`. 
 
 ## Kreator mebla (2026-11-02)
 Kreator w panelu właściciela i pracownika dziedziczy tokeny `web/src/v2/styles.css`; `furniture.css` odpowiada za układ biblioteka / rysunek / inspektor. Geometryczny rysunek płyt jest wyróżnikiem narzędzia. Brak zmian globalnej identyfikacji. Na telefonie biblioteka, rysunek i inspektor układają się pionowo. Pola liczbowe zapewniają alternatywę dla przeciągania.
+
+## Szkice zamówień Mussi (2026-11-02)
+Purchasing korzysta z istniejących tokenów i powłoki ps-owner-page. Lista szkiców i edytor pozycji są obok siebie na komputerze i kolejno na telefonie. Używa wspólnych request, useResource, Feedback oraz useDraftGuard. Zamówienie ma wyłącznie status szkicu; nie pokazujemy pozornych cen ani przyjęcia przez hurtownię. Wspólna modalna ochrona szkiców ma styl ps-draft-dialog w styles.css.

@@ -20,6 +20,8 @@ import { documentSource, requireTechnicalDocuments, technicalDocuments } from ".
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
 import { saveFurniture } from "./furniture.js";
+import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
+import { MUSSI_CONNECTION } from "../core/purchasing.js";
 import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZapisSprzedazy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
 
 // Aplikacja: REST API dla przeglądarki + MCP (Streamable HTTP, bezstanowy) pod /mcp + statyczny frontend z dist/web.
@@ -167,6 +169,11 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 const p = (req: Request, k: string) => String(req.params[k]);
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
+app.get("/api/v2/purchase-orders", api(() => s.magazyn.odczytaj().purchaseOrders ?? []));
+app.put("/api/v2/purchase-orders", api(req => savePurchaseOrder(s.magazyn, osoba(req), req.body)));
+app.get("/api/v2/purchase-orders/connection", api(() => MUSSI_CONNECTION));
+app.get("/api/v2/purchase-orders/projects", api(() => s.magazyn.odczytaj().projekty.map(({id,nazwa,rewizja}) => ({id,nazwa,rewizja}))));
+app.get("/api/v2/purchase-orders/:id/export", api(req => exportPurchaseOrder(s.magazyn, osoba(req), p(req,"id"), Number(req.query.version))));
 
 const v2 = (fn: (req: Request, person: Principal) => unknown) => async (req: Request, res: Response) => {
   try {

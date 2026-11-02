@@ -22,6 +22,7 @@ import { ActivateAccount } from "./StaffAccounts";
 import { Logo, Feedback } from "./ui";
 import { profilOsoby } from "../../../src/server/uprawnienia";
 const FurnitureCreator = lazy(() => import("./FurnitureCreator").then(m => ({ default: m.FurnitureCreator })));
+const Purchasing = lazy(() => import("./Purchasing").then(m => ({ default: m.Purchasing })));
 const LegacyApp = lazy(() =>
   import("../App").then((m) => ({ default: m.LegacyApp })),
 );
@@ -222,6 +223,7 @@ export function App() {
       : []),
     ...(owner
       ? [
+          { id: "zamowienia", label: "Zamówienia Mussi", icon: IconStack2 },
           { id: "zapytania", label: "Zapytania klientów", icon: IconMail },
           { id: "pracownicy", label: "Pracownicy", icon: IconUsers },
         ]
@@ -391,6 +393,8 @@ export function App() {
               </a>
               <LegacyApp />
             </div>
+          ) : section === "zamowienia" && owner ? (
+            <Purchasing />
           ) : section === "meble" && (owner || employee) ? (
             <FurnitureCreator demo={demo} />
           ) : section === "szuflady" ? (

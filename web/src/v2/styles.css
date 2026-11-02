@@ -2765,3 +2765,18 @@ summary:focus-visible {
 .ps-decor-card img {width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;}
 .ps-decor-card h3 {font-size:1rem;}
 .kp-decor-selection {margin-block:1.5rem;}
+.ps-draft-dialog {
+  width: calc(100% - 64px);
+  max-width: 460px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+}
+.ps-draft-dialog::backdrop {
+  background: rgb(28 43 48 / 45%);
+}
+.ps-draft-dialog button {
+  margin: 8px 8px 0 0;
+}

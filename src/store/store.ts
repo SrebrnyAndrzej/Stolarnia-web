@@ -2,12 +2,14 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "
 import { dirname, join, resolve } from "node:path";
 import { OKUCIA_STARTOWE } from "../core/catalog/hardware.js";
 import type { FurnitureEntry } from "../core/furniture.js";
+import type { PurchaseOrder } from "../core/purchasing.js";
 import { MATERIALY_STARTOWE } from "../core/catalog/materials.js";
 import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
 import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
 
 export interface BazaDanych {
   furnitureLibrary?: FurnitureEntry[];
+  purchaseOrders?: PurchaseOrder[];
   wersja: number;
   ustawienia: UstawieniaStolarni;
   materialy: Material[];

@@ -13,6 +13,7 @@ import {
 import { request } from "./api";
 import { Feedback } from "./ui";
 import { SlopeCutting } from "./SlopeCutting";
+import { useDraftGuard } from "./useDraftGuard";
 import "./furniture.css";
 
 const uid = () => crypto.randomUUID();
@@ -67,8 +68,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const [view, setView] = useState<"2d" | "3d">("2d");
   const [drawerCounts, setDrawerCounts] = useState([1, 1, 1]);
   const [drawerHeights, setDrawerHeights] = useState([140, 220, 320]);
-  const [pending, setPending] = useState<null | (() => void)>(null);
-  const confirm = useRef<HTMLDialogElement>(null);
+  const draftGuard = useDraftGuard(dirty, () => setDirty(false), "Zostań w kreatorze");
   const drag = useRef<{
     id: string;
     x: number;
@@ -87,8 +87,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     setMessage("");
     setError("");
   };
-  const guarded = (action: () => void) =>
-    dirty ? setPending(() => action) : action();
+  const guarded = draftGuard.guarded;
   const loadLibrary = async () => {
     if (demo) return;
     setLoading(true);
@@ -114,34 +113,6 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
         });
     return () => c.abort();
   }, [demo]);
-  useEffect(() => {
-    if (pending) confirm.current?.showModal();
-    else confirm.current?.close();
-  }, [pending]);
-  useEffect(() => {
-    if (!dirty) return;
-    const unload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    const navigate = (e: MouseEvent) => {
-      const a = (e.target as Element).closest("a");
-      if (!a || a.target === "_blank" || e.ctrlKey || e.metaKey || e.shiftKey)
-        return;
-      const href = a.getAttribute("href");
-      if (!href || !href.startsWith("#/")) return;
-      e.preventDefault();
-      setPending(() => () => {
-        location.hash = href;
-      });
-    };
-    window.addEventListener("beforeunload", unload);
-    document.addEventListener("click", navigate, true);
-    return () => {
-      window.removeEventListener("beforeunload", unload);
-      document.removeEventListener("click", navigate, true);
-    };
-  }, [dirty]);
   const reset = () =>
     guarded(() => {
       setId(uid());
@@ -763,23 +734,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           )}
         </aside>
       </div>
-      <dialog ref={confirm} onCancel={() => setPending(null)}>
-        <h2>Odrzucić niezapisane zmiany?</h2>
-        <p>Ten szkic nie został zapisany w bibliotece.</p>
-        <button autoFocus onClick={() => setPending(null)}>
-          Zostań w kreatorze
-        </button>
-        <button
-          onClick={() => {
-            const action = pending;
-            setPending(null);
-            setDirty(false);
-            action?.();
-          }}
-        >
-          Odrzuć szkic
-        </button>
-      </dialog>
+      {draftGuard.dialog}
     </section>
   );
 }
