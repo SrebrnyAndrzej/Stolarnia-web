@@ -112,3 +112,6 @@ Kreator w panelu właściciela i pracownika dziedziczy tokeny `web/src/v2/styles
 
 ## Szkice zamówień Mussi (2026-11-02)
 Purchasing korzysta z istniejących tokenów i powłoki ps-owner-page. Lista szkiców i edytor pozycji są obok siebie na komputerze i kolejno na telefonie. Używa wspólnych request, useResource, Feedback oraz useDraftGuard. Zamówienie ma wyłącznie status szkicu; nie pokazujemy pozornych cen ani przyjęcia przez hurtownię. Wspólna modalna ochrona szkiców ma styl ps-draft-dialog w styles.css.
+
+## Karta części — 2026-11-02
+Inspektor kreatora rozszerza istniejące natywne pola i selecty o materiał, dekor, lokalną płaszczyznę, usłojenie i krawędzie U0/U1/V0/V1. Schemat osi jest oznaczeniem, nie obietnicą rozkroju. Karta części w disclosure używa tokenów panelu, pokazuje braki i przechodzi do wybranego elementu. Eksport JSON zapisanej wersji jest akcją drugorzędną; stan niezatwierdzony pozostaje jawny. Źródło domenowe: docs/KARTA-KONSTRUKCJI.md.

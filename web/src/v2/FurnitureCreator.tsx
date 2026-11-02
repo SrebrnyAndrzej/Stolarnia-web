@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   freshFurniture,
   carcass,
+  resizeFurniture,
+  plateSpecificationIssues,
+  plateThickness,
+  freshPlateSpecification,
   furnitureIssues,
   furnitureOutline,
   platePolygon,
@@ -14,6 +18,7 @@ import { request } from "./api";
 import { Feedback } from "./ui";
 import { SlopeCutting } from "./SlopeCutting";
 import { useDraftGuard } from "./useDraftGuard";
+import { PlateSpecification } from "./PlateSpecification";
 import "./furniture.css";
 
 const uid = () => crypto.randomUUID();
@@ -68,7 +73,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const [view, setView] = useState<"2d" | "3d">("2d");
   const [drawerCounts, setDrawerCounts] = useState([1, 1, 1]);
   const [drawerHeights, setDrawerHeights] = useState([140, 220, 320]);
-  const draftGuard = useDraftGuard(dirty, () => setDirty(false), "Zostań w kreatorze");
+  const draftGuard = useDraftGuard(
+    dirty,
+    () => setDirty(false),
+    "Zostań w kreatorze",
+  );
   const drag = useRef<{
     id: string;
     x: number;
@@ -176,6 +185,33 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
       setBusy(false);
     }
   };
+  const exportConstruction = async () => {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const card = await request<unknown>(
+        `/api/v2/furniture/${encodeURIComponent(id)}/construction?version=${version}`,
+      );
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(card, null, 2)], {
+          type: "application/json;charset=utf-8",
+        }),
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `konstrukcja-${id}-v${version}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setMessage(
+        "Pobrano kartę konstrukcji zapisanej wersji. To szkic do opracowania technologii, nie plik CNC ani zamówienie.",
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   const modifyPlate = (patch: Partial<FurniturePlate>) =>
     update((m) => ({
       ...m,
@@ -184,6 +220,16 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           ? {
               ...p,
               ...patch,
+              ...(p.kind === "cap" && patch.kind === "board" && p.specification
+                ? {
+                    specification: {
+                      ...p.specification,
+                      face: "unset" as const,
+                      grain: "unset" as const,
+                      edges: freshPlateSpecification().edges,
+                    },
+                  }
+                : {}),
               ...("x" in patch ||
               "y" in patch ||
               "width" in patch ||
@@ -246,15 +292,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     setSelected(plates[0].id);
   };
   const shapeChange = (patch: Partial<FurnitureModel>) =>
-    update((m) => {
-      const next = { ...m, ...patch };
-      // Existing custom boards retain explicit dimensions; the upper profile follows the outline.
-      next.plates = [
-        ...carcass(next, uid),
-        ...m.plates.filter((p) => !p.anchor && p.kind !== "cap"),
-      ];
-      return next;
-    });
+    update((m) => resizeFurniture(m, patch, uid));
   const point = (e: PointerEvent): Point => {
     const s = svg.current!;
     const p = s.createSVGPoint();
@@ -323,6 +361,12 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
             aria-busy={busy}
           >
             {busy ? "Zapisywanie…" : "Zapisz w bibliotece"}
+          </button>
+          <button
+            onClick={exportConstruction}
+            disabled={busy || dirty || version === 0 || demo}
+          >
+            Pobierz kartę konstrukcji JSON
           </button>
         </div>
       </header>
@@ -586,6 +630,41 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 })}
             </svg>
           </div>
+          <details className="fc-part-review">
+            <summary>Karta części · dane materiałowe</summary>
+            <p>
+              Eksport JSON jest dostępny po zapisaniu bieżących zmian w
+              bibliotece. Zachowuje obrysy części i oznacza braki materiałowe.
+            </p>
+            <p>
+              Lista braków nie blokuje zapisu szkicu. Nawet po uzupełnieniu
+              danych potrzebny jest odbiór technologii połączeń, obróbki i okuć.
+              Nie jest to wydanie produkcyjne.
+            </p>
+            <ul>
+              {model.plates.map((p) => {
+                const missing = plateSpecificationIssues(model, p);
+                const t = plateThickness(model, p);
+                return (
+                  <li key={p.id}>
+                    <button onClick={() => setSelected(p.id)}>{p.name}</button>
+                    <span>
+                      {p.specification?.material || "Materiał nieokreślony"} ·{" "}
+                      {p.specification?.decor || "Dekor nieokreślony"} ·{" "}
+                      {t === null
+                        ? "Grubość nieokreślona"
+                        : `${t.toLocaleString("pl-PL")} mm`}
+                    </span>
+                    <small>
+                      {missing.length
+                        ? missing.join("; ")
+                        : "Dane materiałowe uzupełnione · technologia do sprawdzenia"}
+                    </small>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
           <p className="fc-hint">
             Wybierz płytę w rysunku lub na liście. W 2D przeciągnij ją, a
             dokładną pozycję ustaw polami X i Y. X od lewej, Y od dołu, Z od
@@ -728,6 +807,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 Usuń płytę
               </button>
               <p>Płytę można przywrócić przyciskiem „Cofnij”.</p>
+              <PlateSpecification
+                model={model}
+                plate={plate}
+                onChange={(specification) => modifyPlate({ specification })}
+              />
             </fieldset>
           ) : (
             <p>Wybierz element, aby zmienić wymiary lub pozycję.</p>

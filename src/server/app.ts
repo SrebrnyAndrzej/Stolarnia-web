@@ -19,7 +19,7 @@ import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
-import { saveFurniture } from "./furniture.js";
+import { saveFurniture, furnitureConstruction } from "./furniture.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
 import { MUSSI_CONNECTION } from "../core/purchasing.js";
 import { filtrujOdpowiedz, podpisUwagi, profilOsoby, projektZTrasy, sprawdzZapisSprzedazy, sprawdzZmianeProjektu, type Profil } from "./uprawnienia.js";
@@ -169,6 +169,7 @@ const api = (fn: Handler) => async (req: Request, res: Response, next: NextFunct
 const p = (req: Request, k: string) => String(req.params[k]);
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
+app.get("/api/v2/furniture/:id/construction", api(req => furnitureConstruction(s.magazyn, osoba(req), req.params.id, Number(req.query.version))));
 app.get("/api/v2/purchase-orders", api(() => s.magazyn.odczytaj().purchaseOrders ?? []));
 app.put("/api/v2/purchase-orders", api(req => savePurchaseOrder(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/purchase-orders/connection", api(() => MUSSI_CONNECTION));

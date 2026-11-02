@@ -30,6 +30,17 @@ export async function staffApi(page: Page, role = "employee") {
       }
       return route.fulfill({ json: library });
     }
+    if (path.endsWith("/construction")) {
+      const entry = library.find((e) => path.includes(e.id));
+      return route.fulfill({
+        json: {
+          format: "pan-stolarz-construction-draft",
+          readyForProduction: false,
+          libraryVersion: entry?.version,
+          model: entry?.model,
+        },
+      });
+    }
     return route.fulfill({ json: [] });
   });
 }

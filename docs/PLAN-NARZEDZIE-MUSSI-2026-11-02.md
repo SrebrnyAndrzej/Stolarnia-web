@@ -69,3 +69,6 @@ Panel właściciela #/panel/zamowienia, wspólny magazyn Supabase Pan Stolarz (p
 ## Granica bieżącego wyniku
 
 To działający szkic modułu zamówień w Pan Stolarz i sprawdzony kontrakt pliku. **Nie jest wdrożeniem produkcyjnej hurtowni, automatycznej wysyłki ani kompletnego silnika produkcyjnego.** Nie zmieniono Mussi, jego flag, cenników ani autoryzacji. Realny silnik jest kolejnym wspólnym etapem według decyzji użytkownika.
+
+## Postęp kolejnego etapu — 2 listopada 2026
+Dodano dane materiałowe każdej części, rzeczywistą grubość z geometrii, lokalne osie, usłojenie, cztery decyzje o krawędziach i listę braków. Korpus zachowuje ID i opisy po zmianie gabarytów. Dodano wersjonowaną kartę konstrukcji JSON z pełnymi wielokątami jako podstawę przyszłego adaptera. Szczegóły: KARTA-KONSTRUKCJI.md. Etap 2 pozostaje otwarty: nie ma jeszcze spięcia z generatorem operacji ani zatwierdzonego wydania. Wielokrawędziowe formatki wymagają indywidualnego opisu technologicznego.

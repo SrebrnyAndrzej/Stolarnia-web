@@ -1,5 +1,20 @@
 /** Parametric library models in millimetres; both views consume these polygons. */
 export type Point = [number, number];
+/** Local U/V axes belong to the explicitly selected broad face, not the screen. */
+export interface PlateSpecification {
+  material: string;
+  decor: string;
+  face: "unset" | "xy" | "xz" | "yz" | "slope";
+  grain: "unset" | "none" | "u" | "v";
+  edges: Record<
+    "u0" | "u1" | "v0" | "v1",
+    {
+      state: "unset" | "none" | "band";
+      material: string;
+      thickness: number;
+    }
+  >;
+}
 export interface FurniturePlate {
   id: string;
   name: string;
@@ -11,6 +26,87 @@ export interface FurniturePlate {
   width: number;
   height: number;
   depth: number;
+  specification?: PlateSpecification;
+}
+export function freshPlateSpecification(): PlateSpecification {
+  return {
+    material: "",
+    decor: "",
+    face: "unset",
+    grain: "unset",
+    edges: Object.fromEntries(
+      ["u0", "u1", "v0", "v1"].map((k) => [
+        k,
+        { state: "unset", material: "", thickness: 1 },
+      ]),
+    ) as PlateSpecification["edges"],
+  };
+}
+export function plateThickness(
+  m: FurnitureModel,
+  p: FurniturePlate,
+): number | null {
+  const face = p.specification?.face;
+  if (p.kind === "cap") return face === "slope" ? m.thickness : null;
+  return face === "xy"
+    ? p.depth
+    : face === "xz"
+      ? p.height
+      : face === "yz"
+        ? p.width
+        : null;
+}
+export function plateSpecificationIssues(
+  m: FurnitureModel,
+  p: FurniturePlate,
+): string[] {
+  const s = p.specification;
+  const issues: string[] = [];
+  if (!s?.material.trim()) issues.push("brak materiału");
+  if (!s?.decor.trim()) issues.push("brak dekoru / oznaczenia powierzchni");
+  const thickness = plateThickness(m, p);
+  if (thickness === null) issues.push("wybierz płaszczyznę płyty");
+  else if (thickness > 100)
+    issues.push("grubość powyżej 100 mm — sprawdź płaszczyznę lub geometrię");
+  if (!s || s.grain === "unset") issues.push("brak decyzji o usłojeniu");
+  if (s?.face === "xy" && platePolygon(m, p).length > 4)
+    issues.push(
+      "obrys wielokrawędziowy wymaga indywidualnego opisu krawędzi w technologii",
+    );
+  for (const key of ["u0", "u1", "v0", "v1"] as const) {
+    const edge = s?.edges[key];
+    if (!edge || edge.state === "unset")
+      issues.push(`${key.toUpperCase()}: brak decyzji o obrzeżu`);
+    else if (edge.state === "band" && !edge.material.trim())
+      issues.push(`${key.toUpperCase()}: brak oznaczenia obrzeża`);
+  }
+  return issues;
+}
+/** Rebuild only generated members; preserve IDs and annotations for surviving slots. */
+export function resizeFurniture(
+  m: FurnitureModel,
+  patch: Partial<FurnitureModel>,
+  id: () => string,
+): FurnitureModel {
+  const next = { ...m, ...patch };
+  const used = new Set<string>();
+  next.plates = [
+    ...carcass(next, id).map((generated) => {
+      const old = m.plates.find(
+        (p) => p.anchor === generated.anchor && !used.has(p.id),
+      );
+      if (!old) return generated;
+      used.add(old.id);
+      return {
+        ...generated,
+        id: old.id,
+        name: old.name,
+        specification: old.specification,
+      };
+    }),
+    ...m.plates.filter((p) => !p.anchor && p.kind !== "cap"),
+  ];
+  return next;
 }
 export interface FurnitureModel {
   name: string;
