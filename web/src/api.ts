@@ -20,6 +20,27 @@ import type {
 } from "../../src/core/types";
 
 export type WydanieMeta = Omit<WydanieProdukcyjne, "dane">;
+import type { PozycjaZeStatusem, StanPozycji, StatusPozycjiZamowienia } from "../../src/core/zamowienie";
+export type { PozycjaZeStatusem, StanPozycji, StatusPozycjiZamowienia };
+/** Lista zamówienia dla dostawcy (ST-APP-003) — odpowiedź GET /api/projekty/:id/zamowienie. */
+export interface ZamowienieProjektu {
+  projekt: { id: string; nazwa: string; rewizja: number };
+  zrodlo: { rodzaj: "wydanie" | "rewizja"; rewizja: number; numer?: number; wydanieId?: string; utworzono?: string };
+  wariant: string;
+  pozycje: PozycjaZeStatusem[];
+  grupy: { dostawca: string; klucze: string[] }[];
+  nieaktualne: { klucz: string; status: StatusPozycjiZamowienia }[];
+  ostrzezenia: string[];
+}
+export interface ZmianaStatusuZamowienia {
+  klucz: string;
+  stan: StanPozycji;
+  data?: string;
+  iloscDostarczona?: number;
+  dostawca?: string | null;
+  uwagi?: string | null;
+  wydanie?: string;
+}
 
 // ---------- Szybki projekt (kontrakt: docs/SZYBKI-PROJEKT.md) ----------
 export type { OpcjeSzybkiegoUkladu, OpcjeWypelnienia, Rezerwacja, RolaWUkladzie, Przedzial } from "../../src/core/uklad";
@@ -211,6 +232,8 @@ export const api = {
   przywrocKonstrukcjeStandardowa: (id: string, mid: string) => zadanie<Modul>("DELETE", `/api/projekty/${id}/moduly/${mid}/drzewo`),
   wydania: (id: string) => zadanie<WydanieMeta[]>("GET", `/api/projekty/${id}/wydania`),
   utworzWydanie: (id: string, notatka?: string) => zadanie<WydanieMeta>("POST", `/api/projekty/${id}/wydania`, { notatka }),
+  zamowienie: (id: string, wydanie?: string) => zadanie<ZamowienieProjektu>("GET", `/api/projekty/${id}/zamowienie${wydanie ? `?wydanie=${encodeURIComponent(wydanie)}` : ""}`),
+  zmienStatusZamowienia: (id: string, z: ZmianaStatusuZamowienia) => zadanie<{ klucz: string; status: StatusPozycjiZamowienia }>("PUT", `/api/projekty/${id}/zamowienie/status`, z),
   duplikujModul: (id: string, mid: string) => zadanie<Modul>("POST", `/api/projekty/${id}/moduly/${mid}/duplikuj`, {}),
 
   // Szybki projekt

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, mm, type Analiza, type Arkusz, type WydanieMeta } from "../api";
+import { Zamowienie } from "./Zamowienie";
 
 const OBRZEZE: Record<string, string> = { brak: "", abs08: "0,8", abs20: "2,0" };
 
@@ -90,6 +91,8 @@ export function Production({ analiza }: { analiza: Analiza }) {
           )}
         </div>
       </div>
+
+      <Zamowienie pid={pid} wydania={wydania} />
 
       <div className="card">
         <div className="card-h">

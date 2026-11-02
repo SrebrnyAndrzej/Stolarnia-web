@@ -12,6 +12,8 @@ import { BladPolecenia, dodajSzufladyZaDrzwiami, dodajUkrytaSzuflade, podzielFro
 import { DOMYSLNE_PLECY, DOMYSLNY_BLAT, DOMYSLNY_FRONT, DOMYSLNY_KORPUS } from "./core/catalog/materials.js";
 import { domyslnaKonfiguracja, KATALOG_MODULOW, modulKatalogowy } from "./core/catalog/modules.js";
 import { formatkiCSV, listaFormatek, rozkroj, zapotrzebowanieObrzeza, type MaterialyModulu } from "./core/production.js";
+import { BladStatusuZamowienia, grupujPoDostawcy, nowyStatus, zamowienieCSV, zeStatusami, zestawienieZamowienia, type StanPozycji, type StanZamowienia, type StatusPozycjiZamowienia } from "./core/zamowienie.js";
+import { zamowieniePdf } from "./export/zamowienie.js";
 import { wycenWszystkie, zbudujProjektWyceny } from "./core/pricing.js";
 import { scalUstawienia, walidujUstawienia, type DeepPartial } from "./core/settings.js";
 import type {
@@ -66,6 +68,12 @@ export function jsonBezMigawek(v: unknown): string {
 }
 
 export class BladUslugi extends Error {}
+
+/** Źródło listy zamówienia: id/numer wydania albo "biezaca" (bieżąca rewizja); domyślnie ostatnie wydanie. */
+export interface OpcjeZamowienia {
+  wydanie?: string;
+  wariant?: WariantWyceny;
+}
 
 /** Walidacja wejścia schematem zod (REST i MCP) — błąd jako BladUslugi (HTTP 400). */
 function parsuj<T extends z.ZodTypeAny>(schemat: T, dane: unknown): z.infer<T> {
@@ -443,7 +451,7 @@ export class Stolarnia {
     return this.magazyn.zmien((b) => {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
-      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], zamowienie: undefined, id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
       delete kopia.cenaUzgodnionaBrutto;
       b.projekty.push(kopia);
       return kopia;
@@ -1166,13 +1174,7 @@ export class Stolarnia {
     const technologia = p.okucia?.profilSzuflad ? { ...b.ustawienia.technologia, profilSzuflad: p.okucia.profilSzuflad } : b.ustawienia.technologia;
     const ustawienia = technologia === b.ustawienia.technologia ? b.ustawienia : { ...b.ustawienia, technologia };
     const zbudowane = moduly.map((m) => {
-      const r = pomScian.get(m.scianaId) ?? p.pomieszczenia[0];
-      const materialy: MaterialyModulu = {
-        korpus: m.materialKorpusuId ?? r?.materialKorpusuId ?? DOMYSLNY_KORPUS,
-        front: m.materialFrontuId ?? r?.materialFrontuId ?? DOMYSLNY_FRONT,
-        plecy: DOMYSLNE_PLECY,
-        blat: r?.materialBlatuId,
-      };
+      const materialy = materialyModulu(p, m, pomScian);
       const konstrukcja = { ...b.ustawienia.konstrukcja };
       const korpus = mapa.get(materialy.korpus), front = mapa.get(materialy.front);
       if (korpus?.zrodloKatalogu) konstrukcja.gruboscPlytyKorpusuMM = korpus.gruboscMM;
@@ -1358,6 +1360,123 @@ export class Stolarnia {
   formatkiCSV(projektId: string): string {
     return "﻿" + formatkiCSV(this.analiza(projektId).formatki);
   }
+  // ---------- Lista zamówienia dla dostawcy (ST-APP-003) ----------
+
+  /**
+   * Zestawienie zamówienia: z wydania (geometria zamrożona w migawce, katalogi i ustawienia bieżące) albo z bieżącej
+   * rewizji. Domyślnie ostatnie wydanie, a bez wydań bieżąca rewizja. Okucia z kosztorysu wariantu (domyślnie Standard).
+   * Te same funkcje co analiza projektu: listaFormatek → zapotrzebowanieObrzeza → rozkroj → wycena wariantu.
+   */
+  private zestawienie(projektId: string, opcje: OpcjeZamowienia = {}) {
+    const b = this.magazyn.odczytaj();
+    const biezacy = this.projekt(projektId);
+    const wariant: WariantWyceny = opcje.wariant ?? "standard";
+    if (!["eco", "standard", "premium", "vip"].includes(wariant)) throw new BladUslugi(`Nieznany wariant „${wariant}”.`);
+    const ostatnie = (biezacy.wydania ?? []).reduce<WydanieProdukcyjne | undefined>((mx, w) => (!mx || w.numer > mx.numer ? w : mx), undefined);
+    const wybor = opcje.wydanie === "biezaca" ? undefined : (opcje.wydanie ?? ostatnie?.id);
+    const ostrzezenia: string[] = [];
+    let zrodlo: { rodzaj: "wydanie" | "rewizja"; rewizja: number; numer?: number; wydanieId?: string; utworzono?: string };
+    let projekt: Projekt;
+    let zbudowane: ZbudowanyModul[];
+    if (wybor) {
+      const m = this.migawkaWydania(projektId, wybor);
+      projekt = m.projekt;
+      zbudowane = m.zbudowane;
+      zrodlo = { rodzaj: "wydanie", rewizja: m.wydanie.rewizja, numer: m.wydanie.numer, wydanieId: m.wydanie.id, utworzono: m.wydanie.utworzono };
+      if (m.wydanie.rewizja !== biezacy.rewizja) ostrzezenia.push(`Projekt zmienił się po wydaniu ${m.wydanie.numer} (rew. ${m.wydanie.rewizja} → ${biezacy.rewizja}). Zestawienie dotyczy wydania ${m.wydanie.numer}.`);
+      if (!m.wydanie.gotowaDoProdukcji) ostrzezenia.push(`Wydanie ${m.wydanie.numer} jest robocze (braki danych) — ilości okuć mogą się zmienić.`);
+    } else {
+      const a = this.analiza(projektId);
+      projekt = a.projekt;
+      zbudowane = a.zbudowane;
+      zrodlo = { rodzaj: "rewizja", rewizja: a.projekt.rewizja };
+      ostrzezenia.push("Projekt nie ma wydania produkcyjnego — zestawienie z bieżącej rewizji. Zamawiaj po wydaniu, żeby ilości się nie rozjechały.");
+    }
+    const mapa = new Map(b.materialy.map((m) => [m.id, m]));
+    const pomScian = new Map(projekt.pomieszczenia.flatMap((r) => r.sciany.map((s) => [s.id, r] as const)));
+    const zModulami = zbudowane.map((zm) => ({ zm, materialy: materialyModulu(projekt, zm.modul, pomScian) }));
+    const formatki = listaFormatek(zModulami, mapa, { odejmujGruboscObrzeza: b.ustawienia.okleinowanie.odejmujGruboscObrzeza });
+    const obrzeza = zapotrzebowanieObrzeza(formatki, b.ustawienia.okleinowanie);
+    const raportRozkroju = rozkroj(formatki, b.ustawienia.rozkroj, mapa);
+    const projektWyceny = zbudujProjektWyceny(projekt.nazwa, zModulami, obrzeza, raportRozkroju.arkusze.length);
+    const wycena = wycenWszystkie(projektWyceny, b.ustawienia, b.materialy, b.okucia, b.cennikMaterialow ?? {}, projekt.okucia).find((w) => w.wariant === wariant)!;
+    if (raportRozkroju.nierozmieszczone.length) ostrzezenia.push(`${raportRozkroju.nierozmieszczone.length} formatek nie mieści się na arkuszu — nie są w liczbie arkuszy.`);
+    const pozycje = zestawienieZamowienia({
+      rozkroj: raportRozkroju,
+      obrzeza,
+      pozycjeWyceny: wycena.pozycje,
+      materialy: mapa,
+      okucia: b.okucia,
+      blat: { materialId: projektWyceny.blatMaterialId, metryBiezace: projektWyceny.metryBiezaceBlatu },
+    });
+    return { biezacy, zrodlo, wariant, pozycje, ostrzezenia };
+  }
+
+  /** Lista zamówienia ze statusami pozycji zapisanymi przy projekcie. Bez cen. */
+  zamowienie(projektId: string, opcje: OpcjeZamowienia = {}) {
+    const z = this.zestawienie(projektId, opcje);
+    const { pozycje, nieaktualne } = zeStatusami(z.pozycje, z.biezacy.zamowienie);
+    const ostrzezenia = [...z.ostrzezenia];
+    if (nieaktualne.length) ostrzezenia.push(`${nieaktualne.length} zamówionych pozycji nie ma w tym zestawieniu (zmiana projektu lub inne wydanie) — sprawdź z dostawcą.`);
+    const brakKodu = pozycje.filter((p) => p.rodzaj === "okucie" && !p.kod).length;
+    if (brakKodu) ostrzezenia.push(`${brakKodu} okuć bez kodu producenta (BRAK KODU) — uzupełnij w bazie okuć albo dopisz kod w zamówieniu.`);
+    return {
+      projekt: { id: z.biezacy.id, nazwa: z.biezacy.nazwa, rewizja: z.biezacy.rewizja },
+      zrodlo: z.zrodlo,
+      wariant: z.wariant,
+      pozycje,
+      grupy: grupujPoDostawcy(pozycje).map((g) => ({ dostawca: g.dostawca, klucze: g.pozycje.map((p) => p.klucz) })),
+      nieaktualne,
+      ostrzezenia,
+    };
+  }
+
+  /** Zmiana statusu jednej pozycji. Nie podbija rewizji projektu (to nie zmiana konstrukcji). */
+  zmienStatusZamowienia(projektId: string, dane: Record<string, unknown>) {
+    const klucz = typeof dane.klucz === "string" ? dane.klucz : "";
+    const z = this.zestawienie(projektId, { wydanie: typeof dane.wydanie === "string" ? dane.wydanie : undefined, wariant: typeof dane.wariant === "string" ? (dane.wariant as WariantWyceny) : undefined });
+    const pozycja = z.pozycje.find((p) => p.klucz === klucz);
+    if (!pozycja) throw new BladUslugi(`Nie ma pozycji „${klucz}” w tym zestawieniu.`);
+    const liczba = (v: unknown) => (v === undefined || v === null || v === "" ? undefined : Number(v));
+    const tekst = (v: unknown) => (v === undefined ? undefined : v === null ? null : String(v));
+    let wynik!: StatusPozycjiZamowienia;
+    this.edytujTemat(projektId, (p) => {
+      const stan: StanZamowienia = p.zamowienie ?? { pozycje: {} };
+      try {
+        wynik = nowyStatus(
+          pozycja,
+          stan.pozycje[klucz],
+          { stan: String(dane.stan) as StanPozycji, data: dane.data === undefined || dane.data === "" ? undefined : String(dane.data), iloscDostarczona: liczba(dane.iloscDostarczona), dostawca: tekst(dane.dostawca), uwagi: tekst(dane.uwagi) },
+          new Date(),
+        );
+      } catch (e) {
+        if (e instanceof BladStatusuZamowienia) throw new BladUslugi(e.message);
+        throw e;
+      }
+      p.zamowienie = { pozycje: { ...stan.pozycje, [klucz]: wynik } };
+    });
+    return { klucz, status: wynik };
+  }
+
+  zamowienieCSV(projektId: string, opcje: OpcjeZamowienia = {}): string {
+    return "﻿" + zamowienieCSV(this.zamowienie(projektId, opcje).pozycje);
+  }
+
+  async zamowieniePdf(projektId: string, opcje: OpcjeZamowienia = {}): Promise<Buffer> {
+    const z = this.zamowienie(projektId, opcje);
+    return zamowieniePdf({ ...z, firma: this.magazyn.odczytaj().ustawienia.daneFirmy.nazwaFirmy || "Stolarnia", data: new Date() });
+  }
+}
+
+/** Materiały modułu (korpus, front, plecy, blat): moduł, potem pomieszczenie jego ściany, potem domyślne. */
+function materialyModulu(p: Projekt, m: Projekt["moduly"][number], pomScian: Map<string, Projekt["pomieszczenia"][number]>): MaterialyModulu {
+  const r = pomScian.get(m.scianaId) ?? p.pomieszczenia[0];
+  return {
+    korpus: m.materialKorpusuId ?? r?.materialKorpusuId ?? DOMYSLNY_KORPUS,
+    front: m.materialFrontuId ?? r?.materialFrontuId ?? DOMYSLNY_FRONT,
+    plecy: DOMYSLNE_PLECY,
+    blat: r?.materialBlatuId,
+  };
 }
 
 function sprawdzWykonczenie(w: WykonczeniePowierzchni): WykonczeniePowierzchni {

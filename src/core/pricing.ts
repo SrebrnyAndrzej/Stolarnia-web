@@ -310,8 +310,8 @@ function dobierzOkucia(p: ProjektWyceny, wariant: WariantWyceny, okucia: Okucie[
     const o = okucia.find((x) => x.id === id);
     if (!o) wynik.push(poz(`Okucie wybrane w projekcie "${id}" — brak w bazie okuć`, "okucia", ilosc, jedn, 0, `Wybór projektu wskazuje pozycję, której nie ma w bazie okuć — dodaj ją albo zmień wybór. Cena nie została przyjęta. ${opis}`, true));
     else if (!o.aktywne || cenaOkuciaNetto(o) <= 0)
-      wynik.push(poz(o.nazwa, "okucia", ilosc, o.jednostka, 0, `${o.producent} • ${o.system}. Wybór projektu bez ${o.aktywne ? "ceny" : "aktywnej pozycji"} w bazie okuć — uzupełnij cenę; nie przyjęto ceny zastępczej. ${opis}`, true));
-    else wynik.push(poz(o.nazwa, "okucia", ilosc, o.jednostka, cenaOkuciaNetto(o), `${o.producent} • ${o.system}. Wybór projektu (ten sam we wszystkich wariantach). Cena z bazy okuć. ${opis}`));
+      wynik.push(zOkuciem(poz(o.nazwa, "okucia", ilosc, o.jednostka, 0, `${o.producent} • ${o.system}. Wybór projektu bez ${o.aktywne ? "ceny" : "aktywnej pozycji"} w bazie okuć — uzupełnij cenę; nie przyjęto ceny zastępczej. ${opis}`, true), o));
+    else wynik.push(zOkuciem(poz(o.nazwa, "okucia", ilosc, o.jednostka, cenaOkuciaNetto(o), `${o.producent} • ${o.system}. Wybór projektu (ten sam we wszystkich wariantach). Cena z bazy okuć. ${opis}`), o));
     return true;
   };
 
@@ -374,9 +374,14 @@ function nogi(p: ProjektWyceny): number {
 function pozOkucia(o: Okucie | undefined, typ: TypOkucia, ilosc: number, fallback: number, fallbackNazwa: string, jedn: string, opis: string): PozycjaKosztowa {
   const kategoria = typ === "wkret" || typ === "klej" ? "akcesoria" : "okucia";
   if (o) {
-    return poz(o.nazwa, kategoria, ilosc, o.jednostka, cenaOkuciaNetto(o), `${o.producent} • ${o.system}. Cena z bazy okuć. ${opis}`);
+    return zOkuciem(poz(o.nazwa, kategoria, ilosc, o.jednostka, cenaOkuciaNetto(o), `${o.producent} • ${o.system}. Cena z bazy okuć. ${opis}`), o);
   }
-  return poz(fallbackNazwa, kategoria, ilosc, jedn, fallback, `Cena domyślna — brak aktywnej pozycji w bazie okuć. ${opis}`);
+  return { ...poz(fallbackNazwa, kategoria, ilosc, jedn, fallback, `Cena domyślna — brak aktywnej pozycji w bazie okuć. ${opis}`), typOkucia: typ };
+}
+
+/** Pochodzenie pozycji (bez wpływu na kwoty): lista zamówienia czyta z bazy okuć producenta i kod. */
+function zOkuciem(p: PozycjaKosztowa, o: Okucie): PozycjaKosztowa {
+  return { ...p, okucieId: o.id, typOkucia: o.typ };
 }
 
 function poz(nazwa: string, kategoria: PozycjaKosztowa["kategoria"], ilosc: number, jednostka: string, cena: number, uwagi: string, blad = false): PozycjaKosztowa {

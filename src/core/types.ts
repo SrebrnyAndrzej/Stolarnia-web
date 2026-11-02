@@ -419,6 +419,8 @@ export interface Projekt {
   wydania?: WydanieProdukcyjne[];
   /** Okucia wybrane na projekcie (szybki projekt) — wycena respektuje je we wszystkich wariantach. Brak = dobór wariantem. */
   okucia?: OkuciaProjektu;
+  /** Statusy pozycji listy zamówienia (ST-APP-003). Klucz pozycji z core/zamowienie.ts. Nie podbija rewizji projektu. */
+  zamowienie?: import("./zamowienie.js").StanZamowienia;
 }
 
 /**
@@ -744,6 +746,10 @@ export interface PozycjaKosztowa {
   kosztNetto: number;
   uwagi: string;
   jestBledemWyceny: boolean;
+  /** Okucie z bazy, z którego pochodzi pozycja (lista zamówienia czyta stąd producenta i kod). Brak = dobór domyślny. */
+  okucieId?: string;
+  /** Typ okucia pozycji (także dla doboru domyślnego bez rekordu w bazie). */
+  typOkucia?: TypOkucia;
 }
 
 export interface PodsumowanieWariantu {

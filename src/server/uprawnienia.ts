@@ -128,6 +128,9 @@ export const REGULY_TRAS: Regula[] = [
   { metody: "GET", sciezka: proj("/(szkice|szkic\\.pdf)"), profile: [S], opis: "szkice dla klienta" },
   { metody: "POST", sciezka: proj("/oferta\\.pdf"), profile: [S], opis: "oferta dla klienta (ceny ofertowe)" },
   { metody: "GET", sciezka: proj("/formatki\\.csv"), profile: [S], opis: "formatki CSV" },
+  // Lista zamówienia (ST-APP-003): na razie tylko właściciel. Do decyzji: produkcja potwierdza dostawy?
+  { metody: "GET", sciezka: proj("/zamowienie(\\.csv|\\.pdf)?"), profile: TYLKO_WLASCICIEL, opis: "lista zamówienia dla dostawcy" },
+  { metody: "PUT", sciezka: proj("/zamowienie/status"), profile: TYLKO_WLASCICIEL, opis: "status pozycji zamówienia" },
 
   // ---- MCP po HTTP: pełny dostęp do danych → tylko właściciel
   { metody: "GET|POST|DELETE", sciezka: /^\/mcp$/, profile: TYLKO_WLASCICIEL, opis: "MCP po HTTP" },

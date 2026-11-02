@@ -14,6 +14,7 @@ import { utworzSerwerMcp } from "../mcp/server.js";
 import { jsonBezMigawek, BladUslugi, Stolarnia } from "../service.js";
 import { KonfliktZapisu, Magazyn, konfiguracjaChmury } from "../store/store.js";
 import { z } from "zod";
+import type { WariantWyceny } from "../core/types.js";
 import { AccessError, createAccess, mayReadProject, type Principal } from "./access.js";
 import { projectSummary, technicalView } from "./technical.js";
 import { documentSource, requireTechnicalDocuments, technicalDocuments } from "./documents.js";
@@ -488,6 +489,33 @@ app.get("/api/projekty/:id/formatki.csv", (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
+
+// Lista zamówienia dla dostawcy (ST-APP-003): ?wydanie=<id|numer|biezaca>&wariant=<eco|standard|premium|vip>
+const opcjeZamowienia = (req: Request) => ({
+  wydanie: typeof req.query.wydanie === "string" && req.query.wydanie ? String(req.query.wydanie) : undefined,
+  wariant: typeof req.query.wariant === "string" && req.query.wariant ? (String(req.query.wariant) as WariantWyceny) : undefined,
+});
+app.get("/api/projekty/:id/zamowienie", api((r) => s.zamowienie(p(r, "id"), opcjeZamowienia(r))));
+app.put("/api/projekty/:id/zamowienie/status", api((r) => s.zmienStatusZamowienia(p(r, "id"), (r.body ?? {}) as Record<string, unknown>)));
+app.get("/api/projekty/:id/zamowienie.csv", (req, res, next) => {
+  try {
+    const csv = s.zamowienieCSV(p(req, "id"), opcjeZamowienia(req));
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="zamowienie-${p(req, "id")}.csv"`);
+    res.send(csv);
+  } catch (e) {
+    next(e);
+  }
+});
+app.get("/api/projekty/:id/zamowienie.pdf", (req, res, next) => {
+  s.zamowieniePdf(p(req, "id"), opcjeZamowienia(req))
+    .then((pdf) => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="zamowienie-${p(req, "id")}.pdf"`);
+      res.send(pdf);
+    })
+    .catch(next);
 });
 
 // MCP po HTTP — bezstanowo: nowy serwer i transport na każde żądanie.
