@@ -107,16 +107,19 @@ export function platePolygon(m: FurnitureModel, p: FurniturePlate): Point[] {
   clip(1, p.y, true);
   clip(1, p.y + p.height, false);
   if (p.kind === "cap") {
-    const s = topSegments(m).find(
-      (s) => Math.abs(s.x - p.x) < 0.1 && Math.abs(s.end - p.x - p.width) < 0.1,
-    );
+    const x = Math.max(m.thickness, p.x);
+    const end = Math.min(m.width - m.thickness, p.x + p.width);
+    const s = topSegments(m).find((s) => x >= s.x - 0.1 && end <= s.end + 0.1);
     if (s) {
-      const t = m.thickness * Math.sqrt(1 + ((s.b - s.a) / (s.end - s.x)) ** 2);
+      const gradient = (s.b - s.a) / (s.end - s.x);
+      const a = s.a + gradient * (x - s.x);
+      const b = s.a + gradient * (end - s.x);
+      const t = m.thickness * Math.sqrt(1 + gradient ** 2);
       poly = [
-        [s.x, Math.max(0, s.a - t)],
-        [s.end, Math.max(0, s.b - t)],
-        [s.end, s.b],
-        [s.x, s.a],
+        [x, Math.max(0, a - t)],
+        [end, Math.max(0, b - t)],
+        [end, b],
+        [x, a],
       ];
     }
   }
@@ -203,10 +206,10 @@ export function carcass(m: FurnitureModel, id: () => string): FurniturePlate[] {
       name: "Wieniec górny",
       kind: "cap" as const,
       anchor: "top" as const,
-      x: s.x,
+      x: Math.max(t, s.x),
       y: Math.min(s.a, s.b) - t,
       z: 0,
-      width: s.end - s.x,
+      width: Math.min(m.width - t, s.end) - Math.max(t, s.x),
       height: Math.abs(s.b - s.a) + t,
       depth: m.depth,
     })),

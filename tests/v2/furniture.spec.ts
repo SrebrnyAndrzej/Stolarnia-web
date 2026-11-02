@@ -1,4 +1,34 @@
 import { test, expect } from "@playwright/test";
+test("two side heights calculate saw limits and preserve them after saving", async ({
+  page,
+}) => {
+  await page.goto("/#/podglad/employee/meble");
+  await page.getByLabel("Obrys", { exact: true }).selectOption("slope");
+  await page
+    .getByLabel("Wysokość krótkiej ścianki", { exact: true })
+    .fill("1500");
+  await page
+    .getByLabel("Wysokość długiej ścianki", { exact: true })
+    .fill("2000");
+  const cutting = page.getByRole("region", { name: "Kalkulator cięcia skosu" });
+  await expect(cutting).toContainText("26,57°");
+  await expect(cutting).toContainText("1509,0 mm");
+  await page.getByLabel("Piła", { exact: true }).selectOption("track");
+  await expect(cutting).toContainText("Zagłębiarka:");
+  await page
+    .getByLabel("Połączenie do obliczeń", { exact: true })
+    .selectOption("mitre");
+  await expect(cutting).toContainText("58,28°");
+  await expect(cutting.getByRole("alert")).toContainText("przekracza 45°");
+  await page
+    .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await expect(
+    page.getByLabel("Wysokość krótkiej ścianki", { exact: true }),
+  ).toHaveValue("1500");
+});
 test("employee creates a sloped model, edits a shelf, saves and reopens it", async ({
   page,
 }) => {

@@ -12,6 +12,7 @@ import {
 } from "../../../src/core/furniture";
 import { request } from "./api";
 import { Feedback } from "./ui";
+import { SlopeCutting } from "./SlopeCutting";
 import "./furniture.css";
 
 const uid = () => crypto.randomUUID();
@@ -310,7 +311,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           ? p
           : {
               ...p,
-                anchor: undefined,
+              anchor: undefined,
               x: Math.max(
                 0,
                 Math.min(m.width - p.width, Math.round(d.startX + x - d.x)),
@@ -451,7 +452,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                 onChange={(v) => shapeChange({ width: v })}
               />
               <NumberField
-                label="Wysokość"
+                label={
+                  model.shape === "slope"
+                    ? "Wysokość długiej ścianki"
+                    : "Wysokość"
+                }
                 min={100}
                 value={model.height}
                 onChange={(v) => shapeChange({ height: v })}
@@ -472,7 +477,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               {model.shape !== "rectangle" && (
                 <>
                   <NumberField
-                    label="Niższy koniec"
+                    label={
+                      model.shape === "slope"
+                        ? "Wysokość krótkiej ścianki"
+                        : "Niższy koniec"
+                    }
                     min={100}
                     value={model.lowHeight}
                     onChange={(v) => shapeChange({ lowHeight: v })}
@@ -505,6 +514,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
               do skosu i schodów.
             </p>
           </fieldset>
+          {model.shape === "slope" && <SlopeCutting model={model} />}
           <div className="fc-toolbar">
             <button
               disabled={busy || !history.length}

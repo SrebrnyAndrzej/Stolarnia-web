@@ -103,3 +103,6 @@ Na polecenie użytkownika dodano 4 usługi, 4 pozycje paska dowodów, galerię 2
 - Półki i przegrody są przycinane do obrysu. Front szuflady wychodzący poza obrys blokuje zapis. 2D i izometryczna bryła 3D używają identycznych polygonów.
 - To model do dalszego opracowania, bez automatycznie zatwierdzonych połączeń, skrzynek szuflad, obrzeży i otworowania; nie jest wydaniem produkcyjnym ani eksportem CNC.
 - Główna granica błędów `PanelBoundary` pokazuje odzyskanie po błędzie komponentu lub pliku lazy; wydanie OVH zachowuje starsze zasoby z hashami i wymusza rewalidację index.html.
+
+## Skos i cięcie (2026-11-02)
+Dwa jawne pola wysokości boków (krótki i długi, pomiar zewnętrzny) oraz szerokość pozioma. SlopeCutting używa geometrii slopeCut; rysunek przedstawia wieniec między bokami. Porównanie uciosów jest oddzielnie oznaczone i nie zmienia konstrukcji. Nastawa0°=cięcie prostopadłe przy płycie płasko. Przekroczenie45° jest jawne i blokuje wskazówki ustawiania do bezpośredniego cięcia. Dane nie są instrukcją konkretnego modelu Mac Allister; nie znamy jego identyfikatora ani dopuszczalnej głębokości. Zmiana wysokości aktualizuje kalkulator i zapisuje się z modelem; wybór piły i wariantu porównania jest lokalnym ustawieniem widoku.
