@@ -126,6 +126,8 @@ Użytkownik wybrał szkic narzędzia teraz, rzeczywisty silnik wraz z wdrożenie
 ## Przypisanie systemu szuflady — 2026-11-02
 Źródło: docs/SYSTEMY-SZUFLAD-KREATOR.md. Parametry są częścią modelu, obliczenia zamraża serwer przy zapisie. Otwieranie zapisanej wersji zachowuje migawkę, edycja przelicza szkic. Brak granicy komory nie uruchamia fallbacku do pełnej szerokości. Błąd zapisu zachowuje parametry. Zastąpienie frontów usuwa przypisania z obsługą Cofnij. Źródła profili nie stanowią dopuszczenia produkcyjnego. Wspólne uprawnienia, Feedback, useDraftGuard i request pozostają właścicielami zachowania.
 
+Nowe układy wypełniają wysokość komory do pełnej półki/wieńca, z luzami 2 mm. Ręczna geometria frontu przełącza drawerFit na fixed, checkbox pozwala jawnie wrócić do fill. Starsze modele bez pola nie są przebudowywane przy odczycie. Tryb i własna liczba frontów zapisują się razem z modelem; Cofnij obejmuje oba. Źródło: docs/SZUFLADY-WYPELNIENIE.md.
+
 ## Propozycje do ustalania projektu — 2026-11-02
 Źródło: docs/SUGEROWANE-UKLADY.md. Nowy model startuje automatycznie; zapisane modele bez suggestion nie są przebudowywane. Ręczne pozycje i wymiary zachowują się po zmianie gabarytów, usunięte sugestie nie wracają. Wariant i wykluczenia zapisują się z modelem. Zmiana wariantu zastępuje wnętrze i przypisania szuflad z obsługą Cofnij, bez dodatkowego potwierdzenia dla tej odwracalnej operacji. Nie zmienia to dostępu do biblioteki ani ról.
 

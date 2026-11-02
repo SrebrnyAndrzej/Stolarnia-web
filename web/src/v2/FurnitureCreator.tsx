@@ -24,6 +24,7 @@ import {
   deskWorktopHeight,
   deskLegWidth,
   deskCabinetWidth,
+  fitDrawerFronts,
   layoutVariants,
   type LayoutVariant,
   furnitureIssues,
@@ -96,7 +97,7 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
     if (!drag.current)
       setHistory((h) => [...h.slice(-39), structuredClone(model)]);
-    setModel(fn);
+    setModel((m) => fitDrawerFronts(fn(m)));
     setDirty(true);
     setMessage("");
     setError("");
@@ -226,6 +227,10 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
   const modifyPlate = (patch: Partial<FurniturePlate>) =>
     update((m) => ({
       ...m,
+      ...(plate?.kind === "drawer" &&
+      ["x", "y", "z", "width", "height", "depth"].some((k) => k in patch)
+        ? { drawerFit: "fixed" as const }
+        : {}),
       plates: m.plates.map((p) =>
         p.id === selected
           ? {
@@ -284,30 +289,53 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     setSelected(p.id);
   };
   const addDrawers = () => {
-    let y = model.thickness + 2;
     const plates: FurniturePlate[] = [];
-    drawerCounts.forEach((count, i) => {
-      for (let j = 0; j < count; j++) {
-        plates.push({
-          id: uid(),
-          name: `Szuflada ${["niska", "średnia", "wysoka"][i]} ${j + 1}`,
-          kind: "drawer",
-          x: model.thickness + 2,
-          y,
-          z: model.depth,
-          width: model.width - 2 * model.thickness - 4,
-          height: drawerHeights[i],
-          depth: model.thickness,
-        });
-        y += drawerHeights[i] + 2;
-      }
-    });
+    const columns = new Map<string, { x: number; width: number }>();
+    model.plates
+      .filter(
+        (p) =>
+          p.kind === "drawer" ||
+          (isDeskVariant(model.suggestion?.variant) && p.kind === "door"),
+      )
+      .forEach((p) =>
+        columns.set(`${p.x}/${p.width}`, { x: p.x, width: p.width }),
+      );
+    if (!columns.size)
+      columns.set("body", {
+        x: model.thickness + 2,
+        width: model.width - 2 * model.thickness - 4,
+      });
+    for (const column of columns.values()) {
+      let y = model.thickness + 2;
+      drawerCounts.forEach((count, i) => {
+        for (let j = 0; j < count; j++) {
+          plates.push({
+            id: uid(),
+            name: `Szuflada ${["niska", "średnia", "wysoka"][i]} ${j + 1}`,
+            kind: "drawer",
+            x: column.x,
+            y,
+            z: model.depth,
+            width: column.width,
+            height: drawerHeights[i],
+            depth: model.thickness,
+          });
+          y += drawerHeights[i] + 2;
+        }
+      });
+    }
     if (!plates.length) {
       setError("Wybierz co najmniej jedną szufladę.");
       return;
     }
-    const next = {
+    const next = fitDrawerFronts({
       ...model,
+      drawerFit: model.drawerFit ?? "fill",
+      customDrawerSet: true,
+      desk:
+        isDeskVariant(model.suggestion?.variant) && model.desk
+          ? { ...model.desk, cabinetFront: "drawers" }
+          : model.desk,
       drawerAssemblies: [],
       suggestion: isDeskVariant(model.suggestion?.variant)
         ? model.suggestion
@@ -316,13 +344,18 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
         ...model.plates.filter(
           (p) =>
             p.kind !== "drawer" &&
+            !(isDeskVariant(model.suggestion?.variant) && p.kind === "door") &&
+            !(
+              p.layoutSlot?.startsWith("desk/cabinet/") &&
+              p.layoutSlot.endsWith("/shelf")
+            ) &&
             (!p.layoutSlot ||
               p.layoutCustomized ||
               isDeskVariant(model.suggestion?.variant)),
         ),
         ...plates,
       ],
-    };
+    });
     if (model.construction)
       next.plates = next.plates.map((p) =>
         p.kind === "drawer"
@@ -362,6 +395,9 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
     const [x, y] = point(e);
     update((m) => ({
       ...m,
+      ...(m.plates.find((p) => p.id === d.id)?.kind === "drawer"
+        ? { drawerFit: "fixed" as const }
+        : {}),
       plates: m.plates.map((p) =>
         p.id !== d.id
           ? p
@@ -623,10 +659,12 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                     m.plates
                       .filter(
                         (p) =>
-                          patch.cabinetFront &&
-                          p.layoutSlot?.startsWith("desk/cabinet/") &&
-                          (p.layoutSlot.includes("/drawer/") ||
-                            p.layoutSlot.endsWith("/door")),
+                          (patch.cabinetFront ||
+                            patch.side ||
+                            patch.cabinetWidth !== undefined) &&
+                          (p.kind === "drawer" ||
+                            (p.kind === "door" &&
+                              p.layoutSlot?.startsWith("desk/cabinet/"))),
                       )
                       .map((p) => p.id),
                   );
@@ -640,6 +678,11 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
                     },
                     {
                       ...(height === undefined ? {} : { height }),
+                      ...(patch.cabinetFront ||
+                      patch.side ||
+                      patch.cabinetWidth !== undefined
+                        ? { customDrawerSet: false, drawerFit: "fill" as const }
+                        : {}),
                       desk: {
                         worktopHeight: deskWorktopHeight(m),
                         cabinetWidth: deskCabinetWidth(m),
@@ -954,6 +997,24 @@ export function FurnitureCreator({ demo }: { demo: boolean }) {
           )}
           <fieldset disabled={busy}>
             <legend>Szuflady — liczba i wysokość frontów</legend>
+            <label className="fc-check">
+              <input
+                type="checkbox"
+                checked={model.drawerFit === "fill"}
+                onChange={(e) =>
+                  update((m) => ({
+                    ...m,
+                    drawerFit: e.target.checked ? "fill" : "fixed",
+                  }))
+                }
+              />
+              Wypełnij szufladami całą komorę
+            </label>
+            <p>
+              {model.drawerFit === "fill"
+                ? "Fronty wypełniają wysokość do najbliższej półki lub wieńca, z luzami 2 mm. Podane wysokości wyznaczają proporcje. Dodanie albo przesunięcie półki dopasuje podział. Ręczna zmiana wymiaru frontu przełącza na własne wysokości."
+                : "Własne wysokości: fronty zachowują podane wymiary i pozycje. Włącz wypełnianie, aby automatycznie wykorzystać całą komorę."}
+            </p>
             <div className="fc-drawers">
               {["Niskie", "Średnie", "Wysokie"].map((label, i) => (
                 <div key={label}>

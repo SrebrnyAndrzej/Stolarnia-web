@@ -126,6 +126,8 @@ ConstructionStandard używa istniejącego fieldset, fc-fields, natywnych select�
 ## Systemy szuflad w kreatorze — 2026-11-02
 FurnitureDrawers korzysta z fc-fields, fieldsetów i natywnych selectów oraz tabel w fc-cut-table. Każdy front ma osobny system i granice komory. Źródła, braki oraz stan szkicu są czytelne; lista funkcji okuć nie wygląda jak przyjęte zamówienie. Bez nowych tokenów. Źródło: docs/SYSTEMY-SZUFLAD-KREATOR.md.
 
+Automatyczne wypełnienie komory kontroluje natywny checkbox w istniejącym fieldsecie szuflad, klasa fc-check. Jawny opis odróżnia proporcje frontów od własnych wysokości. Zmiany wizualizuje ten sam rysunek 2D/3D i zestawienie części. Źródło: docs/SZUFLADY-WYPELNIENIE.md.
+
 ## Automatyczny układ startowy — 2026-11-02
 Nowy model pokazuje wnętrze bez ręcznego dodawania płyt. Pierwsze pole Układ startowy wybiera propozycję, a rysunek i istniejący inspektor pozostają miejscem edycji. Przywrócenie i zmiana wariantu mają jawną informację o zastąpieniu wnętrza i wspólne Cofnij. Natywny select, fc-fields i tokeny bez zmian. Źródło: docs/SUGEROWANE-UKLADY.md.
 

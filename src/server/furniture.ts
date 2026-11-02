@@ -61,6 +61,8 @@ export const furnitureSave = z
         steps: z.number().int().min(2).max(20),
         reverse: z.boolean(),
         plates: z.array(plate).min(1).max(150),
+        drawerFit: z.enum(["fill", "fixed"]).optional(),
+        customDrawerSet: z.boolean().optional(),
         desk: z
           .object({
             worktopHeight: z.number().finite().min(100).max(3000),

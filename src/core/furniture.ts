@@ -118,7 +118,9 @@ export function resizeFurniture(
     }),
     ...m.plates.filter((p) => !p.anchor && p.kind !== "cap"),
   ];
-  return next.suggestion ? refreshSuggestedLayout(next, id) : next;
+  return next.suggestion
+    ? refreshSuggestedLayout(next, id)
+    : fitDrawerFronts(next);
 }
 export interface FurnitureModel {
   name: string;
@@ -133,6 +135,8 @@ export interface FurnitureModel {
   plates: FurniturePlate[];
   construction?: ConstructionStandard;
   drawerAssemblies?: DrawerAssembly[];
+  drawerFit?: "fill" | "fixed";
+  customDrawerSet?: boolean;
   suggestion?: { variant: LayoutVariant; excludedSlots: string[] };
   desk?: {
     worktopHeight: number;
@@ -409,6 +413,17 @@ export function polygonArea(p: Point[]) {
 }
 export function furnitureIssues(m: FurnitureModel): string[] {
   const issues: string[] = [];
+  if (m.drawerFit === "fill") {
+    for (const group of drawerCompartments(m)) {
+      if (
+        group.top - group.bottom - 4 - (group.fronts.length - 1) * 2 <
+        group.fronts.length * 60
+      )
+        issues.push(
+          "Za dużo szuflad w dostępnej komorze: zmniejsz ich liczbę lub przesuń półkę (minimum frontu 60 mm).",
+        );
+    }
+  }
   if (isDeskVariant(m.suggestion?.variant)) {
     if (
       deskWorktopHeight(m) <= 2 * m.thickness ||
@@ -604,6 +619,83 @@ function layoutCeiling(m: FurnitureModel, x: number, end: number) {
       }),
   );
 }
+function drawerCompartments(m: FurnitureModel) {
+  const columns = new Map<string, FurniturePlate[]>();
+  for (const p of m.plates.filter((p) => p.kind === "drawer")) {
+    const key = `${p.x.toFixed(3)}/${p.width.toFixed(3)}`;
+    columns.set(key, [...(columns.get(key) ?? []), p]);
+  }
+  return [...columns.values()].map((fronts) => {
+    fronts.sort((a, b) => a.y - b.y);
+    const first = fronts[0],
+      x = first.x,
+      end = x + first.width;
+    const horizontal = m.plates.filter(
+      (p) =>
+        p.kind === "board" &&
+        p.x <= x + 0.01 &&
+        p.x + p.width >= end - 0.01 &&
+        (p.specification?.face === "xz" ||
+          (p.height <= m.thickness &&
+            p.depth > p.height &&
+            p.width > p.height)),
+    );
+    const bottom = Math.max(
+      0,
+      ...horizontal
+        .filter((p) => p.anchor === "bottom" || p.y <= 0.01)
+        .map((p) => p.y + p.height),
+    );
+    const top = Math.min(
+      layoutCeiling(m, x, end),
+      ...horizontal.filter((p) => p.y > bottom + 0.01).map((p) => p.y),
+    );
+    return { fronts, bottom: Math.ceil(bottom), top: Math.floor(top) };
+  });
+}
+/** Fill each column to the first full-width shelf/top; never cross a shelf. Legacy models stay fixed until opted in. */
+export function fitDrawerFronts(m: FurnitureModel): FurnitureModel {
+  if (m.drawerFit !== "fill") return m;
+  const fitted = new Map<string, FurniturePlate>();
+  for (const { fronts, bottom, top } of drawerCompartments(m)) {
+    const total = top - bottom - 4 - (fronts.length - 1) * 2;
+    if (total < fronts.length * 60) continue;
+    const heights = new Map<string, number>();
+    let active = [...fronts],
+      budget = total;
+    while (active.length) {
+      const sum = active.reduce((s, p) => s + Math.max(1, p.height), 0);
+      const small = active.filter(
+        (p) => (budget * Math.max(1, p.height)) / sum < 60,
+      );
+      if (small.length) {
+        small.forEach((p) => heights.set(p.id, 60));
+        budget -= small.length * 60;
+        active = active.filter((p) => !heights.has(p.id));
+      } else {
+        let cumulative = 0,
+          previous = 0;
+        active.forEach((p, i) => {
+          cumulative += Math.max(1, p.height);
+          const share =
+            i === active.length - 1
+              ? budget
+              : Math.round((budget * cumulative) / sum);
+          heights.set(p.id, share - previous);
+          previous = share;
+        });
+        break;
+      }
+    }
+    let y = bottom + 2;
+    fronts.forEach((p, i) => {
+      const height = heights.get(p.id)!;
+      fitted.set(p.id, { ...p, y, height });
+      y += height + 2;
+    });
+  }
+  return { ...m, plates: m.plates.map((p) => fitted.get(p.id) ?? p) };
+}
 function suggestedInterior(
   m: FurnitureModel,
   id: () => string,
@@ -782,7 +874,11 @@ export function refreshSuggestedLayout(
     slots = new Set(generated.map((p) => p.layoutSlot));
   const retained = m.plates
     .filter(
-      (p) => !p.layoutSlot || (p.layoutCustomized && !slots.has(p.layoutSlot)),
+      (p) =>
+        !p.layoutSlot ||
+        ((m.drawerFit === "fixed" || m.customDrawerSet) &&
+          p.kind === "drawer") ||
+        (p.layoutCustomized && !slots.has(p.layoutSlot)),
     )
     .map((p) =>
       p.layoutSlot && !slots.has(p.layoutSlot)
@@ -790,6 +886,13 @@ export function refreshSuggestedLayout(
         : p,
     );
   const parts = generated
+    .filter(
+      (p) =>
+        !(
+          (m.drawerFit === "fixed" || m.customDrawerSet) &&
+          p.kind === "drawer"
+        ),
+    )
     .filter((p) => !m.suggestion?.excludedSlots.includes(p.layoutSlot!))
     .map((p) => {
       const old = m.plates.find((o) => o.layoutSlot === p.layoutSlot);
@@ -805,13 +908,13 @@ export function refreshSuggestedLayout(
           : p;
     });
   const plates = [...retained, ...parts];
-  return {
+  return fitDrawerFronts({
     ...m,
     plates,
     drawerAssemblies: m.drawerAssemblies?.filter((a) =>
       plates.some((p) => p.id === a.frontId && p.kind === "drawer"),
     ),
-  };
+  });
 }
 export function applySuggestedLayout(
   m: FurnitureModel,
@@ -823,6 +926,8 @@ export function applySuggestedLayout(
     isHutch = variant === "desk-hutch";
   const target = {
     ...m,
+    drawerFit: "fill" as const,
+    customDrawerSet: false,
     height: isDeskVariant(variant)
       ? isHutch
         ? m.suggestion?.variant === "desk-hutch"
