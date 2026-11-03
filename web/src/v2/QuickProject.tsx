@@ -174,6 +174,7 @@ export function QuickProject({
   const [materials, setMaterials] = useState<Material[]>([]);
   const [show3D, setShow3D] = useState(false);
   const [full3D, setFull3D] = useState(false);
+  const [captureReady, setCaptureReady] = useState(false);
   const ujecieRef = useRef<(() => string | null) | null>(null);
   // Ujęcia prywatne: wyłącznie w pamięci edytora, nigdy w sessionStorage.
   const [shots, setShots] = useState<string[]>([]);
@@ -197,7 +198,10 @@ export function QuickProject({
             ref={fullDialog}
             className="qp-3d-dialog"
             aria-label="Widok 3D na pełnym ekranie"
-            onCancel={() => setFull3D(false)}
+            onCancel={() => {
+              setCaptureReady(false);
+              setFull3D(false);
+            }}
           >
             {node}
           </dialog>,
@@ -205,9 +209,16 @@ export function QuickProject({
         )
       : node;
   const takeShot = () => {
-    const url = ujecieRef.current?.();
-    if (!url) return setError("Nie udało się zapisać ujęcia (brak widoku 3D).");
-    saveShots([...shots, url].slice(-3));
+    try {
+      const url = ujecieRef.current?.();
+      if (!url)
+        return setError(
+          "Widok 3D nie jest jeszcze gotowy. Spróbuj ponownie za chwilę.",
+        );
+      saveShots([...shots, url].slice(-3));
+    } catch {
+      setError("Nie udało się zapisać ujęcia. Spróbuj ponownie.");
+    }
   };
   useEffect(() => {
     if (!full3D) return;
@@ -1579,7 +1590,10 @@ export function QuickProject({
                             ref={fullButton}
                             type="button"
                             className="qp-btn secondary"
-                            onClick={() => setFull3D((x) => !x)}
+                            onClick={() => {
+                              setCaptureReady(false);
+                              setFull3D((x) => !x);
+                            }}
                           >
                             {full3D ? "Zamknij pełny ekran" : "Pełny ekran"}
                           </button>
@@ -1587,6 +1601,7 @@ export function QuickProject({
                             type="button"
                             className="qp-btn secondary"
                             onClick={takeShot}
+                            disabled={!captureReady}
                           >
                             Zapisz ujęcie do oferty
                           </button>
@@ -1614,6 +1629,7 @@ export function QuickProject({
                               klient
                               fitContainer
                               ujecieRef={ujecieRef}
+                              onCaptureReady={setCaptureReady}
                             />
                           </Suspense>
                         </Boundary>

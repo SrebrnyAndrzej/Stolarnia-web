@@ -21,6 +21,7 @@ interface Props {
   klient?: boolean;
   /** Ujęcie do oferty: funkcja zwraca JPEG (data URL) bieżącego widoku na nieprzezroczystym tle. */
   ujecieRef?: MutableRefObject<(() => string | null) | null>;
+  onCaptureReady?: (ready: boolean) => void;
 }
 
 // Tekstury dekorów: ładowane leniwie (dopiero gdy 3D jest otwarte), wspólne dla wszystkich materiałów.
@@ -63,8 +64,10 @@ const M = 1 / 1000; // mm → m
  * Wizualizacja 3D (three.js). Układ: X = rzut X, Z = rzut Y, Y = wysokość.
  * Moduł stoi tyłem do lica ściany; elementy z buildera (boki, półki, fronty, blat) jako bryły.
  */
-export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz, fitContainer = false, klient = false, ujecieRef }: Props) {
+export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, onWybierz, fitContainer = false, klient = false, ujecieRef, onCaptureReady }: Props) {
   const host = useRef<HTMLDivElement>(null);
+  const captureReady = useRef(onCaptureReady);
+  captureReady.current = onCaptureReady;
   const stan = useRef<{
     renderer: THREE.WebGLRenderer;
     scene: THREE.Scene;
@@ -150,10 +153,13 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
         // Przezroczyste tło dałoby czarny JPEG — na czas zrzutu tło jak w podglądzie.
         const tlo = scene.background;
         scene.background = new THREE.Color(0xefe9e1);
-        renderer.render(scene, camera);
-        const url = renderer.domElement.toDataURL("image/jpeg", 0.86);
-        scene.background = tlo;
-        return url.startsWith("data:image/jpeg") ? url : null;
+        try {
+          renderer.render(scene, camera);
+          const url = renderer.domElement.toDataURL("image/jpeg", 0.86);
+          return url.startsWith("data:image/jpeg") ? url : null;
+        } finally {
+          scene.background = tlo;
+        }
       };
 
     let raf = 0;
@@ -178,6 +184,7 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
     return () => {
       cancelAnimationFrame(raf);
       if (ujecieRef) ujecieRef.current = null;
+      captureReady.current?.(false);
       ro.disconnect();
       controls.dispose();
       stan.current?.srodowisko?.dispose();
@@ -466,6 +473,8 @@ export function Widok3D({ analiza, pomieszczenieId, scianaId, wybrany, matMap, o
       s.controls.update();
       s.kamUstawiona = pom.id;
     }
+    s.renderer.render(s.scene, s.camera);
+    captureReady.current?.(true);
   }, [analiza, pomieszczenieId, scianaId, wybrany, matMap, klient]);
 
   return (

@@ -442,6 +442,15 @@ test("missing prices: full offer disabled, preliminary proposal requested with w
 test("3D: full screen and a saved shot travel with the PDF request", async ({
   page,
 }) => {
+  // Opóźniony moduł 3D: zapis nie może wyprzedzić inicjalizacji renderera.
+  let release3D!: () => void;
+  const load3D = new Promise<void>((resolve) => {
+    release3D = resolve;
+  });
+  await page.route("**/Widok3D-*.js", async (route) => {
+    await load3D;
+    await route.continue();
+  });
   const pdfCalls: { wizualizacje?: { jpegBase64: string }[] }[] = [];
   await mockQuote(page, owner, false, async (path, route) => {
     if (!path.endsWith("/oferta.pdf")) return false;
@@ -457,6 +466,10 @@ test("3D: full screen and a saved shot travel with the PDF request", async ({
   await expect(
     page.getByRole("dialog", { name: "Widok 3D na pełnym ekranie" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Zapisz ujęcie do oferty" }),
+  ).toBeDisabled();
+  release3D();
   await page.getByRole("button", { name: "Zapisz ujęcie do oferty" }).click();
   expect(
     await page.evaluate(() =>
