@@ -215,8 +215,8 @@ export function nowyStatus(pozycja: PozycjaZamowienia, obecny: StatusPozycjiZamo
   const stary: StanPozycji = obecny?.stan ?? "doZamowienia";
   if (z.stan !== stary && !DOZWOLONE[stary].includes(z.stan))
     throw new BladStatusuZamowienia(`Nie można zmienić stanu z „${NAZWY_STANOW[stary]}” na „${NAZWY_STANOW[z.stan]}”.`);
-  if (z.data !== undefined && !DATA.test(z.data)) throw new BladStatusuZamowienia("Data musi mieć postać RRRR-MM-DD.");
-  const dzis = teraz.toISOString().slice(0, 10);
+  if (z.data !== undefined && (!DATA.test(z.data) || !Number.isFinite(Date.parse(z.data+"T12:00:00Z")) || new Date(z.data+"T12:00:00Z").toISOString().slice(0,10)!==z.data)) throw new BladStatusuZamowienia("Podaj poprawną datę RRRR-MM-DD.");
+  const dzis = new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Warsaw"}).format(teraz);
   const data = z.data ?? dzis;
   const s: StatusPozycjiZamowienia = { ...(obecny ?? { stan: "doZamowienia", zmieniono: "" }), stan: z.stan, zmieniono: teraz.toISOString() };
 
@@ -237,6 +237,7 @@ export function nowyStatus(pozycja: PozycjaZamowienia, obecny: StatusPozycjiZamo
     const cel = s.iloscZamowiona ?? pozycja.ilosc;
     if (ile === undefined || !Number.isFinite(ile) || ile <= 0 || ile >= cel)
       throw new BladStatusuZamowienia(`Podaj dostarczoną ilość większą od 0 i mniejszą od zamówionej (${cel} ${pozycja.jednostka}).`);
+    if(r2(ile)<=0||r2(ile)>=cel)throw new BladStatusuZamowienia("Ilość po zaokrągleniu do dwóch miejsc musi być większa od zera i mniejsza od zamówionej.");
     s.iloscDostarczona = r2(ile);
     s.dataDostawy = data;
   } else if (z.stan === "dostarczone") {
@@ -281,6 +282,7 @@ const RODZAJ: Record<RodzajPozycjiZamowienia, string> = { plyta: "Płyta", blat:
 export const nazwaRodzaju = (r: RodzajPozycjiZamowienia) => RODZAJ[r];
 
 function csv(v: string): string {
+  if (/^\s*[=+@-]/.test(v)) v = "'" + v;
   return /[;"\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 const liczba = (v: number | undefined) => (v === undefined ? "" : String(r2(v)).replace(".", ","));

@@ -66,8 +66,18 @@ type Fridge = "slupek" | "wolnostojaca" | "brak";
 type PicksMap = Partial<Record<RolaStylu, Decor>>;
 type FixedPoint = "zlew" | "plyta" | "lodowka";
 type FixedPos = { wall: number | null; from: string };
-const FIXED: { id: FixedPoint; name: string; short: string; widthMM: number }[] = [
-  { id: "zlew", name: "Zlew (przyłącze wody), razem ze zmywarką", short: "Z", widthMM: 600 },
+const FIXED: {
+  id: FixedPoint;
+  name: string;
+  short: string;
+  widthMM: number;
+}[] = [
+  {
+    id: "zlew",
+    name: "Zlew (przyłącze wody), razem ze zmywarką",
+    short: "Z",
+    widthMM: 600,
+  },
   { id: "plyta", name: "Płyta (gaz / 400 V)", short: "P", widthMM: 600 },
   { id: "lodowka", name: "Lodówka", short: "L", widthMM: 600 },
 ];
@@ -127,8 +137,12 @@ export function QuickProject({
     plyta: { wall: null, from: "" },
     lodowka: { wall: null, from: "" },
   });
-  const [windows, setWindows] = useState<{ wall: number; from: string; width: string }[]>([]);
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string>>>({});
+  const [windows, setWindows] = useState<
+    { wall: number; from: string; width: string }[]
+  >([]);
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<string, string>>
+  >({});
 
   // krok 2: podgląd
   const [preview, setPreview] = useState<WynikSzybkiegoUkladu | null>(null);
@@ -137,7 +151,10 @@ export function QuickProject({
 
   // krok 3: styl
   const [decors, setDecors] = useState<Decor[] | null>(null);
-  const [featured, setFeatured] = useState<{ zrodlo: string; klucze: string[] } | null>(null);
+  const [featured, setFeatured] = useState<{
+    zrodlo: string;
+    klucze: string[];
+  } | null>(null);
   const [picks, setPicks] = useState<PicksMap>({});
   const [openRole, setOpenRole] = useState<RolaStylu | null>(null);
   const [styleResult, setStyleResult] = useState<WynikStylu | null>(null);
@@ -158,30 +175,35 @@ export function QuickProject({
   const [show3D, setShow3D] = useState(false);
   const [full3D, setFull3D] = useState(false);
   const ujecieRef = useRef<(() => string | null) | null>(null);
-  // Ujęcia do oferty: w pamięci sesji przeglądarki dla projektu (przeżywają odświeżenie, nie trafiają do bazy).
+  // Ujęcia prywatne: wyłącznie w pamięci edytora, nigdy w sessionStorage.
   const [shots, setShots] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   // Stała tożsamość mapy: nowa Map przy każdym renderze przebudowywała całą scenę 3D (Widok3D zależy od matMap).
   useEffect(() => {
-    if (!id) return;
-    try {
-      setShots(JSON.parse(sessionStorage.getItem(`qp-ujecia-${id}`) ?? "[]"));
-    } catch {
-      setShots([]);
-    }
-  }, [id]);
+    setShots([]);
+  }, [id, analysis?.projekt.rewizja]);
   const saveShots = (next: string[]) => {
     setShots(next);
-    try {
-      if (id) sessionStorage.setItem(`qp-ujecia-${id}`, JSON.stringify(next));
-    } catch {
-      /* brak miejsca w pamięci sesji — ujęcia zostają do zamknięcia karty */
-    }
   };
+  const fullDialog = useRef<HTMLDialogElement>(null);
+  const fullButton = useRef<HTMLButtonElement>(null);
   // Pełny ekran przez portal: rodzice karty tworzą własny blok zawierający i ucinały nakładkę.
-  const portal3D = (node: ReactNode) => (full3D ? createPortal(node, document.body) : node);
+  const portal3D = (node: ReactNode) =>
+    full3D
+      ? createPortal(
+          <dialog
+            ref={fullDialog}
+            className="qp-3d-dialog"
+            aria-label="Widok 3D na pełnym ekranie"
+            onCancel={() => setFull3D(false)}
+          >
+            {node}
+          </dialog>,
+          document.body,
+        )
+      : node;
   const takeShot = () => {
     const url = ujecieRef.current?.();
     if (!url) return setError("Nie udało się zapisać ujęcia (brak widoku 3D).");
@@ -189,9 +211,12 @@ export function QuickProject({
   };
   useEffect(() => {
     if (!full3D) return;
-    const key = (e: KeyboardEvent) => e.key === "Escape" && setFull3D(false);
-    window.addEventListener("keydown", key);
-    return () => window.removeEventListener("keydown", key);
+    const dialog = fullDialog.current;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      fullButton.current?.focus();
+    };
   }, [full3D]);
   const matMap = useMemo(
     () => new Map(materials.map((m) => [m.id, m])),
@@ -254,9 +279,14 @@ export function QuickProject({
     const fail = (e: unknown) =>
       !c.signal.aborted && setError((e as Error).message);
     if (step === "styl" && !featured)
-      request<{ zrodlo: string; klucze: string[] }>("/api/dekory-stolarni", { signal: c.signal })
+      request<{ zrodlo: string; klucze: string[] }>("/api/dekory-stolarni", {
+        signal: c.signal,
+      })
         .then(setFeatured)
-        .catch(() => !c.signal.aborted && setFeatured({ zrodlo: "brak", klucze: [] }));
+        .catch(
+          () =>
+            !c.signal.aborted && setFeatured({ zrodlo: "brak", klucze: [] }),
+        );
     if (step === "styl" && !decors)
       request<Decor[]>("/api/dekory", { signal: c.signal })
         .then(setDecors)
@@ -300,7 +330,9 @@ export function QuickProject({
   const planMarkers: PlanMarker[] = [
     ...FIXED.filter(
       (f) =>
-        ((f.id === "zlew" && sink) || (f.id === "plyta" && hob) || (f.id === "lodowka" && fridge !== "brak")) &&
+        ((f.id === "zlew" && sink) ||
+          (f.id === "plyta" && hob) ||
+          (f.id === "lodowka" && fridge !== "brak")) &&
         fixedPos[f.id].from.trim() !== "",
     ).map((f) => ({
       id: f.id,
@@ -309,7 +341,10 @@ export function QuickProject({
       wall: Math.min(fixedPos[f.id].wall ?? 0, wallCount - 1),
       xMM: num(fixedPos[f.id].from),
       // Zlew stoi w jednym bloku ze zmywarką — tak liczy silnik (uklad.ts: skład zlewu).
-      widthMM: f.id === "zlew" && dishwasher !== "brak" ? f.widthMM + num(dishwasher) : f.widthMM,
+      widthMM:
+        f.id === "zlew" && dishwasher !== "brak"
+          ? f.widthMM + num(dishwasher)
+          : f.widthMM,
     })),
     ...windows
       .map((w, i) => ({ w, i }))
@@ -325,9 +360,12 @@ export function QuickProject({
   ];
   const placed = (k: FixedPoint) => {
     const f = fixedPos[k];
-    const wall = f.wall !== null && f.wall < wallCount ? f.wall : f.from ? 0 : null;
+    const wall =
+      f.wall !== null && f.wall < wallCount ? f.wall : f.from ? 0 : null;
     if (wall === null) return {};
-    return f.from.trim() ? { sciana: wall, xMM: num(f.from) } : { sciana: wall };
+    return f.from.trim()
+      ? { sciana: wall, xMM: num(f.from) }
+      : { sciana: wall };
   };
   const buildRequest = (): ZadanieSzybkiegoUkladu => ({
     typ: kind,
@@ -339,10 +377,15 @@ export function QuickProject({
         ? { szerokoscMM: dishwasher === "450" ? 450 : 600 }
         : null,
     plyta: hob ? placed("plyta") : null,
-    lodowka: fridge === "brak" ? null : { rodzaj: fridge, ...placed("lodowka") },
+    lodowka:
+      fridge === "brak" ? null : { rodzaj: fridge, ...placed("lodowka") },
     przerwyWiszacych: windows
       .filter((w) => w.wall < wallCount && num(w.width) > 0)
-      .map((w) => ({ sciana: w.wall, odMM: num(w.from), doMM: num(w.from) + num(w.width) })),
+      .map((w) => ({
+        sciana: w.wall,
+        odMM: num(w.from),
+        doMM: num(w.from) + num(w.width),
+      })),
     slupki: ovenTower ? ["tall-oven-600"] : [],
     wiszace: hanging,
     okap: hanging ? "szafka" : "brak",
@@ -357,7 +400,10 @@ export function QuickProject({
     if (num(height) < 2000)
       return "Podaj wysokość pomieszczenia w mm (min. 2000).";
     for (const [i, w] of windows.entries())
-      if (w.wall < wallCount && num(w.from) + num(w.width) > num(lengths[w.wall]))
+      if (
+        w.wall < wallCount &&
+        num(w.from) + num(w.width) > num(lengths[w.wall])
+      )
         return `Okno ${i + 1} wychodzi poza ścianę ${w.wall + 1}.`;
     return null;
   };
@@ -390,11 +436,17 @@ export function QuickProject({
       } catch (e) {
         // Komunikat silnika o braku miejsca trafia przy pole elementu, którego dotyczy.
         const msg = (e as Error).message;
-        const hit = (["zlew", "plyta", "lodowka"] as FixedPoint[]).filter((k) => new RegExp(`(^|[^a-ząćęłńóśźż])${k}($|[^a-ząćęłńóśźż])`, "i").test(msg));
+        const hit = (["zlew", "plyta", "lodowka"] as FixedPoint[]).filter((k) =>
+          new RegExp(`(^|[^a-ząćęłńóśźż])${k}($|[^a-ząćęłńóśźż])`, "i").test(
+            msg,
+          ),
+        );
         if (hit.length) {
           setFieldErrors(Object.fromEntries(hit.map((k) => [k, msg])));
           document.getElementById(`qp-pos-${hit[0]}`)?.focus();
-          throw new Error("Silnik nie zmieścił punktów stałych — szczegóły przy polach położenia.");
+          throw new Error(
+            "Silnik nie zmieścił punktów stałych — szczegóły przy polach położenia.",
+          );
         }
         throw e;
       }
@@ -504,7 +556,10 @@ export function QuickProject({
           body: JSON.stringify({
             wariant: variant,
             ...(wstepna ? { wstepna: true } : {}),
-            wizualizacje: shots.map((u, i) => ({ tytul: `Wizualizacja ${i + 1}`, jpegBase64: u })),
+            wizualizacje: shots.map((u, i) => ({
+              tytul: `Wizualizacja ${i + 1}`,
+              jpegBase64: u,
+            })),
           }),
         },
         "pdf",
@@ -761,7 +816,11 @@ export function QuickProject({
                 <span className="qp-pos-name">{f.name}</span>
                 <Choice
                   label="Ściana"
-                  value={v.wall === null || v.wall >= wallCount ? "auto" : String(v.wall)}
+                  value={
+                    v.wall === null || v.wall >= wallCount
+                      ? "auto"
+                      : String(v.wall)
+                  }
                   options={[
                     ["auto", "Auto"],
                     ...Array.from(
@@ -769,7 +828,9 @@ export function QuickProject({
                       (_, i) => [String(i), String(i + 1)] as [string, string],
                     ),
                   ]}
-                  onChange={(x) => set({ wall: x === "auto" ? null : Number(x) })}
+                  onChange={(x) =>
+                    set({ wall: x === "auto" ? null : Number(x) })
+                  }
                 />
                 <Field label="Od ● [mm]">
                   <input
@@ -806,7 +867,9 @@ export function QuickProject({
                   (_, j) => [String(j), String(j + 1)] as [string, string],
                 )}
                 onChange={(x) =>
-                  setWindows((o) => o.map((y, j) => (j === i ? { ...y, wall: Number(x) } : y)))
+                  setWindows((o) =>
+                    o.map((y, j) => (j === i ? { ...y, wall: Number(x) } : y)),
+                  )
                 }
               />
               <div className="qp-grid-2">
@@ -818,7 +881,14 @@ export function QuickProject({
                     value={w.from}
                     onChange={(e) =>
                       setWindows((o) =>
-                        o.map((y, j) => (j === i ? { ...y, from: e.target.value.replace(/[^\d]/g, "") } : y)),
+                        o.map((y, j) =>
+                          j === i
+                            ? {
+                                ...y,
+                                from: e.target.value.replace(/[^\d]/g, ""),
+                              }
+                            : y,
+                        ),
                       )
                     }
                   />
@@ -830,7 +900,14 @@ export function QuickProject({
                     value={w.width}
                     onChange={(e) =>
                       setWindows((o) =>
-                        o.map((y, j) => (j === i ? { ...y, width: e.target.value.replace(/[^\d]/g, "") } : y)),
+                        o.map((y, j) =>
+                          j === i
+                            ? {
+                                ...y,
+                                width: e.target.value.replace(/[^\d]/g, ""),
+                              }
+                            : y,
+                        ),
                       )
                     }
                   />
@@ -850,7 +927,14 @@ export function QuickProject({
               type="button"
               className="qp-btn secondary"
               onClick={() =>
-                setWindows((o) => [...o, { wall: wallCount - 1 >= 1 ? 1 : 0, from: "1000", width: "1200" }])
+                setWindows((o) => [
+                  ...o,
+                  {
+                    wall: wallCount - 1 >= 1 ? 1 : 0,
+                    from: "1000",
+                    width: "1200",
+                  },
+                ])
               }
               disabled={windows.length >= 4}
             >
@@ -1011,9 +1095,8 @@ export function QuickProject({
           <h2 id="qp-h-style">Dekory</h2>
           <p className="qp-muted">
             Wybierz z galerii{decors ? ` ${decors.length} dekorów` : " dekorów"}{" "}
-            (Egger, Kronospan). Grubości i formaty
-            Egger pochodzą z artykułów producenta; dla pozostałych wpiszesz je
-            sam.
+            (Egger, Kronospan). Grubości i formaty Egger pochodzą z artykułów
+            producenta; dla pozostałych wpiszesz je sam.
           </p>
           <div className="qp-tiles">
             {ROLES.map(({ rola, nazwa, opis }) => {
@@ -1367,7 +1450,10 @@ export function QuickProject({
                             brutto · netto {currency(v.cenaNetto)}
                           </span>
                           {(inside[v.wariant] ?? []).length > 0 && (
-                            <ul className="qp-inside" aria-label={`Co w środku: ${v.nazwa}`}>
+                            <ul
+                              className="qp-inside"
+                              aria-label={`Co w środku: ${v.nazwa}`}
+                            >
                               {inside[v.wariant].map((t) => (
                                 <li key={t}>{t}</li>
                               ))}
@@ -1397,9 +1483,9 @@ export function QuickProject({
                         wyceny
                       </b>
                       <p>
-                        Cena może być zaniżona lub przybliżona. Pełna oferta
-                        PDF czeka na ceny; klientowi możesz dać propozycję
-                        wstępną z widełkami.{" "}
+                        Cena może być zaniżona lub przybliżona. Pełna oferta PDF
+                        czeka na ceny; klientowi możesz dać propozycję wstępną z
+                        listą braków i ceną do ustalenia.{" "}
                         {isOwner ? (
                           <>
                             Uzupełnij ceny w{" "}
@@ -1484,46 +1570,67 @@ export function QuickProject({
                       {show3D ? "Ukryj 3D" : "Podgląd 3D"}
                     </button>
                   </div>
-                  {show3D && room && portal3D(
-                    <div className={`qp-3d${full3D ? " qp-3d-full" : ""}`} role={full3D ? "dialog" : undefined} aria-label={full3D ? "Widok 3D na pełnym ekranie" : undefined}>
-                      <div className="qp-bar qp-3d-bar">
-                        <button type="button" className="qp-btn secondary" onClick={() => setFull3D((x) => !x)}>
-                          {full3D ? "Zamknij pełny ekran" : "Pełny ekran"}
-                        </button>
-                        <button type="button" className="qp-btn secondary" onClick={takeShot}>
-                          Zapisz ujęcie do oferty
-                        </button>
-                        <span className="qp-muted">{shots.length ? `Ujęcia w ofercie: ${shots.length}/3` : "Ujęcie trafi na okładkę PDF"}</span>
-                      </div>
-                      <Boundary>
-                        <Suspense
-                          fallback={
-                            <p className="qp-note" role="status">
-                              Wczytuję widok 3D…
-                            </p>
-                          }
-                        >
-                          <Widok3D
-                            analiza={analysis}
-                            pomieszczenieId={room.id}
-                            scianaId={room.sciany[0]?.id ?? ""}
-                            wybrany={null}
-                            matMap={matMap}
-                            onWybierz={() => undefined}
-                            klient
-                            fitContainer
-                            ujecieRef={ujecieRef}
-                          />
-                        </Suspense>
-                      </Boundary>
-                    </div>
-                  )}
+                  {show3D &&
+                    room &&
+                    portal3D(
+                      <div className={`qp-3d${full3D ? " qp-3d-full" : ""}`}>
+                        <div className="qp-bar qp-3d-bar">
+                          <button
+                            ref={fullButton}
+                            type="button"
+                            className="qp-btn secondary"
+                            onClick={() => setFull3D((x) => !x)}
+                          >
+                            {full3D ? "Zamknij pełny ekran" : "Pełny ekran"}
+                          </button>
+                          <button
+                            type="button"
+                            className="qp-btn secondary"
+                            onClick={takeShot}
+                          >
+                            Zapisz ujęcie do oferty
+                          </button>
+                          <span className="qp-muted">
+                            {shots.length
+                              ? `Ujęcia w ofercie: ${shots.length}/3`
+                              : "Ujęcie trafi na okładkę PDF"}
+                          </span>
+                        </div>
+                        <Boundary>
+                          <Suspense
+                            fallback={
+                              <p className="qp-note" role="status">
+                                Wczytuję widok 3D…
+                              </p>
+                            }
+                          >
+                            <Widok3D
+                              analiza={analysis}
+                              pomieszczenieId={room.id}
+                              scianaId={room.sciany[0]?.id ?? ""}
+                              wybrany={null}
+                              matMap={matMap}
+                              onWybierz={() => undefined}
+                              klient
+                              fitContainer
+                              ujecieRef={ujecieRef}
+                            />
+                          </Suspense>
+                        </Boundary>
+                      </div>,
+                    )}
                   {shots.length > 0 && (
                     <div className="qp-shots" aria-label="Ujęcia do oferty">
                       {shots.map((u, i) => (
                         <figure key={i}>
                           <img src={u} alt={`Ujęcie ${i + 1}`} />
-                          <button type="button" className="qp-btn secondary" onClick={() => saveShots(shots.filter((_, j) => j !== i))}>
+                          <button
+                            type="button"
+                            className="qp-btn secondary"
+                            onClick={() =>
+                              saveShots(shots.filter((_, j) => j !== i))
+                            }
+                          >
                             Usuń
                           </button>
                         </figure>
@@ -1568,19 +1675,23 @@ export function QuickProject({
                         faulty.length ? "qp-pdf-hint" : undefined
                       }
                     >
-                      {pdfBusy && !faulty.length ? "Składam PDF…" : "Oferta PDF"}
+                      {pdfBusy && !faulty.length
+                        ? "Składam PDF…"
+                        : "Oferta PDF"}
                     </button>
                   </div>
                   {faulty.length > 0 && (
                     <p id="qp-pdf-hint" className="qp-muted">
                       Pełna oferta wymaga cen wszystkich pozycji. Propozycja
-                      wstępna pokazuje widełki (−5% / +15%) ze znakiem „cena
-                      do potwierdzenia” — nie jest ofertą ani podstawą umowy.
+                      wstępna pokazuje zakres i listę braków ze znakiem „cena do
+                      potwierdzenia”. Przy nieznanych cenach nie wyznaczamy
+                      kwoty maksymalnej.
                     </p>
                   )}
                   <p className="qp-muted">
                     Zapisane ujęcia 3D (do 3, najnowsze) trafiają do PDF; bez
-                    ujęć oferta ma okładkę bez wizualizacji.
+                    ujęć oferta ma okładkę bez wizualizacji. Ujęcia są usuwane
+                    po opuszczeniu edytora lub zmianie rewizji.
                   </p>
                 </>
               );

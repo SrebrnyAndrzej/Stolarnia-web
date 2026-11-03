@@ -270,11 +270,10 @@ test("oferta PDF zablokowana, gdy wariant ma pozycje bez ceny; komunikat bez wew
   assert.ok(pdf.length > 1000);
 });
 
-test("propozycja wstępna: przy brakach cen PDF z widełkami i znakiem „cena do potwierdzenia”; pełna oferta nadal zablokowana", async () => {
+test("propozycja wstępna: brak ceny nie daje fałszywej granicy kwoty; pełna oferta nadal zablokowana", async () => {
+  const { pdfText } = await import("../tests/helpers/pdf-text.js");
   const { execFileSync } = await import("node:child_process");
   const { writeFileSync } = await import("node:fs");
-  const { widelki } = await import("./export/oferta.js");
-  assert.deepEqual(widelki(40531, 0.95, 1.15), [38500, 46700]);
   const s = nowa();
   const p = s.utworzProjekt({ nazwa: "Wstępna", sciany: [{ dlugoscMM: 3000 }] });
   s.szybkiUklad(p.id, { typ: "I" });
@@ -284,17 +283,19 @@ test("propozycja wstępna: przy brakach cen PDF z widełkami i znakiem „cena d
   const pdf = await s.ofertaPdf(p.id, { wariant: "standard", wstepna: true });
   const plik = join(mkdtempSync(join(tmpdir(), "pw-")), "pw.pdf");
   writeFileSync(plik, pdf);
-  const tekst = execFileSync("pdftotext", ["-enc", "UTF-8", plik, "-"], { encoding: "utf8" });
+  const tekst = pdfText(plik);
+  assert.match(tekst,/do ustalenia/);
+  assert.doesNotMatch(tekst,/Widełki: od/);
   assert.match(tekst, /PROPOZYCJA WSTĘPNA/);
   assert.match(tekst, /CENA DO POTWIERDZENIA/);
   assert.match(tekst, /PW\/\d{4}\//);
-  assert.match(tekst, /nie stanowi oferty ani podstawy umowy/);
+  assert.match(tekst, /nie stanowi oferty ani podstawy\s+umowy/);
   assert.doesNotMatch(tekst, /Ważna do/);
   // Bez braków „wstępna” nie ma sensu: powstaje zwykła oferta.
   s.zapiszOkucie({ id: "salice.silentia", cenaNetto: 12 });
   const pelna = await s.ofertaPdf(p.id, { wariant: "standard", wstepna: true });
   writeFileSync(plik, pelna);
-  assert.doesNotMatch(execFileSync("pdftotext", ["-enc", "UTF-8", plik, "-"], { encoding: "utf8" }), /CENA DO POTWIERDZENIA/);
+  assert.doesNotMatch(pdfText(plik), /CENA DO POTWIERDZENIA/);
 });
 
 test("styl Kronospan: wszystkie brakujące dane (wymiary i struktura) w pierwszej odpowiedzi", () => {

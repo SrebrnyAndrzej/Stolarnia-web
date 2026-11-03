@@ -457,6 +457,13 @@
   position: relative;
 }
 .qp-overlay {
+  margin: 0;
+  border: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  color: var(--text);
   position: fixed;
   inset: 0;
   z-index: 80;
@@ -666,6 +673,17 @@
 }
 .qp-3d-full .widok3d {
   height: calc(100vh - 96px);
+}
+.qp-3d-dialog {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  background: var(--panel);
+  color: var(--text);
 }
 .qp-shots {
   display: flex;

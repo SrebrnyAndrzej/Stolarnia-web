@@ -55,7 +55,7 @@ import { scianySzkicow, szkicePdf, type OpcjeSzkicow } from "./export/szkice.js"
 import dxfParserModul from "dxf-parser";
 import { czyDwg, dwgNaDxf } from "./core/dwg.js";
 import { jednostkaZNaglowka, odcinkiDxf, scianyZDxf, warstwyDxf, type DxfDane, type JednostkaDxf } from "./core/dxf.js";
-import { Magazyn, type BazaDanych } from "./store/store.js";
+import { Magazyn, KonfliktZapisu, type BazaDanych } from "./store/store.js";
 
 /**
  * JSON odpowiedzi bez migawek wydań (gzip, dziesiątki kB na wydanie) — przeglądarka i MCP dostają tylko metadane.
@@ -88,8 +88,6 @@ const DxfParser = ((dxfParserModul as unknown as { default?: unknown }).default 
 const id = () => randomUUID().slice(0, 8);
 const teraz = () => new Date().toISOString();
 const PROG_WISZACYCH_MM = 1000;
-/** Widełki propozycji wstępnej względem bieżącej kalkulacji (decyzja domyślna, odwracalna: OCENA-kreatora §7). */
-export const WIDELKI_WSTEPNE = { dol: 0.95, gora: 1.15 };
 
 export interface NowaSciana {
   nazwa?: string;
@@ -1318,7 +1316,7 @@ export class Stolarnia {
     // Oferta dla klienta nie może zawierać cen zastępczych: brak ceny / pozycji w bazie blokuje PDF z listą braków.
     const wariantOferty = o.wariant ?? "standard";
     const braki = (a.warianty.find((w) => w.wariant === wariantOferty)?.pozycje ?? []).filter((x) => x.jestBledemWyceny);
-    // Propozycja wstępna (zmiana 4 z OCENA-kreatora): przy brakach dokument z widełkami i znakiem „cena do potwierdzenia”.
+    // Przy brakach powstaje dokument z listą braków, bez nieuzasadnionej granicy ceny.
     // Bez braków nie ma powodu do propozycji — wtedy powstaje zwykła oferta.
     const wstepna = o.wstepna === true && braki.length > 0;
     if (braki.length && !wstepna)
@@ -1342,7 +1340,7 @@ export class Stolarnia {
       firma: a.ustawienia.daneFirmy,
       materialy: new Map(b.materialy.map((m) => [m.id, m])),
       wizualizacje,
-      wstepna: wstepna ? { braki: braki.map((x) => x.nazwa), dol: WIDELKI_WSTEPNE.dol, gora: WIDELKI_WSTEPNE.gora } : undefined,
+      wstepna: wstepna ? { braki: braki.map((x) => x.nazwa) } : undefined,
       numer: o.numer || `${wstepna ? "PW" : "OF"}/${teraz.getFullYear()}/${String(teraz.getMonth() + 1).padStart(2, "0")}/${projektId.slice(0, 4).toUpperCase()}`,
       data: teraz,
       waznoscDni: o.waznoscDni && o.waznoscDni > 0 ? o.waznoscDni : 14,
@@ -1380,6 +1378,7 @@ export class Stolarnia {
     let zbudowane: ZbudowanyModul[];
     if (wybor) {
       const m = this.migawkaWydania(projektId, wybor);
+      ostrzezenia.push("Geometria pochodzi z wydania; katalog materiałów, okucia i ustawienia są bieżące. To nie jest zamrożony koszyk zakupowy wydania.");
       projekt = m.projekt;
       zbudowane = m.zbudowane;
       zrodlo = { rodzaj: "wydanie", rewizja: m.wydanie.rewizja, numer: m.wydanie.numer, wydanieId: m.wydanie.id, utworzono: m.wydanie.utworzono };
@@ -1437,6 +1436,8 @@ export class Stolarnia {
     const z = this.zestawienie(projektId, { wydanie: typeof dane.wydanie === "string" ? dane.wydanie : undefined, wariant: typeof dane.wariant === "string" ? (dane.wariant as WariantWyceny) : undefined });
     const pozycja = z.pozycje.find((p) => p.klucz === klucz);
     if (!pozycja) throw new BladUslugi(`Nie ma pozycji „${klucz}” w tym zestawieniu.`);
+    if (dane.expectedRevision !== undefined && (dane.expectedRevision !== z.biezacy.rewizja || dane.expectedQuantity !== pozycja.ilosc || dane.expectedUpdatedAt !== (z.biezacy.zamowienie?.pozycje[klucz]?.zmieniono ?? null)))
+      throw new KonfliktZapisu("Projekt, ilość lub status pozycji zmieniły się. Odśwież zestawienie przed ponownym zapisem.");
     const liczba = (v: unknown) => (v === undefined || v === null || v === "" ? undefined : Number(v));
     const tekst = (v: unknown) => (v === undefined ? undefined : v === null ? null : String(v));
     let wynik!: StatusPozycjiZamowienia;

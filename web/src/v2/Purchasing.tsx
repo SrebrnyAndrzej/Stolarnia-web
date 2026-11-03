@@ -11,6 +11,7 @@ import { Feedback } from "./ui";
 import { useResource } from "./useResource";
 import { useDraftGuard } from "./useDraftGuard";
 import "./purchasing.css";
+import { SupplierOrders } from "./SupplierOrders";
 type Project = { id: string; nazwa: string; rewizja: number };
 const row = (): PurchaseLine => ({
   id: crypto.randomUUID(),
@@ -133,6 +134,7 @@ export function Purchasing() {
     <section className="ps-owner-page po-page">
       <span className="ps-eyebrow">Zakup materiałów i okuć</span>
       <h1>Zamówienia Mussi</h1>
+      <SupplierOrders />
       <p className="ps-page-intro">
         Przygotuj koszyk z indeksami Mussi, sprawdź ilości i zapisz szkic przed
         eksportem. Nie wpisujemy domyślnych cen ani indeksów za Ciebie.

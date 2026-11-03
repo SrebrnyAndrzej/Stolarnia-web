@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import {pdfText} from "../../tests/helpers/pdf-text.js";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
@@ -126,8 +127,31 @@ const zadanie = async (metoda: string, sciezka: string, token?: string, body?: u
 const tekstPdf = (bufor: Buffer, nazwa: string) => {
   const plik = join(katalog, `${nazwa}.pdf`);
   writeFileSync(plik, bufor);
-  return execFileSync("pdftotext", [plik, "-"], { encoding: "utf8" });
+  return pdfText(plik);
 };
+
+test("integracja Claude HTTP: dostawy owner-only, konflikt statusu i wersjonowany adapter formatek",async()=>{
+  const path=`/api/projekty/${P.szkic}/zamowienie`;
+  assert.equal((await zadanie("GET",path,"t-produkcja")).status,403);
+  const list=await zadanie("GET",path+"?wydanie=biezaca","t-owner");
+  assert.equal(list.status,200,list.tekst);
+  const row=list.json.pozycje.find((x:any)=>x.ilosc>0);
+  assert.ok(row);
+  const body={klucz:row.klucz,stan:"zamowione",wydanie:"biezaca",expectedRevision:list.json.projekt.rewizja,expectedQuantity:row.ilosc,expectedUpdatedAt:null};
+  assert.equal((await zadanie("PUT",path+"/status","t-owner",body)).status,200);
+  assert.equal((await zadanie("PUT",path+"/status","t-owner",body)).status,409);
+  assert.equal((await zadanie("PUT",path+"/status","t-owner",{klucz:row.klucz,stan:"zamowione"})).status,400);
+  const {randomUUID}=await import("node:crypto");
+  const {freshFurniture,carcass}=await import("../core/furniture.js");
+  const model=freshFurniture();model.plates=carcass(model,randomUUID);
+  const id=randomUUID();const saved=await zadanie("PUT","/api/v2/furniture","t-owner",{id,version:0,model});
+  assert.equal(saved.status,200,saved.tekst);
+  const materials=await zadanie("GET","/api/v2/furniture/materials","t-produkcja");
+  assert.equal(materials.status,200);assert.ok(!materials.tekst.includes("cenaNetto"));
+  const prep=await zadanie("POST",`/api/v2/furniture/${id}/preparation`,"t-produkcja",{version:1,materials:{}});
+  assert.equal(prep.status,200,prep.tekst);assert.equal(prep.json.readyForProduction,false);assert.equal(prep.json.planning,null);assert.ok(prep.json.diagnostics.length>0);
+  assert.equal((await zadanie("POST",`/api/v2/furniture/${id}/preparation`,"t-owner",{version:2,materials:{}})).status,409);
+});
 
 test("pliki CAD HTTP: prywatny zapis, pobranie, deduplikacja i zakres profili", async () => {
   const { randomUUID } = await import("node:crypto");

@@ -2,6 +2,16 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Integracja Claude i przygotowanie płyt — 3.11.2026
+
+ST-APP-004: punkty stałe i okna w szybkim kreatorze, tryb przy kliencie domyślnie ukrywa koszty zakupu także właścicielowi, preferowane dekory, tekstury 3D i ujęcia do oferty. Galerie dekorów i pełny ekran 3D korzystają z natywnego modalnego dialogu: tło nieaktywne, Escape, fokus w obrębie dialogu. Ujęcia wyłącznie w pamięci edytora, usuwane po opuszczeniu lub zmianie rewizji, bez sessionStorage. Ustawienia dekorów używają request/useResource/Feedback i blokują równoległy zapis.
+
+Propozycja wstępna może powstać przy brakach cen. Pokazuje zakres i braki oraz cenę do ustalenia; nie wyznacza nieuzasadnionego maksimum przez dodanie procentu do niepełnej kalkulacji. Pełna oferta nadal wymaga wszystkich cen. Ujęcia do PDF nie są trwałym archiwum ani akceptacją klienta.
+
+ST-APP-003: karta zestawienia jest dostępna w Produkcji oraz w panelu Zamówienia. Te same API i statusy w obu miejscach; nie tworzymy drugiego zestawu dostaw. Właściciel wybiera projekt i wydanie; import nie wysyła zamówienia do Mussi. Ilości z geometrii wydania, katalogi i ustawienia bieżące — jawne ostrzeżenie. Każdy zapis statusu przez HTTP wymaga oczekiwanej rewizji, ilości i czasu ostatniej zmiany; konflikt 409 zachowuje formularz. request/useResource anuluje stare odczyty; tabela przewijana lokalnie. CSV chroni tekstowe komórki przed interpretacją formuł.
+
+FurniturePreparation jest wariantem standardowych field/input, natywnych selectów, request/useResource/Feedback. Uruchomienie tylko dla zapisanej, niezmienionej wersji. Materiały przypisuje się jawnie z katalogu bez cen; zbiorczo tylko przy zgodnej grubości. Każdy brak wstrzymuje rozkrój całego modelu zamiast pomijania części. Pakiet JSON zawiera geometrię, specyfikacje, materiały, przypisania, ustawienia, wersję i sumę SHA-256 oraz wynik tego samego silnika rozkroju i obrzeży. Kompensacja raz; obsługiwane prostokątne płyty i ABS 0,8/2 mm, kierunek dekoru. Bez pozornego zwolnienia technologii, automatycznych skrzynek szuflad czy zamówienia. Źródło: docs/ROBOCZY-PAKIET-PLYT.md.
+
 ## Oryginały CAD od architekta
 
 `ProjectFiles.tsx` w szczegółach projektu: import jednego DXF/DWG, limit 3 MiB, do 50 oryginałów na projekt. Natywny input i drop target mają tę samą walidację. Stan wyboru jest zachowany po błędzie sieci/serwera; ponowienie z tym samym ID lub sumą SHA-256 nie tworzy drugiego oryginału. Postęp jest nieokreślony, przerwanie oznacza przerwanie oczekiwania (serwer mógł już zatwierdzić zapis). Odświeżenie listy rozstrzyga wynik. Zmiana projektu anuluje odczyty i zamyka sekcję; zamknięcie przywraca fokus.

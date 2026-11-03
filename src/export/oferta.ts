@@ -36,14 +36,9 @@ export interface WejscieOferty {
   uwagi: string[];
   /**
    * Propozycja wstępna (OCENA-kreatora §4, zmiana 4): przy brakach cen — znak „cena do potwierdzenia”
-   * na każdej stronie i widełki zamiast ceny. To nie jest oferta: nie ma ważności ani podstawy do umowy.
+   * na każdej stronie i jawna lista braków. Nie zgadujemy ceny ani jej maksymalnej wartości.
    */
-  wstepna?: { braki: string[]; dol: number; gora: number };
-}
-
-/** Widełki zaokrąglone do 100 zł (dół w dół, góra w górę). */
-export function widelki(cena: number, dol: number, gora: number): [number, number] {
-  return [Math.floor((cena * dol) / 100) * 100, Math.ceil((cena * gora) / 100) * 100];
+  wstepna?: { braki: string[] };
 }
 
 const zl = (v: number) => `${v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} zł`;
@@ -67,9 +62,7 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   const dokument = pw ? "Propozycja wstępna" : "Oferta";
   const cena = (v: number) => {
     if (!pw) return zl(v);
-    const [a, b] = widelki(v, pw.dol, pw.gora);
-    const c = (x: number) => x.toLocaleString("pl-PL", { maximumFractionDigits: 0 });
-    return `${c(a)}–${c(b)} zł`;
+    return "do ustalenia";
   };
 
   const stopka = () => {
@@ -227,9 +220,9 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   // ---------- Cena ----------
   doc.addPage();
   naglowek(
-    pw ? "Cena — widełki do potwierdzenia" : "Cena",
+    pw ? "Cena — do ustalenia" : "Cena",
     pw
-      ? `Część pozycji nie ma jeszcze ceny w cenniku (${pw.braki.length}). Podajemy widełki; ostateczną ofertę wyślemy po uzupełnieniu cen.`
+      ? `Część pozycji nie ma jeszcze ceny w cenniku (${pw.braki.length}). Nie wyznaczamy ceny ani jej górnej granicy. Oferta wymaga uzupełnienia cennika.`
       : "Warianty różnią się klasą okuć i wykończenia; zakres mebli jest ten sam.",
   );
   y = 104;
@@ -247,7 +240,7 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   });
   y += 176;
 
-  doc.font("B").fontSize(11).fillColor(TEKST).text("Cena obejmuje", 40, y);
+  doc.font("B").fontSize(11).fillColor(TEKST).text(pw ? "Zakres propozycji" : "Cena obejmuje", 40, y);
   doc.font("B").text("Warunki", W / 2 + 10, y);
   y += 18;
   const kat = new Set(wybrany.pozycje.map((p) => p.kategoria));
@@ -272,7 +265,7 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
     ...(pw
       ? [
           "Propozycja wstępna: cena do potwierdzenia, nie stanowi oferty ani podstawy umowy.",
-          `Widełki: od ${Math.round((1 - pw.dol) * 100)}% poniżej do ${Math.round((pw.gora - 1) * 100)}% powyżej bieżącej kalkulacji.`,
+          `Brakujące pozycje: ${pw.braki.join(", ")}.`,
         ]
       : [`Oferta ważna ${w.waznoscDni} dni od daty wystawienia.`]),
     `Termin realizacji: ${w.terminRealizacji}.`,

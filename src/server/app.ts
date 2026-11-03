@@ -21,6 +21,7 @@ import { documentSource, requireTechnicalDocuments, technicalDocuments } from ".
 import { createHmac } from "node:crypto";
 import { createEmployee, employeeActivation, memberFields, memberUpdate } from "./members.js";
 import { saveFurniture, furnitureConstruction } from "./furniture.js";
+import { prepareFurniture, preparationMaterials } from "./furniture-preparation.js";
 import { projectFileObjects, listProjectFiles, uploadProjectFile, readProjectFile } from "./project-files.js";
 import { createFurniturePresentation,readFurniturePresentation,commentFurniturePresentation,listFurniturePresentations,revokeFurniturePresentation } from "./furniture-presentations.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
@@ -182,6 +183,8 @@ app.get("/api/v2/projects/:id/files", api(req => listProjectFiles(s.magazyn, oso
 app.post("/api/v2/projects/:id/files", api(req => uploadProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
 app.get("/api/v2/projects/:id/files/:fid/content", api(req => readProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), p(req,"fid"))));
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
+app.get("/api/v2/furniture/materials",api(req=>preparationMaterials(s.magazyn,osoba(req))));
+app.post("/api/v2/furniture/:id/preparation",api(req=>prepareFurniture(s.magazyn,osoba(req),p(req,"id"),req.body)));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/furniture/:id/construction", api(req => furnitureConstruction(s.magazyn, osoba(req), req.params.id, Number(req.query.version))));
 app.post("/api/v2/furniture/:id/presentations",api(req=>createFurniturePresentation(s.magazyn,osoba(req),req.params.id,Number(req.body?.version))));
@@ -497,7 +500,11 @@ const opcjeZamowienia = (req: Request) => ({
   wariant: typeof req.query.wariant === "string" && req.query.wariant ? (String(req.query.wariant) as WariantWyceny) : undefined,
 });
 app.get("/api/projekty/:id/zamowienie", api((r) => s.zamowienie(p(r, "id"), opcjeZamowienia(r))));
-app.put("/api/projekty/:id/zamowienie/status", api((r) => s.zmienStatusZamowienia(p(r, "id"), (r.body ?? {}) as Record<string, unknown>)));
+app.put("/api/projekty/:id/zamowienie/status", api((r) => {
+  const check=z.object({expectedRevision:z.number().int().min(0),expectedQuantity:z.number().finite().positive(),expectedUpdatedAt:z.string().datetime().nullable()}).passthrough().safeParse(r.body);
+  if(!check.success) throw new AccessError(400,"Odśwież zestawienie przed zmianą statusu.");
+  return s.zmienStatusZamowienia(p(r,"id"),check.data);
+}));
 app.get("/api/projekty/:id/zamowienie.csv", (req, res, next) => {
   try {
     const csv = s.zamowienieCSV(p(req, "id"), opcjeZamowienia(req));

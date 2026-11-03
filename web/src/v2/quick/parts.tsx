@@ -260,7 +260,8 @@ export function Elevation({
           const hang = r.rzad === "wiszacy";
           // Opis rezerwacji mieści się w jej szerokości (~0,55 em na znak); za wąski — tylko podpowiedź (title).
           const width = r.doMM - r.odMM;
-          const fits = (t: string) => Math.min(70, (width * 0.9) / (t.length * 0.55));
+          const fits = (t: string) =>
+            Math.min(70, (width * 0.9) / (t.length * 0.55));
           const label = fits(r.opis) >= 30 ? r.opis : "zajęte";
           const fontSize = fits(label);
           return (
@@ -475,20 +476,41 @@ const PAGE = 48;
 
 // Filtry galerii (OCENA-kreatora §4, zmiana 6). Katalog nie ma pól koloru i rodziny — klasyfikacja po nazwie
 // i strukturze (PL i EN, bo Kronospan ma nazwy angielskie). Heurystyka: „Inne” zamiast zgadywania.
-const WOOD = /dąb|dab|buk|orzech|jesion|modrzew|sosn|świerk|swierk|wiąz|wiaz|olch|klon|czereśn|czeresn|akacj|drewn|teak|oak|walnut|ash\b|elm|pine|wood|hickory|maple|cherry|beech|larch|spruce|halifax|casella|lancelot|gladstone|whiteriver/i;
-const STONE = /beton|kamie|marmur|łupek|lupek|granit|trawertyn|terrazzo|ceram|concrete|stone|marble|slate|onyx|granite|travertine|chicago|metal|rdza|rust|stal\b|steel/i;
-const DARK = /czarn|grafit|antracyt|ciemn|brąz|braz|wenge|tabak|marone|black|anthracite|dark|graphite|brown|tobacco|espresso/i;
+const WOOD =
+  /dąb|dab|buk|orzech|jesion|modrzew|sosn|świerk|swierk|wiąz|wiaz|olch|klon|czereśn|czeresn|akacj|drewn|teak|oak|walnut|ash\b|elm|pine|wood|hickory|maple|cherry|beech|larch|spruce|halifax|casella|lancelot|gladstone|whiteriver/i;
+const STONE =
+  /beton|kamie|marmur|łupek|lupek|granit|trawertyn|terrazzo|ceram|concrete|stone|marble|slate|onyx|granite|travertine|chicago|metal|rdza|rust|stal\b|steel/i;
+const DARK =
+  /czarn|grafit|antracyt|ciemn|brąz|braz|wenge|tabak|marone|black|anthracite|dark|graphite|brown|tobacco|espresso/i;
 const GREY = /szar|beton|stal|alumin|grey|gray|silver|concrete|steel|cement/i;
-const LIGHT = /biał|bial|krem|jasn|alpin|kość|kosc|beż|bez\b|piask|white|cream|light|beige|ivory|sand|natural|naturaln|kaszmir|cashmere|vanilla|wanili/i;
+const LIGHT =
+  /biał|bial|krem|jasn|alpin|kość|kosc|beż|bez\b|piask|white|cream|light|beige|ivory|sand|natural|naturaln|kaszmir|cashmere|vanilla|wanili/i;
 export type Family = "drewno" | "kamien" | "jednolite";
 export type Tone = "jasne" | "szare" | "ciemne" | "inne";
 export const decorFamily = (d: Decor): Family => {
   const t = `${d.name} ${d.surface_label ?? ""}`;
   return WOOD.test(t) ? "drewno" : STONE.test(t) ? "kamien" : "jednolite";
 };
-export const decorTone = (d: Decor): Tone => (DARK.test(d.name) ? "ciemne" : GREY.test(d.name) ? "szare" : LIGHT.test(d.name) ? "jasne" : "inne");
-const FAMILIES: [Family | "", string][] = [["", "Każda rodzina"], ["drewno", "Drewno"], ["kamien", "Kamień, beton"], ["jednolite", "Jednolite"]];
-const TONES: [Tone | "", string][] = [["", "Każdy kolor"], ["jasne", "Jasne"], ["szare", "Szare"], ["ciemne", "Ciemne"]];
+export const decorTone = (d: Decor): Tone =>
+  DARK.test(d.name)
+    ? "ciemne"
+    : GREY.test(d.name)
+      ? "szare"
+      : LIGHT.test(d.name)
+        ? "jasne"
+        : "inne";
+const FAMILIES: [Family | "", string][] = [
+  ["", "Każda rodzina"],
+  ["drewno", "Drewno"],
+  ["kamien", "Kamień, beton"],
+  ["jednolite", "Jednolite"],
+];
+const TONES: [Tone | "", string][] = [
+  ["", "Każdy kolor"],
+  ["jasne", "Jasne"],
+  ["szare", "Szare"],
+  ["ciemne", "Ciemne"],
+];
 
 export function DecorPicker({
   decors,
@@ -518,9 +540,16 @@ export function DecorPicker({
   const [all, setAll] = useState(false);
   const [shown, setShown] = useState(PAGE);
   const titleId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   // Tryb startowy: krótka lista, dopóki nikt nie szuka ani nie filtruje i nie kliknął „Pokaż wszystkie”.
-  const shortList = !all && !query.trim() && !maker && !family && !tone && (featured?.length ?? 0) > 0;
+  const shortList =
+    !all &&
+    !query.trim() &&
+    !maker &&
+    !family &&
+    !tone &&
+    (featured?.length ?? 0) > 0;
   const result = useMemo(() => {
     if (shortList) {
       const byKey = new Map(decors.map((d) => [d.key, d]));
@@ -539,19 +568,26 @@ export function DecorPicker({
             .includes(q)),
     );
   }, [decors, query, maker, onlyWorktop, family, tone, shortList, featured]);
-  useEffect(() => setShown(PAGE), [query, maker, onlyWorktop, family, tone, all]);
+  useEffect(
+    () => setShown(PAGE),
+    [query, maker, onlyWorktop, family, tone, all],
+  );
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
+    dialogRef.current?.showModal();
     closeRef.current?.focus();
     const key = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", key);
     return () => {
       window.removeEventListener("keydown", key);
+      dialogRef.current?.close();
       previous?.focus?.();
     };
   }, [onClose]);
   return (
-    <div
+    <dialog
+      ref={dialogRef}
+      onCancel={onClose}
       className="qp-overlay"
       role="dialog"
       aria-modal="true"
@@ -625,14 +661,24 @@ export function DecorPicker({
         <div className="qp-bar">
           <div className="qp-seg" role="group" aria-label="Rodzina dekoru">
             {FAMILIES.map(([v, t]) => (
-              <button key={v} type="button" aria-pressed={family === v} onClick={() => setFamily(v)}>
+              <button
+                key={v}
+                type="button"
+                aria-pressed={family === v}
+                onClick={() => setFamily(v)}
+              >
                 {t}
               </button>
             ))}
           </div>
           <div className="qp-seg" role="group" aria-label="Kolor dekoru">
             {TONES.map(([v, t]) => (
-              <button key={v} type="button" aria-pressed={tone === v} onClick={() => setTone(v)}>
+              <button
+                key={v}
+                type="button"
+                aria-pressed={tone === v}
+                onClick={() => setTone(v)}
+              >
                 {t}
               </button>
             ))}
@@ -640,12 +686,20 @@ export function DecorPicker({
         </div>
         <div className="qp-bar">
           <p className="qp-muted" role="status" style={{ margin: 0 }}>
-            {shortList ? `${featuredLabel}: ${result.length}` : `${result.length} dekorów`}
+            {shortList
+              ? `${featuredLabel}: ${result.length}`
+              : `${result.length} dekorów`}
           </p>
           <span className="qp-spacer" />
           {(featured?.length ?? 0) > 0 && (
-            <button type="button" className="qp-btn secondary" onClick={() => setAll((x) => !x)}>
-              {shortList || !all ? `Pokaż wszystkie (${decors.length})` : featuredLabel}
+            <button
+              type="button"
+              className="qp-btn secondary"
+              onClick={() => setAll((x) => !x)}
+            >
+              {shortList || !all
+                ? `Pokaż wszystkie (${decors.length})`
+                : featuredLabel}
             </button>
           )}
         </div>
@@ -676,7 +730,7 @@ export function DecorPicker({
           </button>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }
 
@@ -708,10 +762,23 @@ export function wallFrame(kind: Kind, lengths: number[], i: number) {
   const [a = 0, b = 0] = lengths;
   if (kind === "I" || i === 1) {
     // pozioma u góry, od lewej do prawej, wnętrze w dół
-    return { at: (x: number) => [x, 0] as const, dir: [1, 0] as const, n: [0, 1] as const };
+    return {
+      at: (x: number) => [x, 0] as const,
+      dir: [1, 0] as const,
+      n: [0, 1] as const,
+    };
   }
-  if (i === 0) return { at: (x: number) => [0, a - x] as const, dir: [0, -1] as const, n: [1, 0] as const };
-  return { at: (x: number) => [b, x] as const, dir: [0, 1] as const, n: [-1, 0] as const };
+  if (i === 0)
+    return {
+      at: (x: number) => [0, a - x] as const,
+      dir: [0, -1] as const,
+      n: [1, 0] as const,
+    };
+  return {
+    at: (x: number) => [b, x] as const,
+    dir: [0, 1] as const,
+    n: [-1, 0] as const,
+  };
 }
 
 export function PlanView({
@@ -732,23 +799,38 @@ export function PlanView({
 }) {
   const n = kind === "I" ? 1 : kind === "L" ? 2 : 3;
   const L = lengths.slice(0, n);
-  const width = kind === "I" ? L[0] : L[1] ?? 0;
-  const height = kind === "I" ? DEPTH * 2 : Math.max(L[0] ?? 0, kind === "U" ? L[2] ?? 0 : 0);
+  const width = kind === "I" ? L[0] : (L[1] ?? 0);
+  const height =
+    kind === "I"
+      ? DEPTH * 2
+      : Math.max(L[0] ?? 0, kind === "U" ? (L[2] ?? 0) : 0);
   const M = 260;
   const rect = (wall: number, x: number, w: number, d: number, inset = 0) => {
     const f = wallFrame(kind, L, wall);
     const p = [f.at(x), f.at(x + w)];
-    const q = p.map(([px, py]) => [px + f.n[0] * (inset + d), py + f.n[1] * (inset + d)]);
+    const q = p.map(([px, py]) => [
+      px + f.n[0] * (inset + d),
+      py + f.n[1] * (inset + d),
+    ]);
     const xs = [...p, ...q].map((v) => v[0]);
     const ys = [...p, ...q].map((v) => v[1]);
-    return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    return {
+      x: Math.min(...xs),
+      y: Math.min(...ys),
+      w: Math.max(...xs) - Math.min(...xs),
+      h: Math.max(...ys) - Math.min(...ys),
+    };
   };
   return (
     <figure className="qp-plan">
       <figcaption>
         <b>Rzut z góry</b> · ● = początek ściany, od niego liczysz „od ● [mm]”
       </figcaption>
-      <svg viewBox={`${-M} ${-M} ${width + 2 * M} ${height + 2 * M}`} role="img" aria-label="Rzut kuchni z góry">
+      <svg
+        viewBox={`${-M} ${-M} ${width + 2 * M} ${height + 2 * M}`}
+        role="img"
+        aria-label="Rzut kuchni z góry"
+      >
         {L.map((len, i) => {
           const f = wallFrame(kind, L, i);
           const [x1, y1] = f.at(0);
@@ -756,29 +838,67 @@ export function PlanView({
           const [mx, my] = f.at(len / 2);
           return (
             <g key={`w${i}`}>
-              <rect {...(() => { const r = rect(i, 0, len, DEPTH); return { x: r.x, y: r.y, width: r.w, height: r.h }; })()} fill="var(--panel)" stroke="var(--line)" strokeWidth={6} />
-              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--text)" strokeWidth={40} strokeLinecap="square" />
-              <circle cx={x1 + f.n[0] * 90 + f.dir[0] * 90} cy={y1 + f.n[1] * 90 + f.dir[1] * 90} r={45} fill="var(--text)" />
+              <rect
+                {...(() => {
+                  const r = rect(i, 0, len, DEPTH);
+                  return { x: r.x, y: r.y, width: r.w, height: r.h };
+                })()}
+                fill="var(--panel)"
+                stroke="var(--line)"
+                strokeWidth={6}
+              />
+              <line
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="var(--text)"
+                strokeWidth={40}
+                strokeLinecap="square"
+              />
+              <circle
+                cx={x1 + f.n[0] * 90 + f.dir[0] * 90}
+                cy={y1 + f.n[1] * 90 + f.dir[1] * 90}
+                r={45}
+                fill="var(--text)"
+              />
               <text
                 x={mx - f.n[0] * 70}
                 y={my - f.n[1] * 110}
-                textAnchor={f.n[0] > 0 ? "end" : f.n[0] < 0 ? "start" : "middle"}
+                textAnchor={
+                  f.n[0] > 0 ? "end" : f.n[0] < 0 ? "start" : "middle"
+                }
                 dominantBaseline={f.n[1] > 0 ? "auto" : "middle"}
                 fontSize={110}
                 fill="var(--muted)"
               >
-                {walls?.[i] ?? `Ściana ${i + 1} (${String.fromCharCode(65 + i)})`} · {mm(len)}
+                {walls?.[i] ??
+                  `Ściana ${i + 1} (${String.fromCharCode(65 + i)})`}{" "}
+                · {mm(len)}
               </text>
             </g>
           );
         })}
         {modules?.map((m, i) => {
           const r = rect(m.wall, m.xMM, m.widthMM, DEPTH);
-          return <rect key={`m${i}`} x={r.x} y={r.y} width={r.w} height={r.h} fill={ROLE_COLOR[m.rola] ?? "#d9c4a3"} stroke="#3b3128" strokeWidth={6} />;
+          return (
+            <rect
+              key={`m${i}`}
+              x={r.x}
+              y={r.y}
+              width={r.w}
+              height={r.h}
+              fill={ROLE_COLOR[m.rola] ?? "#d9c4a3"}
+              stroke="#3b3128"
+              strokeWidth={6}
+            />
+          );
         })}
         {markers.map((k) => {
           const okno = k.kind === "okno";
-          const r = okno ? rect(k.wall, k.xMM, k.widthMM, 60, -30) : rect(k.wall, k.xMM, k.widthMM, DEPTH);
+          const r = okno
+            ? rect(k.wall, k.xMM, k.widthMM, 60, -30)
+            : rect(k.wall, k.xMM, k.widthMM, DEPTH);
           return (
             <g
               key={k.id}
@@ -786,11 +906,31 @@ export function PlanView({
               aria-label={onPick ? `${k.label}: zmień położenie` : k.label}
               tabIndex={onPick ? 0 : undefined}
               onClick={() => onPick?.(k.id)}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onPick?.(k.id)}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && onPick?.(k.id)
+              }
               style={{ cursor: onPick ? "pointer" : undefined }}
             >
-              <rect x={r.x} y={r.y} width={r.w} height={r.h} fill={FIXED_COLOR[k.kind]} fillOpacity={modules ? 0 : 0.9} stroke={okno ? "#2f6f99" : "#1d1812"} strokeWidth={okno ? 14 : modules ? 18 : 8} strokeDasharray={modules && !okno ? "50 30" : undefined} />
-              <text x={r.x + r.w / 2} y={r.y + r.h / 2} textAnchor="middle" dominantBaseline="middle" fontSize={okno ? 90 : 100} fill="#1d1812" fontWeight={700}>
+              <rect
+                x={r.x}
+                y={r.y}
+                width={r.w}
+                height={r.h}
+                fill={FIXED_COLOR[k.kind]}
+                fillOpacity={modules ? 0 : 0.9}
+                stroke={okno ? "#2f6f99" : "#1d1812"}
+                strokeWidth={okno ? 14 : modules ? 18 : 8}
+                strokeDasharray={modules && !okno ? "50 30" : undefined}
+              />
+              <text
+                x={r.x + r.w / 2}
+                y={r.y + r.h / 2}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={okno ? 90 : 100}
+                fill="#1d1812"
+                fontWeight={700}
+              >
                 {k.label}
               </text>
             </g>
@@ -811,15 +951,27 @@ type VariantLike = {
 const HARDWARE = new Set(["okucia", "akcesoria"]);
 /** „Blum Legrabox — Pure H86 L=500” → „Blum Legrabox”; bez sztucznego producenta „Generic”. */
 export const shortItem = (n: string) =>
-  n.split(" — ")[0].replace(/^Generic\s+/i, "").replace(/\s*\(ID:[^)]*\)/g, "").trim();
+  n
+    .split(" — ")[0]
+    .replace(/^Generic\s+/i, "")
+    .replace(/\s*\(ID:[^)]*\)/g, "")
+    .trim();
 
 /**
  * 2–3 linie dla klienta wyliczone z różnic pozycji wyceny: pierwszy wariant — główne okucia,
  * kolejne — co dochodzi względem poprzedniego. Te same okucia = uczciwe „różnica: zakres robocizny”.
  * Dobór okuć w wariantach się nie zmienia (decyzja biznesowa); to tylko opis.
  */
-export function variantInside(warianty: VariantLike[]): Record<string, string[]> {
-  const hw = (v: VariantLike) => [...new Set(v.pozycje.filter((p) => HARDWARE.has(p.kategoria)).map((p) => shortItem(p.nazwa)))];
+export function variantInside(
+  warianty: VariantLike[],
+): Record<string, string[]> {
+  const hw = (v: VariantLike) => [
+    ...new Set(
+      v.pozycje
+        .filter((p) => HARDWARE.has(p.kategoria))
+        .map((p) => shortItem(p.nazwa)),
+    ),
+  ];
   const out: Record<string, string[]> = {};
   warianty.forEach((v, i) => {
     const mine = hw(v);
@@ -831,9 +983,13 @@ export function variantInside(warianty: VariantLike[]): Record<string, string[]>
     const before = new Set(hw(prev));
     const added = mine.filter((x) => !before.has(x));
     const removed = [...before].filter((x) => !mine.includes(x));
-    out[v.wariant] = !added.length && !removed.length
-      ? [`Te same okucia co ${prev.nazwa}`, "Różnica: zakres robocizny"]
-      : [`Względem ${prev.nazwa}:`, ...added.slice(0, 2).map((x) => `+ ${x}`)];
+    out[v.wariant] =
+      !added.length && !removed.length
+        ? [`Te same okucia co ${prev.nazwa}`, "Różnica: zakres robocizny"]
+        : [
+            `Względem ${prev.nazwa}:`,
+            ...added.slice(0, 2).map((x) => `+ ${x}`),
+          ];
   });
   return out;
 }

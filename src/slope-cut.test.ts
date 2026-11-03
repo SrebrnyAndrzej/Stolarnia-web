@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { slopeCut } from "./core/slope-cut.js";
+import { slopeCut, slopeRoofPanels } from "./core/slope-cut.js";
 import { carcass, freshFurniture, platePolygon } from "./core/furniture.js";
 import { randomUUID } from "node:crypto";
 const close = (a: number, b: number) =>
@@ -42,9 +42,30 @@ test("roof lies between the side panels and its thickness is perpendicular to th
   for (const reverse of [false, true]) {
     const model = { ...m, reverse };
     const poly = platePolygon(model, cap);
+    const roof = slopeRoofPanels(model)[0];
+    close(roof.topLength, slopeCut(model)!.roofTopEdge);
+    close(roof.blankLength, roof.topLength + 18 * 0.5);
+    close(roof.thickness, 18);
+    close(roof.depth, cap.depth);
     close(Math.min(...poly.map((p) => p[0])), 18);
     close(Math.max(...poly.map((p) => p[0])), 982);
     const [lowLeft, , , topLeft] = poly;
     close((topLeft[1] - lowLeft[1]) * Math.cos(Math.atan(0.5)), 18);
   }
+});
+
+test("roof dimensions follow edited cap span and depth; flat case has no bevel offset", () => {
+  const m = { ...freshFurniture(), shape: "slope" as const, lowHeight: 1500 };
+  m.plates = carcass(m, randomUUID);
+  const cap = m.plates.find((p) => p.kind === "cap")!;
+  cap.x = 100;
+  cap.width = 600;
+  cap.depth = 420;
+  const r = slopeRoofPanels(m)[0];
+  close(r.topLength, 600 / Math.cos(Math.atan(0.5)));
+  close(r.depth, 420);
+  const flat = slopeRoofPanels({ ...m, lowHeight: m.height })[0];
+  close(flat.topLength, 600);
+  close(flat.blankLength, 600);
+  assert.deepEqual(slopeRoofPanels({ ...m, plates: [] }), []);
 });

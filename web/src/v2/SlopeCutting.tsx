@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { slopeCut } from "../../../src/core/slope-cut";
+import { slopeCut, slopeRoofPanels } from "../../../src/core/slope-cut";
 import type { FurnitureModel } from "../../../src/core/furniture";
 const number = (n: number, digits = 2) =>
   n.toLocaleString("pl-PL", {
@@ -10,6 +10,7 @@ export function SlopeCutting({ model }: { model: FurnitureModel }) {
   const [saw, setSaw] = useState("table");
   const [joint, setJoint] = useState("butt");
   const result = slopeCut(model);
+  const roofs = slopeRoofPanels(model);
   if (!result)
     return (
       <p role="alert">
@@ -58,6 +59,21 @@ export function SlopeCutting({ model }: { model: FurnitureModel }) {
           stroke="currentColor"
           strokeWidth="2"
         />
+        {roofs.map((roof) => (
+          <polygon
+            key={roof.id}
+            points={roof.polygon
+              .map(([x, y]) => `${left + x * scale},${bottom - y * scale}`)
+              .join(" ")}
+            fill="var(--accent)"
+            stroke="currentColor"
+            strokeWidth="1"
+          >
+            <title>
+              {roof.name}: górna krawędź {number(roof.topLength, 1)} mm
+            </title>
+          </polygon>
+        ))}
         <path
           d={`M ${left - 15} ${bottom} H ${left - 25} V ${bottom - hl * scale} H ${left - 15} M ${right + 15} ${bottom} H ${right + 25} V ${bottom - hr * scale} H ${right + 15} M ${left} ${bottom + 12} V ${bottom + 22} H ${right} V ${bottom + 12}`}
           fill="none"
@@ -90,6 +106,56 @@ export function SlopeCutting({ model }: { model: FurnitureModel }) {
           <dd>{number(result.outerSlopeLength, 1)} mm</dd>
         </div>
       </dl>
+      <section aria-label="Wymiary górnego wieńca pod skosem">
+        <h3>Wieniec górny pod skosem — wymiary płyty</h3>
+        {!roofs.length ? (
+          <p>
+            Brak wieńca w aktualnym modelu. Dodaj wieniec, aby odczytać jego
+            wymiary.
+          </p>
+        ) : (
+          roofs.map((roof) => (
+            <div key={roof.id}>
+              <p>
+                <strong>{roof.name}</strong> · między bokami, według aktualnej
+                geometrii
+              </p>
+              <dl className="fc-cut-summary">
+                <div>
+                  <dt>Długość górnej krawędzi po skosie</dt>
+                  <dd>{number(roof.topLength, 1)} mm</dd>
+                </div>
+                <div>
+                  <dt>Głębokość wieńca</dt>
+                  <dd>{number(roof.depth, 1)} mm</dd>
+                </div>
+                <div>
+                  <dt>Grubość prostopadle do płyty</dt>
+                  <dd>{number(roof.thickness, 1)} mm</dd>
+                </div>
+                <div>
+                  <dt>Obwiednia półfabrykatu w płaszczyźnie płyty</dt>
+                  <dd>
+                    {number(roof.blankLength, 1)} × {number(roof.depth, 1)} ×{" "}
+                    {number(roof.thickness, 1)} mm
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          ))
+        )}
+        <p>
+          Długość krawędzi mierzymy wzdłuż górnej powierzchni między bokami.
+          Obwiednia półfabrykatu obejmuje skrajne punkty obu skośnych zakończeń,
+          więc może być dłuższa od górnej krawędzi. Głębokość pochodzi z
+          rzeczywistej płyty, po uwzględnieniu miejsca na plecy.
+        </p>
+        <p>
+          Wymiary geometryczne bez obrzeży, naddatków i rzazu. Dotyczą wieńca
+          między bokami; porównanie uciosów poniżej nie zmienia jego
+          konstrukcji.
+        </p>
+      </section>
       <div className="fc-fields">
         <label>
           Piła

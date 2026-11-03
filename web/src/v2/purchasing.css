@@ -123,3 +123,7 @@
     padding: 12px;
   }
 }
+.po-supplier-table {
+  max-width: 100%;
+  overflow-x: auto;
+}

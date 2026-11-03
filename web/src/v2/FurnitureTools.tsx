@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NumberField } from "./FurnitureNumberField";
 import { Feedback } from "./ui";
+import { FurniturePreparation } from "./FurniturePreparation";
 import { furnitureReview } from "../../../src/core/furniture-review";
 import { furnitureParts } from "../../../src/core/furniture-parts";
 import {
@@ -568,6 +569,7 @@ export function FurnitureTools({
           pozostają widoczne.
         </p>
       </fieldset>
+      <details><summary>Przygotowanie płyt do rozkroju</summary><FurniturePreparation key={`${id}-${version}`} id={id} version={version} model={model} disabled={disabled || dirty || !version} onSelect={onSelect}/></details>
     </>
   );
 }

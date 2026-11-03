@@ -18,6 +18,22 @@ test("two side heights calculate saw limits and preserve them after saving", asy
   const cutting = page.getByRole("region", { name: "Kalkulator cięcia skosu" });
   await expect(cutting).toContainText("26,57°");
   await expect(cutting).toContainText("1509,0 mm");
+  const roof = page.getByRole("region", {
+    name: "Wymiary górnego wieńca pod skosem",
+  });
+  await expect(roof.getByText("1077,8 mm", { exact: true })).toBeVisible();
+  await expect(
+    roof.getByText("1086,8 × 560,0 × 18,0 mm", { exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Głębokość", { exact: true }).fill("600");
+  await expect(
+    roof.getByText("1086,8 × 600,0 × 18,0 mm", { exact: true }),
+  ).toBeVisible();
+  if (process.env.PAN_STOLARZ_QA_SCREENSHOT_SLOPE)
+    await roof.screenshot({
+      path: process.env.PAN_STOLARZ_QA_SCREENSHOT_SLOPE,
+    });
+  await page.getByLabel("Głębokość", { exact: true }).fill("560");
   await page.getByLabel("Piła", { exact: true }).selectOption("track");
   await expect(cutting).toContainText("Zagłębiarka:");
   await page
