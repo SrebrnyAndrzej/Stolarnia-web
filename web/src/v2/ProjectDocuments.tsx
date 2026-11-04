@@ -230,9 +230,7 @@ export function ProjectDocuments({
             <option value="skrot">
               Skrót — rysunki, prześwity i wiercenia okuć
             </option>
-            <option value="pelny">
-              Pełny pakiet — wszystkie części i operacje
-            </option>
+            <option value="pelny">Pełny zakres wybranego rodzaju kart</option>
           </select>
         </label>
       )}
