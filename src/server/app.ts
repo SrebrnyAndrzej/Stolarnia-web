@@ -215,6 +215,7 @@ app.get("/api/v2/projects/:id", v2((req, person) => {
 const technicalDocumentQuery = z.object({
   wydanie: z.string().min(1).max(80).optional(),
   rodzaj: z.enum(["techniczne", "montazowe"]).default("techniczne"),
+  format: z.enum(["skrot", "pelny"]).optional(),
   modul: z.string().min(1).max(80).optional(),
   rewizja: z.coerce.number().int().min(0).optional(),
 }).strict();
@@ -236,7 +237,7 @@ app.get("/api/v2/projects/:id/documents.pdf", async (req, res) => {
     const source = documentSource(s, person, id, q.wydanie);
     if (source.document.rewizja !== q.rewizja) throw new AccessError(409, "Projekt zmienił się. Odśwież dokumentację i ponownie wybierz wydruk.");
     if (q.modul && !source.document.czesci.some(c => c.modulId === q.modul)) throw new AccessError(404, "Nie znaleziono szafki w tej dokumentacji.");
-    const wybor = { skrocony: q.rodzaj === "montazowe", moduly: q.modul ? [q.modul] : undefined, ukryjDaneKlienta: true };
+    const wybor = { zwiezly: q.format === "skrot", skrocony: q.rodzaj === "montazowe", moduly: q.modul ? [q.modul] : undefined, ukryjDaneKlienta: true };
     const pdf = q.wydanie ? (await s.wydaniePdf(id, q.wydanie, wybor)).pdf : await s.dokumentacjaPdf(id, wybor);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("X-Content-Type-Options", "nosniff");

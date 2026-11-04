@@ -17,6 +17,7 @@ export function ProjectDocuments({
   onClose: () => void;
 }) {
   const [release, setRelease] = useState("");
+  const [format, setFormat] = useState<"skrot" | "pelny">("skrot");
   const [module, setModule] = useState("");
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -68,6 +69,7 @@ export function ProjectDocuments({
     try {
       const query = new URLSearchParams({
         rodzaj: kind,
+        format,
         rewizja: String(d?.revision),
       });
       const selected = resource.data?.selectedRelease;
@@ -96,9 +98,9 @@ export function ProjectDocuments({
         </button>
       </div>
       <p>
-        Karty techniczne zawierają rysunki części i operacje obróbki. Karty
-        montażowe to skrócone karty szafek z wymiarami, częściami i okuciami.
-        PDF otworzysz w nowej karcie i wydrukujesz z przeglądarki.
+        Skrót zawiera rysunek wnętrza ze światłem między półkami, przekrój
+        boczny i wybrane wiercenia okuć. Pełne karty zawierają wszystkie części
+        i operacje. PDF otworzysz w nowej karcie i wydrukujesz z przeglądarki.
       </p>
       {!demo && (
         <button
@@ -212,6 +214,27 @@ export function ProjectDocuments({
             </>
           )}
         </>
+      )}
+      {!demo && (
+        <label className="field">
+          Objętość dokumentacji
+          <select
+            className="input"
+            value={format}
+            disabled={!!busy}
+            onChange={(e) => {
+              setFormat(e.target.value as "skrot" | "pelny");
+              setPdf(null);
+            }}
+          >
+            <option value="skrot">
+              Skrót — rysunki, prześwity i wiercenia okuć
+            </option>
+            <option value="pelny">
+              Pełny pakiet — wszystkie części i operacje
+            </option>
+          </select>
+        </label>
       )}
       {(demo || (!!d && !resource.busy && !resource.error && d.parts > 0)) && (
         <div className="ps-document-actions">

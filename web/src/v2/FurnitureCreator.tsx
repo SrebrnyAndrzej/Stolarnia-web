@@ -1,3 +1,5 @@
+import { createPortal } from "react-dom";
+import { furnitureOpenings } from "../../../src/core/furniture-openings";
 import {
   applyShelfSpacing,
   shelfSpacing,
@@ -96,6 +98,18 @@ export function FurnitureCreator({
   const [history, setHistory] = useState<FurnitureModel[]>([]);
   const [future, setFuture] = useState<FurnitureModel[]>([]);
   const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const focusDialog = useRef<HTMLDialogElement>(null);
+  const expandButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!expanded) return;
+    const dialog = focusDialog.current;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      expandButton.current?.focus();
+    };
+  }, [expanded]);
   const [view, setView] = useState<"2d" | "3d">("2d");
   const [snap, setSnap] = useState(true),
     [dimensions, setDimensions] = useState(false);
@@ -529,6 +543,274 @@ export function FurnitureCreator({
   };
   const points = (poly: Point[]) =>
     poly.map(([x, y]) => `${x},${model.height - y}`).join(" ");
+  const stage = (
+    <div className="fc-stage" aria-label="Obszar projektowania">
+      <div className="fc-stage-title">
+        <button ref={expandButton} onClick={() => setExpanded((x) => !x)}>
+          {expanded ? "Zamknij powiększenie" : "Powiększ podgląd"}
+        </button>
+        <div>
+          <span className="ps-eyebrow">BIEŻĄCY PROJEKT</span>
+          <h2>{model.name}</h2>
+        </div>
+        <span className="fc-measures">
+          {model.width} × {model.height} × {model.depth} <small>mm</small>
+        </span>
+      </div>
+      <fieldset className="fc-quick-dimensions" disabled={busy}>
+        <legend>Szybkie gabaryty</legend>
+        <div className="fc-fields">
+          <NumberField
+            label="Szybka szerokość"
+            min={100}
+            max={10000}
+            value={model.width}
+            onChange={(v) => shapeChange({ width: v })}
+          />
+          <NumberField
+            label="Szybka wysokość"
+            min={100}
+            max={10000}
+            value={model.height}
+            onChange={(v) => shapeChange({ height: v })}
+          />
+          <NumberField
+            label="Szybka głębokość"
+            min={100}
+            value={model.depth}
+            onChange={(v) => shapeChange({ depth: v })}
+          />
+        </div>
+      </fieldset>
+      <div className="fc-toolbar">
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={dimensions}
+            onChange={(e) => setDimensions(e.target.checked)}
+          />
+          Pokaż wymiary
+        </label>
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={snap}
+            onChange={(e) => setSnap(e.target.checked)}
+          />
+          Przyciąganie do krawędzi i siatki 10 mm
+        </label>
+        <button
+          disabled={busy || !history.length}
+          onClick={() => {
+            setFuture((f) => [...f, structuredClone(model)]);
+            setModel(history[history.length - 1]);
+            setHistory((h) => h.slice(0, -1));
+            setDirty(true);
+            setError("");
+          }}
+        >
+          Cofnij
+        </button>
+        <button
+          disabled={busy || !future.length}
+          onClick={() => {
+            setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+            setModel(future[future.length - 1]);
+            setFuture((f) => f.slice(0, -1));
+            setDirty(true);
+            setError("");
+            setMessage("");
+          }}
+        >
+          Ponów
+        </button>
+        <button onClick={() => addPlate(false)} disabled={busy}>
+          + Półka
+        </button>
+        <button onClick={() => addPlate(true)} disabled={busy}>
+          + Przegroda
+        </button>
+        <div role="group" aria-label="Widok mebla">
+          <button aria-pressed={view === "2d"} onClick={() => setView("2d")}>
+            Przód 2D
+          </button>
+          <button aria-pressed={view === "3d"} onClick={() => setView("3d")}>
+            Bryła 3D
+          </button>
+        </div>
+        <span role="status">
+          {dirty
+            ? "Niezapisane zmiany"
+            : version
+              ? `Zapisano · wersja ${version}`
+              : "Nowy szkic"}
+        </span>
+      </div>
+      <div className="fc-drawing">
+        {view === "3d" ? (
+          <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
+            <FurnitureScene
+              key={id}
+              model={model}
+              selected={selected}
+              onSelect={setSelected}
+            />
+          </Suspense>
+        ) : (
+          <svg
+            ref={svg}
+            role="img"
+            aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
+            viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
+            onPointerMove={move}
+            onPointerUp={() => {
+              drag.current = null;
+            }}
+            onPointerCancel={() => {
+              drag.current = null;
+            }}
+          >
+            <polygon
+              points={points(furnitureOutline(model))}
+              className="fc-outline"
+            />
+            {dimensions && (
+              <g
+                fill="#1c2b30"
+                stroke="#717780"
+                strokeWidth="1"
+                fontSize={Math.max(
+                  24,
+                  Math.max(model.width, model.height) / 55,
+                )}
+              >
+                <path
+                  d={`M0 -12 H${model.width} M-12 0 V${model.height}`}
+                  fill="none"
+                />
+                <text
+                  x={model.width / 2}
+                  y={-25}
+                  textAnchor="middle"
+                  stroke="none"
+                >
+                  {model.width} mm
+                </text>
+                <text
+                  transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
+                  textAnchor="middle"
+                  stroke="none"
+                >
+                  {model.height} mm
+                </text>
+              </g>
+            )}
+            {compartmentBoxes(model)
+              .boxes.filter((b) => !b.node.split)
+              .map((b) => (
+                <g
+                  key={b.node.id}
+                  className="fc-compartment-area"
+                  onClick={() => setSelectedCompartment(b.node.id)}
+                >
+                  <rect
+                    x={b.x}
+                    y={model.height - b.y - b.height}
+                    width={b.width}
+                    height={b.height}
+                    fill={
+                      selectedCompartment === b.node.id
+                        ? "#a5b859"
+                        : "transparent"
+                    }
+                    fillOpacity={selectedCompartment === b.node.id ? 0.14 : 1}
+                    stroke="#717780"
+                    strokeDasharray="5 5"
+                    strokeWidth="1"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <text
+                    x={b.x + 8}
+                    y={model.height - b.y - b.height + 30}
+                    fontSize="22"
+                    fill="#1c2b30"
+                  >
+                    {Math.round(b.width)} × {Math.round(b.height)} mm
+                  </text>
+                </g>
+              ))}
+            {[...model.plates]
+              .filter(
+                (p) =>
+                  !dimensions ||
+                  (p.kind !== "door" &&
+                    p.kind !== "drawer" &&
+                    p.anchor !== "back" &&
+                    p.specification?.face !== "xy"),
+              )
+              .sort((a, b) => a.z - b.z)
+              .map((p) => {
+                const poly = platePolygon(model, p);
+                return (
+                  <g
+                    key={p.id}
+                    className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
+                    onPointerDown={(e) => {
+                      if (e.target instanceof SVGPolygonElement)
+                        beginDrag(
+                          e as unknown as PointerEvent<SVGPolygonElement>,
+                          p,
+                        );
+                    }}
+                  >
+                    <polygon points={points(poly)}>
+                      <title>{p.name}</title>
+                    </polygon>
+                  </g>
+                );
+              })}
+            {dimensions && (
+              <g aria-label="Światło między półkami" pointerEvents="none">
+                {furnitureOpenings(model).openings.map((o, i) => (
+                  <g key={i}>
+                    <path
+                      d={`M${o.probeX} ${model.height - o.y}V${model.height - o.y - o.height}`}
+                      fill="none"
+                      stroke="var(--muted)"
+                      strokeWidth="1"
+                      strokeDasharray="4 3"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <text
+                      x={o.probeX + 8}
+                      y={model.height - o.y - o.height / 2}
+                      fill="var(--text)"
+                      fontSize={Math.max(24, model.height / 38)}
+                      paintOrder="stroke"
+                      stroke="var(--panel)"
+                      strokeWidth={6}
+                    >
+                      {o.height.toLocaleString("pl-PL", {
+                        maximumFractionDigits: 1,
+                      })}{" "}
+                      mm
+                    </text>
+                  </g>
+                ))}
+              </g>
+            )}
+          </svg>
+        )}
+      </div>
+      {dimensions && (
+        <p className="fc-scene-hint">
+          Światło między powierzchniami płyt w osi każdej kolumny. Przy skosie
+          wymiar obowiązuje na linii pomiaru. Fronty i plecy są ukryte w rzucie
+          technicznym.
+        </p>
+      )}
+    </div>
+  );
   return (
     <section className="fc">
       <header className="fc-header">
@@ -635,204 +917,19 @@ export function FurnitureCreator({
           </ul>
         </aside>
         <div className="fc-workbench">
-          <div className="fc-stage" aria-label="Obszar projektowania">
-            <div className="fc-stage-title">
-              <div>
-                <span className="ps-eyebrow">BIEŻĄCY PROJEKT</span>
-                <h2>{model.name}</h2>
-              </div>
-              <span className="fc-measures">
-                {model.width} × {model.height} × {model.depth} <small>mm</small>
-              </span>
-            </div>
-            <div className="fc-toolbar">
-              <label className="fc-check">
-                <input
-                  type="checkbox"
-                  checked={dimensions}
-                  onChange={(e) => setDimensions(e.target.checked)}
-                />
-                Pokaż wymiary
-              </label>
-              <label className="fc-check">
-                <input
-                  type="checkbox"
-                  checked={snap}
-                  onChange={(e) => setSnap(e.target.checked)}
-                />
-                Przyciąganie do krawędzi i siatki 10 mm
-              </label>
-              <button
-                disabled={busy || !history.length}
-                onClick={() => {
-                  setFuture((f) => [...f, structuredClone(model)]);
-                  setModel(history[history.length - 1]);
-                  setHistory((h) => h.slice(0, -1));
-                  setDirty(true);
-                  setError("");
-                }}
-              >
-                Cofnij
-              </button>
-              <button
-                disabled={busy || !future.length}
-                onClick={() => {
-                  setHistory((h) => [...h.slice(-39), structuredClone(model)]);
-                  setModel(future[future.length - 1]);
-                  setFuture((f) => f.slice(0, -1));
-                  setDirty(true);
-                  setError("");
-                  setMessage("");
-                }}
-              >
-                Ponów
-              </button>
-              <button onClick={() => addPlate(false)} disabled={busy}>
-                + Półka
-              </button>
-              <button onClick={() => addPlate(true)} disabled={busy}>
-                + Przegroda
-              </button>
-              <div role="group" aria-label="Widok mebla">
-                <button
-                  aria-pressed={view === "2d"}
-                  onClick={() => setView("2d")}
+          {expanded
+            ? createPortal(
+                <dialog
+                  ref={focusDialog}
+                  className="fc fc-focus-dialog"
+                  aria-label="Powiększony obszar projektowania"
+                  onCancel={() => setExpanded(false)}
                 >
-                  Przód 2D
-                </button>
-                <button
-                  aria-pressed={view === "3d"}
-                  onClick={() => setView("3d")}
-                >
-                  Bryła 3D
-                </button>
-              </div>
-              <span role="status">
-                {dirty
-                  ? "Niezapisane zmiany"
-                  : version
-                    ? `Zapisano · wersja ${version}`
-                    : "Nowy szkic"}
-              </span>
-            </div>
-            <div className="fc-drawing">
-              {view === "3d" ? (
-                <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
-                  <FurnitureScene
-                    key={id}
-                    model={model}
-                    selected={selected}
-                    onSelect={setSelected}
-                  />
-                </Suspense>
-              ) : (
-                <svg
-                  ref={svg}
-                  role="img"
-                  aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
-                  viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
-                  onPointerMove={move}
-                  onPointerUp={() => {
-                    drag.current = null;
-                  }}
-                  onPointerCancel={() => {
-                    drag.current = null;
-                  }}
-                >
-                  <polygon
-                    points={points(furnitureOutline(model))}
-                    className="fc-outline"
-                  />
-                  {dimensions && (
-                    <g
-                      fill="#1c2b30"
-                      stroke="#717780"
-                      strokeWidth="1"
-                      fontSize="24"
-                    >
-                      <path
-                        d={`M0 -12 H${model.width} M-12 0 V${model.height}`}
-                        fill="none"
-                      />
-                      <text
-                        x={model.width / 2}
-                        y={-25}
-                        textAnchor="middle"
-                        stroke="none"
-                      >
-                        {model.width} mm
-                      </text>
-                      <text
-                        transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
-                        textAnchor="middle"
-                        stroke="none"
-                      >
-                        {model.height} mm
-                      </text>
-                    </g>
-                  )}
-                  {compartmentBoxes(model)
-                    .boxes.filter((b) => !b.node.split)
-                    .map((b) => (
-                      <g
-                        key={b.node.id}
-                        className="fc-compartment-area"
-                        onClick={() => setSelectedCompartment(b.node.id)}
-                      >
-                        <rect
-                          x={b.x}
-                          y={model.height - b.y - b.height}
-                          width={b.width}
-                          height={b.height}
-                          fill={
-                            selectedCompartment === b.node.id
-                              ? "#a5b859"
-                              : "transparent"
-                          }
-                          fillOpacity={
-                            selectedCompartment === b.node.id ? 0.14 : 1
-                          }
-                          stroke="#717780"
-                          strokeDasharray="5 5"
-                          strokeWidth="1"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                        <text
-                          x={b.x + 8}
-                          y={model.height - b.y - b.height + 30}
-                          fontSize="22"
-                          fill="#1c2b30"
-                        >
-                          {Math.round(b.width)} × {Math.round(b.height)} mm
-                        </text>
-                      </g>
-                    ))}
-                  {[...model.plates]
-                    .sort((a, b) => a.z - b.z)
-                    .map((p) => {
-                      const poly = platePolygon(model, p);
-                      return (
-                        <g
-                          key={p.id}
-                          className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
-                          onPointerDown={(e) => {
-                            if (e.target instanceof SVGPolygonElement)
-                              beginDrag(
-                                e as unknown as PointerEvent<SVGPolygonElement>,
-                                p,
-                              );
-                          }}
-                        >
-                          <polygon points={points(poly)}>
-                            <title>{p.name}</title>
-                          </polygon>
-                        </g>
-                      );
-                    })}
-                </svg>
-              )}
-            </div>
-          </div>
+                  {stage}
+                </dialog>,
+                document.body,
+              )
+            : stage}
           <fieldset disabled={busy} className="fc-layout-choice">
             <legend>Sugerowany układ startowy</legend>
             <div

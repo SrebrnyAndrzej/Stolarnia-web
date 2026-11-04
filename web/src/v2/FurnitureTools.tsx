@@ -1,3 +1,4 @@
+import { furnitureDocument } from "./furniture-document";
 import { useState } from "react";
 import { NumberField } from "./FurnitureNumberField";
 import { Feedback } from "./ui";
@@ -162,21 +163,12 @@ export function FurnitureTools({
     lines.push(0, "ENDSEC", 0, "EOF");
     download(lines.join("\r\n"), `obrysy-${prefix}.dxf`, "application/dxf");
   };
-  const exportHTML = () => {
-    const polygons = model.plates
-      .map(
-        (p) =>
-          `<polygon points="${platePolygon(model, p)
-            .map(([x, y]) => `${x},${model.height - y}`)
-            .join(" ")}" fill="#e2d9c8" stroke="#6e5c40" stroke-width="2"/>`,
-      )
-      .join("");
+  const exportHTML = () =>
     download(
-      `<!doctype html><html lang="pl"><meta charset="utf-8"><title>${escape(model.name)} — szkic warsztatowy</title><style>body{font:14px system-ui;color:#1c2b30;margin:32px}svg{width:100%;height:400px}table{border-collapse:collapse;width:100%;font-size:11px}th,td{text-align:left;border-bottom:1px solid #999;padding:8px;overflow-wrap:anywhere}thead{display:table-header-group}tr{break-inside:avoid}@media print{body{margin:0}svg{height:300px}}</style><h1>${escape(model.name)}</h1><p>SZKIC — nie jest wydaniem produkcyjnym. Wymaga sprawdzenia konstrukcji i okuć.</p><p>Model ${escape(id)} · wersja bazowa ${version} · stan ${escape(new Date().toISOString())}. Obejmuje także niezapisane zmiany.</p><p>${model.width} × ${model.height} × ${model.depth} mm</p><svg viewBox="-40 -40 ${model.width + 80} ${model.height + 80}">${polygons}</svg><h2>Indeks części</h2><table><thead><tr><th>Nr / ID</th><th>Część</th><th>Materiał</th><th>U×V / grubość</th><th>Braki</th></tr></thead><tbody>${parts.map((p, i) => `<tr><td>${i + 1}<br>${escape(p.id)}</td><td>${escape(p.name)}</td><td>${escape(p.material)} ${escape(p.decor)}</td><td>${escape(p.dimensions?.join(" × "))} / ${escape(p.thickness)}</td><td>${escape(p.issues.join("; "))}</td></tr>`).join("")}</tbody></table><h2>Kontrola</h2><p>${escape(review.method)}</p><ul>${[...review.collisions.map((c) => c.message), ...review.motion.map((c) => c.message), ...review.installation].map((s) => `<li>${escape(s)}</li>`).join("")}</ul><p>Wydrukuj lub wybierz Zapisz jako PDF w przeglądarce.</p></html>`,
+      furnitureDocument(model, id, version),
       `warsztat-${prefix}.html`,
       "text/html;charset=utf-8",
     );
-  };
   const outline = (m: FurnitureModel) => (
     <svg
       viewBox={`-30 -30 ${m.width + 60} ${m.height + 60}`}
@@ -569,7 +561,17 @@ export function FurnitureTools({
           pozostają widoczne.
         </p>
       </fieldset>
-      <details><summary>Przygotowanie płyt do rozkroju</summary><FurniturePreparation key={`${id}-${version}`} id={id} version={version} model={model} disabled={disabled || dirty || !version} onSelect={onSelect}/></details>
+      <details>
+        <summary>Przygotowanie płyt do rozkroju</summary>
+        <FurniturePreparation
+          key={`${id}-${version}`}
+          id={id}
+          version={version}
+          model={model}
+          disabled={disabled || dirty || !version}
+          onSelect={onSelect}
+        />
+      </details>
     </>
   );
 }

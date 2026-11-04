@@ -258,6 +258,8 @@ test("macierz HTTP: profil × trasa (403 = odmowa bramki)", async () => {
     ["t-montaz", "GET", `/api/projekty/${P.prod}/wydania`, 404],
     ["t-montaz", "GET", "/api/cennik/materialow", 403],
     ["t-montaz", "POST", "/mcp", 403, {}],
+    ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=montazowe&format=skrot`, "ok"],
+    ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=techniczne&format=skrot`, 403],
     // montaż: z dokumentacji v2 tylko skrócone karty montażowe, pełna techniczna = 403
     ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=montazowe`, "ok"],
     ["t-montaz", "GET", `/api/v2/projects/${P.mont}/documents.pdf?wydanie=${wm}&rewizja=${svc.wydania(P.mont)[0].rewizja}&rodzaj=techniczne`, 403],

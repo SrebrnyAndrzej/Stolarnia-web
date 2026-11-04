@@ -79,3 +79,5 @@ test("Składanie korpusów zależnie od projektu: zapis, walidacja i pakiet mont
   const nieustalone = await s.montazPdf(p.id);
   assert.ok(strony(naMiejscu.pdf) >= strony(nieustalone.pdf));
 });
+
+ test("compact documentation gives one card per simple module without changing full output or revision",async()=>{const {s,p,moduly}=projekt();const revision=s.projekt(p.id).rewizja;const full=await s.dokumentacjaPdf(p.id);const compact=await s.dokumentacjaPdf(p.id,{zwiezly:true});assert.equal(strony(compact),moduly.length);assert.ok(strony(full)>strony(compact)*3);assert.equal(strony(await s.dokumentacjaPdf(p.id,{zwiezly:true,moduly:[moduly[0].id]})),1);const w=s.utworzWydanie(p.id);const frozen=await s.wydaniePdf(p.id,w.id,{zwiezly:true});assert.equal(strony(frozen.pdf),moduly.length);assert.equal(frozen.rewizja,revision);});

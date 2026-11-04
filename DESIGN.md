@@ -144,3 +144,7 @@ Biurka z szafkami i nadstawką rozszerzają ten sam wybór wariantu. DeskStorage
 
 ## Studio mebli — 4.11.2026
 Podgląd stoi pierwszy w kolejności dokumentu i klawiatury. Rzeczywista geometria na dyskretnej siatce jest wyróżnikiem; bez nowej palety lub fontów. Karty wariantów używają schematów SVG, biblioteka miniatur z platePolygon. Inspektor na szerokim ekranie przewija się we własnej karcie; dokument zachowuje naturalny scroll. Historia modelu oferuje Cofnij/Ponów (40 kroków), nowa zmiana usuwa przyszłą gałąź. PNG jest lokalnym podglądem bieżącej kamery. Równe prześwity dotyczą istniejących poziomych półek w prostokątnym korpusie, bez kolizji z innym wyposażeniem; komory mają własny właścicielski algorytm.
+
+## Skrót dokumentacji i rzut techniczny — 4.11.2026
+ProjectDocuments domyślnie wybiera skrót: wnętrze, przekrój i wybrane wiercenia okuć z tej samej rewizji/wydania. Pełny pakiet pozostaje osobną opcją. Reguły dostępu są bez zmian. Biblioteka generuje krótką kartę HTML/PDF z rysunkami i tabelą prześwitów zamiast długiego indeksu części. technicalOpenings jest wspólnym właścicielem miar na rysunku i w wydruku; mierzy od powierzchni do powierzchni w osi kolumny, przy skosie jawnie podaje oś. Średnic i głębokości nie uzupełniamy domysłem.
+Szybkie gabaryty wykorzystują ten sam resizeFurniture co główny formularz. Powiększenie podglądu jest natywnym dialogiem modalnym (Escape, nieaktywne tło, powrót fokusu). Wymiarowanie 2D pokazuje wnętrze bez frontów i pleców.

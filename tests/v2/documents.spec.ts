@@ -113,6 +113,7 @@ for (const role of ["owner", "employee"] as const) {
     );
     expect(requested.searchParams.get("modul")).toBe("m1");
     expect(requested.searchParams.get("rodzaj")).toBe("montazowe");
+    expect(requested.searchParams.get("format")).toBe("skrot");
     expect(requested.searchParams.get("rewizja")).toBe(
       role === "employee" ? "2" : "3",
     );
@@ -136,6 +137,19 @@ for (const role of ["owner", "employee"] as const) {
       page.getByRole("link", { name: "Pobierz PDF", exact: true }),
     ).toHaveCount(0);
     await expect(page.getByLabel("Zakres wydruku")).toHaveValue("");
+    await page.getByLabel("Objętość dokumentacji").selectOption("pelny");
+    await page
+      .getByRole("button", { name: "Przygotuj karty montażowe", exact: true })
+      .click();
+    await expect(
+      page.getByRole("link", { name: "Pobierz PDF", exact: true }),
+    ).toBeVisible();
+    expect(
+      new URL(
+        urls.findLast((u) => u.includes("/documents.pdf"))!,
+        "http://test",
+      ).searchParams.get("format"),
+    ).toBe("pelny");
     await page.getByRole("button", { name: "Zamknij dokumentację" }).click();
     await expect(entry).toBeFocused();
   });

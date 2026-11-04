@@ -80,3 +80,49 @@ test("3D exports an actual PNG without saving or sending model data", async ({
     "89504e470d0a1a0a",
   );
 });
+
+test("quick dimensions and expanded drawing retain the draft and expose clear shelf heights", async ({
+  page,
+}) => {
+  await staffApi(page);
+  await page.goto("/#/panel/meble");
+  await page
+    .getByLabel("Układ startowy", { exact: true })
+    .selectOption("empty");
+  await page.getByRole("button", { name: "+ Półka", exact: true }).click();
+  await page.getByLabel("Pozycja Y", { exact: true }).fill("500");
+  await page.getByLabel("Pokaż wymiary", { exact: true }).check();
+  await expect(
+    page.locator('g[aria-label="Światło między półkami"]'),
+  ).toContainText("482 mm");
+  await page
+    .getByRole("button", { name: "Powiększ podgląd", exact: true })
+    .click();
+  const dialog = page.getByRole("dialog", {
+    name: "Powiększony obszar projektowania",
+  });
+  await expect(dialog).toBeVisible();
+  expect(await dialog.evaluate((e) => e.matches(":modal"))).toBe(true);
+  await dialog.getByLabel("Szybka szerokość", { exact: true }).fill("1200");
+  await expect(dialog.locator(".fc-measures")).toContainText("1200");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Powiększ podgląd", exact: true }),
+  ).toBeFocused();
+  await expect(page.getByLabel("Szerokość", { exact: true })).toHaveValue(
+    "1200",
+  );
+  await page.getByRole("button", { name: "Cofnij", exact: true }).click();
+  await expect(
+    page.getByLabel("Szybka szerokość", { exact: true }),
+  ).toHaveValue("1000");
+  if (process.env.PAN_STOLARZ_QA_SCREENSHOT_FOCUS) {
+    await page
+      .getByRole("button", { name: "Powiększ podgląd", exact: true })
+      .click();
+    await page.screenshot({
+      path: process.env.PAN_STOLARZ_QA_SCREENSHOT_FOCUS,
+    });
+  }
+});

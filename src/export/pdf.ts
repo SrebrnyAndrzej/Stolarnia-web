@@ -1,3 +1,4 @@
+import { technicalOpenings } from "../core/technical-openings.js";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import PDFDocument from "pdfkit";
@@ -62,6 +63,7 @@ export interface WejsciePdf {
   tylkoModuly?: string[];
   /** Skrócone karty szafek bez osobnych rysunków części. Domyślnie pełny pakiet. */
   skrocony?: boolean;
+  zwiezly?: boolean;
   /** PDF zamrożonego wydania produkcyjnego (numer i data wydania w nagłówku). */
   wydanie?: { numer: number; utworzono: string };
 }
@@ -80,7 +82,11 @@ export function dokumentacjaPdf(w: WejsciePdf): Promise<Buffer> {
   });
 
   const ctx = new Kontekst(doc, w);
-  if (w.rodzaj === "montaz") {
+  if (w.zwiezly) {
+    const modules=w.tylkoModuly?.length?w.zbudowane.filter(z=>w.tylkoModuly!.includes(z.modul.id)):w.zbudowane;
+    for(const z of modules) ctx.kartaZwiezla(z);
+    if(!modules.length) ctx.brak("Brak szafek w wybranym zakresie.");
+  } else if (w.rodzaj === "montaz") {
     ctx.tytulMontazu();
     ctx.kuchnia();
     ctx.kolejnoscMontazu();
@@ -184,6 +190,184 @@ class Kontekst {
       this.doc.font("R").fontSize(7).fillColor("#666")
         .text(`${NAZWA_PAKIETU[this.w.rodzaj ?? "produkcja"]} · ${this.w.firma ? this.w.firma + " · " : ""}Stolarnia Online ${this.d.wersjaGeneratora} · projekt ${this.d.projektId} · strona ${i + 1}/${zakres.count}`, this.m, this.H - 20, { width: this.W - 2 * this.m, align: "center", lineBreak: false });
     }
+  }
+
+  /** Compact, dimensioned card: existing geometry and operations from the exact same revision. */
+  kartaZwiezla(z: ZbudowanyModul) {
+    this.sekcja = "S";
+    const { doc, m } = this,
+      md = z.modul;
+    this.nowaStrona(
+      `Karta skrócona: ${md.nazwa}`,
+      `Korpus ${md.szerokoscMM} × ${md.wysokoscMM} × ${md.glebokoscMM} mm. Rysunki poglądowe, nie w skali 1:1.`,
+    );
+    const elements = z.elementy.filter((e) =>
+      ["side", "top", "bottom", "shelf", "fixedShelf", "divider"].includes(
+        e.rola,
+      ),
+    );
+    const outline: [number, number][] = [
+      [0, 0],
+      [md.szerokoscMM, 0],
+      [md.szerokoscMM, md.wysokoscMM],
+      [0, md.wysokoscMM],
+    ];
+    const openings = technicalOpenings(
+      outline,
+      elements.map((e) => ({
+        id: e.kod,
+        vertical: e.wys > e.szer,
+        polygon: [
+          [e.x, e.y],
+          [e.x + e.szer, e.y],
+          [e.x + e.szer, e.y + e.wys],
+          [e.x, e.y + e.wys],
+        ],
+      })),
+    );
+    const s = Math.min(300 / md.szerokoscMM, 230 / md.wysokoscMM),
+      ox = m + 32,
+      base = 330;
+    const X = (x: number) => ox + x * s,
+      Y = (y: number) => base - y * s;
+    doc.font("B").fontSize(10).text("Przód bez frontów · światło półek", m, 80);
+    for (const e of elements)
+      doc
+        .lineWidth(0.6)
+        .strokeColor("#1c2b30")
+        .rect(X(e.x), Y(e.y + e.wys), e.szer * s, Math.max(0.6, e.wys * s))
+        .stroke();
+    wymiarPoziomy(doc, X(0), X(md.szerokoscMM), base + 16, f(md.szerokoscMM));
+    wymiarPionowy(doc, ox - 18, Y(md.wysokoscMM), base, f(md.wysokoscMM));
+    for (const [i, o] of openings.entries()) {
+      const x = X(o.probeX);
+      doc
+        .lineWidth(0.4)
+        .strokeColor("#435058")
+        .dash(2, { space: 2 })
+        .moveTo(x, Y(o.y))
+        .lineTo(x, Y(o.y + o.height))
+        .stroke()
+        .undash();
+      doc
+        .font("B")
+        .fontSize(8)
+        .fillColor("#1c2b30")
+        .text(`${i + 1}: ${f(o.height)}`, x + 3, Y(o.y + o.height / 2) - 4, {
+          width: 75,
+          lineBreak: false,
+        });
+    }
+    const sx = Math.min(250 / md.glebokoscMM, 230 / md.wysokoscMM),
+      bx = 430,
+      by = 330;
+    doc.font("B").fontSize(10).text("Przekrój boczny w osi korpusu", bx, 80);
+    for (const e of elements.filter(
+      (e) => e.x <= md.szerokoscMM / 2 && e.x + e.szer >= md.szerokoscMM / 2,
+    ))
+      doc
+        .lineWidth(0.6)
+        .strokeColor("#1c2b30")
+        .rect(
+          bx + e.z * sx,
+          by - (e.y + e.wys) * sx,
+          e.gl * sx,
+          Math.max(0.6, e.wys * sx),
+        )
+        .stroke();
+    wymiarPoziomy(
+      doc,
+      bx,
+      bx + md.glebokoscMM * sx,
+      by + 16,
+      f(md.glebokoscMM),
+    );
+    doc
+      .font("R")
+      .fontSize(8)
+      .fillColor("#435058")
+      .text(
+        "Światło = wolny odstęp między powierzchniami płyt, bez grubości półek. Wymiary od podstawy korpusu. Tył przekroju z lewej. Skrzynki szuflad nie są pokazane.",
+        m,
+        360,
+        { width: this.W - 2 * m },
+      );
+    const parts = this.d.czesci.filter((c) => c.modulId === md.id);
+    const rows: string[][] = [];
+    let selected = 0,
+      total = 0;
+    for (const c of parts) {
+      const groups = new Map<string, Operacja[]>();
+      for (const o of c.operacje) {
+        total++;
+        if (
+          o.typ !== "otwor" ||
+          !/zawias|prowadnic|zaczep|mocowan.*front|podpórk/i.test(
+            o.przeznaczenie,
+          )
+        )
+          continue;
+        selected++;
+        const key = JSON.stringify([
+          o.powierzchnia,
+          o.srednica,
+          o.glebokosc,
+          o.przelotowy,
+          o.przeznaczenie,
+          o.regula.status,
+        ]);
+        groups.set(key, [...(groups.get(key) ?? []), o]);
+      }
+      for (const all of groups.values())
+        for (let offset = 0; offset < all.length; offset += 6) {
+          const ops = all.slice(offset, offset + 6),
+            o = ops[0];
+          rows.push([
+            `${c.etykieta} · ${c.kodElementu}`,
+            o.przeznaczenie,
+            `${o.powierzchnia}: ${ops.map((p) => `${f(p.x)} / ${f(p.y)}`).join("; ")}`,
+            `${o.srednica == null ? "?" : f(o.srednica)} / ${o.przelotowy ? "przelot" : o.glebokosc == null ? "?" : f(o.glebokosc)}`,
+            o.regula.status,
+          ]);
+        }
+    }
+    for(const q of this.d.prowadnice.filter(p=>p.modulId===md.id)) rows.push(["Boki korpusu",`${q.szuflada} · ${q.system}`,`Oś ${f(q.osOdDoluBokuMM)} od dołu boku; wkręty od przedniej krawędzi: ${q.otworyOdFrontuMM?.map(v=>f(v)).join(" / ")??"do ustalenia"}`,"? / ?","oś montażu; sprawdź profil"]);
+    doc.font("B").fontSize(10).text("Najważniejsze wiercenia okuć", m, 390);
+    doc
+      .font("R")
+      .fontSize(8)
+      .text(
+        `Wybrane ${selected} z ${total} operacji. Pozostałe i źródła: pełne karty techniczne. Lico A/B: x od KA, y od DA. Krawędź DA/DB: x od KA, y od lica B; KA/KB: x od DA, y od lica B. ? = brak danych. Status robocza wymaga zatwierdzenia.`,
+        m,
+        407,
+        { width: this.W - 2 * m },
+      );
+    const tableY = doc.y + 8;
+    this.tabela(
+      "Najważniejsze wiercenia okuć",
+      "",
+      [
+        { t: "Część", w: 110 },
+        { t: "Przeznaczenie", w: 170 },
+        { t: "Lico/krawędź: x / y [mm]", w: 300 },
+        { t: "Ø / gł. [mm]", w: 95 },
+        { t: "Status reguły", w: 110 },
+      ],
+      rows.length
+        ? rows
+        : [
+            [
+              "—",
+              "Brak wyznaczonych wierceń okuć w tym zakresie.",
+              "Sprawdź pełną dokumentację i dane systemu.",
+              "—",
+              "do sprawdzenia",
+            ],
+          ],
+      undefined,
+      tableY,
+      8,
+    );
   }
 
   // ---------- Strona tytułowa ----------

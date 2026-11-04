@@ -617,3 +617,53 @@
     white-space: normal;
   }
 }
+
+.fc .fc-stage .fc-quick-dimensions {
+  margin: 12px 18px 0;
+  padding: 8px 12px 0;
+  background: var(--panel-2);
+}
+.fc-quick-dimensions .fc-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fc-quick-dimensions label {
+  margin-bottom: 8px;
+}
+.fc-quick-dimensions input {
+  font-variant-numeric: tabular-nums;
+}
+dialog.fc-focus-dialog {
+  width: calc(100vw - 32px);
+  max-width: 1400px;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+}
+.fc-focus-dialog::backdrop {
+  background: rgb(28 43 48 / 65%);
+}
+.fc-focus-dialog .fc-stage {
+  margin: 0;
+  border: 0;
+}
+.fc-focus-dialog .fc-stage .fc-drawing > svg,
+.fc-focus-dialog .fc-scene-host {
+  height: min(60dvh, 700px);
+}
+.fc-focus-dialog .fc-stage-title {
+  flex-wrap: wrap;
+}
+@media (max-width: 700px) {
+  .fc-quick-dimensions .fc-fields {
+    grid-template-columns: 1fr;
+  }
+  .fc-focus-dialog .fc-quick-dimensions .fc-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .fc-stage-title {
+    flex-wrap: wrap;
+  }
+}

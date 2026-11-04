@@ -161,3 +161,7 @@ Widok 3D wybiera najbliższą widoczną płytę; przeciąganie obraca kamerę be
 Źródło: docs/BIURKO-WYMIARY.md. Wybór wariantu stosuje jawne wymiary startowe i poziomy blat. Kolejna edycja gabarytów pozostaje możliwa; przywrócenie układu nie resetuje gabarytów. Presety są odwracalne wspólnym Cofnij. Serwer sprawdza obrys i brak pełnych pleców, zachowuje wersje oraz uprawnienia. Zalecenia ergonomiczne nie są dopuszczeniem produkcyjnym.
 
 Szafki po jednej lub obu stronach mają wspólny wybór frontu; nadstawka osobną wysokość i głębokość. Zmiana frontu usuwa stare fronty i przypisania systemów z możliwością Cofnij. Zmiana strony ogranicza szerokość szafki, aby pozostawić sugerowane miejsce na nogi; kolejne ręczne wymiary są dozwolone z informacją o prześwicie. Zachowane role, zapis wersji, błędy, ochrona szkicu i ręczne korekty części. Źródło: docs/BIURKO-SZAFKI-NADSTAWKA.md.
+
+## Dokumentacja skrócona i podgląd mebla
+Domyślny skrót w ProjectDocuments to opcja formatu, nie nowa rewizja ani zatwierdzenie. Zmiana formatu usuwa poprzedni podgląd PDF. Zamrożone wydanie jest źródłem geometrii i operacji. Montaż nadal nie uzyskuje pełnych kart technicznych. Brak danych operacji jest jawnym brakiem; wybrane otwory zachowują status reguł i bazy pomiarowe.
+Powiększenie kreatora zachowuje bieżący szkic i historię; Escape zamyka dialog, przywracając fokus. Szybkie pola i główny formularz współdzielą model.
