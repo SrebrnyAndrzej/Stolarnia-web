@@ -141,3 +141,6 @@ Nowy model pokazuje wnętrze bez ręcznego dodawania płyt. Pierwsze pole Układ
 Wariant Biurko korzysta z tego samego selektora układu, rysunku i inspektora. Panel wymiarów podaje punkt startowy oraz źródła, a przyciski 160×80 i 120×80 są jawnie opisane. Wysokość oznacza górną powierzchnię blatu. Wskazówki są informacyjne, bez deklaracji certyfikacji. Źródło: docs/BIURKO-WYMIARY.md.
 
 Biurka z szafkami i nadstawką rozszerzają ten sam wybór wariantu. DeskStorage używa wspólnego FurnitureNumberField, fc-fields i natywnych selectów. Wysokość całkowita z nadstawką jest wyraźnie oddzielona od wysokości blatu. Bez nowych tokenów i zmian powłoki. Źródło: docs/BIURKO-SZAFKI-NADSTAWKA.md.
+
+## Studio mebli — 4.11.2026
+Podgląd stoi pierwszy w kolejności dokumentu i klawiatury. Rzeczywista geometria na dyskretnej siatce jest wyróżnikiem; bez nowej palety lub fontów. Karty wariantów używają schematów SVG, biblioteka miniatur z platePolygon. Inspektor na szerokim ekranie przewija się we własnej karcie; dokument zachowuje naturalny scroll. Historia modelu oferuje Cofnij/Ponów (40 kroków), nowa zmiana usuwa przyszłą gałąź. PNG jest lokalnym podglądem bieżącej kamery. Równe prześwity dotyczą istniejących poziomych półek w prostokątnym korpusie, bez kolizji z innym wyposażeniem; komory mają własny właścicielski algorytm.

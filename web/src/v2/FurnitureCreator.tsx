@@ -1,3 +1,7 @@
+import {
+  applyShelfSpacing,
+  shelfSpacing,
+} from "../../../src/core/furniture-spacing";
 import { NumberField } from "./FurnitureNumberField";
 import {
   lazy,
@@ -90,6 +94,7 @@ export function FurnitureCreator({
     FurnitureDrawerCalculation[] | null
   >(null);
   const [history, setHistory] = useState<FurnitureModel[]>([]);
+  const [future, setFuture] = useState<FurnitureModel[]>([]);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"2d" | "3d">("2d");
   const [snap, setSnap] = useState(true),
@@ -115,9 +120,12 @@ export function FurnitureCreator({
   const specificationPanel = useRef<HTMLDivElement>(null);
   const plate = model.plates.find((p) => p.id === selected);
   const issues = furnitureIssues(model);
+  const spacing = shelfSpacing(model, selected);
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
-    if (!drag.current)
+    if (!drag.current) {
       setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+      setFuture([]);
+    }
     setModel((m) => fitDrawerFronts(rebuildCompartments(fn(m), uid)));
     setDirty(true);
     setMessage("");
@@ -176,11 +184,22 @@ export function FurnitureCreator({
     setModel(structuredClone(entry.model));
     setSavedDrawers(entry.drawerCalculations ?? null);
     setHistory([]);
+    setFuture([]);
     setSelected(query.get("part") ?? "");
     setDirty(false);
     setError("");
     setMessage(`Otworzono część z etykiety · wersja ${entry.version}.`);
   }, [qrRequest, library, loading, dirty]);
+  const chooseLayout = (variant: LayoutVariant) => {
+    update((m) =>
+      isDeskVariant(variant)
+        ? isDeskVariant(m.suggestion?.variant)
+          ? applySuggestedLayout(m, variant as LayoutVariant, uid)
+          : deskStartingModel(m, uid, 1600, variant as LayoutVariant)
+        : applySuggestedLayout(m, variant as LayoutVariant, uid),
+    );
+    setSelected("");
+  };
   const reset = () =>
     guarded(() => {
       setId(uid());
@@ -188,6 +207,7 @@ export function FurnitureCreator({
       setModel(initial());
       setSavedDrawers(null);
       setHistory([]);
+      setFuture([]);
       setSelected("");
       setDirty(false);
       setError("");
@@ -200,6 +220,7 @@ export function FurnitureCreator({
       setModel(structuredClone(e.model));
       setSavedDrawers(e.drawerCalculations ?? null);
       setHistory([]);
+      setFuture([]);
       setSelected("");
       setDirty(false);
       setError("");
@@ -466,6 +487,7 @@ export function FurnitureCreator({
       return;
     const [x, y] = point(e);
     setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+    setFuture([]);
     drag.current = { id: p.id, x, y, startX: p.x, startY: p.y };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -585,6 +607,20 @@ export function FurnitureCreator({
                       e.id === id && version > 0 ? "true" : undefined
                     }
                   >
+                    <svg
+                      className="fc-library-preview"
+                      viewBox={`-30 -30 ${e.model.width + 60} ${e.model.height + 60}`}
+                      aria-hidden="true"
+                    >
+                      {e.model.plates.map((p) => (
+                        <polygon
+                          key={p.id}
+                          points={platePolygon(e.model, p)
+                            .map(([x, y]) => `${x},${e.model.height - y}`)
+                            .join(" ")}
+                        />
+                      ))}
+                    </svg>
                     <strong>{e.model.name}</strong>
                     <span>
                       {e.model.width} × {e.model.height} × {e.model.depth} mm
@@ -599,36 +635,264 @@ export function FurnitureCreator({
           </ul>
         </aside>
         <div className="fc-workbench">
+          <div className="fc-stage" aria-label="Obszar projektowania">
+            <div className="fc-stage-title">
+              <div>
+                <span className="ps-eyebrow">BIEŻĄCY PROJEKT</span>
+                <h2>{model.name}</h2>
+              </div>
+              <span className="fc-measures">
+                {model.width} × {model.height} × {model.depth} <small>mm</small>
+              </span>
+            </div>
+            <div className="fc-toolbar">
+              <label className="fc-check">
+                <input
+                  type="checkbox"
+                  checked={dimensions}
+                  onChange={(e) => setDimensions(e.target.checked)}
+                />
+                Pokaż wymiary
+              </label>
+              <label className="fc-check">
+                <input
+                  type="checkbox"
+                  checked={snap}
+                  onChange={(e) => setSnap(e.target.checked)}
+                />
+                Przyciąganie do krawędzi i siatki 10 mm
+              </label>
+              <button
+                disabled={busy || !history.length}
+                onClick={() => {
+                  setFuture((f) => [...f, structuredClone(model)]);
+                  setModel(history[history.length - 1]);
+                  setHistory((h) => h.slice(0, -1));
+                  setDirty(true);
+                  setError("");
+                }}
+              >
+                Cofnij
+              </button>
+              <button
+                disabled={busy || !future.length}
+                onClick={() => {
+                  setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+                  setModel(future[future.length - 1]);
+                  setFuture((f) => f.slice(0, -1));
+                  setDirty(true);
+                  setError("");
+                  setMessage("");
+                }}
+              >
+                Ponów
+              </button>
+              <button onClick={() => addPlate(false)} disabled={busy}>
+                + Półka
+              </button>
+              <button onClick={() => addPlate(true)} disabled={busy}>
+                + Przegroda
+              </button>
+              <div role="group" aria-label="Widok mebla">
+                <button
+                  aria-pressed={view === "2d"}
+                  onClick={() => setView("2d")}
+                >
+                  Przód 2D
+                </button>
+                <button
+                  aria-pressed={view === "3d"}
+                  onClick={() => setView("3d")}
+                >
+                  Bryła 3D
+                </button>
+              </div>
+              <span role="status">
+                {dirty
+                  ? "Niezapisane zmiany"
+                  : version
+                    ? `Zapisano · wersja ${version}`
+                    : "Nowy szkic"}
+              </span>
+            </div>
+            <div className="fc-drawing">
+              {view === "3d" ? (
+                <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
+                  <FurnitureScene
+                    key={id}
+                    model={model}
+                    selected={selected}
+                    onSelect={setSelected}
+                  />
+                </Suspense>
+              ) : (
+                <svg
+                  ref={svg}
+                  role="img"
+                  aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
+                  viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
+                  onPointerMove={move}
+                  onPointerUp={() => {
+                    drag.current = null;
+                  }}
+                  onPointerCancel={() => {
+                    drag.current = null;
+                  }}
+                >
+                  <polygon
+                    points={points(furnitureOutline(model))}
+                    className="fc-outline"
+                  />
+                  {dimensions && (
+                    <g
+                      fill="#1c2b30"
+                      stroke="#717780"
+                      strokeWidth="1"
+                      fontSize="24"
+                    >
+                      <path
+                        d={`M0 -12 H${model.width} M-12 0 V${model.height}`}
+                        fill="none"
+                      />
+                      <text
+                        x={model.width / 2}
+                        y={-25}
+                        textAnchor="middle"
+                        stroke="none"
+                      >
+                        {model.width} mm
+                      </text>
+                      <text
+                        transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
+                        textAnchor="middle"
+                        stroke="none"
+                      >
+                        {model.height} mm
+                      </text>
+                    </g>
+                  )}
+                  {compartmentBoxes(model)
+                    .boxes.filter((b) => !b.node.split)
+                    .map((b) => (
+                      <g
+                        key={b.node.id}
+                        className="fc-compartment-area"
+                        onClick={() => setSelectedCompartment(b.node.id)}
+                      >
+                        <rect
+                          x={b.x}
+                          y={model.height - b.y - b.height}
+                          width={b.width}
+                          height={b.height}
+                          fill={
+                            selectedCompartment === b.node.id
+                              ? "#a5b859"
+                              : "transparent"
+                          }
+                          fillOpacity={
+                            selectedCompartment === b.node.id ? 0.14 : 1
+                          }
+                          stroke="#717780"
+                          strokeDasharray="5 5"
+                          strokeWidth="1"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                        <text
+                          x={b.x + 8}
+                          y={model.height - b.y - b.height + 30}
+                          fontSize="22"
+                          fill="#1c2b30"
+                        >
+                          {Math.round(b.width)} × {Math.round(b.height)} mm
+                        </text>
+                      </g>
+                    ))}
+                  {[...model.plates]
+                    .sort((a, b) => a.z - b.z)
+                    .map((p) => {
+                      const poly = platePolygon(model, p);
+                      return (
+                        <g
+                          key={p.id}
+                          className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
+                          onPointerDown={(e) => {
+                            if (e.target instanceof SVGPolygonElement)
+                              beginDrag(
+                                e as unknown as PointerEvent<SVGPolygonElement>,
+                                p,
+                              );
+                          }}
+                        >
+                          <polygon points={points(poly)}>
+                            <title>{p.name}</title>
+                          </polygon>
+                        </g>
+                      );
+                    })}
+                </svg>
+              )}
+            </div>
+          </div>
           <fieldset disabled={busy} className="fc-layout-choice">
             <legend>Sugerowany układ startowy</legend>
+            <div
+              className="fc-presets"
+              role="group"
+              aria-label="Gotowe układy mebli"
+            >
+              {layoutVariants
+                .filter((v) =>
+                  [
+                    "wardrobe",
+                    "shelves",
+                    "drawers",
+                    "desk",
+                    "desk-storage",
+                    "desk-hutch",
+                  ].includes(v.value),
+                )
+                .map((v) => (
+                  <button
+                    key={v.value}
+                    type="button"
+                    aria-pressed={model.suggestion?.variant === v.value}
+                    onClick={() => {
+                      chooseLayout(v.value);
+                      setMessage(
+                        `Wybrano układ: ${v.label}. Możesz zmienić każdy element.`,
+                      );
+                    }}
+                  >
+                    <svg viewBox="0 0 80 64" aria-hidden="true">
+                      <rect x="12" y="6" width="56" height="52" rx="2" />
+                      {v.value.startsWith("desk") ? (
+                        <>
+                          <path d="M12 28H68M36 28V58" />
+                          {v.value !== "desk" && (
+                            <path d="M12 40H36M12 50H36" />
+                          )}
+                          {v.value === "desk-hutch" && (
+                            <path d="M12 17H68M40 6V28" />
+                          )}
+                        </>
+                      ) : v.value === "drawers" ? (
+                        <path d="M12 23H68M12 40H68M35 15H45M35 31H45M35 49H45" />
+                      ) : v.value === "shelves" ? (
+                        <path d="M12 19H68M12 32H68M12 45H68" />
+                      ) : (
+                        <path d="M40 6V58M12 23H40M12 40H40M45 19H63" />
+                      )}
+                    </svg>
+                    <span>{v.label}</span>
+                  </button>
+                ))}
+            </div>
             <label>
               Układ startowy
               <select
                 aria-label="Układ startowy"
                 value={model.suggestion?.variant ?? "empty"}
-                onChange={(e) => {
-                  update((m) =>
-                    isDeskVariant(e.target.value)
-                      ? isDeskVariant(m.suggestion?.variant)
-                        ? applySuggestedLayout(
-                            m,
-                            e.target.value as LayoutVariant,
-                            uid,
-                          )
-                        : deskStartingModel(
-                            m,
-                            uid,
-                            1600,
-                            e.target.value as LayoutVariant,
-                          )
-                      : applySuggestedLayout(
-                          m,
-                          e.target.value as LayoutVariant,
-                          uid,
-                        ),
-                  );
-                  setSelected("");
-                }}
+                onChange={(e) => chooseLayout(e.target.value as LayoutVariant)}
               >
                 {layoutVariants.map((v) => (
                   <option key={v.value} value={v.value}>
@@ -929,179 +1193,6 @@ export function FurnitureCreator({
             </p>
           </fieldset>
           {model.shape === "slope" && <SlopeCutting model={model} />}
-          <div className="fc-toolbar">
-            <label className="fc-check">
-              <input
-                type="checkbox"
-                checked={dimensions}
-                onChange={(e) => setDimensions(e.target.checked)}
-              />
-              Pokaż wymiary
-            </label>
-            <label className="fc-check">
-              <input
-                type="checkbox"
-                checked={snap}
-                onChange={(e) => setSnap(e.target.checked)}
-              />
-              Przyciąganie do krawędzi i siatki 10 mm
-            </label>
-            <button
-              disabled={busy || !history.length}
-              onClick={() => {
-                setModel(history[history.length - 1]);
-                setHistory((h) => h.slice(0, -1));
-                setDirty(true);
-                setError("");
-              }}
-            >
-              Cofnij
-            </button>
-            <button onClick={() => addPlate(false)} disabled={busy}>
-              + Półka
-            </button>
-            <button onClick={() => addPlate(true)} disabled={busy}>
-              + Przegroda
-            </button>
-            <div role="group" aria-label="Widok mebla">
-              <button
-                aria-pressed={view === "2d"}
-                onClick={() => setView("2d")}
-              >
-                Przód 2D
-              </button>
-              <button
-                aria-pressed={view === "3d"}
-                onClick={() => setView("3d")}
-              >
-                Bryła 3D
-              </button>
-            </div>
-            <span role="status">
-              {dirty
-                ? "Niezapisane zmiany"
-                : version
-                  ? `Zapisano · wersja ${version}`
-                  : "Nowy szkic"}
-            </span>
-          </div>
-          <div className="fc-drawing">
-            {view === "3d" ? (
-              <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
-                <FurnitureScene
-                  key={id}
-                  model={model}
-                  selected={selected}
-                  onSelect={setSelected}
-                />
-              </Suspense>
-            ) : (
-              <svg
-                ref={svg}
-                role="img"
-                aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
-                viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
-                onPointerMove={move}
-                onPointerUp={() => {
-                  drag.current = null;
-                }}
-                onPointerCancel={() => {
-                  drag.current = null;
-                }}
-              >
-                <polygon
-                  points={points(furnitureOutline(model))}
-                  className="fc-outline"
-                />
-                {dimensions && (
-                  <g
-                    fill="#1c2b30"
-                    stroke="#717780"
-                    strokeWidth="1"
-                    fontSize="24"
-                  >
-                    <path
-                      d={`M0 -12 H${model.width} M-12 0 V${model.height}`}
-                      fill="none"
-                    />
-                    <text
-                      x={model.width / 2}
-                      y={-25}
-                      textAnchor="middle"
-                      stroke="none"
-                    >
-                      {model.width} mm
-                    </text>
-                    <text
-                      transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
-                      textAnchor="middle"
-                      stroke="none"
-                    >
-                      {model.height} mm
-                    </text>
-                  </g>
-                )}
-                {compartmentBoxes(model)
-                  .boxes.filter((b) => !b.node.split)
-                  .map((b) => (
-                    <g
-                      key={b.node.id}
-                      className="fc-compartment-area"
-                      onClick={() => setSelectedCompartment(b.node.id)}
-                    >
-                      <rect
-                        x={b.x}
-                        y={model.height - b.y - b.height}
-                        width={b.width}
-                        height={b.height}
-                        fill={
-                          selectedCompartment === b.node.id
-                            ? "#a5b859"
-                            : "transparent"
-                        }
-                        fillOpacity={
-                          selectedCompartment === b.node.id ? 0.14 : 1
-                        }
-                        stroke="#717780"
-                        strokeDasharray="5 5"
-                        strokeWidth="1"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                      <text
-                        x={b.x + 8}
-                        y={model.height - b.y - b.height + 30}
-                        fontSize="22"
-                        fill="#1c2b30"
-                      >
-                        {Math.round(b.width)} × {Math.round(b.height)} mm
-                      </text>
-                    </g>
-                  ))}
-                {[...model.plates]
-                  .sort((a, b) => a.z - b.z)
-                  .map((p) => {
-                    const poly = platePolygon(model, p);
-                    return (
-                      <g
-                        key={p.id}
-                        className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
-                        onPointerDown={(e) => {
-                          if (e.target instanceof SVGPolygonElement)
-                            beginDrag(
-                              e as unknown as PointerEvent<SVGPolygonElement>,
-                              p,
-                            );
-                        }}
-                      >
-                        <polygon points={points(poly)}>
-                          <title>{p.name}</title>
-                        </polygon>
-                      </g>
-                    );
-                  })}
-              </svg>
-            )}
-          </div>
           <FurnitureCompartments
             model={model}
             selected={selectedCompartment}
@@ -1271,6 +1362,10 @@ export function FurnitureCreator({
         </div>
         <aside className="fc-inspector">
           <h2>Płyty · {model.plates.length}</h2>
+          <p className="fc-hint">
+            Wybierz element na rysunku lub z listy. Zmiany od razu zobaczysz w
+            projekcie.
+          </p>
           <label>
             Wybierz płytę
             <select
@@ -1343,6 +1438,24 @@ export function FurnitureCreator({
                     />
                   ),
                 )}
+              <div className="fc-spacing">
+                <h3>Równy rozstaw półek</h3>
+                <p>
+                  {spacing.issue ??
+                    `Po rozstawieniu prześwity: ${spacing.clearance.toLocaleString("pl-PL", { maximumFractionDigits: 1 })} mm · ${spacing.ids.length} półek.`}
+                </p>
+                <button
+                  disabled={!!spacing.issue}
+                  onClick={() => {
+                    update((m) => applyShelfSpacing(m, selected));
+                    setMessage(
+                      "Półki rozmieszczono z równymi prześwitami. Cofnij przywraca poprzednie pozycje.",
+                    );
+                  }}
+                >
+                  Rozmieść półki równo
+                </button>
+              </div>
               <button
                 disabled={
                   plate.anchor === "back" ||

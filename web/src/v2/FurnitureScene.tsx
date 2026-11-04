@@ -50,6 +50,8 @@ export function FurnitureScene({
   const select = useRef(onSelect);
   select.current = onSelect;
   const [error, setError] = useState("");
+  const [captureReady, setCaptureReady] = useState(false);
+  const [captureError, setCaptureError] = useState("");
   const [attempt, setAttempt] = useState(0);
   const [showFronts, setShowFronts] = useState(true),
     [openFronts, setOpenFronts] = useState(false),
@@ -178,6 +180,7 @@ export function FurnitureScene({
       },
     };
     runtime.current = state;
+    setCaptureReady(true);
     controls.addEventListener("change", draw);
     const resize = () => {
       const width = Math.max(1, el.clientWidth),
@@ -256,6 +259,7 @@ export function FurnitureScene({
       renderer.forceContextLoss();
       renderer.domElement.remove();
       runtime.current = null;
+      setCaptureReady(false);
     };
   }, [attempt]);
 
@@ -443,6 +447,29 @@ export function FurnitureScene({
   return (
     <div className="fc-scene">
       <div className="fc-camera" role="group" aria-label="Kamera 3D">
+        <button
+          disabled={!!error || !captureReady}
+          onClick={() => {
+            const state = runtime.current;
+            if (!state) return;
+            try {
+              state.draw();
+              const image = state.renderer.domElement.toDataURL("image/png");
+              if (!image.startsWith("data:image/png")) throw new Error();
+              const link = document.createElement("a");
+              link.href = image;
+              link.download = `${model.name.replace(/[^\p{L}\p{N}_-]+/gu, "-").slice(0, 80) || "mebel"}-podglad.png`;
+              link.click();
+              setCaptureError("");
+            } catch {
+              setCaptureError(
+                "Nie udało się zapisać obrazu 3D. Spróbuj ponownie.",
+              );
+            }
+          }}
+        >
+          Pobierz widok PNG
+        </button>
         <label className="fc-check">
           <input
             type="checkbox"
@@ -512,6 +539,7 @@ export function FurnitureScene({
         </button>
       </div>
       <div className="fc-scene-host" ref={host} data-testid="furniture-scene" />
+      {captureError && <Feedback>{captureError}</Feedback>}
       {error && (
         <div className="fc-scene-error">
           <Feedback>{error}</Feedback>
