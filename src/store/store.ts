@@ -1,17 +1,26 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { OKUCIA_STARTOWE } from "../core/catalog/hardware.js";
+import type { FurnitureEntry } from "../core/furniture.js";
+import type { FurniturePresentation } from "../server/furniture-presentations.js";
+import type { PurchaseOrder } from "../core/purchasing.js";
 import { MATERIALY_STARTOWE } from "../core/catalog/materials.js";
 import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
 import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
 
 export interface BazaDanych {
+  projectFiles?: import("../core/project-files.js").StoredProjectFile[];
+  furnitureLibrary?: FurnitureEntry[];
+  furniturePresentations?: FurniturePresentation[];
+  purchaseOrders?: PurchaseOrder[];
   wersja: number;
   ustawienia: UstawieniaStolarni;
   materialy: Material[];
   cennikMaterialow?: CennikMaterialow;
   okucia: Okucie[];
   projekty: Projekt[];
+  /** Krótka lista dekorów na start galerii szybkiego projektu (klucze „Producent:id”), ustawia właściciel. */
+  dekoryStolarni?: string[];
 }
 
 export class KonfliktZapisu extends Error {}

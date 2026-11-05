@@ -28,6 +28,11 @@ export function wariantyDekoru(d: Dekor) {
     ["PG_MELAMINFACEDBOARDS", "PG_PERFECTSENSE"].includes(w.product_group) && w.unit === "Szt." &&
     Object.values(wymiaryWariantu(w)).every(n => Number.isFinite(n) && n > 0));
 }
+/** Artykuły producenta danej grupy produktów (np. PG_WORKTOPS — blaty robocze) z poprawnymi wymiarami. */
+export function artykulyDekoru(d: Dekor, grupa: string) {
+  return artykuly.filter(w => d.manufacturer === "Egger" && w.decor_key === d.decor_key && w.product_group === grupa && w.unit === "Szt." &&
+    Object.values(wymiaryWariantu(w)).every(n => Number.isFinite(n) && n > 0));
+}
 export function materialDekoru(key: string, dane: { artykul?: string; gruboscMM?: number; szerokoscArkuszaMM?: number; wysokoscArkuszaMM?: number; struktura?: string; kierunekDekoru?: boolean }): Material {
   const d = DEKORY.find(x => kluczDekoru(x) === key);
   if (!d) throw new Error("Nieznany dekor.");

@@ -1,0 +1,129 @@
+.po-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.po-list,
+.po-editor {
+  min-width: 0;
+}
+.po-list {
+  background: var(--panel);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.po-page label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  margin-bottom: 14px;
+  min-width: 0;
+}
+.po-page input,
+.po-page select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--panel);
+  color: var(--text);
+}
+.po-list ul {
+  list-style: none;
+  padding: 0;
+}
+.po-list li {
+  margin-top: 10px;
+}
+.po-list li button {
+  text-align: left;
+  padding: 14px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+.po-list button[aria-current="true"] {
+  background: var(--accent-soft);
+  border-color: var(--line-strong);
+}
+.po-list span,
+.po-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.po-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 18px;
+}
+.po-editor fieldset {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 20px;
+  margin: 0 0 20px;
+}
+.po-editor legend {
+  padding: 0 6px;
+  font-weight: 650;
+}
+.po-line {
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 16px;
+  margin: 0 0 20px;
+}
+.po-line h3 {
+  font-size: 15px;
+  margin: 0 0 16px;
+}
+.po-fields {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr;
+  gap: 12px;
+}
+.po-notes {
+  grid-column: 1/-1;
+}
+@media (max-width: 1050px) {
+  .po-layout {
+    grid-template-columns: 1fr;
+  }
+  .po-list ul {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+  }
+  .po-list li {
+    flex: 0 0 240px;
+  }
+}
+@media (max-width: 700px) {
+  .po-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .po-fields label:nth-child(-n + 2) {
+    grid-column: 1/-1;
+  }
+  .po-editor fieldset {
+    padding: 12px;
+  }
+}
+.po-supplier-table {
+  max-width: 100%;
+  overflow-x: auto;
+}

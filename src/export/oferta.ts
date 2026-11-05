@@ -34,13 +34,18 @@ export interface WejscieOferty {
   waznoscDni: number;
   terminRealizacji: string;
   uwagi: string[];
+  /**
+   * Propozycja wstępna (OCENA-kreatora §4, zmiana 4): przy brakach cen — znak „cena do potwierdzenia”
+   * na każdej stronie i jawna lista braków. Nie zgadujemy ceny ani jej maksymalnej wartości.
+   */
+  wstepna?: { braki: string[] };
 }
 
 const zl = (v: number) => `${v.toLocaleString("pl-PL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} zł`;
 const dataPL = (d: Date) => d.toLocaleDateString("pl-PL", { day: "2-digit", month: "long", year: "numeric" });
 
 export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, autoFirstPage: false, info: { Title: `Oferta ${w.numer} — ${w.projekt.nazwa}` } });
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, autoFirstPage: false, info: { Title: `${w.wstepna ? "Propozycja wstępna" : "Oferta"} ${w.numer} — ${w.projekt.nazwa}` } });
   doc.registerFont("R", join(FONTY, "DejaVuSans.ttf"));
   doc.registerFont("B", join(FONTY, "DejaVuSans-Bold.ttf"));
   doc.registerFont("L", join(FONTY, "DejaVuSans-ExtraLight.ttf"));
@@ -53,11 +58,26 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   const firma = w.firma.nazwaFirmy || "Stolarnia";
   const wybrany = w.warianty.find((v) => v.wariant === w.wariant) ?? w.warianty[0];
   let nrStrony = 0;
+  const pw = w.wstepna;
+  const dokument = pw ? "Propozycja wstępna" : "Oferta";
+  const cena = (v: number) => {
+    if (!pw) return zl(v);
+    return "do ustalenia";
+  };
 
   const stopka = () => {
     nrStrony += 1;
+    if (pw) {
+      // Znak na każdej stronie: dokument nie może udawać oferty.
+      doc.save();
+      doc.rotate(-24, { origin: [W / 2, H / 2] });
+      doc.font("B").fontSize(54).fillColor("#b3261e").fillOpacity(0.12);
+      doc.text("CENA DO POTWIERDZENIA", 0, H / 2 - 30, { width: W, align: "center", lineBreak: false });
+      doc.restore();
+      doc.fillOpacity(1);
+    }
     doc.font("R").fontSize(7.5).fillColor(SZARY);
-    doc.text(`${firma} · Oferta ${w.numer} · ${w.projekt.nazwa}`, 40, H - 26, { width: W - 160, lineBreak: false });
+    doc.text(`${firma} · ${dokument} ${w.numer} · ${w.projekt.nazwa}${pw ? " · cena do potwierdzenia, nie jest ofertą" : ""}`, 40, H - 26, { width: W - 160, lineBreak: false });
     doc.text(String(nrStrony), W - 80, H - 26, { width: 40, align: "right", lineBreak: false });
   };
   const naglowek = (tytul: string, pod?: string) => {
@@ -74,7 +94,7 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   else doc.rect(0, 0, W, heroH).fill(TLO);
   doc.rect(0, heroH, W, H - heroH).fill(TLO);
   doc.rect(40, heroH + 26, 3, H - heroH - 52).fill(AKCENT);
-  doc.font("L").fontSize(11).fillColor(SZARY).text("OFERTA NA MEBLE NA WYMIAR", 56, heroH + 24, { characterSpacing: 2 });
+  doc.font("L").fontSize(11).fillColor(pw ? "#b3261e" : SZARY).text(pw ? "PROPOZYCJA WSTĘPNA — CENA DO POTWIERDZENIA" : "OFERTA NA MEBLE NA WYMIAR", 56, heroH + 24, { characterSpacing: 2 });
   doc.font("B").fontSize(24).fillColor(TEKST).text(w.projekt.nazwa, 56, heroH + 42, { width: W * 0.55 });
   doc.font("R").fontSize(10).fillColor(SZARY).text(`Dla: ${w.projekt.klient.nazwa || "—"}${w.projekt.klient.adres ? ` · ${w.projekt.klient.adres}` : ""}`, 56, heroH + 78, { width: W * 0.55 });
   const kx = W * 0.64;
@@ -82,10 +102,11 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
     doc.font("R").fontSize(8.5).fillColor(SZARY).text(et, kx, y, { width: 120 });
     doc.font("B").fontSize(10).fillColor(TEKST).text(wart, kx + 110, y - 1, { width: W - kx - 150 });
   };
-  wiersz("Numer oferty", w.numer, heroH + 28);
+  wiersz(pw ? "Numer propozycji" : "Numer oferty", w.numer, heroH + 28);
   wiersz("Data", dataPL(w.data), heroH + 46);
-  wiersz("Ważna do", dataPL(new Date(w.data.getTime() + w.waznoscDni * 86400000)), heroH + 64);
-  wiersz(`Cena (${wybrany.nazwa})`, `${zl(wybrany.cenaBrutto)} brutto`, heroH + 82);
+  if (pw) wiersz("Status", "cena do potwierdzenia", heroH + 64);
+  else wiersz("Ważna do", dataPL(new Date(w.data.getTime() + w.waznoscDni * 86400000)), heroH + 64);
+  wiersz(`Cena (${wybrany.nazwa})`, `${cena(wybrany.cenaBrutto)} brutto`, heroH + 82);
   wiersz("Przygotował", firma, heroH + 100);
 
   // ---------- Wizualizacje (po jednej na stronę) ----------
@@ -198,7 +219,12 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
 
   // ---------- Cena ----------
   doc.addPage();
-  naglowek("Cena", "Warianty różnią się klasą okuć i wykończenia; zakres mebli jest ten sam.");
+  naglowek(
+    pw ? "Cena — do ustalenia" : "Cena",
+    pw
+      ? `Część pozycji nie ma jeszcze ceny w cenniku (${pw.braki.length}). Nie wyznaczamy ceny ani jej górnej granicy. Oferta wymaga uzupełnienia cennika.`
+      : "Warianty różnią się klasą okuć i wykończenia; zakres mebli jest ten sam.",
+  );
   y = 104;
   const szerK = (W - 80 - 3 * 14) / 4;
   w.warianty.forEach((v, i) => {
@@ -209,12 +235,12 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
     doc.font("B").fontSize(8).fillColor(wyb ? "#ffffff" : SZARY).text(wyb ? "PROPONOWANY" : " ", x, y + 6, { width: szerK, align: "center", characterSpacing: 1.5 });
     doc.font("B").fontSize(15).fillColor(TEKST).text(v.nazwa, x + 12, y + 30, { width: szerK - 24 });
     doc.font("R").fontSize(8).fillColor(SZARY).text(v.opis, x + 12, y + 52, { width: szerK - 24, height: 44, ellipsis: true });
-    doc.font("B").fontSize(16).fillColor(TEKST).text(zl(v.cenaBrutto), x + 12, y + 102, { width: szerK - 24 });
-    doc.font("R").fontSize(8).fillColor(SZARY).text(`brutto · ${zl(v.cenaNetto)} netto + VAT`, x + 12, y + 124, { width: szerK - 24 });
+    doc.font("B").fontSize(pw ? 11 : 16).fillColor(TEKST).text(cena(v.cenaBrutto), x + 12, y + 102, { width: szerK - 24 });
+    doc.font("R").fontSize(8).fillColor(SZARY).text(`brutto · ${cena(v.cenaNetto)} netto + VAT`, x + 12, y + 124, { width: szerK - 24 });
   });
   y += 176;
 
-  doc.font("B").fontSize(11).fillColor(TEKST).text("Cena obejmuje", 40, y);
+  doc.font("B").fontSize(11).fillColor(TEKST).text(pw ? "Zakres propozycji" : "Cena obejmuje", 40, y);
   doc.font("B").text("Warunki", W / 2 + 10, y);
   y += 18;
   const kat = new Set(wybrany.pozycje.map((p) => p.kategoria));
@@ -236,7 +262,12 @@ export function ofertaPdf(w: WejscieOferty): Promise<Buffer> {
   };
   lista(wCenie, 40, W / 2 - 60);
   const warunki = [
-    `Oferta ważna ${w.waznoscDni} dni od daty wystawienia.`,
+    ...(pw
+      ? [
+          "Propozycja wstępna: cena do potwierdzenia, nie stanowi oferty ani podstawy umowy.",
+          `Brakujące pozycje: ${pw.braki.join(", ")}.`,
+        ]
+      : [`Oferta ważna ${w.waznoscDni} dni od daty wystawienia.`]),
     `Termin realizacji: ${w.terminRealizacji}.`,
     "Nie obejmuje: AGD, zlewozmywaka, baterii, oświetlenia i przyłączy — chyba że wymieniono je wyżej.",
     "Wymiary do potwierdzenia pomiarem z natury przed produkcją.",

@@ -47,8 +47,10 @@ export function zbudujMebel(
   const tf = k.gruboscFrontuMM;
   const { szerokoscMM: W, wysokoscMM: H, glebokoscMM: D } = m;
 
-  if (W <= 2 * t) ostrzezenia.push("Szerokość mebla musi być większa niż suma grubości boków.");
-  if (H <= 2 * t) ostrzezenia.push("Wysokość mebla musi być większa niż suma grubości wieńców.");
+  // Blenda to jeden panel bez boków — walidacja korpusu jej nie dotyczy (wystarczy dodatnia szerokość).
+  const blenda = m.korpus.rodzaj === "blenda";
+  if (blenda ? !(W > 0) : W <= 2 * t) ostrzezenia.push(blenda ? "Szerokość blendy musi być dodatnia." : "Szerokość mebla musi być większa niż suma grubości boków.");
+  if (!blenda && H <= 2 * t) ostrzezenia.push("Wysokość mebla musi być większa niż suma grubości wieńców.");
   if (ostrzezenia.length) return { modul, elementy: [], okucia: [], ostrzezenia };
 
   if (m.korpus.rodzaj === "blenda") {
