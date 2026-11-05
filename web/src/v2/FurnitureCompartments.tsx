@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  compartmentPresets,
+  applyCompartmentPreset,
+  adjacentCompartment,
+  copyToAdjacent,
+} from "../../../src/core/furniture-compartment-presets";
+import { useEffect, useState } from "react";
 import { NumberField } from "./FurnitureNumberField";
 import { Feedback } from "./ui";
 import {
@@ -25,8 +31,10 @@ export function FurnitureCompartments({
   onChange: (fn: (m: FurnitureModel) => FurnitureModel) => void;
   disabled: boolean;
 }) {
+  const [presetError, setPresetError] = useState("");
   const [parts, setParts] = useState(2),
     [copyFrom, setCopyFrom] = useState("");
+  useEffect(() => setPresetError(""), [selected]);
   const layout = model.compartments;
   if (!layout)
     return (
@@ -133,6 +141,62 @@ export function FurnitureCompartments({
       )}
       {!node.split ? (
         <>
+          <div
+            className="fc-compartment-presets"
+            role="group"
+            aria-label="Gotowe wyposażenie komory"
+          >
+            <h3>Wyposaż komorę jednym kliknięciem</h3>
+            <div className="fc-actions">
+              {compartmentPresets.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    try {
+                      const next = applyCompartmentPreset(
+                        model,
+                        node.id,
+                        p.id,
+                        uid,
+                      );
+                      onChange(() => next);
+                      setPresetError("");
+                    } catch (e) {
+                      setPresetError((e as Error).message);
+                    }
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p>
+              Zastąpi wyposażenie i front wybranej komory. Systemy szuflad
+              dobierz osobno. Cofnij przywraca poprzedni układ.
+            </p>
+            <button
+              disabled={!adjacentCompartment(model, node.id)}
+              onClick={() => {
+                try {
+                  const next = copyToAdjacent(model, node.id, uid);
+                  onChange(() => next);
+                  setPresetError("");
+                } catch (e) {
+                  setPresetError((e as Error).message);
+                }
+              }}
+            >
+              Skopiuj do sąsiedniej komory
+              {adjacentCompartment(model, node.id)
+                ? `: ${adjacentCompartment(model, node.id)!.name}`
+                : ""}
+            </button>
+            <p>
+              Kopiuje rodzaj wyposażenia, liczbę elementów i ustawienia frontów;
+              zachowuje wymiary komory docelowej.
+            </p>
+            {presetError && <Feedback>{presetError}</Feedback>}
+          </div>
           <div className="fc-fields">
             <NumberField
               label="Liczba części podziału"

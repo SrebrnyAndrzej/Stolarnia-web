@@ -156,7 +156,10 @@ test("invalid locks are recoverable and niche obstacles are saved separately fro
   await expect(
     page.getByLabel("Nazwa przeszkody", { exact: true }),
   ).toHaveValue("Belka / przeszkoda");
-  await page.getByText(/Kontrola konstrukcji i wnęki ·/).click();
+  await page
+    .getByRole("region", { name: "Braki przed zamówieniem i produkcją" })
+    .getByText(/Geometria i dopasowanie ·/)
+    .click();
   await expect(
     page.getByText("Mebel i luzy boczne przekraczają szerokość wnęki.", {
       exact: true,

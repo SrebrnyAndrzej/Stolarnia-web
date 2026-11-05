@@ -1,3 +1,6 @@
+import { FurnitureReadiness } from "./FurnitureReadiness";
+import { FurnitureDimensionEditor } from "./FurnitureDimensionEditor";
+import type { DimensionTarget } from "../../../src/core/furniture-dimension-edit";
 import { createPortal } from "react-dom";
 import { furnitureOpenings } from "../../../src/core/furniture-openings";
 import {
@@ -114,6 +117,8 @@ export function FurnitureCreator({
   const [snap, setSnap] = useState(true),
     [dimensions, setDimensions] = useState(false);
   const [selectedCompartment, setSelectedCompartment] = useState("");
+  const [dimensionTarget, setDimensionTarget] =
+    useState<DimensionTarget | null>(null);
   const [qrRequest, setQrRequest] = useState(location.hash);
   const handledQr = useRef("");
   const [drawerCounts, setDrawerCounts] = useState([1, 1, 1]);
@@ -132,6 +137,7 @@ export function FurnitureCreator({
   } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
   const specificationPanel = useRef<HTMLDivElement>(null);
+  const inspectorPanel = useRef<HTMLElement>(null);
   const plate = model.plates.find((p) => p.id === selected);
   const issues = furnitureIssues(model);
   const spacing = shelfSpacing(model, selected);
@@ -541,6 +547,35 @@ export function FurnitureCreator({
       ),
     }));
   };
+  const dimensionAction = (target: DimensionTarget) => ({
+    role: "button" as const,
+    tabIndex: busy ? -1 : 0,
+    className: "fc-editable-dimension",
+    onClick: (e: {
+      currentTarget: SVGTextElement;
+      stopPropagation: () => void;
+    }) => {
+      e.stopPropagation();
+      if (busy) return;
+      e.currentTarget.focus();
+      if (target.kind === "compartment") setSelectedCompartment(target.id);
+      setDimensionTarget(target);
+    },
+    onKeyDown: (e: {
+      key: string;
+      preventDefault: () => void;
+      currentTarget: SVGTextElement;
+    }) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (!busy) {
+          e.currentTarget.focus();
+          if (target.kind === "compartment") setSelectedCompartment(target.id);
+          setDimensionTarget(target);
+        }
+      }
+    },
+  });
   const points = (poly: Point[]) =>
     poly.map(([x, y]) => `${x},${model.height - y}`).join(" ");
   const stage = (
@@ -659,7 +694,7 @@ export function FurnitureCreator({
         ) : (
           <svg
             ref={svg}
-            role="img"
+            role="group"
             aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
             viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
             onPointerMove={move}
@@ -689,6 +724,8 @@ export function FurnitureCreator({
                   fill="none"
                 />
                 <text
+                  {...dimensionAction({ kind: "overall", axis: "width" })}
+                  aria-label={`Zmień szerokość mebla: ${model.width} mm`}
                   x={model.width / 2}
                   y={-25}
                   textAnchor="middle"
@@ -697,6 +734,8 @@ export function FurnitureCreator({
                   {model.width} mm
                 </text>
                 <text
+                  {...dimensionAction({ kind: "overall", axis: "height" })}
+                  aria-label={`Zmień wysokość mebla: ${model.height} mm`}
                   transform={`translate(-25 ${model.height / 2}) rotate(-90)`}
                   textAnchor="middle"
                   stroke="none"
@@ -730,6 +769,12 @@ export function FurnitureCreator({
                     vectorEffect="non-scaling-stroke"
                   />
                   <text
+                    {...(model.compartments?.nodes.some((n) =>
+                      n.split?.children.includes(b.node.id),
+                    )
+                      ? dimensionAction({ kind: "compartment", id: b.node.id })
+                      : {})}
+                    aria-label={`Zmień wymiar komory: ${b.node.name}`}
                     x={b.x + 8}
                     y={model.height - b.y - b.height + 30}
                     fontSize="22"
@@ -770,7 +815,7 @@ export function FurnitureCreator({
                 );
               })}
             {dimensions && (
-              <g aria-label="Światło między półkami" pointerEvents="none">
+              <g aria-label="Światło między półkami">
                 {furnitureOpenings(model).openings.map((o, i) => (
                   <g key={i}>
                     <path
@@ -782,6 +827,8 @@ export function FurnitureCreator({
                       vectorEffect="non-scaling-stroke"
                     />
                     <text
+                      {...dimensionAction({ kind: "opening", opening: o })}
+                      aria-label={`Zmień prześwit ${i + 1}: ${o.height.toLocaleString("pl-PL", { maximumFractionDigits: 1 })} mm`}
                       x={o.probeX + 8}
                       y={model.height - o.y - o.height / 2}
                       fill="var(--text)"
@@ -930,6 +977,28 @@ export function FurnitureCreator({
                 document.body,
               )
             : stage}
+          <FurnitureReadiness
+            model={model}
+            onPart={(partId, area = "material") => {
+              setSelected(partId);
+              requestAnimationFrame(() => {
+                const panel =
+                  area === "drawers"
+                    ? document.getElementById(`fc-drawer-${partId}`)
+                    : area === "geometry"
+                      ? inspectorPanel.current
+                      : specificationPanel.current;
+                panel?.scrollIntoView({ block: "start" });
+                panel
+                  ?.querySelector<HTMLElement>(
+                    area === "drawers"
+                      ? 'select[aria-label^="System dla "]'
+                      : "input",
+                  )
+                  ?.focus({ preventScroll: true });
+              });
+            }}
+          />
           <fieldset disabled={busy} className="fc-layout-choice">
             <legend>Sugerowany układ startowy</legend>
             <div
@@ -1457,7 +1526,7 @@ export function FurnitureCreator({
             szuflad i otworowanie wymagają sprawdzenia technologii.
           </p>
         </div>
-        <aside className="fc-inspector">
+        <aside ref={inspectorPanel} className="fc-inspector">
           <h2>Płyty · {model.plates.length}</h2>
           <p className="fc-hint">
             Wybierz element na rysunku lub z listy. Zmiany od razu zobaczysz w
@@ -1638,6 +1707,22 @@ export function FurnitureCreator({
           )}
         </aside>
       </div>
+      {dimensionTarget && (
+        <FurnitureDimensionEditor
+          model={model}
+          target={dimensionTarget}
+          onClose={() => setDimensionTarget(null)}
+          onApply={(next) => {
+            if (dimensionTarget.kind === "opening") {
+              const moved = next.plates.find((p) =>
+                model.plates.some((old) => old.id === p.id && old.y !== p.y),
+              );
+              if (moved) setSelected(moved.id);
+            }
+            update(() => next);
+          }}
+        />
+      )}
       {draftGuard.dialog}
     </section>
   );

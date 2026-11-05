@@ -165,3 +165,7 @@ Szafki po jednej lub obu stronach mają wspólny wybór frontu; nadstawka osobn�
 ## Dokumentacja skrócona i podgląd mebla
 Domyślny skrót w ProjectDocuments to opcja formatu, nie nowa rewizja ani zatwierdzenie. Zmiana formatu usuwa poprzedni podgląd PDF. Zamrożone wydanie jest źródłem geometrii i operacji. Montaż nadal nie uzyskuje pełnych kart technicznych. Brak danych operacji jest jawnym brakiem; wybrane otwory zachowują status reguł i bazy pomiarowe.
 Powiększenie kreatora zachowuje bieżący szkic i historię; Escape zamyka dialog, przywracając fokus. Szybkie pola i główny formularz współdzielą model.
+
+## Edycja wymiaru na rysunku — 5.11.2026
+Kliknięcie lub Enter/Spacja na wymiarze otwiera natywny dialog z polem mm. Zastosowanie działa jako jedna operacja historii; Anuluj/Escape zachowuje szkic, błąd zachowuje wpisaną wartość. Zamknięcie przywraca fokus do wymiaru. Niedopasowana blokada lub nowa kolizja nie modyfikuje modelu. Komora: Ustaw i zablokuj lub Przywróć wymiar automatyczny, zgodnie z istniejącą semantyką size.
+Gotowe wyposażenie i kopiowanie są odwracalne przez Cofnij. Kopia zachowuje geometrię celu; systemów okuć nie dobiera automatycznie. Lista braków korzysta z istniejących obliczeń i nie oznacza kompletnej technologii produkcyjnej.

@@ -55,7 +55,11 @@ export function FurnitureDrawers({
             ...patch,
           });
         return (
-          <fieldset disabled={disabled} key={c.frontId}>
+          <fieldset
+            id={`fc-drawer-${c.frontId}`}
+            disabled={disabled}
+            key={c.frontId}
+          >
             <legend>
               {c.frontName} · front {mm(c.frontHeight)} mm
             </legend>

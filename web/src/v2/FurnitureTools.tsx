@@ -3,7 +3,6 @@ import { useState } from "react";
 import { NumberField } from "./FurnitureNumberField";
 import { Feedback } from "./ui";
 import { FurniturePreparation } from "./FurniturePreparation";
-import { furnitureReview } from "../../../src/core/furniture-review";
 import { furnitureParts } from "../../../src/core/furniture-parts";
 import {
   platePolygon,
@@ -58,8 +57,7 @@ export function FurnitureTools({
     [roomSelected, setRoomSelected] = useState(""),
     [target, setTarget] = useState("fronts"),
     [obstacle, setObstacle] = useState("");
-  const review = furnitureReview(model),
-    room = model.installation,
+  const room = model.installation,
     parts = furnitureParts(model),
     compare = library.find((e) => e.id === reference);
   const patch = (p: Partial<NonNullable<FurnitureModel["installation"]>>) =>
@@ -192,42 +190,6 @@ export function FurnitureTools({
   );
   return (
     <>
-      <details className="fc-part-review">
-        <summary>
-          Kontrola konstrukcji i wnęki ·{" "}
-          {review.collisions.length +
-            review.motion.length +
-            review.installation.length}{" "}
-          ostrzeżeń
-        </summary>
-        <p>{review.method}</p>
-        {!review.collisions.length &&
-        !review.installation.length &&
-        !review.motion.length ? (
-          <p>
-            Nie znaleziono przecinających się obwiedni. Okucia i ruch wymagają
-            osobnego sprawdzenia.
-          </p>
-        ) : (
-          <ul>
-            {review.collisions.slice(0, 30).map((c, i) => (
-              <li key={i}>
-                <button onClick={() => onSelect(c.a)}>
-                  Sprawdź: {c.message}
-                </button>
-              </li>
-            ))}
-            {review.installation.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-            {review.motion.map((c) => (
-              <li key={c.partId}>
-                <button onClick={() => onSelect(c.partId)}>{c.message}</button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </details>
       <fieldset disabled={disabled}>
         <legend>Wnęka i przeszkody</legend>
         <label className="fc-check">
