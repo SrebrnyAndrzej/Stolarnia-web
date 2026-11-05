@@ -429,7 +429,11 @@ export function App() {
           ) : section === "zamowienia" && owner ? (
             <Purchasing />
           ) : section === "meble" && (owner || employee) ? (
-            <FurnitureCreator demo={demo} owner={person?.role === "owner"} />
+            <FurnitureCreator
+              demo={demo}
+              owner={person?.role === "owner"}
+              accountId={person?.user_id}
+            />
           ) : section === "szuflady" ? (
             <>
               {demo && (

@@ -180,3 +180,10 @@ W trybie wyboru komór: ukryj fronty, wybierz kliknięciem lub natywnym selectem
 - Wybór płyty lub komory otwiera odpowiedni inspektor. Zakładka System dotyczy wybranego frontu szuflady.
 - Materiały, Wnęka i skosy, Dokumentacja i Braki to natywne modale: Escape zamyka, fokus wraca do przycisku otwarcia. Akcja uzupełnienia braków zamyka modal i skupia pole części.
 - Mobile przełącza obszar roboczy, zachowując projekt; krótkie okno dopuszcza naturalne przewijanie.
+
+### Odzyskiwanie i wybór części
+- Lokalna kopia: klucz wersjonowany według konta, walidacja wspólnym schematem API, jawne Przywróć/Odrzuć; zapis biblioteki pozostaje ręczny. Błąd pamięci nie blokuje edycji. Kopia nie jest synchronizacją między urządzeniami.
+- Właściciel wielokrotnego wyboru: FurnitureParts compact (natywne checkboxy). Model jest źródłem geometrii; wybór i ustawienia widoczności nie należą do dokumentacji.
+- Transformacje: transformFurnitureParts + wspólna historia Creator; bez mutacji wejścia, bez nowych przecięć obwiedni, ograniczenie 150 części. Operacje strukturalnych komór wykonuje dotychczasowy edytor komór.
+- Kolizja: FurnitureReadiness wskazuje obie części, zamyka modal; edycja geometrii kasuje stare podświetlenie.
+- Widok: przekrój i izolacja nie zapisują geometrii. Dane materiałowe nie są wyprowadzane z koloru ani zgadywane.

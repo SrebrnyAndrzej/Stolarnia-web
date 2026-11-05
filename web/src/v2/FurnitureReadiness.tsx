@@ -8,8 +8,10 @@ import { furnitureDrawerCalculations } from "../../../src/core/furniture-drawers
 export function FurnitureReadiness({
   model,
   onPart,
+  onCollision,
 }: {
   model: FurnitureModel;
+  onCollision?: (ids: string[]) => void;
   onPart: (id: string, area?: "material" | "geometry" | "drawers") => void;
 }) {
   const parts = furnitureParts(model),
@@ -47,7 +49,13 @@ export function FurnitureReadiness({
           ))}
           {review.collisions.map((c, i) => (
             <li key={`c${i}`}>
-              <button onClick={() => onPart(c.a, "geometry")}>
+              <button
+                onClick={() =>
+                  onCollision
+                    ? onCollision([c.a, c.b])
+                    : onPart(c.a, "geometry")
+                }
+              >
                 Sprawdź przecięcie obwiedni: {c.message}
               </button>
             </li>

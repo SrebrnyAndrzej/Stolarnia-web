@@ -1,3 +1,5 @@
+import { useFurnitureRecovery } from "./useFurnitureRecovery";
+import { transformFurnitureParts } from "../../../src/core/furniture-transform";
 import { StudioTabs } from "./StudioTabs";
 import { FurnitureAppearance } from "./FurnitureAppearance";
 import { FurnitureReadiness } from "./FurnitureReadiness";
@@ -84,9 +86,11 @@ const initial = () => {
 export function FurnitureCreator({
   demo,
   owner = false,
+  accountId,
 }: {
   demo: boolean;
   owner?: boolean;
+  accountId?: string;
 }) {
   const [model, setModel] = useState(initial);
   const [id, setId] = useState<string>(uid);
@@ -98,6 +102,21 @@ export function FurnitureCreator({
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [dirty, setDirty] = useState(false);
+  const recovery = useFurnitureRecovery(
+    accountId,
+    demo,
+    model,
+    id,
+    version,
+    dirty,
+  );
+  const [marked, setMarked] = useState<string[]>([]);
+  const [highlighted, setHighlighted] = useState<string[]>([]);
+  const [partOffset, setPartOffset] = useState(100);
+  useEffect(() => {
+    setMarked([]);
+    setHighlighted([]);
+  }, [id]);
   const [savedDrawers, setSavedDrawers] = useState<
     FurnitureDrawerCalculation[] | null
   >(null);
@@ -148,6 +167,7 @@ export function FurnitureCreator({
     setSheet(kind);
   };
   const selectPlate = (partId: string) => {
+    setHighlighted([]);
     setSelected(partId);
     if (partId) {
       setInspectorMode("plate");
@@ -207,6 +227,7 @@ export function FurnitureCreator({
   const issues = furnitureIssues(model);
   const spacing = shelfSpacing(model, selected);
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
+    setHighlighted([]);
     if (!drag.current) {
       setHistory((h) => [...h.slice(-39), structuredClone(model)]);
       setFuture([]);
@@ -729,6 +750,8 @@ export function FurnitureCreator({
                 key={id}
                 model={model}
                 selected={selected}
+                highlighted={highlighted}
+                marked={marked}
                 controlsTarget={expanded ? null : sceneControlsTarget}
                 onSelect={selectPlate}
                 selectedCompartment={selectedCompartment}
@@ -856,7 +879,7 @@ export function FurnitureCreator({
                 return (
                   <g
                     key={p.id}
-                    className={`fc-plate ${selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
+                    className={`fc-plate ${highlighted.includes(p.id) ? "collision" : marked.includes(p.id) ? "marked" : selected === p.id ? "selected" : ""} ${p.kind === "drawer" ? "drawer" : ""}`}
                     onPointerDown={(e) => {
                       if (e.target instanceof SVGPolygonElement)
                         beginDrag(
@@ -1658,6 +1681,24 @@ export function FurnitureCreator({
       }
     />
   );
+  const transformParts = (
+    operation: "duplicate" | "align-x" | "align-y" | "space-x" | "space-y",
+  ) => {
+    try {
+      const next = transformFurnitureParts(
+        model,
+        marked,
+        operation,
+        partOffset,
+        uid,
+      );
+      update(() => next);
+      setError("");
+      setMessage("Zmieniono zaznaczone części. Możesz użyć Cofnij.");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
   return (
     <section
       ref={rootRef}
@@ -1724,6 +1765,40 @@ export function FurnitureCreator({
         </p>
       )}
 
+      {recovery.pending && (
+        <div className="fc-recovery" role="status">
+          <span>
+            Odnaleziono szkic:{" "}
+            <strong>{recovery.pending.model.name || "Bez nazwy"}</strong> ·{" "}
+            {new Date(recovery.pending.savedAt).toLocaleString("pl-PL")}
+          </span>
+          <button
+            onClick={() =>
+              guarded(() => {
+                const draft = recovery.pending!;
+                setModel(draft.model);
+                setId(draft.id);
+                setVersion(draft.version);
+                setHistory([]);
+                setFuture([]);
+                setSelected("");
+                setMarked([]);
+                setDirty(true);
+                recovery.accept();
+                setMessage(
+                  "Przywrócono lokalny szkic. Zapis w bibliotece wymaga przycisku Zapisz.",
+                );
+              })
+            }
+          >
+            Przywróć szkic
+          </button>
+          <button onClick={recovery.discard}>Odrzuć szkic</button>
+        </div>
+      )}
+      <p className="fc-recovery-status" role="status">
+        {recovery.status || "\u00a0"}
+      </p>
       <div
         className="fc-studio-mobile"
         role="group"
@@ -1786,9 +1861,57 @@ export function FurnitureCreator({
             aria-labelledby={`${leftId}-tab-parts`}
             hidden={leftPanel !== "parts"}
           >
+            <fieldset className="fc-multi" disabled={busy}>
+              <legend>
+                Zaznaczone części ·{" "}
+                {
+                  marked.filter((id) => model.plates.some((p) => p.id === id))
+                    .length
+                }
+              </legend>
+              <NumberField
+                label="Odstęp / krok (mm)"
+                value={partOffset}
+                min={1}
+                max={10000}
+                onChange={setPartOffset}
+              />
+              <div className="fc-actions">
+                <button onClick={() => transformParts("duplicate")}>
+                  Duplikuj w górę
+                </button>
+                <button onClick={() => transformParts("align-y")}>
+                  Wyrównaj dół / fronty
+                </button>
+                <button onClick={() => transformParts("align-x")}>
+                  Wyrównaj lewą krawędź
+                </button>
+                <button onClick={() => transformParts("space-y")}>
+                  Rozstaw w pionie
+                </button>
+                <button onClick={() => transformParts("space-x")}>
+                  Rozstaw w poziomie
+                </button>
+                <button onClick={() => setMarked([])}>
+                  Wyczyść zaznaczenie
+                </button>
+              </div>
+              <small>
+                Wyrównanie do najniższej / lewej części. Krok rozstawu mierzony
+                między początkami. Części komór zmieniaj w układzie komór.
+              </small>
+            </fieldset>
             <FurnitureParts
               model={model}
               compact
+              marked={marked}
+              onMark={(partId) =>
+                setMarked((ids) =>
+                  ids.includes(partId)
+                    ? ids.filter((x) => x !== partId)
+                    : [...ids, partId],
+                )
+              }
               selected={selected}
               onSelect={selectPlate}
             />
@@ -1936,7 +2059,21 @@ export function FurnitureCreator({
           <div className="fc-sheet-body">
             <div hidden={sheet !== "materials"}>{standardPanel}</div>
             <div hidden={sheet !== "review"}>
-              <FurnitureReadiness model={model} onPart={revealPart} />
+              <FurnitureReadiness
+                model={model}
+                onPart={revealPart}
+                onCollision={(ids) => {
+                  setHighlighted(ids);
+                  setSelected(ids[0]);
+                  setInspectorMode("plate");
+                  setPlatePanel("geometry");
+                  setMobilePane("preview");
+                  setSheet(null);
+                  setMessage(
+                    "Podświetlono obie części z przecięciem obwiedni. Kontrola jest poglądowa.",
+                  );
+                }}
+              />
               {issues.length > 0 && (
                 <div role="alert">
                   <strong>Popraw przed zapisem:</strong>

@@ -1,3 +1,4 @@
+import { furnitureFaceGuides } from "../../../src/core/furniture-face-guides";
 import { createPortal } from "react-dom";
 import { furniturePlateColor } from "../../../src/core/furniture-appearance";
 import { compartmentBoxes } from "../../../src/core/furniture-compartments";
@@ -49,7 +50,11 @@ export function FurnitureScene({
   onSelectCompartment,
   onEditCompartment,
   controlsTarget,
+  highlighted = [],
+  marked = [],
 }: {
+  highlighted?: string[];
+  marked?: string[];
   model: FurnitureModel;
   controlsTarget?: HTMLElement | null;
   selected: string;
@@ -77,6 +82,15 @@ export function FurnitureScene({
     [openFronts, setOpenFronts] = useState(false),
     [exploded, setExploded] = useState(false);
 
+  const [sectionAxis, setSectionAxis] = useState<"none" | "x" | "y" | "z">(
+    "none",
+  );
+  const [sectionPercent, setSectionPercent] = useState(50);
+  const [isolated, setIsolated] = useState(false);
+  const [guides, setGuides] = useState(false);
+  useEffect(() => {
+    if (!selected) setIsolated(false);
+  }, [selected]);
   useEffect(() => {
     const el = host.current!;
     let renderer: THREE.WebGLRenderer;
@@ -249,7 +263,11 @@ export function FurnitureScene({
           .intersectObjects(state.compartments.children, false)
           .find(
             (h) =>
-              h.object instanceof THREE.Mesh && h.object.userData.compartmentId,
+              h.object instanceof THREE.Mesh &&
+              h.object.userData.compartmentId &&
+              renderer.clippingPlanes.every(
+                (p) => p.distanceToPoint(h.point) >= 0,
+              ),
           );
         selectCompartment.current?.(
           hit ? String(hit.object.userData.compartmentId) : "",
@@ -262,7 +280,10 @@ export function FurnitureScene({
           (h) =>
             h.object instanceof THREE.Mesh &&
             h.object.visible &&
-            h.object.userData.plateId,
+            h.object.userData.plateId &&
+            renderer.clippingPlanes.every(
+              (p) => p.distanceToPoint(h.point) >= 0,
+            ),
         );
       select.current(hit ? String(hit.object.userData.plateId) : "");
     };
@@ -298,6 +319,34 @@ export function FurnitureScene({
       setCaptureReady(false);
     };
   }, [attempt]);
+  useEffect(() => {
+    const state = runtime.current;
+    if (!state) return;
+    const length =
+      sectionAxis === "x"
+        ? model.width
+        : sectionAxis === "y"
+          ? model.height
+          : model.depth;
+    const normal = new THREE.Vector3(
+      sectionAxis === "x" ? -1 : 0,
+      sectionAxis === "y" ? -1 : 0,
+      sectionAxis === "z" ? -1 : 0,
+    );
+    state.renderer.shadowMap.enabled = sectionAxis === "none";
+    state.renderer.clippingPlanes =
+      sectionAxis === "none"
+        ? []
+        : [new THREE.Plane(normal, (length * MM * sectionPercent) / 100)];
+    state.draw();
+  }, [
+    sectionAxis,
+    sectionPercent,
+    model.width,
+    model.height,
+    model.depth,
+    attempt,
+  ]);
 
   useEffect(() => {
     const state = runtime.current;
@@ -412,7 +461,8 @@ export function FurnitureScene({
       }
       if (openFronts && plate.kind === "drawer")
         mesh.position.z += motion.travel * MM;
-      if (isFront && !showFronts) mesh.visible = false;
+      if ((isFront && !showFronts) || (isolated && plate.id !== selected))
+        mesh.visible = false;
       if (exploded) {
         mesh.position.x +=
           (plate.x + plate.width / 2 - model.width / 2) * MM * 0.18;
@@ -434,6 +484,25 @@ export function FurnitureScene({
         }),
       );
       mesh.add(edges);
+      if (guides && plate.id === selected)
+        for (const guide of furnitureFaceGuides(model, plate)) {
+          const points = guide.points.map(([x, y, z]) =>
+            new THREE.Vector3(
+              x - (plate.kind === "door" ? motion.pivotX : 0),
+              y,
+              z - (plate.kind === "door" ? motion.pivotZ : 0),
+            ).multiplyScalar(MM),
+          );
+          mesh.add(
+            new THREE.LineSegments(
+              new THREE.BufferGeometry().setFromPoints(points),
+              new THREE.LineBasicMaterial({
+                color: guide.kind === "band" ? 0x008d86 : 0x205ac0,
+                depthTest: true,
+              }),
+            ),
+          );
+        }
       state.parts.add(mesh);
     }
     state.bounds.setFromObject(state.parts);
@@ -441,7 +510,16 @@ export function FurnitureScene({
       state.bounds.union(new THREE.Box3().setFromObject(state.context));
     if (initial) state.fit();
     else state.draw();
-  }, [model, attempt, showFronts, openFronts, exploded]);
+  }, [
+    model,
+    attempt,
+    showFronts,
+    openFronts,
+    exploded,
+    isolated,
+    selected,
+    guides,
+  ]);
 
   useEffect(() => {
     const state = runtime.current;
@@ -451,14 +529,32 @@ export function FurnitureScene({
         THREE.ExtrudeGeometry,
         THREE.MeshStandardMaterial
       >;
-      const active = mesh.userData.plateId === selected;
+      const collision = highlighted.includes(mesh.userData.plateId);
+      const active =
+        mesh.userData.plateId === selected ||
+        marked.includes(mesh.userData.plateId);
       mesh.material.color.setHex(
-        active ? 0xa5b859 : (mesh.userData.color as number),
+        collision
+          ? 0xca4f36
+          : active
+            ? 0xa5b859
+            : (mesh.userData.color as number),
       );
       mesh.material.emissive.setHex(active ? 0x172000 : 0x000000);
     }
     state.draw();
-  }, [selected, model, attempt, showFronts, openFronts, exploded]);
+  }, [
+    selected,
+    model,
+    attempt,
+    showFronts,
+    openFronts,
+    exploded,
+    highlighted,
+    marked,
+    isolated,
+    guides,
+  ]);
 
   useEffect(() => {
     const state = runtime.current;
@@ -596,6 +692,67 @@ export function FurnitureScene({
           )}
         </div>
       )}
+      <fieldset className="fc-section-controls">
+        <legend>Przekrój i widoczność</legend>
+        <label>
+          Przekrój 3D
+          <select
+            aria-label="Przekrój 3D"
+            value={sectionAxis}
+            onChange={(e) =>
+              setSectionAxis(e.target.value as typeof sectionAxis)
+            }
+          >
+            <option value="none">Pełny mebel</option>
+            <option value="x">Szerokość (X)</option>
+            <option value="y">Wysokość (Y)</option>
+            <option value="z">Głębokość (Z)</option>
+          </select>
+        </label>
+        {sectionAxis !== "none" && (
+          <label>
+            Położenie przekroju · {sectionPercent}%
+            <input
+              aria-label="Położenie przekroju"
+              type="range"
+              min="1"
+              max="99"
+              value={sectionPercent}
+              onChange={(e) => setSectionPercent(Number(e.target.value))}
+            />
+          </label>
+        )}
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={isolated}
+            disabled={!selected}
+            onChange={(e) => setIsolated(e.target.checked)}
+          />
+          Tylko wybrana część
+        </label>
+        <label className="fc-check">
+          <input
+            type="checkbox"
+            checked={guides}
+            onChange={(e) => setGuides(e.target.checked)}
+          />
+          Obrzeża i usłojenie
+        </label>
+        {guides && (
+          <p>
+            Zielone linie: zapisane obrzeża. Niebieska strzałka: usłojenie
+            wybranej płyty. Wybierz jej powierzchnię XY/XZ/YZ w materiale; skos
+            wymaga osobnego rysunku.
+          </p>
+        )}
+        {isolated && (
+          <p>
+            Izolacja nie zmienia projektu. Ukryte fronty włącz przyciskiem
+            „Pokaż fronty”.
+          </p>
+        )}
+      </fieldset>
       <div className="fc-camera" role="group" aria-label="Kamera 3D">
         <button
           disabled={!!error || !captureReady}

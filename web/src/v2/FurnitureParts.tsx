@@ -12,9 +12,13 @@ export function FurnitureParts({
   onSelect,
   compact = false,
   selected = "",
+  marked = [],
+  onMark,
 }: {
   model: FurnitureModel;
   compact?: boolean;
+  marked?: string[];
+  onMark?: (id: string) => void;
   selected?: string;
   onSelect: (id: string) => void;
 }) {
@@ -40,6 +44,17 @@ export function FurnitureParts({
             )
             .map((p, i) => (
               <li key={p.id}>
+                {onMark && (
+                  <label className="fc-check">
+                    <input
+                      type="checkbox"
+                      aria-label={`Zaznacz część: ${p.name}`}
+                      checked={marked.includes(p.id)}
+                      onChange={() => onMark(p.id)}
+                    />
+                    Zaznacz
+                  </label>
+                )}
                 <button
                   aria-current={selected === p.id ? "true" : undefined}
                   onClick={() => onSelect(p.id)}

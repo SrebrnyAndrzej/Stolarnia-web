@@ -1167,3 +1167,51 @@ dialog.fc-dimension-dialog {
     font-size: 11px;
   }
 }
+.fc-recovery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+}
+.fc-recovery span {
+  flex: 1;
+  font-size: 12px;
+}
+.fc-recovery-status {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-studio .fc-plate.collision polygon {
+  fill: #f2c1b0;
+  stroke: #a83c24;
+  stroke-width: 3;
+}
+.fc-studio .fc-plate.marked polygon {
+  fill: var(--accent-soft);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.fc-multi .fc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.fc-multi button {
+  padding: 6px;
+  font-size: 11px;
+}
+.fc-multi small,
+.fc-section-controls p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-parts-browser li {
+  position: relative;
+}
+.fc-parts-browser li > .fc-check {
+  margin: 0 0 3px;
+}

