@@ -1,3 +1,4 @@
+import { StudioTabs } from "./StudioTabs";
 import { FurnitureAppearance } from "./FurnitureAppearance";
 import { FurnitureReadiness } from "./FurnitureReadiness";
 import { FurnitureDimensionEditor } from "./FurnitureDimensionEditor";
@@ -14,6 +15,7 @@ import {
   Suspense,
   useEffect,
   useRef,
+  useId,
   useState,
   type PointerEvent,
 } from "react";
@@ -102,6 +104,64 @@ export function FurnitureCreator({
   const [history, setHistory] = useState<FurnitureModel[]>([]);
   const [future, setFuture] = useState<FurnitureModel[]>([]);
   const [query, setQuery] = useState("");
+  const [leftPanel, setLeftPanel] = useState("layout");
+  const [inspectorMode, setInspectorMode] = useState("plate");
+  const [platePanel, setPlatePanel] = useState("geometry");
+  const [mobilePane, setMobilePane] = useState("preview");
+  const [sheet, setSheet] = useState<
+    null | "materials" | "room" | "documents" | "review"
+  >(null);
+  const sheetRef = useRef<HTMLDialogElement>(null),
+    sheetOpener = useRef<HTMLElement | null>(null);
+  const rootRef = useRef<HTMLElement>(null);
+  const leftId = useId(),
+    rightId = useId(),
+    plateId = useId();
+  const [sceneControlsTarget, setSceneControlsTarget] =
+    useState<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const resize = () => {
+      const el = rootRef.current;
+      if (el)
+        el.style.setProperty(
+          "--fc-available-height",
+          `${Math.max(420, window.innerHeight - Math.max(0, el.getBoundingClientRect().top) - 12)}px`,
+        );
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  const sheetOpen = sheet !== null;
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (sheetOpen) el?.showModal();
+    else el?.close();
+    return () => {
+      el?.close();
+      if (sheetOpener.current?.isConnected)
+        sheetOpener.current.focus({ preventScroll: true });
+    };
+  }, [sheetOpen]);
+  const openSheet = (kind: NonNullable<typeof sheet>) => {
+    sheetOpener.current = document.activeElement as HTMLElement | null;
+    setSheet(kind);
+  };
+  const selectPlate = (partId: string) => {
+    setSelected(partId);
+    if (partId) {
+      setInspectorMode("plate");
+      setPlatePanel("geometry");
+      setMobilePane("inspector");
+    }
+  };
+  const selectCompartment = (nodeId: string) => {
+    setSelectedCompartment(nodeId);
+    setSelected("");
+    setInspectorMode("compartment");
+    setMobilePane("inspector");
+  };
+
   const [expanded, setExpanded] = useState(false);
   const focusDialog = useRef<HTMLDialogElement>(null);
   const expandButton = useRef<HTMLButtonElement>(null);
@@ -140,6 +200,10 @@ export function FurnitureCreator({
   const specificationPanel = useRef<HTMLDivElement>(null);
   const inspectorPanel = useRef<HTMLElement>(null);
   const plate = model.plates.find((p) => p.id === selected);
+  useEffect(() => {
+    if (plate?.kind !== "drawer" && platePanel === "drawers")
+      setPlatePanel("geometry");
+  }, [plate?.kind, platePanel]);
   const issues = furnitureIssues(model);
   const spacing = shelfSpacing(model, selected);
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
@@ -206,7 +270,7 @@ export function FurnitureCreator({
     setSavedDrawers(entry.drawerCalculations ?? null);
     setHistory([]);
     setFuture([]);
-    setSelected(query.get("part") ?? "");
+    selectPlate(query.get("part") ?? "");
     setDirty(false);
     setError("");
     setMessage(`Otworzono część z etykiety · wersja ${entry.version}.`);
@@ -404,7 +468,7 @@ export function FurnitureCreator({
         face: vertical ? "yz" : "xz",
       };
     update((m) => ({ ...m, plates: [...m.plates, p] }));
-    setSelected(p.id);
+    selectPlate(p.id);
   };
   const addDrawers = () => {
     const plates: FurniturePlate[] = [];
@@ -486,7 +550,7 @@ export function FurnitureCreator({
       return;
     }
     update(() => next);
-    setSelected(plates[0].id);
+    selectPlate(plates[0].id);
   };
   const shapeChange = (patch: Partial<FurnitureModel>) =>
     update((m) => resizeFurniture(m, patch, uid));
@@ -499,7 +563,7 @@ export function FurnitureCreator({
     return [converted.x, model.height - converted.y];
   };
   const beginDrag = (e: PointerEvent<SVGPolygonElement>, p: FurniturePlate) => {
-    setSelected(p.id);
+    selectPlate(p.id);
     if (p.layoutSlot?.startsWith("compartment/")) {
       setSelectedCompartment(p.layoutSlot.split("/")[1]);
       return;
@@ -559,7 +623,10 @@ export function FurnitureCreator({
       e.stopPropagation();
       if (busy) return;
       e.currentTarget.focus();
-      if (target.kind === "compartment") setSelectedCompartment(target.id);
+      if (target.kind === "compartment") {
+        setSelectedCompartment(target.id);
+        setInspectorMode("compartment");
+      }
       setDimensionTarget(target);
     },
     onKeyDown: (e: {
@@ -571,7 +638,10 @@ export function FurnitureCreator({
         e.preventDefault();
         if (!busy) {
           e.currentTarget.focus();
-          if (target.kind === "compartment") setSelectedCompartment(target.id);
+          if (target.kind === "compartment") {
+            setSelectedCompartment(target.id);
+            setInspectorMode("compartment");
+          }
           setDimensionTarget(target);
         }
       }
@@ -579,6 +649,16 @@ export function FurnitureCreator({
   });
   const points = (poly: Point[]) =>
     poly.map(([x, y]) => `${x},${model.height - y}`).join(" ");
+  const appearancePanel = (
+    <FurnitureAppearance
+      model={model}
+      disabled={busy}
+      onChange={(appearance) => {
+        setSelected("");
+        update((m) => ({ ...m, appearance }));
+      }}
+    />
+  );
   const stage = (
     <div className="fc-stage" aria-label="Obszar projektowania">
       <div className="fc-stage-title">
@@ -593,73 +673,25 @@ export function FurnitureCreator({
           {model.width} × {model.height} × {model.depth} <small>mm</small>
         </span>
       </div>
-      <fieldset className="fc-quick-dimensions" disabled={busy}>
-        <legend>Szybkie gabaryty</legend>
-        <div className="fc-fields">
-          <NumberField
-            label="Szybka szerokość"
-            min={100}
-            max={10000}
-            value={model.width}
-            onChange={(v) => shapeChange({ width: v })}
-          />
-          <NumberField
-            label="Szybka wysokość"
-            min={100}
-            max={10000}
-            value={model.height}
-            onChange={(v) => shapeChange({ height: v })}
-          />
-          <NumberField
-            label="Szybka głębokość"
-            min={100}
-            value={model.depth}
-            onChange={(v) => shapeChange({ depth: v })}
-          />
-        </div>
-      </fieldset>
       <div className="fc-toolbar">
         <label className="fc-check">
           <input
             type="checkbox"
+            aria-label="Pokaż wymiary"
             checked={dimensions}
             onChange={(e) => setDimensions(e.target.checked)}
           />
-          Pokaż wymiary
+          Wymiary
         </label>
         <label className="fc-check">
           <input
             type="checkbox"
+            aria-label="Przyciąganie do krawędzi i siatki 10 mm"
             checked={snap}
             onChange={(e) => setSnap(e.target.checked)}
           />
-          Przyciąganie do krawędzi i siatki 10 mm
+          Przyciąganie
         </label>
-        <button
-          disabled={busy || !history.length}
-          onClick={() => {
-            setFuture((f) => [...f, structuredClone(model)]);
-            setModel(history[history.length - 1]);
-            setHistory((h) => h.slice(0, -1));
-            setDirty(true);
-            setError("");
-          }}
-        >
-          Cofnij
-        </button>
-        <button
-          disabled={busy || !future.length}
-          onClick={() => {
-            setHistory((h) => [...h.slice(-39), structuredClone(model)]);
-            setModel(future[future.length - 1]);
-            setFuture((f) => f.slice(0, -1));
-            setDirty(true);
-            setError("");
-            setMessage("");
-          }}
-        >
-          Ponów
-        </button>
         <button onClick={() => addPlate(false)} disabled={busy}>
           + Półka
         </button>
@@ -670,7 +702,13 @@ export function FurnitureCreator({
           <button aria-pressed={view === "2d"} onClick={() => setView("2d")}>
             Przód 2D
           </button>
-          <button aria-pressed={view === "3d"} onClick={() => setView("3d")}>
+          <button
+            aria-pressed={view === "3d"}
+            onClick={() => {
+              setView("3d");
+              setInspectorMode("view");
+            }}
+          >
             Bryła 3D
           </button>
         </div>
@@ -685,37 +723,27 @@ export function FurnitureCreator({
       <div className="fc-drawing">
         {view === "3d" ? (
           <>
-            <FurnitureAppearance
-              model={model}
-              disabled={busy}
-              onChange={(appearance) => {
-                setSelected("");
-                update((m) => ({ ...m, appearance }));
-              }}
-            />
+            {expanded && appearancePanel}
             <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
               <FurnitureScene
                 key={id}
                 model={model}
                 selected={selected}
-                onSelect={setSelected}
+                controlsTarget={expanded ? null : sceneControlsTarget}
+                onSelect={selectPlate}
                 selectedCompartment={selectedCompartment}
-                onSelectCompartment={(id) => {
-                  setSelectedCompartment(id);
-                  setSelected("");
-                }}
+                onSelectCompartment={selectCompartment}
                 onEditCompartment={() => {
                   setExpanded(false);
-                  requestAnimationFrame(() => {
-                    const panel =
-                      document.querySelector<HTMLElement>(".fc-compartments");
-                    panel?.scrollIntoView({ block: "start" });
-                    panel
-                      ?.querySelector<HTMLElement>(
-                        'select[aria-label="Wybierz komorę"]',
+                  setInspectorMode("compartment");
+                  setMobilePane("inspector");
+                  requestAnimationFrame(() =>
+                    document
+                      .querySelector<HTMLElement>(
+                        '.fc-compartments select[aria-label="Wybierz komorę"]',
                       )
-                      ?.focus({ preventScroll: true });
-                  });
+                      ?.focus({ preventScroll: true }),
+                  );
                 }}
               />
             </Suspense>
@@ -885,17 +913,788 @@ export function FurnitureCreator({
           technicznym.
         </p>
       )}
+      <fieldset className="fc-quick-dimensions" disabled={busy}>
+        <legend>Szybkie gabaryty</legend>
+        <div className="fc-fields">
+          <NumberField
+            label="Szybka szerokość"
+            min={100}
+            max={10000}
+            value={model.width}
+            onChange={(v) => shapeChange({ width: v })}
+          />
+          <NumberField
+            label="Szybka wysokość"
+            min={100}
+            max={10000}
+            value={model.height}
+            onChange={(v) => shapeChange({ height: v })}
+          />
+          <NumberField
+            label="Szybka głębokość"
+            min={100}
+            value={model.depth}
+            onChange={(v) => shapeChange({ depth: v })}
+          />
+        </div>
+      </fieldset>
     </div>
   );
+  const revealPart = (
+    partId: string,
+    area: "material" | "geometry" | "drawers" = "material",
+  ) => {
+    setSelected(partId);
+    setInspectorMode("plate");
+    setPlatePanel(area);
+    setMobilePane("inspector");
+    setSheet(null);
+    requestAnimationFrame(() => {
+      const panel =
+        area === "drawers"
+          ? document.getElementById(`fc-drawer-${partId}`)
+          : area === "geometry"
+            ? inspectorPanel.current
+            : specificationPanel.current;
+      panel
+        ?.querySelector<HTMLElement>(
+          area === "drawers" ? 'select[aria-label^="System dla "]' : "input",
+        )
+        ?.focus({ preventScroll: true });
+    });
+  };
+  const libraryPanel = (
+    <div className="fc-library">
+      <h2>Biblioteka ogólna</h2>
+      <label>
+        Szukaj mebla
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </label>
+      <button onClick={loadLibrary} disabled={loading || demo}>
+        {loading ? "Wczytywanie…" : "Odśwież bibliotekę"}
+      </button>
+      {!loading && !library.length && (
+        <p>Brak zapisanych mebli. Utwórz pierwszy model i zapisz go tutaj.</p>
+      )}
+      <ul>
+        {library
+          .filter((e) =>
+            e.model.name
+              .toLocaleLowerCase("pl")
+              .includes(query.toLocaleLowerCase("pl")),
+          )
+          .map((e) => (
+            <li key={e.id}>
+              <button
+                onClick={() => open(e)}
+                disabled={busy}
+                aria-current={e.id === id && version > 0 ? "true" : undefined}
+              >
+                <svg
+                  className="fc-library-preview"
+                  viewBox={`-30 -30 ${e.model.width + 60} ${e.model.height + 60}`}
+                  aria-hidden="true"
+                >
+                  {e.model.plates.map((p) => (
+                    <polygon
+                      key={p.id}
+                      points={platePolygon(e.model, p)
+                        .map(([x, y]) => `${x},${e.model.height - y}`)
+                        .join(" ")}
+                    />
+                  ))}
+                </svg>
+                <strong>{e.model.name}</strong>
+                <span>
+                  {e.model.width} × {e.model.height} × {e.model.depth} mm
+                </span>
+                <small>
+                  Wersja {e.version} ·{" "}
+                  {new Date(e.updatedAt).toLocaleDateString("pl-PL")}
+                </small>
+              </button>
+            </li>
+          ))}
+      </ul>
+    </div>
+  );
+  const layoutPanel = (
+    <>
+      <fieldset disabled={busy} className="fc-layout-choice">
+        <legend>Sugerowany układ startowy</legend>
+        <div
+          className="fc-presets"
+          role="group"
+          aria-label="Gotowe układy mebli"
+        >
+          {layoutVariants
+            .filter((v) =>
+              [
+                "wardrobe",
+                "shelves",
+                "drawers",
+                "desk",
+                "desk-storage",
+                "desk-hutch",
+              ].includes(v.value),
+            )
+            .map((v) => (
+              <button
+                key={v.value}
+                type="button"
+                aria-label={v.label}
+                aria-pressed={model.suggestion?.variant === v.value}
+                onClick={() => {
+                  chooseLayout(v.value);
+                  setMessage(
+                    `Wybrano układ: ${v.label}. Możesz zmienić każdy element.`,
+                  );
+                }}
+              >
+                <svg viewBox="0 0 80 64" aria-hidden="true">
+                  <rect x="12" y="6" width="56" height="52" rx="2" />
+                  {v.value.startsWith("desk") ? (
+                    <>
+                      <path d="M12 28H68M36 28V58" />
+                      {v.value !== "desk" && <path d="M12 40H36M12 50H36" />}
+                      {v.value === "desk-hutch" && (
+                        <path d="M12 17H68M40 6V28" />
+                      )}
+                    </>
+                  ) : v.value === "drawers" ? (
+                    <path d="M12 23H68M12 40H68M35 15H45M35 31H45M35 49H45" />
+                  ) : v.value === "shelves" ? (
+                    <path d="M12 19H68M12 32H68M12 45H68" />
+                  ) : (
+                    <path d="M40 6V58M12 23H40M12 40H40M45 19H63" />
+                  )}
+                </svg>
+                <span>
+                  {{
+                    auto: "Automatyczny",
+                    empty: "Pusty",
+                    mixed: "Mieszany",
+                    wardrobe: "Szafa",
+                    shelves: "Regał",
+                    drawers: "Komoda",
+                    desk: "Biurko",
+                    "desk-storage": "Z szafką",
+                    "desk-hutch": "Z szafką i nadstawką",
+                  }[v.value] ?? v.label}
+                </span>
+              </button>
+            ))}
+        </div>
+        <label>
+          Układ startowy
+          <select
+            aria-label="Układ startowy"
+            value={model.suggestion?.variant ?? "empty"}
+            onChange={(e) => chooseLayout(e.target.value as LayoutVariant)}
+          >
+            {layoutVariants.map((v) => (
+              <option key={v.value} value={v.value}>
+                {v.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p>Każdy element układu możesz edytować.</p>
+        <button
+          onClick={() => {
+            update((m) =>
+              applySuggestedLayout(m, m.suggestion?.variant ?? "auto", uid),
+            );
+            setSelected("");
+          }}
+        >
+          Przywróć sugerowany układ
+        </button>
+        <p>
+          Zmiana układu zastępuje wnętrze i systemy szuflad. Materiały
+          pozostają. Możesz użyć Cofnij.
+        </p>
+        {model.suggestion &&
+          model.suggestion.variant !== "empty" &&
+          !model.plates.some((p) => p.layoutSlot) && (
+            <p role="status">
+              W tych gabarytach brakuje miejsca na sugerowane wnętrze. Zwiększ
+              wymiary lub dodaj elementy ręcznie.
+            </p>
+          )}
+      </fieldset>
+      {isDeskVariant(model.suggestion?.variant) && (
+        <fieldset disabled={busy}>
+          <legend>Biurko — wymiary startowe</legend>
+          <p>
+            Wybór biurka ustawia 1600 × 800 × 740 mm (szerokość × głębokość ×
+            wysokość górnej powierzchni). Wszystkie wymiary możesz zmienić
+            poniżej. Grubość 28 mm jest założeniem projektu.
+          </p>
+          <div className="fc-actions">
+            <button
+              onClick={() => {
+                update((m) => deskStartingModel(m, uid));
+                setSelected("");
+              }}
+            >
+              Biurko 160 × 80 cm
+            </button>
+            <button
+              onClick={() => {
+                update((m) => deskStartingModel(m, uid, 1200));
+                setSelected("");
+              }}
+            >
+              Biurko kompaktowe 120 × 80 cm
+            </button>
+          </div>
+          <p>
+            DGUV wskazuje 740 ± 20 mm dla stałej wysokości i 800 mm głębokości.
+            Wysokość dopasuj do użytkownika oraz krzesła; regulacja jest
+            korzystniejsza dla różnych osób. Wariant 120 cm jest przeznaczony do
+            ograniczonej ilości sprzętu i dokumentów.
+          </p>
+          <p>
+            Światło między bokami: {deskLegWidth(model).toLocaleString("pl-PL")}{" "}
+            mm · wysokość pod blatem:{" "}
+            {(deskWorktopHeight(model) - model.thickness).toLocaleString(
+              "pl-PL",
+            )}{" "}
+            mm.
+          </p>
+          {(model.depth < 800 ||
+            deskWorktopHeight(model) < 720 ||
+            deskWorktopHeight(model) > 760 ||
+            deskLegWidth(model) < 850) && (
+            <p role="status">
+              Wymiary odbiegają od punktu startowego ergonomicznego biurka.
+              Sprawdź dopasowanie do osoby, odległość od ekranu i wolną
+              przestrzeń na nogi.
+            </p>
+          )}
+          <p>
+            <a
+              href="https://publikationen.dguv.de/widgets/pdf/download/article/409"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Zalecenia DGUV
+            </a>{" "}
+            ·{" "}
+            <a
+              href="https://www.worksafe.qld.gov.au/safety-and-prevention/hazards/hazardous-manual-tasks/working-with-computers/setting-up-your-workstation"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ustawienie stanowiska — WorkSafe
+            </a>
+          </p>
+        </fieldset>
+      )}
+      {(model.suggestion?.variant === "desk-storage" ||
+        model.suggestion?.variant === "desk-hutch") && (
+        <DeskStorage
+          model={model}
+          disabled={busy || !!model.compartments}
+          onChange={(patch, height) =>
+            update((m) => {
+              const oldFronts = new Set(
+                m.plates
+                  .filter(
+                    (p) =>
+                      (patch.cabinetFront ||
+                        patch.side ||
+                        patch.cabinetWidth !== undefined) &&
+                      (p.kind === "drawer" ||
+                        (p.kind === "door" &&
+                          p.layoutSlot?.startsWith("desk/cabinet/"))),
+                  )
+                  .map((p) => p.id),
+              );
+              return resizeFurniture(
+                {
+                  ...m,
+                  plates: m.plates.filter((p) => !oldFronts.has(p.id)),
+                  drawerAssemblies: m.drawerAssemblies?.filter(
+                    (a) => !oldFronts.has(a.frontId),
+                  ),
+                },
+                {
+                  ...(height === undefined ? {} : { height }),
+                  ...(patch.cabinetFront ||
+                  patch.side ||
+                  patch.cabinetWidth !== undefined
+                    ? { customDrawerSet: false, drawerFit: "fill" as const }
+                    : {}),
+                  desk: {
+                    worktopHeight: deskWorktopHeight(m),
+                    cabinetWidth: deskCabinetWidth(m),
+                    hutchDepth: m.desk?.hutchDepth ?? 300,
+                    side: m.desk?.side ?? "right",
+                    cabinetFront: m.desk?.cabinetFront ?? "door",
+                    ...patch,
+                    ...(patch.side
+                      ? {
+                          cabinetWidth: Math.min(
+                            deskCabinetWidth(m),
+                            Math.max(
+                              140,
+                              patch.side === "both"
+                                ? (m.width - 850) / 2
+                                : m.width - 850 - m.thickness,
+                            ),
+                          ),
+                        }
+                      : {}),
+                  },
+                },
+                uid,
+              );
+            })
+          }
+        />
+      )}
+      <fieldset disabled={busy}>
+        <legend>Gabaryty i obrys</legend>
+        <div className="fc-fields">
+          <label className="fc-name">
+            Nazwa mebla
+            <input
+              maxLength={100}
+              value={model.name}
+              onChange={(e) => update((m) => ({ ...m, name: e.target.value }))}
+            />
+          </label>
+          <label>
+            Obrys
+            <select
+              aria-label="Obrys"
+              disabled={isDeskVariant(model.suggestion?.variant)}
+              value={model.shape}
+              onChange={(e) =>
+                shapeChange({
+                  shape: e.target.value as FurnitureModel["shape"],
+                })
+              }
+            >
+              <option value="rectangle">Prostokątny</option>
+              <option value="slope">Pod skosem</option>
+              <option value="stairs">Pod schodami</option>
+            </select>
+          </label>
+          <NumberField
+            label="Szerokość"
+            min={100}
+            value={model.width}
+            onChange={(v) => shapeChange({ width: v })}
+          />
+          <NumberField
+            label={
+              model.shape === "slope"
+                ? "Wysokość długiej ścianki"
+                : model.suggestion?.variant === "desk-hutch"
+                  ? "Wysokość całkowita z nadstawką"
+                  : "Wysokość"
+            }
+            min={100}
+            value={model.height}
+            onChange={(v) => shapeChange({ height: v })}
+          />
+          <NumberField
+            label="Głębokość"
+            min={100}
+            value={model.depth}
+            onChange={(v) => shapeChange({ depth: v })}
+          />
+          <NumberField
+            label="Grubość płyty"
+            min={3}
+            max={100}
+            value={model.thickness}
+            onChange={(v) => shapeChange({ thickness: v })}
+          />
+          {model.shape !== "rectangle" && (
+            <>
+              <NumberField
+                label={
+                  model.shape === "slope"
+                    ? "Wysokość krótkiej ścianki"
+                    : "Niższy koniec"
+                }
+                min={100}
+                value={model.lowHeight}
+                onChange={(v) => shapeChange({ lowHeight: v })}
+              />
+              <label className="fc-check">
+                <input
+                  type="checkbox"
+                  checked={model.reverse}
+                  onChange={(e) => shapeChange({ reverse: e.target.checked })}
+                />
+                Odwróć kierunek
+              </label>
+            </>
+          )}
+          {model.shape === "stairs" && (
+            <NumberField
+              label="Liczba stopni obrysu"
+              min={2}
+              max={20}
+              value={model.steps}
+              onChange={(v) => shapeChange({ steps: v })}
+            />
+          )}
+        </div>
+        <p>
+          Po zmianie gabarytów własne płyty zachowują pozycje. Korpus i wieniec
+          dopasowują się do obrysu; płyty są docinane w podglądzie do skosu i
+          schodów.
+        </p>
+      </fieldset>
+      {model.shape === "slope" && (
+        <button onClick={() => openSheet("room")}>
+          Wymiary wieńca i cięcie skosów
+        </button>
+      )}
+      <details>
+        <summary>Własny zestaw szuflad</summary>
+        <fieldset disabled={busy}>
+          <legend>Szuflady — liczba i wysokość frontów</legend>
+          <label className="fc-check">
+            <input
+              type="checkbox"
+              checked={model.drawerFit === "fill"}
+              disabled={!!model.compartments}
+              onChange={(e) =>
+                update((m) => ({
+                  ...m,
+                  drawerFit: e.target.checked ? "fill" : "fixed",
+                }))
+              }
+            />
+            Wypełnij szufladami całą komorę
+          </label>
+          <p>
+            {model.drawerFit === "fill"
+              ? "Fronty wypełniają wysokość do najbliższej półki lub wieńca, z luzami 2 mm. Podane wysokości wyznaczają proporcje. Dodanie albo przesunięcie półki dopasuje podział. Ręczna zmiana wymiaru frontu przełącza na własne wysokości."
+              : "Własne wysokości: fronty zachowują podane wymiary i pozycje. Włącz wypełnianie, aby automatycznie wykorzystać całą komorę."}
+          </p>
+          <div className="fc-drawers">
+            {["Niskie", "Średnie", "Wysokie"].map((label, i) => (
+              <div key={label}>
+                <h3>{label}</h3>
+                <NumberField
+                  label={`Liczba: ${label.toLowerCase()}`}
+                  max={12}
+                  value={drawerCounts[i]}
+                  onChange={(v) =>
+                    setDrawerCounts((c) => c.map((x, j) => (j === i ? v : x)))
+                  }
+                />
+                <NumberField
+                  label={`Wysokość frontu: ${label.toLowerCase()}`}
+                  min={60}
+                  max={1200}
+                  value={drawerHeights[i]}
+                  onChange={(v) =>
+                    setDrawerHeights((c) => c.map((x, j) => (j === i ? v : x)))
+                  }
+                />
+              </div>
+            ))}
+          </div>
+          <button onClick={addDrawers} disabled={!!model.compartments}>
+            Ustaw zestaw szuflad
+          </button>
+          {model.compartments && (
+            <p>
+              W układzie komór liczbę szuflad ustawiasz dla wybranej komory
+              powyżej.
+            </p>
+          )}
+          <p>
+            Zastępuje obecne fronty szuflad. Od dołu: niskie, średnie, wysokie;
+            odstęp 2 mm. Każdy front możesz potem edytować osobno. Skrzynki,
+            prowadnice i otworowanie wymagają osobnego doboru okuć. Zastąpienie
+            frontów usuwa ich przypisania systemów; Cofnij przywraca poprzedni
+            zestaw.
+          </p>
+        </fieldset>
+      </details>
+    </>
+  );
+  const standardPanel = (
+    <ConstructionStandard
+      model={model}
+      disabled={busy}
+      onChange={(patch) =>
+        update((m) =>
+          resizeFurniture(
+            m,
+            {
+              construction: {
+                ...(m.construction ?? freshConstructionStandard()),
+                ...patch,
+              },
+            },
+            uid,
+          ),
+        )
+      }
+      onApply={(replace) =>
+        update((m) =>
+          applyConstructionStandard(
+            m,
+            m.construction ?? freshConstructionStandard(),
+            uid,
+            replace,
+          ),
+        )
+      }
+    />
+  );
+  const partParameters = (
+    <div className="fc-plate-parameters">
+      <h2>Płyty · {model.plates.length}</h2>
+      <p className="fc-hint">
+        Wybierz element na rysunku lub z listy. Zmiany od razu zobaczysz w
+        projekcie.
+      </p>
+      <label>
+        Wybierz płytę
+        <select
+          aria-label="Wybierz płytę"
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+        >
+          <option value="">Wybierz element…</option>
+          {model.plates.map((p, i) => (
+            <option value={p.id} key={p.id}>
+              {i + 1}. {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {plate ? (
+        <fieldset disabled={busy}>
+          <legend>Parametry płyty</legend>
+          <button onClick={() => setPlatePanel("material")}>
+            Materiał i obrzeża tej płyty
+          </button>
+          <label>
+            Nazwa płyty
+            <input
+              value={plate.name}
+              maxLength={100}
+              onChange={(e) => modifyPlate({ name: e.target.value })}
+            />
+          </label>
+          {plate.anchor === "back" && (
+            <p>
+              Plecy dopasowują się do obrysu. Zmieniaj je w standardzie
+              konstrukcji, a gabaryty w wymiarach mebla.
+            </p>
+          )}
+          {plate.anchor !== "back" &&
+            (["x", "y", "z", "width", "height", "depth"] as const).map(
+              (k, i) => (
+                <NumberField
+                  key={k}
+                  label={
+                    [
+                      "Pozycja X",
+                      "Pozycja Y",
+                      "Pozycja Z",
+                      "Szerokość płyty",
+                      "Wysokość płyty",
+                      "Głębokość płyty",
+                    ][i]
+                  }
+                  value={plate[k]}
+                  min={i < 3 ? 0 : 1}
+                  onChange={(v) =>
+                    modifyPlate({
+                      [k]: v,
+                      ...(plate.kind === "cap" && k !== "z" && k !== "depth"
+                        ? { kind: "board" as const }
+                        : {}),
+                    })
+                  }
+                />
+              ),
+            )}
+          <div className="fc-spacing">
+            <h3>Równy rozstaw półek</h3>
+            <p>
+              {spacing.issue ??
+                `Po rozstawieniu prześwity: ${spacing.clearance.toLocaleString("pl-PL", { maximumFractionDigits: 1 })} mm · ${spacing.ids.length} półek.`}
+            </p>
+            <button
+              disabled={!!spacing.issue}
+              onClick={() => {
+                update((m) => applyShelfSpacing(m, selected));
+                setMessage(
+                  "Półki rozmieszczono z równymi prześwitami. Cofnij przywraca poprzednie pozycje.",
+                );
+              }}
+            >
+              Rozmieść półki równo
+            </button>
+          </div>
+          <button
+            disabled={
+              plate.anchor === "back" ||
+              plate.layoutSlot?.startsWith("compartment/")
+            }
+            onClick={() =>
+              update((m) => ({
+                ...m,
+                plates: [
+                  ...m.plates,
+                  {
+                    ...plate,
+                    id: uid(),
+                    name: `${plate.name.slice(0, 88)} — kopia`,
+                    anchor: undefined,
+                    layoutSlot: undefined,
+                    layoutCustomized: undefined,
+                    y: Math.min(m.height - plate.height, plate.y + 100),
+                  },
+                ],
+              }))
+            }
+          >
+            Duplikuj płytę
+          </button>
+          <button
+            disabled={
+              plate.anchor === "back" ||
+              plate.layoutSlot?.startsWith("compartment/")
+            }
+            onClick={() => {
+              update((m) => ({
+                ...m,
+                plates: m.plates.filter((p) => p.id !== selected),
+                drawerAssemblies: m.drawerAssemblies?.filter(
+                  (p) => p.frontId !== selected,
+                ),
+                suggestion:
+                  m.suggestion && plate.layoutSlot
+                    ? {
+                        ...m.suggestion,
+                        excludedSlots: [
+                          ...new Set([
+                            ...m.suggestion.excludedSlots,
+                            plate.layoutSlot,
+                          ]),
+                        ],
+                      }
+                    : m.suggestion,
+              }));
+              setSelected("");
+            }}
+          >
+            Usuń płytę
+          </button>
+          {plate.layoutSlot?.startsWith("compartment/") && (
+            <p>
+              Wyposażenie tej części usuwasz w komorze. Ręczna zmiana wymiarów
+              tworzy własną korektę.
+            </p>
+          )}
+          {plate.layoutSlot?.startsWith("compartment/") &&
+            plate.layoutCustomized && (
+              <button
+                onClick={() =>
+                  update((m) => ({
+                    ...m,
+                    plates: m.plates.map((p) =>
+                      p.id === plate.id
+                        ? { ...p, layoutCustomized: undefined }
+                        : p,
+                    ),
+                  }))
+                }
+              >
+                Przywróć zależność od komory
+              </button>
+            )}
+          <p>Płytę można przywrócić przyciskiem „Cofnij”.</p>
+        </fieldset>
+      ) : (
+        <p>Wybierz element, aby zmienić wymiary lub pozycję.</p>
+      )}
+    </div>
+  );
+  const materialPanel = plate && (
+    <div ref={specificationPanel}>
+      <PlateSpecification
+        model={model}
+        plate={plate}
+        disabled={busy}
+        onChange={(specification) => modifyPlate({ specification })}
+      />
+    </div>
+  );
+  const drawerPanel = (
+    <FurnitureDrawers
+      frontId={plate?.id}
+      model={model}
+      disabled={busy}
+      saved={!dirty && version > 0 ? savedDrawers : null}
+      onChange={(frontId, selection) =>
+        update((m) => ({
+          ...m,
+          drawerAssemblies: [
+            ...(m.drawerAssemblies ?? []).filter((p) => p.frontId !== frontId),
+            ...(selection ? [selection] : []),
+          ],
+        }))
+      }
+    />
+  );
   return (
-    <section className="fc">
+    <section
+      ref={rootRef}
+      className="fc fc-studio"
+      data-mobile-pane={mobilePane}
+    >
       <header className="fc-header">
         <div>
-          <p className="ps-eyebrow">WSPÓLNA BIBLIOTEKA WARSZTATU</p>
           <h1>Kreator mebla</h1>
-          <p>Obrys, płyty i szuflady. Wszystkie wymiary w mm.</p>
         </div>
         <div className="fc-actions">
+          {" "}
+          <button
+            disabled={busy || !history.length}
+            onClick={() => {
+              setFuture((f) => [...f, structuredClone(model)]);
+              setModel(history[history.length - 1]);
+              setHistory((h) => h.slice(0, -1));
+              setDirty(true);
+              setError("");
+            }}
+          >
+            Cofnij
+          </button>
+          <button
+            disabled={busy || !future.length}
+            onClick={() => {
+              setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+              setModel(future[future.length - 1]);
+              setFuture((f) => f.slice(0, -1));
+              setDirty(true);
+              setError("");
+              setMessage("");
+            }}
+          >
+            Ponów
+          </button>
           <button onClick={reset} disabled={busy}>
             Nowy mebel
           </button>
@@ -909,12 +1708,6 @@ export function FurnitureCreator({
             aria-busy={busy}
           >
             {busy ? "Zapisywanie…" : "Zapisz w bibliotece"}
-          </button>
-          <button
-            onClick={exportConstruction}
-            disabled={busy || dirty || version === 0 || demo}
-          >
-            Pobierz kartę konstrukcji JSON
           </button>
         </div>
       </header>
@@ -930,69 +1723,78 @@ export function FurnitureCreator({
           {message}
         </p>
       )}
-      <div className="fc-layout">
-        <aside className="fc-library">
-          <h2>Biblioteka ogólna</h2>
-          <label>
-            Szukaj mebla
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+
+      <div
+        className="fc-studio-mobile"
+        role="group"
+        aria-label="Obszar kreatora"
+      >
+        <button
+          aria-pressed={mobilePane === "preview"}
+          onClick={() => setMobilePane("preview")}
+        >
+          Projekt
+        </button>
+        <button
+          aria-pressed={mobilePane === "tools"}
+          onClick={() => setMobilePane("tools")}
+        >
+          Narzędzia
+        </button>
+        <button
+          aria-pressed={mobilePane === "inspector"}
+          onClick={() => setMobilePane("inspector")}
+        >
+          Inspektor
+        </button>
+      </div>
+      <div className="fc-studio-grid">
+        <aside className="fc-studio-left" aria-label="Narzędzia projektu">
+          <StudioTabs
+            id={leftId}
+            label="Narzędzia projektu"
+            value={leftPanel}
+            onChange={setLeftPanel}
+            items={[
+              { id: "library", label: "Biblioteka" },
+              { id: "layout", label: "Układ" },
+              { id: "parts", label: "Części" },
+            ]}
+          />
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${leftId}-panel-library`}
+            aria-labelledby={`${leftId}-tab-library`}
+            hidden={leftPanel !== "library"}
+          >
+            {libraryPanel}
+          </div>
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${leftId}-panel-layout`}
+            aria-labelledby={`${leftId}-tab-layout`}
+            hidden={leftPanel !== "layout"}
+          >
+            {layoutPanel}
+          </div>
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${leftId}-panel-parts`}
+            aria-labelledby={`${leftId}-tab-parts`}
+            hidden={leftPanel !== "parts"}
+          >
+            <FurnitureParts
+              model={model}
+              compact
+              selected={selected}
+              onSelect={selectPlate}
             />
-          </label>
-          <button onClick={loadLibrary} disabled={loading || demo}>
-            {loading ? "Wczytywanie…" : "Odśwież bibliotekę"}
-          </button>
-          {!loading && !library.length && (
-            <p>
-              Brak zapisanych mebli. Utwórz pierwszy model i zapisz go tutaj.
-            </p>
-          )}
-          <ul>
-            {library
-              .filter((e) =>
-                e.model.name
-                  .toLocaleLowerCase("pl")
-                  .includes(query.toLocaleLowerCase("pl")),
-              )
-              .map((e) => (
-                <li key={e.id}>
-                  <button
-                    onClick={() => open(e)}
-                    disabled={busy}
-                    aria-current={
-                      e.id === id && version > 0 ? "true" : undefined
-                    }
-                  >
-                    <svg
-                      className="fc-library-preview"
-                      viewBox={`-30 -30 ${e.model.width + 60} ${e.model.height + 60}`}
-                      aria-hidden="true"
-                    >
-                      {e.model.plates.map((p) => (
-                        <polygon
-                          key={p.id}
-                          points={platePolygon(e.model, p)
-                            .map(([x, y]) => `${x},${e.model.height - y}`)
-                            .join(" ")}
-                        />
-                      ))}
-                    </svg>
-                    <strong>{e.model.name}</strong>
-                    <span>
-                      {e.model.width} × {e.model.height} × {e.model.depth} mm
-                    </span>
-                    <small>
-                      Wersja {e.version} ·{" "}
-                      {new Date(e.updatedAt).toLocaleDateString("pl-PL")}
-                    </small>
-                  </button>
-                </li>
-              ))}
-          </ul>
+          </div>
         </aside>
-        <div className="fc-workbench">
+        <section className="fc-studio-canvas" aria-label="Podgląd projektu">
           {expanded
             ? createPortal(
                 <dialog
@@ -1006,736 +1808,220 @@ export function FurnitureCreator({
                 document.body,
               )
             : stage}
-          <FurnitureReadiness
-            model={model}
-            onPart={(partId, area = "material") => {
-              setSelected(partId);
-              requestAnimationFrame(() => {
-                const panel =
-                  area === "drawers"
-                    ? document.getElementById(`fc-drawer-${partId}`)
-                    : area === "geometry"
-                      ? inspectorPanel.current
-                      : specificationPanel.current;
-                panel?.scrollIntoView({ block: "start" });
-                panel
-                  ?.querySelector<HTMLElement>(
-                    area === "drawers"
-                      ? 'select[aria-label^="System dla "]'
-                      : "input",
-                  )
-                  ?.focus({ preventScroll: true });
-              });
-            }}
-          />
-          <fieldset disabled={busy} className="fc-layout-choice">
-            <legend>Sugerowany układ startowy</legend>
-            <div
-              className="fc-presets"
-              role="group"
-              aria-label="Gotowe układy mebli"
-            >
-              {layoutVariants
-                .filter((v) =>
-                  [
-                    "wardrobe",
-                    "shelves",
-                    "drawers",
-                    "desk",
-                    "desk-storage",
-                    "desk-hutch",
-                  ].includes(v.value),
-                )
-                .map((v) => (
-                  <button
-                    key={v.value}
-                    type="button"
-                    aria-pressed={model.suggestion?.variant === v.value}
-                    onClick={() => {
-                      chooseLayout(v.value);
-                      setMessage(
-                        `Wybrano układ: ${v.label}. Możesz zmienić każdy element.`,
-                      );
-                    }}
-                  >
-                    <svg viewBox="0 0 80 64" aria-hidden="true">
-                      <rect x="12" y="6" width="56" height="52" rx="2" />
-                      {v.value.startsWith("desk") ? (
-                        <>
-                          <path d="M12 28H68M36 28V58" />
-                          {v.value !== "desk" && (
-                            <path d="M12 40H36M12 50H36" />
-                          )}
-                          {v.value === "desk-hutch" && (
-                            <path d="M12 17H68M40 6V28" />
-                          )}
-                        </>
-                      ) : v.value === "drawers" ? (
-                        <path d="M12 23H68M12 40H68M35 15H45M35 31H45M35 49H45" />
-                      ) : v.value === "shelves" ? (
-                        <path d="M12 19H68M12 32H68M12 45H68" />
-                      ) : (
-                        <path d="M40 6V58M12 23H40M12 40H40M45 19H63" />
-                      )}
-                    </svg>
-                    <span>{v.label}</span>
-                  </button>
-                ))}
-            </div>
-            <label>
-              Układ startowy
-              <select
-                aria-label="Układ startowy"
-                value={model.suggestion?.variant ?? "empty"}
-                onChange={(e) => chooseLayout(e.target.value as LayoutVariant)}
-              >
-                {layoutVariants.map((v) => (
-                  <option key={v.value} value={v.value}>
-                    {v.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p>
-              Nowy mebel od razu ma propozycję wnętrza dopasowaną do obrysu.
-              Półki, przegrody i fronty możesz przesuwać, usuwać i zmieniać.
-              Ręcznie zmienione elementy zachowują wymiary po zmianie gabarytów.
-            </p>
-            <button
-              onClick={() => {
-                update((m) =>
-                  applySuggestedLayout(m, m.suggestion?.variant ?? "auto", uid),
-                );
-                setSelected("");
-              }}
-            >
-              Przywróć sugerowany układ
+          <div className="fc-studio-bottom">
+            <button onClick={() => openSheet("materials")}>Materiały</button>
+            <button onClick={() => openSheet("room")}>Wnęka i skosy</button>
+            <button onClick={() => openSheet("documents")}>Dokumentacja</button>
+            <button onClick={() => openSheet("review")}>
+              Braki{issues.length ? ` (${issues.length})` : ""}
             </button>
-            <p>
-              Zmiana wariantu lub przywrócenie zastępuje wnętrze i przypisania
-              systemów szuflad. Cofnij odtwarza poprzedni projekt. Materiały
-              korpusu pozostają zachowane.
-            </p>
-            {model.suggestion &&
-              model.suggestion.variant !== "empty" &&
-              !model.plates.some((p) => p.layoutSlot) && (
-                <p role="status">
-                  W tych gabarytach brakuje miejsca na sugerowane wnętrze.
-                  Zwiększ wymiary lub dodaj elementy ręcznie.
-                </p>
-              )}
-          </fieldset>
-          {isDeskVariant(model.suggestion?.variant) && (
-            <fieldset disabled={busy}>
-              <legend>Biurko — wymiary startowe</legend>
-              <p>
-                Wybór biurka ustawia 1600 × 800 × 740 mm (szerokość × głębokość
-                × wysokość górnej powierzchni). Wszystkie wymiary możesz zmienić
-                poniżej. Grubość 28 mm jest założeniem projektu.
-              </p>
-              <div className="fc-actions">
-                <button
-                  onClick={() => {
-                    update((m) => deskStartingModel(m, uid));
-                    setSelected("");
-                  }}
-                >
-                  Biurko 160 × 80 cm
-                </button>
-                <button
-                  onClick={() => {
-                    update((m) => deskStartingModel(m, uid, 1200));
-                    setSelected("");
-                  }}
-                >
-                  Biurko kompaktowe 120 × 80 cm
-                </button>
-              </div>
-              <p>
-                DGUV wskazuje 740 ± 20 mm dla stałej wysokości i 800 mm
-                głębokości. Wysokość dopasuj do użytkownika oraz krzesła;
-                regulacja jest korzystniejsza dla różnych osób. Wariant 120 cm
-                jest przeznaczony do ograniczonej ilości sprzętu i dokumentów.
-              </p>
-              <p>
-                Światło między bokami:{" "}
-                {deskLegWidth(model).toLocaleString("pl-PL")} mm · wysokość pod
-                blatem:{" "}
-                {(deskWorktopHeight(model) - model.thickness).toLocaleString(
-                  "pl-PL",
-                )}{" "}
-                mm.
-              </p>
-              {(model.depth < 800 ||
-                deskWorktopHeight(model) < 720 ||
-                deskWorktopHeight(model) > 760 ||
-                deskLegWidth(model) < 850) && (
-                <p role="status">
-                  Wymiary odbiegają od punktu startowego ergonomicznego biurka.
-                  Sprawdź dopasowanie do osoby, odległość od ekranu i wolną
-                  przestrzeń na nogi.
-                </p>
-              )}
-              <p>
-                <a
-                  href="https://publikationen.dguv.de/widgets/pdf/download/article/409"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Zalecenia DGUV
-                </a>{" "}
-                ·{" "}
-                <a
-                  href="https://www.worksafe.qld.gov.au/safety-and-prevention/hazards/hazardous-manual-tasks/working-with-computers/setting-up-your-workstation"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ustawienie stanowiska — WorkSafe
-                </a>
-              </p>
-            </fieldset>
-          )}
-          {(model.suggestion?.variant === "desk-storage" ||
-            model.suggestion?.variant === "desk-hutch") && (
-            <DeskStorage
-              model={model}
-              disabled={busy || !!model.compartments}
-              onChange={(patch, height) =>
-                update((m) => {
-                  const oldFronts = new Set(
-                    m.plates
-                      .filter(
-                        (p) =>
-                          (patch.cabinetFront ||
-                            patch.side ||
-                            patch.cabinetWidth !== undefined) &&
-                          (p.kind === "drawer" ||
-                            (p.kind === "door" &&
-                              p.layoutSlot?.startsWith("desk/cabinet/"))),
-                      )
-                      .map((p) => p.id),
-                  );
-                  return resizeFurniture(
-                    {
-                      ...m,
-                      plates: m.plates.filter((p) => !oldFronts.has(p.id)),
-                      drawerAssemblies: m.drawerAssemblies?.filter(
-                        (a) => !oldFronts.has(a.frontId),
-                      ),
-                    },
-                    {
-                      ...(height === undefined ? {} : { height }),
-                      ...(patch.cabinetFront ||
-                      patch.side ||
-                      patch.cabinetWidth !== undefined
-                        ? { customDrawerSet: false, drawerFit: "fill" as const }
-                        : {}),
-                      desk: {
-                        worktopHeight: deskWorktopHeight(m),
-                        cabinetWidth: deskCabinetWidth(m),
-                        hutchDepth: m.desk?.hutchDepth ?? 300,
-                        side: m.desk?.side ?? "right",
-                        cabinetFront: m.desk?.cabinetFront ?? "door",
-                        ...patch,
-                        ...(patch.side
-                          ? {
-                              cabinetWidth: Math.min(
-                                deskCabinetWidth(m),
-                                Math.max(
-                                  140,
-                                  patch.side === "both"
-                                    ? (m.width - 850) / 2
-                                    : m.width - 850 - m.thickness,
-                                ),
-                              ),
-                            }
-                          : {}),
-                      },
-                    },
-                    uid,
-                  );
-                })
-              }
+          </div>
+        </section>
+        <aside
+          ref={inspectorPanel}
+          className="fc-studio-right"
+          aria-label="Inspektor elementu"
+        >
+          <StudioTabs
+            id={rightId}
+            label="Inspektor elementu"
+            value={inspectorMode}
+            onChange={setInspectorMode}
+            items={[
+              { id: "plate", label: "Płyta" },
+              { id: "compartment", label: "Komora" },
+              { id: "view", label: "Widok" },
+            ]}
+          />
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${rightId}-panel-plate`}
+            aria-labelledby={`${rightId}-tab-plate`}
+            hidden={inspectorMode !== "plate"}
+          >
+            <StudioTabs
+              id={plateId}
+              label="Parametry płyty"
+              value={platePanel}
+              onChange={setPlatePanel}
+              items={[
+                { id: "geometry", label: "Wymiary" },
+                { id: "material", label: "Materiał" },
+                ...(plate?.kind === "drawer"
+                  ? [{ id: "drawers", label: "System" }]
+                  : []),
+              ]}
             />
-          )}
-          <ConstructionStandard
-            model={model}
-            disabled={busy}
-            onChange={(patch) =>
-              update((m) =>
-                resizeFurniture(
-                  m,
-                  {
-                    construction: {
-                      ...(m.construction ?? freshConstructionStandard()),
-                      ...patch,
-                    },
-                  },
-                  uid,
-                ),
-              )
-            }
-            onApply={(replace) =>
-              update((m) =>
-                applyConstructionStandard(
-                  m,
-                  m.construction ?? freshConstructionStandard(),
-                  uid,
-                  replace,
-                ),
-              )
-            }
-          />
-          <fieldset disabled={busy}>
-            <legend>Gabaryty i obrys</legend>
-            <div className="fc-fields">
-              <label className="fc-name">
-                Nazwa mebla
-                <input
-                  maxLength={100}
-                  value={model.name}
-                  onChange={(e) =>
-                    update((m) => ({ ...m, name: e.target.value }))
-                  }
-                />
-              </label>
-              <label>
-                Obrys
-                <select
-                  aria-label="Obrys"
-                  disabled={isDeskVariant(model.suggestion?.variant)}
-                  value={model.shape}
-                  onChange={(e) =>
-                    shapeChange({
-                      shape: e.target.value as FurnitureModel["shape"],
-                    })
-                  }
-                >
-                  <option value="rectangle">Prostokątny</option>
-                  <option value="slope">Pod skosem</option>
-                  <option value="stairs">Pod schodami</option>
-                </select>
-              </label>
-              <NumberField
-                label="Szerokość"
-                min={100}
-                value={model.width}
-                onChange={(v) => shapeChange({ width: v })}
-              />
-              <NumberField
-                label={
-                  model.shape === "slope"
-                    ? "Wysokość długiej ścianki"
-                    : model.suggestion?.variant === "desk-hutch"
-                      ? "Wysokość całkowita z nadstawką"
-                      : "Wysokość"
-                }
-                min={100}
-                value={model.height}
-                onChange={(v) => shapeChange({ height: v })}
-              />
-              <NumberField
-                label="Głębokość"
-                min={100}
-                value={model.depth}
-                onChange={(v) => shapeChange({ depth: v })}
-              />
-              <NumberField
-                label="Grubość płyty"
-                min={3}
-                max={100}
-                value={model.thickness}
-                onChange={(v) => shapeChange({ thickness: v })}
-              />
-              {model.shape !== "rectangle" && (
-                <>
-                  <NumberField
-                    label={
-                      model.shape === "slope"
-                        ? "Wysokość krótkiej ścianki"
-                        : "Niższy koniec"
-                    }
-                    min={100}
-                    value={model.lowHeight}
-                    onChange={(v) => shapeChange({ lowHeight: v })}
-                  />
-                  <label className="fc-check">
-                    <input
-                      type="checkbox"
-                      checked={model.reverse}
-                      onChange={(e) =>
-                        shapeChange({ reverse: e.target.checked })
-                      }
-                    />
-                    Odwróć kierunek
-                  </label>
-                </>
-              )}
-              {model.shape === "stairs" && (
-                <NumberField
-                  label="Liczba stopni obrysu"
-                  min={2}
-                  max={20}
-                  value={model.steps}
-                  onChange={(v) => shapeChange({ steps: v })}
-                />
-              )}
-            </div>
-            <p>
-              Po zmianie gabarytów własne płyty zachowują pozycje. Korpus i
-              wieniec dopasowują się do obrysu; płyty są docinane w podglądzie
-              do skosu i schodów.
-            </p>
-          </fieldset>
-          {model.shape === "slope" && <SlopeCutting model={model} />}
-          <FurnitureCompartments
-            model={model}
-            selected={selectedCompartment}
-            onSelect={setSelectedCompartment}
-            onChange={update}
-            disabled={busy}
-          />
-          <FurnitureParts model={model} onSelect={setSelected} />
-          <FurnitureTools
-            model={model}
-            library={library}
-            id={id}
-            version={version}
-            onChange={update}
-            onSelect={setSelected}
-            disabled={busy}
-            dirty={dirty}
-          />
-          {owner && !demo && (
-            <FurnitureSharing id={id} version={version} dirty={dirty} />
-          )}
-          <details className="fc-part-review">
-            <summary>Karta części · dane materiałowe</summary>
-            <p>
-              Eksport JSON jest dostępny po zapisaniu bieżących zmian w
-              bibliotece. Zachowuje obrysy części i oznacza braki materiałowe.
-            </p>
-            <p>
-              Lista braków nie blokuje zapisu szkicu. Nawet po uzupełnieniu
-              danych potrzebny jest odbiór technologii połączeń, obróbki i okuć.
-              Nie jest to wydanie produkcyjne.
-            </p>
-            <ul>
-              {model.plates.map((p) => {
-                const missing = plateSpecificationIssues(model, p);
-                const t = plateThickness(model, p);
-                return (
-                  <li key={p.id}>
-                    <button onClick={() => setSelected(p.id)}>{p.name}</button>
-                    <span>
-                      {p.specification?.material || "Materiał nieokreślony"} ·{" "}
-                      {p.specification?.decor || "Dekor nieokreślony"} ·{" "}
-                      {t === null
-                        ? "Grubość nieokreślona"
-                        : `${t.toLocaleString("pl-PL")} mm`}
-                    </span>
-                    <small>
-                      {missing.length
-                        ? missing.join("; ")
-                        : "Dane materiałowe uzupełnione · technologia do sprawdzenia"}
-                    </small>
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
-          {plate && (
-            <div ref={specificationPanel}>
-              <PlateSpecification
-                model={model}
-                plate={plate}
-                disabled={busy}
-                onChange={(specification) => modifyPlate({ specification })}
-              />
-            </div>
-          )}
-          <p className="fc-hint">
-            Wybierz płytę w rysunku lub na liście. W 2D przeciągnij ją, a
-            dokładną pozycję ustaw polami X i Y. X od lewej, Y od dołu, Z od
-            tyłu.
-          </p>
-          {issues.length > 0 && (
-            <div role="alert" className="ps-feedback">
-              <strong>Popraw przed zapisem:</strong>
-              <ul>
-                {issues.map((s) => (
-                  <li key={s}>{s}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <fieldset disabled={busy}>
-            <legend>Szuflady — liczba i wysokość frontów</legend>
-            <label className="fc-check">
-              <input
-                type="checkbox"
-                checked={model.drawerFit === "fill"}
-                disabled={!!model.compartments}
-                onChange={(e) =>
-                  update((m) => ({
-                    ...m,
-                    drawerFit: e.target.checked ? "fill" : "fixed",
-                  }))
-                }
-              />
-              Wypełnij szufladami całą komorę
-            </label>
-            <p>
-              {model.drawerFit === "fill"
-                ? "Fronty wypełniają wysokość do najbliższej półki lub wieńca, z luzami 2 mm. Podane wysokości wyznaczają proporcje. Dodanie albo przesunięcie półki dopasuje podział. Ręczna zmiana wymiaru frontu przełącza na własne wysokości."
-                : "Własne wysokości: fronty zachowują podane wymiary i pozycje. Włącz wypełnianie, aby automatycznie wykorzystać całą komorę."}
-            </p>
-            <div className="fc-drawers">
-              {["Niskie", "Średnie", "Wysokie"].map((label, i) => (
-                <div key={label}>
-                  <h3>{label}</h3>
-                  <NumberField
-                    label={`Liczba: ${label.toLowerCase()}`}
-                    max={12}
-                    value={drawerCounts[i]}
-                    onChange={(v) =>
-                      setDrawerCounts((c) => c.map((x, j) => (j === i ? v : x)))
-                    }
-                  />
-                  <NumberField
-                    label={`Wysokość frontu: ${label.toLowerCase()}`}
-                    min={60}
-                    max={1200}
-                    value={drawerHeights[i]}
-                    onChange={(v) =>
-                      setDrawerHeights((c) =>
-                        c.map((x, j) => (j === i ? v : x)),
-                      )
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-            <button onClick={addDrawers} disabled={!!model.compartments}>
-              Ustaw zestaw szuflad
-            </button>
-            {model.compartments && (
-              <p>
-                W układzie komór liczbę szuflad ustawiasz dla wybranej komory
-                powyżej.
-              </p>
-            )}
-            <p>
-              Zastępuje obecne fronty szuflad. Od dołu: niskie, średnie,
-              wysokie; odstęp 2 mm. Każdy front możesz potem edytować osobno.
-              Skrzynki, prowadnice i otworowanie wymagają osobnego doboru okuć.
-              Zastąpienie frontów usuwa ich przypisania systemów; Cofnij
-              przywraca poprzedni zestaw.
-            </p>
-          </fieldset>
-          <FurnitureDrawers
-            model={model}
-            disabled={busy}
-            saved={!dirty && version > 0 ? savedDrawers : null}
-            onChange={(frontId, selection) =>
-              update((m) => ({
-                ...m,
-                drawerAssemblies: [
-                  ...(m.drawerAssemblies ?? []).filter(
-                    (p) => p.frontId !== frontId,
-                  ),
-                  ...(selection ? [selection] : []),
-                ],
-              }))
-            }
-          />
-          <p className="fc-hint">
-            Model konstrukcyjny do dalszego opracowania. Nie stanowi
-            zatwierdzonej dokumentacji CNC: połączenia, obrzeża, skrzynki
-            szuflad i otworowanie wymagają sprawdzenia technologii.
-          </p>
-        </div>
-        <aside ref={inspectorPanel} className="fc-inspector">
-          <h2>Płyty · {model.plates.length}</h2>
-          <p className="fc-hint">
-            Wybierz element na rysunku lub z listy. Zmiany od razu zobaczysz w
-            projekcie.
-          </p>
-          <label>
-            Wybierz płytę
-            <select
-              aria-label="Wybierz płytę"
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
+            <div
+              role="tabpanel"
+              id={`${plateId}-panel-geometry`}
+              aria-labelledby={`${plateId}-tab-geometry`}
+              hidden={platePanel !== "geometry"}
             >
-              <option value="">Wybierz element…</option>
-              {model.plates.map((p, i) => (
-                <option value={p.id} key={p.id}>
-                  {i + 1}. {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {plate ? (
-            <fieldset disabled={busy}>
-              <legend>Parametry płyty</legend>
-              <button
-                onClick={() => {
-                  specificationPanel.current?.scrollIntoView({
-                    block: "start",
-                  });
-                  specificationPanel.current
-                    ?.querySelector<HTMLInputElement>("input")
-                    ?.focus({ preventScroll: true });
-                }}
-              >
-                Materiał i obrzeża tej płyty
-              </button>
-              <label>
-                Nazwa płyty
-                <input
-                  value={plate.name}
-                  maxLength={100}
-                  onChange={(e) => modifyPlate({ name: e.target.value })}
-                />
-              </label>
-              {plate.anchor === "back" && (
-                <p>
-                  Plecy dopasowują się do obrysu. Zmieniaj je w standardzie
-                  konstrukcji, a gabaryty w wymiarach mebla.
-                </p>
+              {partParameters}
+            </div>
+            <div
+              role="tabpanel"
+              id={`${plateId}-panel-material`}
+              aria-labelledby={`${plateId}-tab-material`}
+              hidden={platePanel !== "material"}
+            >
+              {plate ? (
+                materialPanel
+              ) : (
+                <p>Wybierz płytę na rysunku lub z listy części.</p>
               )}
-              {plate.anchor !== "back" &&
-                (["x", "y", "z", "width", "height", "depth"] as const).map(
-                  (k, i) => (
-                    <NumberField
-                      key={k}
-                      label={
-                        [
-                          "Pozycja X",
-                          "Pozycja Y",
-                          "Pozycja Z",
-                          "Szerokość płyty",
-                          "Wysokość płyty",
-                          "Głębokość płyty",
-                        ][i]
-                      }
-                      value={plate[k]}
-                      min={i < 3 ? 0 : 1}
-                      onChange={(v) =>
-                        modifyPlate({
-                          [k]: v,
-                          ...(plate.kind === "cap" && k !== "z" && k !== "depth"
-                            ? { kind: "board" as const }
-                            : {}),
-                        })
-                      }
-                    />
-                  ),
-                )}
-              <div className="fc-spacing">
-                <h3>Równy rozstaw półek</h3>
-                <p>
-                  {spacing.issue ??
-                    `Po rozstawieniu prześwity: ${spacing.clearance.toLocaleString("pl-PL", { maximumFractionDigits: 1 })} mm · ${spacing.ids.length} półek.`}
-                </p>
-                <button
-                  disabled={!!spacing.issue}
-                  onClick={() => {
-                    update((m) => applyShelfSpacing(m, selected));
-                    setMessage(
-                      "Półki rozmieszczono z równymi prześwitami. Cofnij przywraca poprzednie pozycje.",
-                    );
-                  }}
-                >
-                  Rozmieść półki równo
-                </button>
+            </div>
+            {plate?.kind === "drawer" && (
+              <div
+                role="tabpanel"
+                id={`${plateId}-panel-drawers`}
+                aria-labelledby={`${plateId}-tab-drawers`}
+                hidden={platePanel !== "drawers"}
+              >
+                {drawerPanel}
               </div>
-              <button
-                disabled={
-                  plate.anchor === "back" ||
-                  plate.layoutSlot?.startsWith("compartment/")
-                }
-                onClick={() =>
-                  update((m) => ({
-                    ...m,
-                    plates: [
-                      ...m.plates,
-                      {
-                        ...plate,
-                        id: uid(),
-                        name: `${plate.name.slice(0, 88)} — kopia`,
-                        anchor: undefined,
-                        layoutSlot: undefined,
-                        layoutCustomized: undefined,
-                        y: Math.min(m.height - plate.height, plate.y + 100),
-                      },
-                    ],
-                  }))
-                }
-              >
-                Duplikuj płytę
-              </button>
-              <button
-                disabled={
-                  plate.anchor === "back" ||
-                  plate.layoutSlot?.startsWith("compartment/")
-                }
-                onClick={() => {
-                  update((m) => ({
-                    ...m,
-                    plates: m.plates.filter((p) => p.id !== selected),
-                    drawerAssemblies: m.drawerAssemblies?.filter(
-                      (p) => p.frontId !== selected,
-                    ),
-                    suggestion:
-                      m.suggestion && plate.layoutSlot
-                        ? {
-                            ...m.suggestion,
-                            excludedSlots: [
-                              ...new Set([
-                                ...m.suggestion.excludedSlots,
-                                plate.layoutSlot,
-                              ]),
-                            ],
-                          }
-                        : m.suggestion,
-                  }));
-                  setSelected("");
-                }}
-              >
-                Usuń płytę
-              </button>
-              {plate.layoutSlot?.startsWith("compartment/") && (
-                <p>
-                  Wyposażenie tej części usuwasz w komorze. Ręczna zmiana
-                  wymiarów tworzy własną korektę.
-                </p>
-              )}
-              {plate.layoutSlot?.startsWith("compartment/") &&
-                plate.layoutCustomized && (
-                  <button
-                    onClick={() =>
-                      update((m) => ({
-                        ...m,
-                        plates: m.plates.map((p) =>
-                          p.id === plate.id
-                            ? { ...p, layoutCustomized: undefined }
-                            : p,
-                        ),
-                      }))
-                    }
-                  >
-                    Przywróć zależność od komory
-                  </button>
-                )}
-              <p>Płytę można przywrócić przyciskiem „Cofnij”.</p>
-            </fieldset>
-          ) : (
-            <p>Wybierz element, aby zmienić wymiary lub pozycję.</p>
-          )}
+            )}
+          </div>
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${rightId}-panel-compartment`}
+            aria-labelledby={`${rightId}-tab-compartment`}
+            hidden={inspectorMode !== "compartment"}
+          >
+            <FurnitureCompartments
+              model={model}
+              selected={selectedCompartment}
+              onSelect={selectCompartment}
+              onChange={update}
+              disabled={busy}
+            />
+          </div>
+          <div
+            className="fc-studio-scroll"
+            role="tabpanel"
+            id={`${rightId}-panel-view`}
+            aria-labelledby={`${rightId}-tab-view`}
+            hidden={inspectorMode !== "view"}
+          >
+            {!expanded && appearancePanel}
+            <div ref={setSceneControlsTarget} />
+            {view !== "3d" && (
+              <p>Włącz Bryła 3D, aby ustawić kamerę i widoczność frontów.</p>
+            )}
+          </div>
         </aside>
       </div>
+      {createPortal(
+        <dialog
+          ref={sheetRef}
+          className="fc fc-studio-sheet"
+          aria-labelledby="fc-sheet-title"
+          onCancel={() => setSheet(null)}
+        >
+          <header>
+            <h2 id="fc-sheet-title">
+              {sheet === "materials"
+                ? "Materiały i standard"
+                : sheet === "room"
+                  ? "Wnęka i skosy"
+                  : sheet === "review"
+                    ? "Braki przed zamówieniem"
+                    : "Dokumentacja i narzędzia"}
+            </h2>
+            <button onClick={() => setSheet(null)}>Zamknij panel</button>
+          </header>
+          <div className="fc-sheet-body">
+            <div hidden={sheet !== "materials"}>{standardPanel}</div>
+            <div hidden={sheet !== "review"}>
+              <FurnitureReadiness model={model} onPart={revealPart} />
+              {issues.length > 0 && (
+                <div role="alert">
+                  <strong>Popraw przed zapisem:</strong>
+                  <ul>
+                    {issues.map((s) => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div hidden={sheet !== "room"}>
+              {model.shape === "slope" && <SlopeCutting model={model} />}
+            </div>
+            <div hidden={sheet !== "room" && sheet !== "documents"}>
+              <FurnitureTools
+                section={sheet === "room" ? "room" : "documents"}
+                model={model}
+                library={library}
+                id={id}
+                version={version}
+                onChange={update}
+                onSelect={(partId) => revealPart(partId, "geometry")}
+                disabled={busy}
+                dirty={dirty}
+              />
+            </div>
+            <div hidden={sheet !== "documents"}>
+              {" "}
+              <button
+                onClick={exportConstruction}
+                disabled={busy || dirty || version === 0 || demo}
+              >
+                Pobierz kartę konstrukcji JSON
+              </button>
+              {owner && !demo && (
+                <FurnitureSharing id={id} version={version} dirty={dirty} />
+              )}
+              <details className="fc-part-review">
+                <summary>Karta części · dane materiałowe</summary>
+                <p>
+                  Eksport JSON jest dostępny po zapisaniu bieżących zmian w
+                  bibliotece. Zachowuje obrysy części i oznacza braki
+                  materiałowe.
+                </p>
+                <p>
+                  Lista braków nie blokuje zapisu szkicu. Nawet po uzupełnieniu
+                  danych potrzebny jest odbiór technologii połączeń, obróbki i
+                  okuć. Nie jest to wydanie produkcyjne.
+                </p>
+                <ul>
+                  {model.plates.map((p) => {
+                    const missing = plateSpecificationIssues(model, p);
+                    const t = plateThickness(model, p);
+                    return (
+                      <li key={p.id}>
+                        <button onClick={() => setSelected(p.id)}>
+                          {p.name}
+                        </button>
+                        <span>
+                          {p.specification?.material || "Materiał nieokreślony"}{" "}
+                          · {p.specification?.decor || "Dekor nieokreślony"} ·{" "}
+                          {t === null
+                            ? "Grubość nieokreślona"
+                            : `${t.toLocaleString("pl-PL")} mm`}
+                        </span>
+                        <small>
+                          {missing.length
+                            ? missing.join("; ")
+                            : "Dane materiałowe uzupełnione · technologia do sprawdzenia"}
+                        </small>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+              <FurnitureParts
+                model={model}
+                onSelect={(partId) => revealPart(partId, "geometry")}
+              />
+            </div>
+          </div>
+        </dialog>,
+        document.body,
+      )}
       {dimensionTarget && (
         <FurnitureDimensionEditor
           model={model}

@@ -17,13 +17,17 @@ export function FurnitureDrawers({
   disabled,
   saved,
   onChange,
+  frontId,
 }: {
   model: FurnitureModel;
+  frontId?: string;
   disabled: boolean;
   saved: FurnitureDrawerCalculation[] | null;
   onChange: (frontId: string, selection: DrawerAssembly | null) => void;
 }) {
-  const calculations = saved ?? furnitureDrawerCalculations(model);
+  const calculations = (saved ?? furnitureDrawerCalculations(model)).filter(
+    (c) => !frontId || c.frontId === frontId,
+  );
   if (!calculations.length) return null;
   return (
     <section className="fc-drawer-systems" aria-label="Systemy szuflad w meblu">

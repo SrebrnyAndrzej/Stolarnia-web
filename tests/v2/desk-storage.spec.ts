@@ -43,7 +43,9 @@ test("desk cabinets and hutch remain editable and persist in the library", async
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await page.getByRole("tab", { name: "Układ", exact: true }).click();
   await expect(page.getByLabel("Strona szafki", { exact: true })).toHaveValue(
     "both",
   );
@@ -57,6 +59,10 @@ test("desk cabinets and hutch remain editable and persist in the library", async
     });
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Narzędzia", exact: true })
+    .click();
   await page.getByLabel("Front szafki", { exact: true }).selectOption("door");
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   await expect(page.getByLabel("Front szafki", { exact: true })).toHaveValue(

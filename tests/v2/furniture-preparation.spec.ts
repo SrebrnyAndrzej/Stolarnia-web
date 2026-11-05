@@ -94,6 +94,7 @@ test("saved library version produces board preparation packet and no plan for un
     return route.fulfill({ json: [] });
   });
   await page.goto(`/#/panel/meble?model=${entry.id}&version=2&part=${part.id}`);
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   await page
     .getByText("Przygotowanie płyt do rozkroju", { exact: true })
     .click();

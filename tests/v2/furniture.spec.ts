@@ -15,6 +15,9 @@ test("two side heights calculate saw limits and preserve them after saving", asy
   await page
     .getByLabel("Wysokość długiej ścianki", { exact: true })
     .fill("2000");
+  await page
+    .getByRole("button", { name: "Wnęka i skosy", exact: true })
+    .click();
   const cutting = page.getByRole("region", { name: "Kalkulator cięcia skosu" });
   await expect(cutting).toContainText("26,57°");
   await expect(cutting).toContainText("1509,0 mm");
@@ -25,7 +28,13 @@ test("two side heights calculate saw limits and preserve them after saving", asy
   await expect(
     roof.getByText("1086,8 × 560,0 × 18,0 mm", { exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
   await page.getByLabel("Głębokość", { exact: true }).fill("600");
+  await page
+    .getByRole("button", { name: "Wnęka i skosy", exact: true })
+    .click();
   await expect(
     roof.getByText("1086,8 × 600,0 × 18,0 mm", { exact: true }),
   ).toBeVisible();
@@ -33,7 +42,13 @@ test("two side heights calculate saw limits and preserve them after saving", asy
     await roof.screenshot({
       path: process.env.PAN_STOLARZ_QA_SCREENSHOT_SLOPE,
     });
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
   await page.getByLabel("Głębokość", { exact: true }).fill("560");
+  await page
+    .getByRole("button", { name: "Wnęka i skosy", exact: true })
+    .click();
   await page.getByLabel("Piła", { exact: true }).selectOption("track");
   await expect(cutting).toContainText("Zagłębiarka:");
   await page
@@ -42,10 +57,15 @@ test("two side heights calculate saw limits and preserve them after saving", asy
   await expect(cutting).toContainText("58,28°");
   await expect(cutting.getByRole("alert")).toContainText("przekracza 45°");
   await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await page.getByRole("tab", { name: "Układ", exact: true }).click();
   await expect(
     page.getByLabel("Wysokość krótkiej ścianki", { exact: true }),
   ).toHaveValue("1500");
@@ -69,6 +89,7 @@ test("employee creates a sloped model, edits a shelf, saves and reopens it", asy
   await page.getByLabel("Obrys", { exact: true }).selectOption("slope");
   await page.getByRole("button", { name: "+ Półka", exact: true }).click();
   await page.getByLabel("Pozycja Y", { exact: true }).fill("400");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
@@ -82,10 +103,12 @@ test("employee creates a sloped model, edits a shelf, saves and reopens it", asy
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page
     .getByRole("button", { name: /Szafa pod skosem.*Wersja 1/ })
     .click();
   await expect(page.getByLabel("Obrys", { exact: true })).toHaveValue("slope");
+  await page.getByRole("tab", { name: "Płyta", exact: true }).click();
   await page
     .getByLabel("Wybierz płytę", { exact: true })
     .selectOption({ label: "5. Półka" });
@@ -127,6 +150,10 @@ test("failed shared save keeps the draft and mobile view fits", async ({
     return route.fulfill({ json: [] });
   });
   await page.goto("/#/panel/meble");
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Narzędzia", exact: true })
+    .click();
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");

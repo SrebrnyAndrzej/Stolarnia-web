@@ -11,6 +11,7 @@ test("compact furniture card has real clearances, no long part index and printab
     .selectOption("empty");
   await page.getByRole("button", { name: "+ Półka", exact: true }).click();
   await page.getByLabel("Pozycja Y", { exact: true }).fill("500");
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   const downloading = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Pobierz kartę do druku / PDF", exact: true })

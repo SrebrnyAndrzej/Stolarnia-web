@@ -45,7 +45,7 @@ test("solid 3D desk rotates, zooms, selects parts and keeps edits when returning
     position: { x: box.width * 0.3, y: box.height * 0.62 },
   });
   await expect(page.getByLabel("Nazwa płyty", { exact: true })).toHaveValue(
-    /Szuflada szafki/,
+    "Wewnętrzny bok szafki (lewa)",
   );
   const accessibility = await new AxeBuilder({ page })
     .include(".fc-drawing")
@@ -98,6 +98,10 @@ test("3D supports slope, stairs and narrow screens without leaking canvases", as
   await expect(
     page.getByTestId("furniture-scene").locator("canvas"),
   ).toBeVisible();
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Inspektor", exact: true })
+    .click();
   await page.getByRole("button", { name: "Obróć w lewo", exact: true }).focus();
   await page.keyboard.press("Enter");
   expect(

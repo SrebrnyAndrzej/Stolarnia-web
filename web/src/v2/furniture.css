@@ -795,3 +795,375 @@ dialog.fc-dimension-dialog {
   font-size: 12px;
   margin-bottom: 0;
 }
+
+/* Local studio viewport: only the editor owns panel scrolling. */
+.fc-studio {
+  height: var(--fc-available-height, 780px);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fc-studio [hidden],
+.fc-studio-sheet [hidden] {
+  display: none !important;
+}
+.fc-studio .fc-header {
+  margin: 0;
+  gap: 12px;
+}
+.fc-studio h1 {
+  font-size: 24px;
+}
+.fc-studio .fc-header button {
+  min-height: 38px;
+  padding: 6px 10px;
+}
+.fc-studio .ps-feedback {
+  margin: 0;
+}
+.fc-studio-grid {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr) 300px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+.fc-studio-left,
+.fc-studio-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+.fc-studio-tabs {
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.fc-studio-tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+  border-color: transparent;
+  min-height: 40px;
+  font-size: 12px;
+}
+.fc-studio-tabs button[aria-selected="true"] {
+  background: var(--accent-soft);
+  border-color: var(--line-strong);
+  font-weight: 700;
+}
+.fc-studio-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+.fc-studio fieldset {
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.fc-studio label {
+  margin-bottom: 9px;
+  gap: 4px;
+}
+.fc-studio input,
+.fc-studio select {
+  min-height: 38px;
+  padding: 6px 8px;
+}
+.fc-studio h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.fc-studio .fc-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 8px;
+}
+.fc-studio .fc-name {
+  grid-column: 1/-1;
+}
+.fc-studio-canvas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 8px;
+}
+.fc-studio .fc-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.fc-studio .fc-stage-title {
+  padding: 0;
+  gap: 8px;
+}
+.fc-studio .fc-stage-title .ps-eyebrow {
+  display: none;
+}
+.fc-studio .fc-stage-title h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.fc-studio .fc-measures {
+  font-size: 11px;
+}
+.fc-studio .fc-toolbar {
+  margin: 8px 0;
+  gap: 5px;
+}
+.fc-studio .fc-toolbar button {
+  padding: 6px 8px;
+  min-height: 36px;
+  font-size: 12px;
+}
+.fc-studio .fc-toolbar label {
+  margin: 0;
+}
+.fc-studio .fc-toolbar span {
+  font-size: 10px;
+}
+.fc-studio .fc-drawing {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.fc-studio .fc-drawing > svg {
+  height: 100%;
+}
+.fc-studio .fc-scene {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.fc-studio .fc-scene-host {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.fc-studio .fc-scene-hint {
+  font-size: 10px;
+  margin: 4px 0;
+}
+.fc-studio .fc-quick-dimensions {
+  margin: 6px 0 0;
+  padding: 4px 8px;
+}
+.fc-studio .fc-quick-dimensions .fc-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fc-studio .fc-quick-dimensions label {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+.fc-studio .fc-quick-dimensions legend {
+  font-size: 11px;
+}
+.fc-studio-bottom {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+.fc-studio-bottom button {
+  font-size: 12px;
+  padding: 8px 4px;
+}
+.fc-studio .fc-library {
+  border: 0;
+  padding: 0;
+}
+.fc-studio .fc-library-preview {
+  max-height: 54px;
+}
+.fc-studio .fc-presets {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.fc-studio .fc-presets button {
+  min-height: 68px;
+  padding: 5px 2px;
+  font-size: 10px;
+}
+.fc-studio .fc-presets svg {
+  height: 32px;
+  width: 44px;
+}
+.fc-studio .fc-plate-parameters > label {
+  margin-bottom: 10px;
+}
+.fc-studio .fc-camera {
+  padding: 8px 0;
+  gap: 5px;
+}
+.fc-studio .fc-camera button {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+.fc-studio .fc-compartment-picking {
+  padding: 0 0 10px;
+}
+.fc-studio .fc-appearance {
+  padding: 0;
+}
+.fc-studio .fc-appearance-fields {
+  gap: 8px;
+}
+.fc-studio .fc-appearance-fields label {
+  flex: 1 1 90px;
+}
+.fc-parts-browser ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fc-parts-browser li {
+  margin-bottom: 6px;
+}
+.fc-parts-browser li button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fc-parts-browser small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-studio-mobile {
+  display: none;
+}
+.fc-studio-sheet {
+  position: fixed;
+  inset: 12px 12px 12px auto;
+  margin: 0;
+  width: min(700px, calc(100vw - 24px));
+  max-width: none;
+  max-height: none;
+  height: calc(100dvh - 24px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel);
+}
+.fc-studio-sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+.fc-studio-sheet::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+.fc-studio-sheet > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.fc-studio-sheet > header h2 {
+  margin: 0;
+}
+.fc-sheet-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  overscroll-behavior: contain;
+}
+@media (max-width: 1100px) {
+  .fc-studio-mobile {
+    display: flex;
+    gap: 6px;
+  }
+  .fc-studio-mobile button {
+    flex: 1;
+  }
+  .fc-studio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fc-studio[data-mobile-pane="preview"] .fc-studio-left,
+  .fc-studio[data-mobile-pane="preview"] .fc-studio-right,
+  .fc-studio[data-mobile-pane="tools"] .fc-studio-canvas,
+  .fc-studio[data-mobile-pane="tools"] .fc-studio-right,
+  .fc-studio[data-mobile-pane="inspector"] .fc-studio-canvas,
+  .fc-studio[data-mobile-pane="inspector"] .fc-studio-left {
+    display: none;
+  }
+  .fc-studio .fc-header {
+    flex-wrap: wrap;
+  }
+  .fc-studio .fc-header .fc-actions {
+    gap: 4px;
+  }
+  .fc-studio .fc-header button {
+    font-size: 12px;
+  }
+}
+@media (max-height: 600px) {
+  .fc-studio {
+    height: auto;
+  }
+  .fc-studio-grid {
+    min-height: 480px;
+  }
+  .fc-studio-scroll {
+    max-height: 520px;
+  }
+}
+.fc-studio .fc-stage {
+  margin-bottom: 0;
+}
+.fc-studio .fc-presets {
+  margin-bottom: 10px;
+}
+.fc-studio .fc-presets button {
+  gap: 4px;
+  min-height: 64px;
+}
+.fc-studio .fc-stage .fc-quick-dimensions {
+  margin: 6px 8px 8px;
+  padding: 4px 8px;
+}
+.fc-studio .fc-appearance .fc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.fc-studio .fc-appearance .fc-actions button {
+  padding: 6px;
+  font-size: 11px;
+  text-align: left;
+}
+@media (max-width: 700px) {
+  .fc-studio .fc-stage-title {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 6px;
+  }
+  .fc-studio .fc-stage .fc-toolbar {
+    padding: 6px;
+    gap: 4px;
+    margin: 0;
+  }
+  .fc-studio .fc-toolbar > span {
+    display: none;
+  }
+  .fc-studio .fc-stage-title h2 {
+    font-size: 12px;
+  }
+  .fc-studio .fc-stage-title > button {
+    min-height: 34px;
+    font-size: 11px;
+  }
+}

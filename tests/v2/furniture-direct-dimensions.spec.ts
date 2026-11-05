@@ -76,6 +76,7 @@ test("click a compartment dimension to lock, resize, save and restore automatic 
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   await page
     .getByRole("button", { name: "Rozpocznij układ komór", exact: true })
     .click();
@@ -100,6 +101,7 @@ test("click a compartment dimension to lock, resize, save and restore automatic 
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
   await page.locator('.fc-compartment-area [role="button"]').first().click();
   await expect(dialog.getByRole("textbox")).toHaveValue("350");

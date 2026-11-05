@@ -19,10 +19,14 @@ test("separate 3D colours persist and undo without changing workshop materials",
   await expect(
     page.getByLabel("Kolor korpusu (podgląd)", { exact: true }),
   ).toHaveValue("#cfba94");
+  await page.getByRole("button", { name: "Materiały", exact: true }).click();
   const material = await page
     .getByLabel("Materiał korpusu", { exact: true })
     .inputValue();
   expect(material).toBe("");
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   await expect(
     page.getByLabel("Kolor frontów (podgląd)", { exact: true }),
@@ -32,6 +36,7 @@ test("separate 3D colours persist and undo without changing workshop materials",
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
   await expect(
     page.getByLabel("Kolor frontów (podgląd)", { exact: true }),
@@ -52,6 +57,7 @@ test("3D compartment picking shares selection with the equipment editor", async 
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   await page
     .getByRole("button", { name: "Rozpocznij układ komór", exact: true })
     .click();
@@ -68,6 +74,7 @@ test("3D compartment picking shares selection with the equipment editor", async 
   const pick = page.getByLabel("Komora w widoku 3D", { exact: true });
   const second = await pick.locator("option").nth(2).getAttribute("value");
   await pick.selectOption(second!);
+  await page.getByRole("tab", { name: "Widok", exact: true }).click();
   await page
     .getByRole("button", { name: "Pokaż ustawienia komory", exact: true })
     .click();
@@ -77,6 +84,7 @@ test("3D compartment picking shares selection with the equipment editor", async 
   await expect(
     page.getByLabel("Wybierz komorę", { exact: true }),
   ).toBeFocused();
+  await page.getByRole("tab", { name: "Widok", exact: true }).click();
   await page.getByRole("button", { name: "Na wprost", exact: true }).click();
   await pick.selectOption("");
   const canvas = page.locator(".fc-drawing canvas");

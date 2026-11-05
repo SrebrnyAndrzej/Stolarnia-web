@@ -75,6 +75,7 @@ test("owner creates and revokes a link only after saving the current version", a
     return route.fulfill({ json: { ok: true } });
   });
   await page.goto("/#/panel/meble");
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   await expect(
     page.getByRole("button", {
       name: "Utwórz link do zapisanej wersji",
@@ -82,8 +83,12 @@ test("owner creates and revokes a link only after saving the current version", a
     }),
   ).toBeDisabled();
   await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   await page
     .getByRole("button", {
       name: "Utwórz link do zapisanej wersji",

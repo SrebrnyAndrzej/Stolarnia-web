@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { furniturePlateColor } from "../../../src/core/furniture-appearance";
 import { compartmentBoxes } from "../../../src/core/furniture-compartments";
 import { layoutCeiling } from "../../../src/core/furniture";
@@ -47,8 +48,10 @@ export function FurnitureScene({
   selectedCompartment = "",
   onSelectCompartment,
   onEditCompartment,
+  controlsTarget,
 }: {
   model: FurnitureModel;
+  controlsTarget?: HTMLElement | null;
   selected: string;
   onSelect: (id: string) => void;
   selectedCompartment?: string;
@@ -533,8 +536,8 @@ export function FurnitureScene({
     state.camera.position.copy(state.controls.target).add(offset);
     state.controls.update();
   };
-  return (
-    <div className="fc-scene">
+  const controls = (
+    <>
       {onSelectCompartment && (
         <div className="fc-compartment-picking">
           <div
@@ -685,6 +688,11 @@ export function FurnitureScene({
           −
         </button>
       </div>
+    </>
+  );
+  return (
+    <div className="fc-scene">
+      {controlsTarget ? createPortal(controls, controlsTarget) : controls}
       <div className="fc-scene-host" ref={host} data-testid="furniture-scene" />
       {captureError && <Feedback>{captureError}</Feedback>}
       {error && (

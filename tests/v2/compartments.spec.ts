@@ -7,6 +7,7 @@ test("compartments lock dimensions, resize shelves, save, reopen and export docu
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   await page
     .getByRole("button", { name: "Rozpocznij układ komór", exact: true })
     .click();
@@ -48,11 +49,13 @@ test("compartments lock dimensions, resize shelves, save, reopen and export docu
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
   await select.selectOption(right);
   await expect(page.getByLabel("Front komory", { exact: true })).toHaveValue(
     "drawers",
   );
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   const download = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Pobierz części CSV", exact: true })
@@ -77,6 +80,10 @@ test("compartments lock dimensions, resize shelves, save, reopen and export docu
   const libraryId = csv
     .suggestedFilename()
     .match(/^czesci-(.+)-v1-szkic.csv$/)![1];
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Płyta", exact: true }).click();
   const partId = await page
     .getByLabel("Wybierz płytę", { exact: true })
     .locator("option")
@@ -109,6 +116,11 @@ test("compartments lock dimensions, resize shelves, save, reopen and export docu
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBeTruthy();
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Inspektor", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   const axe = await new AxeBuilder({ page })
     .include(".fc-compartments")
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
@@ -124,6 +136,7 @@ test("invalid locks are recoverable and niche obstacles are saved separately fro
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   await page
     .getByRole("button", { name: "Rozpocznij układ komór", exact: true })
     .click();
@@ -144,6 +157,9 @@ test("invalid locks are recoverable and niche obstacles are saved separately fro
   ).toBeVisible();
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   await page
+    .getByRole("button", { name: "Wnęka i skosy", exact: true })
+    .click();
+  await page
     .getByLabel("Sprawdzaj dopasowanie do wnęki", { exact: true })
     .check();
   await page.getByLabel("Szerokość wnęki", { exact: true }).fill("800");
@@ -156,6 +172,10 @@ test("invalid locks are recoverable and niche obstacles are saved separately fro
   await expect(
     page.getByLabel("Nazwa przeszkody", { exact: true }),
   ).toHaveValue("Belka / przeszkoda");
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Braki", exact: true }).click();
   await page
     .getByRole("region", { name: "Braki przed zamówieniem i produkcją" })
     .getByText(/Geometria i dopasowanie ·/)
@@ -181,6 +201,9 @@ test("library furniture is placed as a pinned version in the room", async ({
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page
+    .getByRole("button", { name: "Wnęka i skosy", exact: true })
+    .click();
+  await page
     .getByLabel("Sprawdzaj dopasowanie do wnęki", { exact: true })
     .check();
   await page.getByLabel("Szerokość wnęki", { exact: true }).fill("4000");
@@ -193,6 +216,9 @@ test("library furniture is placed as a pinned version in the room", async ({
   await expect(
     page.getByLabel("Mebel w pomieszczeniu: X", { exact: true }),
   ).toHaveValue("1100");
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
   await page.getByRole("button", { name: "Bryła 3D", exact: true }).click();
   await expect(
     page.getByTestId("furniture-scene").locator("canvas"),

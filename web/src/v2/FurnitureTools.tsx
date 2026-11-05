@@ -40,8 +40,10 @@ export function FurnitureTools({
   onSelect,
   disabled,
   dirty,
+  section = "all",
 }: {
   model: FurnitureModel;
+  section?: "all" | "room" | "documents";
   library: FurnitureEntry[];
   id: string;
   version: number;
@@ -190,7 +192,10 @@ export function FurnitureTools({
   );
   return (
     <>
-      <fieldset disabled={disabled}>
+      <fieldset
+        hidden={section !== "all" && section !== "room"}
+        disabled={disabled}
+      >
         <legend>Wnęka i przeszkody</legend>
         <label className="fc-check">
           <input
@@ -416,7 +421,10 @@ export function FurnitureTools({
           </>
         )}
       </fieldset>
-      <details className="fc-part-review">
+      <details
+        hidden={section !== "all" && section !== "documents"}
+        className="fc-part-review"
+      >
         <summary>Porównanie wariantów A/B</summary>
         <label>
           Zapisany wariant B
@@ -460,7 +468,10 @@ export function FurnitureTools({
           kopii.
         </p>
       </details>
-      <fieldset disabled={disabled}>
+      <fieldset
+        hidden={section !== "all" && section !== "documents"}
+        disabled={disabled}
+      >
         <legend>Standard dla grupy części</legend>
         <label>
           Zastosuj obecny standard do
@@ -500,7 +511,10 @@ export function FurnitureTools({
           standardu. Cofnij przywraca poprzednie.
         </p>
       </fieldset>
-      <fieldset disabled={disabled}>
+      <fieldset
+        hidden={section !== "all" && section !== "documents"}
+        disabled={disabled}
+      >
         <legend>Dokumentacja bieżącego szkicu</legend>
         {labelError && <Feedback>{labelError}</Feedback>}
         <div className="fc-actions">
@@ -523,7 +537,7 @@ export function FurnitureTools({
           pozostają widoczne.
         </p>
       </fieldset>
-      <details>
+      <details hidden={section !== "all" && section !== "documents"}>
         <summary>Przygotowanie płyt do rozkroju</summary>
         <FurniturePreparation
           key={`${id}-${version}`}

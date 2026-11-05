@@ -173,3 +173,10 @@ Gotowe wyposażenie i kopiowanie są odwracalne przez Cofnij. Kopia zachowuje ge
 ## Poglądowe kolory i wybór komór w 3D
 Zmiana kolorów jest odwracalną zmianą szkicu i wymaga standardowego zapisu biblioteki. Poprzednie modele bez appearance zachowują dotychczasowe kolory. Zmiana nie wybiera materiału i nie wprowadza danych technologii. Utworzona wcześniej prezentacja zachowuje swoją zamrożoną wersję.
 W trybie wyboru komór: ukryj fronty, wybierz kliknięciem lub natywnym selectem, następnie pokaż ustawienia. Brak układu komór oznacza wyłączony wybór z opisem następnego kroku. Po zmianie trybu można wrócić do zaznaczania płyt.
+
+### Kompaktowy kreator
+- Zakładki zachowują szkic, stan formularza i scenę 3D; nie uruchamiają zapisu.
+- Boki przewijają się niezależnie od centralnego podglądu. Kontener wysokości należy wyłącznie do kreatora.
+- Wybór płyty lub komory otwiera odpowiedni inspektor. Zakładka System dotyczy wybranego frontu szuflady.
+- Materiały, Wnęka i skosy, Dokumentacja i Braki to natywne modale: Escape zamyka, fokus wraca do przycisku otwarcia. Akcja uzupełnienia braków zamyka modal i skupia pole części.
+- Mobile przełącza obszar roboczy, zachowując projekt; krótkie okno dopuszcza naturalne przewijanie.

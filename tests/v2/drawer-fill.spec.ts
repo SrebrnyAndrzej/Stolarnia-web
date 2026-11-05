@@ -8,6 +8,7 @@ test("drawer fill follows a shelf and persists, manual front changes switch to f
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
@@ -41,7 +42,9 @@ test("drawer fill follows a shelf and persists, manual front changes switch to f
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await page.getByRole("tab", { name: "Układ", exact: true }).click();
   await expect(
     page.getByLabel("Wypełnij szufladami całą komorę", { exact: true }),
   ).toBeChecked();
@@ -69,6 +72,7 @@ test("a custom count fills both desk cabinets and survives resizing and front re
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("desk-hutch");
   await page.getByLabel("Strona szafki", { exact: true }).selectOption("both");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page.getByLabel("Liczba: niskie", { exact: true }).fill("2");
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })

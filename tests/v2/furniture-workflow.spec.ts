@@ -5,6 +5,7 @@ test("one-click equipment and adjacent copy are reversible and the readiness lis
 }) => {
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page.getByRole("tab", { name: "Komora", exact: true }).click();
   await page
     .getByRole("button", { name: "Rozpocznij układ komór", exact: true })
     .click();
@@ -35,6 +36,7 @@ test("one-click equipment and adjacent copy are reversible and the readiness lis
   await expect(page.getByLabel("Front komory", { exact: true })).toHaveValue(
     "none",
   );
+  await page.getByRole("button", { name: "Braki", exact: true }).click();
   const readiness = page.getByRole("region", {
     name: "Braki przed zamówieniem i produkcją",
   });
@@ -48,6 +50,7 @@ test("one-click equipment and adjacent copy are reversible and the readiness lis
   await expect(
     page.getByLabel("Materiał płyty", { exact: true }),
   ).toBeFocused();
+  await page.getByRole("button", { name: "Braki", exact: true }).click();
   await readiness.getByText(/Szuflady i okucia ·/).click();
   const drawerButton = readiness
     .locator("details")
@@ -59,6 +62,7 @@ test("one-click equipment and adjacent copy are reversible and the readiness lis
   await expect(
     page.getByLabel(`System dla ${drawerName}`, { exact: true }),
   ).toBeFocused();
+  await page.getByRole("button", { name: "Braki", exact: true }).click();
   await readiness.getByText(/Połączenia i wiercenia/).click();
   await expect(readiness).toContainText(
     "nie jest zatwierdzonym wydaniem produkcyjnym",
