@@ -169,3 +169,7 @@ Powiększenie kreatora zachowuje bieżący szkic i historię; Escape zamyka dial
 ## Edycja wymiaru na rysunku — 5.11.2026
 Kliknięcie lub Enter/Spacja na wymiarze otwiera natywny dialog z polem mm. Zastosowanie działa jako jedna operacja historii; Anuluj/Escape zachowuje szkic, błąd zachowuje wpisaną wartość. Zamknięcie przywraca fokus do wymiaru. Niedopasowana blokada lub nowa kolizja nie modyfikuje modelu. Komora: Ustaw i zablokuj lub Przywróć wymiar automatyczny, zgodnie z istniejącą semantyką size.
 Gotowe wyposażenie i kopiowanie są odwracalne przez Cofnij. Kopia zachowuje geometrię celu; systemów okuć nie dobiera automatycznie. Lista braków korzysta z istniejących obliczeń i nie oznacza kompletnej technologii produkcyjnej.
+
+## Poglądowe kolory i wybór komór w 3D
+Zmiana kolorów jest odwracalną zmianą szkicu i wymaga standardowego zapisu biblioteki. Poprzednie modele bez appearance zachowują dotychczasowe kolory. Zmiana nie wybiera materiału i nie wprowadza danych technologii. Utworzona wcześniej prezentacja zachowuje swoją zamrożoną wersję.
+W trybie wyboru komór: ukryj fronty, wybierz kliknięciem lub natywnym selectem, następnie pokaż ustawienia. Brak układu komór oznacza wyłączony wybór z opisem następnego kroku. Po zmianie trybu można wrócić do zaznaczania płyt.

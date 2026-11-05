@@ -1,3 +1,4 @@
+import { FurnitureAppearance } from "./FurnitureAppearance";
 import { FurnitureReadiness } from "./FurnitureReadiness";
 import { FurnitureDimensionEditor } from "./FurnitureDimensionEditor";
 import type { DimensionTarget } from "../../../src/core/furniture-dimension-edit";
@@ -683,14 +684,42 @@ export function FurnitureCreator({
       </div>
       <div className="fc-drawing">
         {view === "3d" ? (
-          <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
-            <FurnitureScene
-              key={id}
+          <>
+            <FurnitureAppearance
               model={model}
-              selected={selected}
-              onSelect={setSelected}
+              disabled={busy}
+              onChange={(appearance) => {
+                setSelected("");
+                update((m) => ({ ...m, appearance }));
+              }}
             />
-          </Suspense>
+            <Suspense fallback={<p role="status">Ładowanie widoku 3D…</p>}>
+              <FurnitureScene
+                key={id}
+                model={model}
+                selected={selected}
+                onSelect={setSelected}
+                selectedCompartment={selectedCompartment}
+                onSelectCompartment={(id) => {
+                  setSelectedCompartment(id);
+                  setSelected("");
+                }}
+                onEditCompartment={() => {
+                  setExpanded(false);
+                  requestAnimationFrame(() => {
+                    const panel =
+                      document.querySelector<HTMLElement>(".fc-compartments");
+                    panel?.scrollIntoView({ block: "start" });
+                    panel
+                      ?.querySelector<HTMLElement>(
+                        'select[aria-label="Wybierz komorę"]',
+                      )
+                      ?.focus({ preventScroll: true });
+                  });
+                }}
+              />
+            </Suspense>
+          </>
         ) : (
           <svg
             ref={svg}

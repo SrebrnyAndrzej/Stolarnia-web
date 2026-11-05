@@ -69,6 +69,7 @@ export const furnitureSave = z
         drawerFit: z.enum(["fill", "fixed"]).optional(),
         customDrawerSet: z.boolean().optional(),
         compartments: compartmentSchema.optional(),
+        appearance: z.object({bodyColor:z.string().regex(/^#[0-9a-fA-F]{6}$/),frontColor:z.string().regex(/^#[0-9a-fA-F]{6}$/)}).strict().optional(),
         installation: z
           .object({
             width: mm,

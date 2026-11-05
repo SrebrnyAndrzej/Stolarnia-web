@@ -507,6 +507,7 @@ test("prezentacje HTTP: właściciel tworzy, klient odczytuje tylko migawkę, pr
   const {randomUUID}=await import("node:crypto");
   const {freshFurniture,carcass}=await import("../core/furniture.js");
   const model=freshFurniture();model.plates=carcass(model,randomUUID);
+  model.appearance={bodyColor:"#c5ab83",frontColor:"#435058"};
   const id=randomUUID();
   assert.equal((await zadanie("PUT","/api/v2/furniture","t-owner",{id,version:0,model})).status,200);
   const created=await zadanie("POST",`/api/v2/furniture/${id}/presentations`,"t-owner",{version:1});
@@ -518,6 +519,7 @@ test("prezentacje HTTP: właściciel tworzy, klient odczytuje tylko migawkę, pr
   const publicView=await zadanie("GET",path);
   assert.equal(publicView.status,200);
   assert.equal(publicView.json.model.name,model.name);
+  assert.deepEqual(publicView.json.model.appearance,model.appearance);
   assert.ok(!publicView.tekst.includes("tokenHash"));
   assert.ok(!publicView.tekst.includes("createdBy"));
   const origin=process.env.PAN_STOLARZ_ORIGIN??adres;

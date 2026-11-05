@@ -1,3 +1,6 @@
+import { furniturePlateColor } from "../../../src/core/furniture-appearance";
+import { compartmentBoxes } from "../../../src/core/furniture-compartments";
+import { layoutCeiling } from "../../../src/core/furniture";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -18,6 +21,7 @@ type Runtime = {
   controls: OrbitControls;
   parts: THREE.Group;
   context: THREE.Group;
+  compartments: THREE.Group;
   bounds: THREE.Box3;
   draw: () => void;
   fit: (view?: View) => void;
@@ -40,15 +44,28 @@ export function FurnitureScene({
   model,
   selected,
   onSelect,
+  selectedCompartment = "",
+  onSelectCompartment,
+  onEditCompartment,
 }: {
   model: FurnitureModel;
   selected: string;
   onSelect: (id: string) => void;
+  selectedCompartment?: string;
+  onSelectCompartment?: (id: string) => void;
+  onEditCompartment?: () => void;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const runtime = useRef<Runtime | null>(null);
   const select = useRef(onSelect);
   select.current = onSelect;
+  const selectCompartment = useRef(onSelectCompartment);
+  selectCompartment.current = onSelectCompartment;
+  const [pickMode, setPickMode] = useState<"plates" | "compartments">("plates");
+  const pickModeRef = useRef(pickMode);
+  pickModeRef.current = pickMode;
+  const boxes = compartmentBoxes(model).boxes.filter((b) => !b.node.split);
+  const canSelectCompartment = Boolean(onSelectCompartment);
   const [error, setError] = useState("");
   const [captureReady, setCaptureReady] = useState(false);
   const [captureError, setCaptureError] = useState("");
@@ -113,7 +130,10 @@ export function FurnitureScene({
     ground.receiveShadow = true;
     scene.add(ground);
     const draw = () => renderer.render(scene, camera);
+    const compartments = new THREE.Group();
+    scene.add(compartments);
     const state: Runtime = {
+      compartments,
       renderer,
       scene,
       camera,
@@ -221,6 +241,18 @@ export function FurnitureScene({
         ),
         camera,
       );
+      if (pickModeRef.current === "compartments") {
+        const hit = ray
+          .intersectObjects(state.compartments.children, false)
+          .find(
+            (h) =>
+              h.object instanceof THREE.Mesh && h.object.userData.compartmentId,
+          );
+        selectCompartment.current?.(
+          hit ? String(hit.object.userData.compartmentId) : "",
+        );
+        return;
+      }
       const hit = ray
         .intersectObjects(parts.children, false)
         .find(
@@ -229,7 +261,7 @@ export function FurnitureScene({
             h.object.visible &&
             h.object.userData.plateId,
         );
-      if (hit) select.current(hit.object.userData.plateId as string);
+      select.current(hit ? String(hit.object.userData.plateId) : "");
     };
     const lost = (e: Event) => {
       e.preventDefault();
@@ -252,6 +284,7 @@ export function FurnitureScene({
       renderer.domElement.removeEventListener("webglcontextlost", lost);
       clearParts(parts);
       clearParts(context);
+      clearParts(state.compartments);
       ground.geometry.dispose();
       ground.material.dispose();
       key.shadow.map?.dispose();
@@ -358,8 +391,7 @@ export function FurnitureScene({
       const motion = frontMotion(model, plate);
       if (plate.kind === "door")
         geometry.translate(-motion.pivotX * MM, 0, -motion.pivotZ * MM);
-      const color =
-        plate.kind === "drawer" || plate.kind === "door" ? 0xe2d9c8 : 0xc5ab83;
+      const color = new THREE.Color(furniturePlateColor(model, plate)).getHex();
       const material = new THREE.MeshStandardMaterial({
         color,
         roughness: 0.85,
@@ -390,7 +422,10 @@ export function FurnitureScene({
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geometry, 25),
         new THREE.LineBasicMaterial({
-          color: 0x756951,
+          color:
+            new THREE.Color(color).getHSL({ h: 0, s: 0, l: 0 }).l < 0.35
+              ? 0xb6c3bb
+              : 0x435058,
           transparent: true,
           opacity: 0.65,
         }),
@@ -422,6 +457,60 @@ export function FurnitureScene({
     state.draw();
   }, [selected, model, attempt, showFronts, openFronts, exploded]);
 
+  useEffect(() => {
+    const state = runtime.current;
+    if (!state) return;
+    clearParts(state.compartments);
+    state.renderer.domElement.setAttribute(
+      "aria-label",
+      pickMode === "compartments"
+        ? "Bryła mebla 3D. Obracaj przeciągając; komorę wybierz kliknięciem we wnętrze lub z listy."
+        : "Bryła mebla 3D. Obracaj przeciągając; wybierz płytę kliknięciem. Dostępne są też przyciski kamery i lista płyt.",
+    );
+    if (pickMode === "compartments" && canSelectCompartment) {
+      for (const b of compartmentBoxes(model).boxes.filter(
+        (b) => !b.node.split,
+      )) {
+        const height = Math.min(
+          b.height,
+          layoutCeiling(model, b.x, b.x + b.width) - b.y,
+        );
+        if (height <= 0) continue;
+        const geometry = new THREE.BoxGeometry(
+          b.width * MM,
+          height * MM,
+          b.depth * MM,
+        );
+        const active = b.node.id === selectedCompartment;
+        const proxy = new THREE.Mesh(
+          geometry,
+          new THREE.MeshBasicMaterial({
+            color: 0xa5b859,
+            transparent: true,
+            opacity: active ? 0.13 : 0,
+            depthWrite: false,
+          }),
+        );
+        proxy.position.set(
+          (b.x + b.width / 2) * MM,
+          (b.y + height / 2) * MM,
+          (b.z + b.depth / 2) * MM,
+        );
+        proxy.userData.compartmentId = b.node.id;
+        if (active) {
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(geometry),
+            new THREE.LineBasicMaterial({ color: 0x435058 }),
+          );
+          proxy.add(edges);
+        }
+        state.compartments.add(proxy);
+      }
+    }
+    state.compartments.updateMatrixWorld(true);
+    state.draw();
+  }, [model, selectedCompartment, pickMode, attempt, canSelectCompartment]);
+
   const turn = (angle: number) => {
     const state = runtime.current;
     if (!state) return;
@@ -446,6 +535,64 @@ export function FurnitureScene({
   };
   return (
     <div className="fc-scene">
+      {onSelectCompartment && (
+        <div className="fc-compartment-picking">
+          <div
+            className="fc-actions"
+            role="group"
+            aria-label="Wybór w widoku 3D"
+          >
+            <button
+              aria-pressed={pickMode === "plates"}
+              onClick={() => setPickMode("plates")}
+            >
+              Zaznaczaj płyty
+            </button>
+            <button
+              disabled={!boxes.length}
+              aria-pressed={pickMode === "compartments"}
+              onClick={() => {
+                setPickMode("compartments");
+                setShowFronts(false);
+              }}
+            >
+              Zaznaczaj komory
+            </button>
+          </div>
+          {pickMode === "compartments" && (
+            <>
+              <label>
+                Komora w widoku 3D
+                <select
+                  aria-label="Komora w widoku 3D"
+                  value={selectedCompartment}
+                  onChange={(e) => onSelectCompartment(e.target.value)}
+                >
+                  <option value="">Wybierz komorę…</option>
+                  {boxes.map((b) => (
+                    <option key={b.node.id} value={b.node.id}>
+                      {b.node.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                disabled={!boxes.some((b) => b.node.id === selectedCompartment)}
+                onClick={onEditCompartment}
+              >
+                Pokaż ustawienia komory
+              </button>
+              <p>
+                Kliknij wnętrze komory w bryle lub wybierz ją z listy. Fronty
+                zostały ukryte, aby odsłonić wnętrze.
+              </p>
+            </>
+          )}
+          {!boxes.length && (
+            <p>Wybór komór jest dostępny po rozpoczęciu układu komór.</p>
+          )}
+        </div>
+      )}
       <div className="fc-camera" role="group" aria-label="Kamera 3D">
         <button
           disabled={!!error || !captureReady}
@@ -549,9 +696,12 @@ export function FurnitureScene({
         </div>
       )}
       <p className="fc-scene-hint">
-        Przeciągnij, aby obrócić. Kliknij płytę, aby ją wybrać. Przybliżaj
-        przyciskami lub gestem dwóch palców. Wymiary i pozycje zmieniaj w
-        inspektorze.
+        Przeciągnij, aby obrócić.{" "}
+        {pickMode === "compartments"
+          ? "Kliknij wnętrze, aby wybrać komorę."
+          : "Kliknij płytę, aby ją wybrać."}{" "}
+        Przybliżaj przyciskami lub gestem dwóch palców. Wymiary i pozycje
+        zmieniaj w inspektorze.
         {openFronts &&
           " Ruch frontów jest poglądowy: drzwi 90°, szuflady według NL lub poglądowego wysuwu. Skrzynki i okucia nie są jeszcze modelowane."}
       </p>

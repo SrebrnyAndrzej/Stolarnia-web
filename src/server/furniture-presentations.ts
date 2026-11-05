@@ -55,6 +55,14 @@ export function createFurniturePresentation(
     lowHeight: m.lowHeight,
     steps: m.steps,
     reverse: m.reverse,
+    ...(m.appearance
+      ? {
+          appearance: {
+            bodyColor: m.appearance.bodyColor,
+            frontColor: m.appearance.frontColor,
+          },
+        }
+      : {}),
     ...(m.compartments
       ? { compartments: structuredClone(m.compartments) }
       : {}),

@@ -748,3 +748,50 @@ dialog.fc-dimension-dialog {
 .fc-readiness li {
   margin: 10px 0;
 }
+
+.fc .fc-appearance {
+  margin: 12px;
+  padding: 12px;
+  background: var(--panel);
+}
+.fc-appearance-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+.fc-appearance-fields label {
+  flex: 0 1 160px;
+}
+.fc-appearance input[type="color"] {
+  min-height: 44px;
+  padding: 4px;
+  cursor: pointer;
+}
+.fc-color-pair {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.fc-color-pair i {
+  flex: 1;
+}
+.fc-compartment-picking {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.fc-compartment-picking label {
+  margin-top: 12px;
+  max-width: 360px;
+}
+.fc-compartment-picking p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 0;
+}

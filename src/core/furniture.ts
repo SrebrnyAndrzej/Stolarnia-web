@@ -167,6 +167,8 @@ export interface FurnitureModel {
   reverse: boolean;
   plates: FurniturePlate[];
   construction?: ConstructionStandard;
+  /** Presentation colours only; never a material/article selection. */
+  appearance?: { bodyColor: string; frontColor: string };
   drawerAssemblies?: DrawerAssembly[];
   drawerFit?: "fill" | "fixed";
   customDrawerSet?: boolean;

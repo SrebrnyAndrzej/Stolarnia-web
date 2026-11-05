@@ -18,6 +18,9 @@ import type { Magazyn, BazaDanych } from "./store/store.js";
 test("presentation is owner-created, frozen, token-scoped, expiring and revocable", () => {
   const m = freshFurniture();
   m.plates = carcass(m, randomUUID);
+  m.appearance = { bodyColor: "#c5ab83", frontColor: "#435058" };
+  (m.appearance as unknown as Record<string, unknown>).cost =
+    "SECRET-APPEARANCE-COST";
   (m as unknown as Record<string, unknown>).cost = "SECRET-COST";
   const entry = { id: randomUUID(), version: 1, model: m } as FurnitureEntry;
   const db = { furnitureLibrary: [entry] } as BazaDanych;
@@ -48,8 +51,14 @@ test("presentation is owner-created, frozen, token-scoped, expiring and revocabl
   assert.match(result.token, /^[a-f0-9]{64}$/);
   assert.ok(!JSON.stringify(db.furniturePresentations).includes(result.token));
   m.width = 9999;
+  m.appearance.frontColor = "#ffffff";
   const shown = readFurniturePresentation(store, result.token);
   assert.equal(shown.model.width, 1000);
+  assert.deepEqual(shown.model.appearance, {
+    bodyColor: "#c5ab83",
+    frontColor: "#435058",
+  });
+  assert.ok(!JSON.stringify(shown).includes("SECRET-APPEARANCE-COST"));
   assert.ok(!JSON.stringify(shown).includes("SECRET-COST"));
   shown.model.width = 123;
   assert.equal(
