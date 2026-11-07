@@ -1,3 +1,5 @@
+import { FurnitureMeasure } from "./FurnitureMeasure";
+import { measureFurnitureParts } from "../../../src/core/furniture-measure";
 import { useFurnitureRecovery } from "./useFurnitureRecovery";
 import { transformFurnitureParts } from "../../../src/core/furniture-transform";
 import { StudioTabs } from "./StudioTabs";
@@ -226,6 +228,7 @@ export function FurnitureCreator({
   }, [plate?.kind, platePanel]);
   const issues = furnitureIssues(model);
   const spacing = shelfSpacing(model, selected);
+  const measurement = measureFurnitureParts(model, marked);
   const update = (fn: (m: FurnitureModel) => FurnitureModel) => {
     setHighlighted([]);
     if (!drag.current) {
@@ -894,6 +897,49 @@ export function FurnitureCreator({
                   </g>
                 );
               })}
+            {measurement && (
+              <g
+                aria-label="Linia pomiaru między częściami"
+                pointerEvents="none"
+              >
+                <line
+                  x1={measurement.from[0]}
+                  y1={model.height - measurement.from[1]}
+                  x2={measurement.to[0]}
+                  y2={model.height - measurement.to[1]}
+                  stroke="#205ac0"
+                  strokeDasharray="5 4"
+                  strokeWidth="2"
+                  vectorEffect="non-scaling-stroke"
+                />
+                {[measurement.from, measurement.to].map((p, i) => (
+                  <circle
+                    key={i}
+                    cx={p[0]}
+                    cy={model.height - p[1]}
+                    r={Math.max(5, model.height / 180)}
+                    fill="#205ac0"
+                  />
+                ))}
+                <text
+                  x={(measurement.from[0] + measurement.to[0]) / 2 + 12}
+                  y={
+                    model.height - (measurement.from[1] + measurement.to[1]) / 2
+                  }
+                  fontSize={Math.max(24, model.height / 38)}
+                  fill="#205ac0"
+                  stroke="var(--panel)"
+                  strokeWidth="6"
+                  paintOrder="stroke"
+                >
+                  Odstęp{" "}
+                  {measurement.distance.toLocaleString("pl-PL", {
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  mm
+                </text>
+              </g>
+            )}
             {dimensions && (
               <g aria-label="Światło między półkami">
                 {furnitureOpenings(model).openings.map((o, i) => (
@@ -1855,66 +1901,79 @@ export function FurnitureCreator({
             {layoutPanel}
           </div>
           <div
-            className="fc-studio-scroll"
+            className="fc-studio-parts"
             role="tabpanel"
             id={`${leftId}-panel-parts`}
             aria-labelledby={`${leftId}-tab-parts`}
             hidden={leftPanel !== "parts"}
           >
-            <fieldset className="fc-multi" disabled={busy}>
-              <legend>
-                Zaznaczone części ·{" "}
-                {
-                  marked.filter((id) => model.plates.some((p) => p.id === id))
-                    .length
+            <FurnitureMeasure model={model} marked={marked} />
+            <div className="fc-parts-scroll">
+              <details
+                className="fc-multi-details"
+                open={marked.some((id) =>
+                  model.plates.some((p) => p.id === id),
+                )}
+              >
+                <summary>Operacje na zaznaczonych częściach</summary>
+                <fieldset className="fc-multi" disabled={busy}>
+                  <legend>
+                    Zaznaczone części ·{" "}
+                    {
+                      marked.filter((id) =>
+                        model.plates.some((p) => p.id === id),
+                      ).length
+                    }
+                  </legend>
+                  <NumberField
+                    label="Odstęp / krok (mm)"
+                    value={partOffset}
+                    min={1}
+                    max={10000}
+                    onChange={setPartOffset}
+                  />
+                  <div className="fc-actions">
+                    <button onClick={() => transformParts("duplicate")}>
+                      Duplikuj w górę
+                    </button>
+                    <button onClick={() => transformParts("align-y")}>
+                      Wyrównaj dół / fronty
+                    </button>
+                    <button onClick={() => transformParts("align-x")}>
+                      Wyrównaj lewą krawędź
+                    </button>
+                    <button onClick={() => transformParts("space-y")}>
+                      Rozstaw w pionie
+                    </button>
+                    <button onClick={() => transformParts("space-x")}>
+                      Rozstaw w poziomie
+                    </button>
+                    <button onClick={() => setMarked([])}>
+                      Wyczyść zaznaczenie
+                    </button>
+                  </div>
+                  <small>
+                    Wyrównanie do najniższej / lewej części. Krok rozstawu
+                    mierzony między początkami. Części komór zmieniaj w układzie
+                    komór.
+                  </small>
+                </fieldset>
+              </details>
+              <FurnitureParts
+                model={model}
+                compact
+                marked={marked}
+                onMark={(partId) =>
+                  setMarked((ids) =>
+                    ids.includes(partId)
+                      ? ids.filter((x) => x !== partId)
+                      : [...ids, partId],
+                  )
                 }
-              </legend>
-              <NumberField
-                label="Odstęp / krok (mm)"
-                value={partOffset}
-                min={1}
-                max={10000}
-                onChange={setPartOffset}
+                selected={selected}
+                onSelect={selectPlate}
               />
-              <div className="fc-actions">
-                <button onClick={() => transformParts("duplicate")}>
-                  Duplikuj w górę
-                </button>
-                <button onClick={() => transformParts("align-y")}>
-                  Wyrównaj dół / fronty
-                </button>
-                <button onClick={() => transformParts("align-x")}>
-                  Wyrównaj lewą krawędź
-                </button>
-                <button onClick={() => transformParts("space-y")}>
-                  Rozstaw w pionie
-                </button>
-                <button onClick={() => transformParts("space-x")}>
-                  Rozstaw w poziomie
-                </button>
-                <button onClick={() => setMarked([])}>
-                  Wyczyść zaznaczenie
-                </button>
-              </div>
-              <small>
-                Wyrównanie do najniższej / lewej części. Krok rozstawu mierzony
-                między początkami. Części komór zmieniaj w układzie komór.
-              </small>
-            </fieldset>
-            <FurnitureParts
-              model={model}
-              compact
-              marked={marked}
-              onMark={(partId) =>
-                setMarked((ids) =>
-                  ids.includes(partId)
-                    ? ids.filter((x) => x !== partId)
-                    : [...ids, partId],
-                )
-              }
-              selected={selected}
-              onSelect={selectPlate}
-            />
+            </div>
           </div>
         </aside>
         <section className="fc-studio-canvas" aria-label="Podgląd projektu">

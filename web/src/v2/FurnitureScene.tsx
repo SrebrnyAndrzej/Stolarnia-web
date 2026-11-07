@@ -1,3 +1,4 @@
+import { measureFurnitureParts } from "../../../src/core/furniture-measure";
 import { furnitureFaceGuides } from "../../../src/core/furniture-face-guides";
 import { createPortal } from "react-dom";
 import { furniturePlateColor } from "../../../src/core/furniture-appearance";
@@ -24,6 +25,7 @@ type Runtime = {
   parts: THREE.Group;
   context: THREE.Group;
   compartments: THREE.Group;
+  measurement: THREE.Group;
   bounds: THREE.Box3;
   draw: () => void;
   fit: (view?: View) => void;
@@ -149,7 +151,10 @@ export function FurnitureScene({
     const draw = () => renderer.render(scene, camera);
     const compartments = new THREE.Group();
     scene.add(compartments);
+    const measurement = new THREE.Group();
+    scene.add(measurement);
     const state: Runtime = {
+      measurement,
       compartments,
       renderer,
       scene,
@@ -309,6 +314,7 @@ export function FurnitureScene({
       clearParts(parts);
       clearParts(context);
       clearParts(state.compartments);
+      clearParts(state.measurement);
       ground.geometry.dispose();
       ground.material.dispose();
       key.shadow.map?.dispose();
@@ -632,6 +638,43 @@ export function FurnitureScene({
     state.camera.position.copy(state.controls.target).add(offset);
     state.controls.update();
   };
+  useEffect(() => {
+    const state = runtime.current;
+    if (!state) return;
+    clearParts(state.measurement);
+    const result = measureFurnitureParts(model, marked);
+    if (result && !openFronts && !exploded && !isolated) {
+      const points = [result.from, result.to].map(
+        ([x, y, z]) => new THREE.Vector3(x * MM, y * MM, z * MM),
+      );
+      const line = new THREE.LineSegments(
+        new THREE.BufferGeometry().setFromPoints(points),
+        new THREE.LineDashedMaterial({
+          color: 0x205ac0,
+          dashSize: 0.02,
+          gapSize: 0.01,
+          depthTest: false,
+        }),
+      );
+      line.computeLineDistances();
+      line.renderOrder = 10;
+      state.measurement.add(line);
+      for (const point of points) {
+        const marker = new THREE.Mesh(
+          new THREE.SphereGeometry(
+            Math.max(0.003, (model.height * MM) / 250),
+            8,
+            6,
+          ),
+          new THREE.MeshBasicMaterial({ color: 0x205ac0, depthTest: false }),
+        );
+        marker.position.copy(point);
+        marker.renderOrder = 11;
+        state.measurement.add(marker);
+      }
+    }
+    state.draw();
+  }, [model, marked, attempt, openFronts, exploded, isolated]);
   const controls = (
     <>
       {onSelectCompartment && (
@@ -691,6 +734,12 @@ export function FurnitureScene({
             <p>Wybór komór jest dostępny po rozpoczęciu układu komór.</p>
           )}
         </div>
+      )}
+      {marked.length === 2 && (openFronts || exploded || isolated) && (
+        <p className="fc-hint">
+          Linię pomiaru pokaż w złożonym modelu: zamknij fronty, wyłącz
+          rozstrzelenie i izolację. Wynik w Częściach dotyczy zamkniętego mebla.
+        </p>
       )}
       <fieldset className="fc-section-controls">
         <legend>Przekrój i widoczność</legend>

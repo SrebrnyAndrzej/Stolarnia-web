@@ -187,3 +187,6 @@ W trybie wyboru komór: ukryj fronty, wybierz kliknięciem lub natywnym selectem
 - Transformacje: transformFurnitureParts + wspólna historia Creator; bez mutacji wejścia, bez nowych przecięć obwiedni, ograniczenie 150 części. Operacje strukturalnych komór wykonuje dotychczasowy edytor komór.
 - Kolizja: FurnitureReadiness wskazuje obie części, zamyka modal; edycja geometrii kasuje stare podświetlenie.
 - Widok: przekrój i izolacja nie zapisują geometrii. Dane materiałowe nie są wyprowadzane z koloru ani zgadywane.
+
+### Pomiar części
+Właściciel: core/furniture-measure + FurnitureMeasure; źródłem geometrii jest platePolygon. Pomiar jest tylko odczytem, nie modyfikuje modelu ani historii. Minimalna odległość dotyczy zamkniętych ekstrudowanych płyt; przerwy rzutów są opisane oddzielnie. Zaznaczenie jest wspólne z dotychczasowym wyborem wielu części. Linia 3D ukrywa się przy poglądowym ruchu/rozstrzeleniu/izolacji. Wynik aktualizuje się po edycji i cofnięciu, nie jest technologią wierceń ani certyfikacją prześwitu okuć.

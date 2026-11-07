@@ -1215,3 +1215,72 @@ dialog.fc-dimension-dialog {
 .fc-parts-browser li > .fc-check {
   margin: 0 0 3px;
 }
+.fc-measure-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.fc-measure-panel output {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.fc-measure-names {
+  font-size: 11px;
+  margin: 4px 0 8px;
+  overflow-wrap: anywhere;
+}
+.fc-measure-panel dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 8px 0;
+}
+.fc-measure-panel dt {
+  font-size: 10px;
+  color: var(--muted);
+}
+.fc-measure-panel dd {
+  margin: 3px 0 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.fc-measure-panel small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+}
+.fc-multi-details {
+  margin-bottom: 12px;
+}
+.fc-multi-details > summary {
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.fc-studio-parts {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  padding: 10px;
+  overflow: hidden;
+}
+.fc-studio-parts > .fc-measure-panel {
+  flex-shrink: 0;
+}
+.fc-parts-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+.fc-measure-help summary {
+  font-size: 11px;
+  cursor: pointer;
+  padding-top: 4px;
+}
