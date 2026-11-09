@@ -190,3 +190,10 @@ W trybie wyboru komór: ukryj fronty, wybierz kliknięciem lub natywnym selectem
 
 ### Pomiar części
 Właściciel: core/furniture-measure + FurnitureMeasure; źródłem geometrii jest platePolygon. Pomiar jest tylko odczytem, nie modyfikuje modelu ani historii. Minimalna odległość dotyczy zamkniętych ekstrudowanych płyt; przerwy rzutów są opisane oddzielnie. Zaznaczenie jest wspólne z dotychczasowym wyborem wielu części. Linia 3D ukrywa się przy poglądowym ruchu/rozstrzeleniu/izolacji. Wynik aktualizuje się po edycji i cofnięciu, nie jest technologią wierceń ani certyfikacją prześwitu okuć.
+
+### Wspólny rozkrój zapisanych modeli
+- Canonical owner: FurnitureBatchPreparation w istniejącym dialogu Creator; useResource/request/Feedback, natywne checkboxy, selecty i details.
+- POST /api/v2/furniture/batch-preparation: ta sama aktywna grupa zespołu co pojedyncze przygotowanie, bez cen. Zmiana reguły dostępu nie rozszerza odczytu poza współdzieloną bibliotekę.
+- Źródłem jest jeden odczyt aktualnej biblioteki, sprawdzony względem jawnych wersji. Adapter pojedynczego modelu zachowuje reguły obrzeży i usłojenia; all-or-nothing dla zestawu. Checksum obejmuje hashe źródeł i ilości.
+- Pakiet jest lokalnym eksportem szkicu. Nie zapisuje stanu zakupów, nie zatwierdza produkcji i nie składa zamówienia.
+- Zmiana wejścia albo zamknięcie panelu anuluje obliczenie i usuwa wynik; wybór pozostaje do ponownego obliczenia. Konflikt wersji rozwiązuje jawna akcja odświeżenia i potwierdzenie bieżącej wersji.

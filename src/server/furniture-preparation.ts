@@ -27,6 +27,11 @@ const materialSnapshot = (m: Material) => ({
   kierunekDekoru: m.kierunekDekoru,
   kolorHEX: m.kolorHEX,
 });
+/** Pricing per sheet does not make a board an individual finished front. */
+const sheetMaterial = (m: Material) =>
+  m.jednostka === "metrKwadratowy" ||
+  (m.jednostka === "sztuka" &&
+    ["plytaLaminowana", "mdf", "hdf", "sklejka"].includes(m.typ));
 export function preparationMaterials(store: Magazyn, person: Principal) {
   if (!isWorkshopMember(person))
     throw new AccessError(
@@ -35,7 +40,7 @@ export function preparationMaterials(store: Magazyn, person: Principal) {
     );
   return store
     .odczytaj()
-    .materialy.filter((m) => m.aktywny && m.jednostka === "metrKwadratowy")
+    .materialy.filter((m) => m.aktywny && sheetMaterial(m))
     .map(materialSnapshot);
 }
 /** Stage one adapter: all-or-nothing board planning, no guessed hardware or production approval. */
@@ -87,7 +92,7 @@ export function prepareFurniture(
     else {
       used.set(material.id, materialSnapshot(material));
       if (
-        material.jednostka !== "metrKwadratowy" ||
+        !sheetMaterial(material) ||
         !Number.isFinite(material.szerokoscArkuszaMM) ||
         !Number.isFinite(material.wysokoscArkuszaMM) ||
         material.szerokoscArkuszaMM <= 0 ||

@@ -1,3 +1,4 @@
+import { FurnitureBatchPreparation } from "./FurnitureBatchPreparation";
 import { FurnitureMeasure } from "./FurnitureMeasure";
 import { measureFurnitureParts } from "../../../src/core/furniture-measure";
 import { useFurnitureRecovery } from "./useFurnitureRecovery";
@@ -130,7 +131,7 @@ export function FurnitureCreator({
   const [platePanel, setPlatePanel] = useState("geometry");
   const [mobilePane, setMobilePane] = useState("preview");
   const [sheet, setSheet] = useState<
-    null | "materials" | "room" | "documents" | "review"
+    null | "materials" | "room" | "documents" | "review" | "batch"
   >(null);
   const sheetRef = useRef<HTMLDialogElement>(null),
     sheetOpener = useRef<HTMLElement | null>(null);
@@ -1035,6 +1036,9 @@ export function FurnitureCreator({
   const libraryPanel = (
     <div className="fc-library">
       <h2>Biblioteka ogólna</h2>
+      <button onClick={() => openSheet("batch")} disabled={demo}>
+        Wspólny rozkrój biblioteki
+      </button>
       <label>
         Szukaj mebla
         <input
@@ -2105,17 +2109,27 @@ export function FurnitureCreator({
         >
           <header>
             <h2 id="fc-sheet-title">
-              {sheet === "materials"
-                ? "Materiały i standard"
-                : sheet === "room"
-                  ? "Wnęka i skosy"
-                  : sheet === "review"
-                    ? "Braki przed zamówieniem"
-                    : "Dokumentacja i narzędzia"}
+              {sheet === "batch"
+                ? "Wspólny rozkrój biblioteki"
+                : sheet === "materials"
+                  ? "Materiały i standard"
+                  : sheet === "room"
+                    ? "Wnęka i skosy"
+                    : sheet === "review"
+                      ? "Braki przed zamówieniem"
+                      : "Dokumentacja i narzędzia"}
             </h2>
             <button onClick={() => setSheet(null)}>Zamknij panel</button>
           </header>
           <div className="fc-sheet-body">
+            <div hidden={sheet !== "batch"}>
+              <FurnitureBatchPreparation
+                library={library}
+                active={sheet === "batch"}
+                onRefresh={loadLibrary}
+                loading={loading}
+              />
+            </div>
             <div hidden={sheet !== "materials"}>{standardPanel}</div>
             <div hidden={sheet !== "review"}>
               <FurnitureReadiness

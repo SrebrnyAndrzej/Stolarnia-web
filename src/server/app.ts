@@ -1,3 +1,4 @@
+import { prepareFurnitureBatch } from "./furniture-batch-preparation.js";
 import { drawerSystems, calculateDrawer, previewCalculator } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
@@ -184,6 +185,7 @@ app.post("/api/v2/projects/:id/files", api(req => uploadProjectFile(s.magazyn, f
 app.get("/api/v2/projects/:id/files/:fid/content", api(req => readProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), p(req,"fid"))));
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.get("/api/v2/furniture/materials",api(req=>preparationMaterials(s.magazyn,osoba(req))));
+app.post("/api/v2/furniture/batch-preparation",api(req=>prepareFurnitureBatch(s.magazyn,osoba(req),req.body)));
 app.post("/api/v2/furniture/:id/preparation",api(req=>prepareFurniture(s.magazyn,osoba(req),p(req,"id"),req.body)));
 app.put("/api/v2/furniture", api(req => saveFurniture(s.magazyn, osoba(req), req.body)));
 app.get("/api/v2/furniture/:id/construction", api(req => furnitureConstruction(s.magazyn, osoba(req), req.params.id, Number(req.query.version))));

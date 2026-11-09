@@ -151,6 +151,23 @@ test("integracja Claude HTTP: dostawy owner-only, konflikt statusu i wersjonowan
   const prep=await zadanie("POST",`/api/v2/furniture/${id}/preparation`,"t-produkcja",{version:1,materials:{}});
   assert.equal(prep.status,200,prep.tekst);assert.equal(prep.json.readyForProduction,false);assert.equal(prep.json.planning,null);assert.ok(prep.json.diagnostics.length>0);
   assert.equal((await zadanie("POST",`/api/v2/furniture/${id}/preparation`,"t-owner",{version:2,materials:{}})).status,409);
+  const batch=await zadanie("POST","/api/v2/furniture/batch-preparation","t-produkcja",{items:[{id,version:1,quantity:2,materials:{}}]});
+  assert.equal(batch.status,200,batch.tekst);assert.equal(batch.json.planning,null);assert.equal(batch.json.readyForProduction,false);assert.ok(!batch.tekst.includes("cenaNetto"));
+  assert.equal((await zadanie("POST","/api/v2/furniture/batch-preparation","t-owner",{items:[{id,version:2,quantity:1,materials:{}}]})).status,409);
+  assert.equal((await zadanie("POST","/api/v2/furniture/batch-preparation",undefined,{items:[{id,version:1,quantity:1,materials:{}}]})).status,403);
+  const anonymousBatch=await oryginalnyFetch(adres+"/api/v2/furniture/batch-preparation",{method:"POST",headers:{origin:process.env.PAN_STOLARZ_ORIGIN??adres,"content-type":"application/json"},body:JSON.stringify({items:[{id,version:1,quantity:1,materials:{}}]})});
+  assert.equal(anonymousBatch.status,401);
+  const {freshConstructionStandard,freshPlateSpecification}=await import("../core/furniture.js");
+  const actualMaterial=materials.json.find((m:any)=>m.gruboscMM===18&&m.szerokoscArkuszaMM>0&&m.wysokoscArkuszaMM>0);assert.ok(actualMaterial);
+  const panel=freshFurniture();panel.name="Panel pełna ścieżka";panel.construction={...freshConstructionStandard(),dimensionMode:"finished"};
+  const spec=freshPlateSpecification();Object.assign(spec,{material:"płyta",decor:"biały",face:"xy",grain:actualMaterial.kierunekDekoru?"u":"none"});for(const edge of Object.values(spec.edges))edge.state="none";
+  const partId=randomUUID(),panelId=randomUUID();panel.plates=[{id:partId,name:"Panel",kind:"board",x:0,y:0,z:0,width:400,height:300,depth:18,specification:spec}];
+  assert.equal((await zadanie("PUT","/api/v2/furniture","t-owner",{id:panelId,version:0,model:panel})).status,200);
+  const completeBatch=await zadanie("POST","/api/v2/furniture/batch-preparation","t-produkcja",{items:[{id:panelId,version:1,quantity:2,materials:{[partId]:actualMaterial.id}}]});
+  assert.equal(completeBatch.status,200,completeBatch.tekst);assert.ok(completeBatch.json.planning,completeBatch.tekst);assert.equal(completeBatch.json.planning.formatki.length,2);assert.equal(completeBatch.json.source.items[0].libraryVersion,1);assert.equal(completeBatch.json.partSources.length,2);assert.ok(!completeBatch.tekst.includes("cenaNetto"));
+
+
+
 });
 
 test("pliki CAD HTTP: prywatny zapis, pobranie, deduplikacja i zakres profili", async () => {

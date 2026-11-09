@@ -1284,3 +1284,63 @@ dialog.fc-dimension-dialog {
   cursor: pointer;
   padding-top: 4px;
 }
+.fc-batch > p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fc-batch-list {
+  max-height: 290px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+.fc-batch-entry {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.fc-batch-entry:last-child {
+  border-bottom: 0;
+}
+.fc-batch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 10px;
+  align-items: center;
+}
+.fc-batch-row > .fc-check {
+  margin: 0;
+}
+.fc-batch details > summary {
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+.fc-batch-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 14px;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.fc-batch-sheet svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 450px;
+  margin: 12px 0;
+}
+.fc-batch-sheet svg g[role="button"] {
+  cursor: pointer;
+}
+.fc-batch-sheet svg g[role="button"]:focus rect {
+  stroke-width: 3;
+  stroke: var(--text);
+}
+.fc-batch-sheet p,
+.fc-batch-result li {
+  font-size: 12px;
+}
