@@ -2,7 +2,10 @@ import { FurnitureBatchPreparation } from "./FurnitureBatchPreparation";
 import { FurnitureMeasure } from "./FurnitureMeasure";
 import { measureFurnitureParts } from "../../../src/core/furniture-measure";
 import { useFurnitureRecovery } from "./useFurnitureRecovery";
-import { transformFurnitureParts } from "../../../src/core/furniture-transform";
+import {
+  transformFurnitureParts,
+  type FurnitureTransform,
+} from "../../../src/core/furniture-transform";
 import { StudioTabs } from "./StudioTabs";
 import { FurnitureAppearance } from "./FurnitureAppearance";
 import { FurnitureReadiness } from "./FurnitureReadiness";
@@ -116,6 +119,8 @@ export function FurnitureCreator({
   const [marked, setMarked] = useState<string[]>([]);
   const [highlighted, setHighlighted] = useState<string[]>([]);
   const [partOffset, setPartOffset] = useState(100);
+  const [partOperation, setPartOperation] =
+    useState<FurnitureTransform>("equal-y");
   useEffect(() => {
     setMarked([]);
     setHighlighted([]);
@@ -1731,9 +1736,7 @@ export function FurnitureCreator({
       }
     />
   );
-  const transformParts = (
-    operation: "duplicate" | "align-x" | "align-y" | "space-x" | "space-y",
-  ) => {
+  const transformParts = (operation: FurnitureTransform) => {
     try {
       const next = transformFurnitureParts(
         model,
@@ -1936,31 +1939,48 @@ export function FurnitureCreator({
                     max={10000}
                     onChange={setPartOffset}
                   />
+                  <label>
+                    Operacja na częściach
+                    <select
+                      aria-label="Operacja na częściach"
+                      value={partOperation}
+                      onChange={(e) =>
+                        setPartOperation(e.target.value as FurnitureTransform)
+                      }
+                    >
+                      <option value="equal-y">Równe światła w pionie</option>
+                      <option value="equal-x">Równe światła w poziomie</option>
+                      <option value="align-y">Wyrównaj dół / fronty</option>
+                      <option value="align-x">Wyrównaj lewą krawędź</option>
+                      <option value="space-y">
+                        Rozstaw w pionie według kroku
+                      </option>
+                      <option value="space-x">
+                        Rozstaw w poziomie według kroku
+                      </option>
+                    </select>
+                  </label>
                   <div className="fc-actions">
+                    <button onClick={() => transformParts(partOperation)}>
+                      Zastosuj operację
+                    </button>
                     <button onClick={() => transformParts("duplicate")}>
                       Duplikuj w górę
-                    </button>
-                    <button onClick={() => transformParts("align-y")}>
-                      Wyrównaj dół / fronty
-                    </button>
-                    <button onClick={() => transformParts("align-x")}>
-                      Wyrównaj lewą krawędź
-                    </button>
-                    <button onClick={() => transformParts("space-y")}>
-                      Rozstaw w pionie
-                    </button>
-                    <button onClick={() => transformParts("space-x")}>
-                      Rozstaw w poziomie
                     </button>
                     <button onClick={() => setMarked([])}>
                       Wyczyść zaznaczenie
                     </button>
                   </div>
-                  <small>
-                    Wyrównanie do najniższej / lewej części. Krok rozstawu
-                    mierzony między początkami. Części komór zmieniaj w układzie
-                    komór.
-                  </small>
+                  <details>
+                    <summary>Zasady rozstawu</summary>
+                    <small>
+                      Wyrównanie do najniższej / lewej części. Krok rozstawu
+                      mierzony między początkami. Części komór zmieniaj w
+                      układzie komór. Równe światła: co najmniej trzy
+                      prostokątne części; skrajne pozostają na miejscu, grubości
+                      są uwzględnione. Wartość kroku nie jest wtedy używana.
+                    </small>
+                  </details>
                 </fieldset>
               </details>
               <FurnitureParts

@@ -7,6 +7,7 @@ import {
 } from "../../../src/core/furniture-dimension-edit";
 import type { FurnitureModel } from "../../../src/core/furniture";
 import { Feedback } from "./ui";
+import { dimensionExpression } from "../../../src/core/dimension-expression";
 export function FurnitureDimensionEditor({
   model,
   target,
@@ -23,6 +24,12 @@ export function FurnitureDimensionEditor({
     [error, setError] = useState("");
   const dialog = useRef<HTMLDialogElement>(null),
     input = useRef<HTMLInputElement>(null);
+  let preview: number | undefined;
+  try {
+    preview = dimensionExpression(value);
+  } catch {
+    /* Show actionable errors on apply. */
+  }
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     const el = dialog.current;
@@ -35,12 +42,10 @@ export function FurnitureDimensionEditor({
   }, []);
   const apply = (automatic = false) => {
     try {
-      if (!automatic && !/^\d+(?:[.,]\d+)?$/.test(value.trim()))
-        throw new Error("Wpisz liczbę w milimetrach, np. 350 lub 350,5.");
       const next = editFurnitureDimension(
         model,
         target,
-        Number(value.replace(",", ".")),
+        automatic ? d.value : dimensionExpression(value),
         () => crypto.randomUUID(),
         automatic,
       );
@@ -71,14 +76,26 @@ export function FurnitureDimensionEditor({
           <input
             ref={input}
             autoFocus
-            inputMode="decimal"
+            inputMode="text"
+            maxLength={160}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setError("");
+            }}
             aria-invalid={!!error}
             aria-describedby="dimension-editor-help"
           />
         </label>
+        {preview !== undefined && (
+          <output aria-live="polite" className="num">
+            Wynik:{" "}
+            {preview.toLocaleString("pl-PL", { maximumFractionDigits: 6 })} mm
+          </output>
+        )}
         <p id="dimension-editor-help">
+          Wpisz mm lub działanie, np. (600-2*18)/3. Wynik jest wymiarem, nie
+          zapisaną formułą.{" "}
           {target.kind === "compartment"
             ? "Podany wymiar zostanie zablokowany. Sąsiednie komory automatyczne podzielą pozostałe miejsce; grubość przegród jest uwzględniona."
             : target.kind === "opening"

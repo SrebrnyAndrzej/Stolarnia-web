@@ -2,6 +2,12 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Precyzyjna edycja — 11.11.2026
+- Właściciel działań wymiarowych: `core/dimension-expression`; tylko liczby dziesiętne, przecinek/kropka, +/−/*// i nawiasy. Bez eval, jednostek i odwołań do kodu. Limit długości, zagnieżdżenia i wielkości wyniku. Wymiary nadal waliduje istniejący `editFurnitureDimension`.
+- Właściciel UI: istniejący `FurnitureDimensionEditor`. Wynik w mm jest podglądem, zapis dopiero po Zastosuj; błąd zachowuje tekst i fokus, Escape/Anuluj pozostawiają model bez zmian. Jedno zatwierdzenie jest jednym krokiem historii. Jest to wyliczenie liczby, nie trwałe parametryczne powiązanie wymiarów. Pozostałe pola liczbowe zachowują dotychczasową obsługę.
+- Równe światła: `core/furniture-transform`, natywny select operacji i przycisk Zastosuj w istniejącym panelu zaznaczenia. Sam wybór operacji nie zmienia modelu. Co najmniej trzy pełne prostokątne części; grubości każdej są odejmowane od rozpiętości. Skrajne części pozostają na miejscu. Wartość kroku nie jest używana. Części korpusu i generowanych komór są wyłączone; edytuje je istniejący układ komór.
+- Operacja jest atomowa, odwracalna, zachowuje ID i dane materiałowe. Odrzuca nową kolizję obwiedni, brak miejsca i przycięcie wybranej części do obrysu/skosu. Nie tworzy trwałego wiązania i nie jest kontrolą prześwitów okuć. Późniejsza zmiana gabarytów nie uruchamia ponownie rozstawu.
+
 ## Integracja Claude i przygotowanie płyt — 3.11.2026
 
 ST-APP-004: punkty stałe i okna w szybkim kreatorze, tryb przy kliencie domyślnie ukrywa koszty zakupu także właścicielowi, preferowane dekory, tekstury 3D i ujęcia do oferty. Galerie dekorów i pełny ekran 3D korzystają z natywnego modalnego dialogu: tło nieaktywne, Escape, fokus w obrębie dialogu. Ujęcia wyłącznie w pamięci edytora, usuwane po opuszczeniu lub zmianie rewizji, bez sessionStorage. Ustawienia dekorów używają request/useResource/Feedback i blokują równoległy zapis.

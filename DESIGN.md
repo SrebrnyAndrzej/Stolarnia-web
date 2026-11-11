@@ -14,6 +14,9 @@ rounded:
 
 ## Overview
 
+### Precyzyjna edycja — 11.11.2026
+`FurnitureDimensionEditor` pozostaje właścicielem edycji wymiaru bezpośrednio z rysunku. Pole przyjmuje ograniczone działania arytmetyczne i pokazuje wynik w istniejącej typografii liczbowej; dopiero Zastosuj zmienia szkic. Nie zapisujemy zależności ani formuł. `FurnitureCreator` rozszerza istniejącą sekcję operacji na zaznaczonych częściach o równe światła w pionie/poziomie, bez nowego panelu i bez zmiany tokenów. Skrajne części pozostają nieruchome; opis odróżnia światło od dotychczasowego kroku między początkami. Natywny select „Operacja na częściach” i „Zastosuj operację” zastępują zestaw osobnych przycisków wyrównania i rozstawu. Duplikowanie pozostaje bezpośrednią akcją, objaśnienia są rozwijane.
+
 Integracja 3.11.2026 zachowuje istniejące tokeny i układ. Szybki projekt używa wariantów `.qp-*`, dialogi dekorów i pełnego ekranu są modalne natywnie. Panel Zamówienia pokazuje także istniejącą kartę dostaw, z przewijaniem szerokiej tabeli wewnątrz sekcji. Przygotowanie płyt z biblioteki korzysta z tych samych `.field/.input`, `.ps-button` oraz Feedback; nie dodaje nowej palety. Rozkrój jest opisany jako roboczy i powiązany z zapisaną wersją.
 
 Pliki od architekta są rozwijaną sekcją w szczegółach projektu, obok dokumentacji. Właściciel UI: `ProjectFiles.tsx`, wspólne `.field/.input`, `.ps-button`, `Feedback` i `useResource`. Przerywana ramka oznacza miejsce upuszczenia pojedynczego pliku; natywny input pozostaje alternatywą klawiaturową. Podgląd CAD jest monochromatycznym rzutem 2D w kolorach tokenów aplikacji, bez nowego motywu lub surowego SVG z pliku.

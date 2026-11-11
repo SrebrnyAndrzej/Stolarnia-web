@@ -21,6 +21,65 @@ const setup = () => {
   m.plates.push(p);
   return { m, p };
 };
+test("equal clear gaps keep extremes, include different thicknesses and preserve source", () => {
+  const { m, p } = setup();
+  m.plates = m.plates.filter((q) => q.id !== p.id);
+  const shelves = [
+    { ...p, y: 200, height: 18 },
+    { ...p, id: randomUUID(), y: 480, height: 36 },
+    { ...p, id: randomUUID(), y: 1100, height: 25 },
+    { ...p, id: randomUUID(), y: 1600, height: 18 },
+  ];
+  m.plates.push(...shelves);
+  const before = structuredClone(m);
+  const next = transformFurnitureParts(
+    m,
+    shelves.map((s) => s.id).reverse(),
+    "equal-y",
+    NaN,
+    randomUUID,
+  );
+  assert.deepEqual(m, before);
+  const placed = shelves.map((s) => next.plates.find((q) => q.id === s.id)!);
+  assert.equal(placed[0].y, 200);
+  assert.equal(placed[3].y, 1600);
+  const gaps = placed
+    .slice(1)
+    .map((s, i) => s.y - placed[i].y - placed[i].height);
+  for (const g of gaps) assert.ok(Math.abs(g - gaps[0]) < 1e-8);
+  assert.ok(
+    furnitureSave.safeParse({ id: randomUUID(), version: 0, model: next })
+      .success,
+  );
+});
+test("equal horizontal gaps use widths and reject a new collision with an unselected part", () => {
+  const { m, p } = setup();
+  m.plates = m.plates.filter((q) => q.id !== p.id);
+  const dividers = [100, 200, 800].map((x, i) => ({
+    ...p,
+    id: randomUUID(),
+    x,
+    width: 18 + i * 2,
+    height: 600,
+  }));
+  m.plates.push(...dividers);
+  const ids = dividers.map((s) => s.id);
+  const next = transformFurnitureParts(m, ids, "equal-x", 250, randomUUID);
+  const a = next.plates.find((q) => q.id === ids[0])!,
+    b = next.plates.find((q) => q.id === ids[1])!,
+    c = next.plates.find((q) => q.id === ids[2])!;
+  assert.ok(Math.abs(b.x - a.x - a.width - (c.x - b.x - b.width)) < 1e-8);
+  m.plates.push({ ...p, id: randomUUID(), x: b.x, width: 18, height: 600 });
+  assert.throws(
+    () => transformFurnitureParts(m, ids, "equal-x", 250, randomUUID),
+    /przecięcie/,
+  );
+  assert.throws(
+    () =>
+      transformFurnitureParts(m, ids.slice(0, 2), "equal-x", 250, randomUUID),
+    /trzy/,
+  );
+});
 test("duplicate uses new IDs, detaches layout and preserves original without mutation", () => {
   const { m, p } = setup();
   const before = structuredClone(m);
