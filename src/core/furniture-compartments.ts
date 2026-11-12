@@ -376,6 +376,7 @@ export function rebuildCompartments(
       id: old?.id ?? id(),
       layoutSlot,
       name: old?.name ?? `${box.node.name}: ${name}`,
+      frontHardware: old?.kind === kind ? old.frontHardware : undefined,
       kind,
       x,
       y,

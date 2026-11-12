@@ -10,6 +10,8 @@ import { StudioTabs } from "./StudioTabs";
 import { FurnitureAppearance } from "./FurnitureAppearance";
 import { FurnitureReadiness } from "./FurnitureReadiness";
 import { FurnitureDimensionEditor } from "./FurnitureDimensionEditor";
+import { FurnitureHardware } from "./FurnitureHardware";
+import { frontHardware } from "../../../src/core/front-hardware";
 import type { DimensionTarget } from "../../../src/core/furniture-dimension-edit";
 import { createPortal } from "react-dom";
 import { furnitureOpenings } from "../../../src/core/furniture-openings";
@@ -230,6 +232,12 @@ export function FurnitureCreator({
   const plate = model.plates.find((p) => p.id === selected);
   useEffect(() => {
     if (plate?.kind !== "drawer" && platePanel === "drawers")
+      setPlatePanel("geometry");
+    if (
+      platePanel === "hardware" &&
+      plate?.kind !== "door" &&
+      plate?.kind !== "drawer"
+    )
       setPlatePanel("geometry");
   }, [plate?.kind, platePanel]);
   const issues = furnitureIssues(model);
@@ -903,6 +911,42 @@ export function FurnitureCreator({
                   </g>
                 );
               })}
+            {plate &&
+              !dimensions &&
+              platePanel === "hardware" &&
+              frontHardware(model, plate).holes.length > 0 &&
+              inspectorMode === "plate" && (
+                <g
+                  role="img"
+                  aria-label="Otwory wybranego frontu w projekcie"
+                  pointerEvents="none"
+                >
+                  {frontHardware(model, plate).holes.map((h, i) => (
+                    <g key={i}>
+                      <circle
+                        cx={plate.x + h.x}
+                        cy={model.height - plate.y - h.y}
+                        r={h.diameter / 2}
+                        fill="var(--panel)"
+                        stroke="var(--text)"
+                        strokeWidth="1.5"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <text
+                        x={plate.x + h.x + 30}
+                        y={model.height - plate.y - h.y + 8}
+                        fontSize={Math.max(24, model.height / 35)}
+                        fill="var(--text)"
+                        stroke="var(--panel)"
+                        strokeWidth="4"
+                        paintOrder="stroke"
+                      >
+                        {i + 1}
+                      </text>
+                    </g>
+                  ))}
+                </g>
+              )}
             {measurement && (
               <g
                 aria-label="Linia pomiaru między częściami"
@@ -2050,10 +2094,19 @@ export function FurnitureCreator({
               id={plateId}
               label="Parametry płyty"
               value={platePanel}
-              onChange={setPlatePanel}
+              onChange={(value) => {
+                setPlatePanel(value);
+                if (value === "hardware") {
+                  setView("2d");
+                  setDimensions(false);
+                }
+              }}
               items={[
                 { id: "geometry", label: "Wymiary" },
                 { id: "material", label: "Materiał" },
+                ...(plate?.kind === "door" || plate?.kind === "drawer"
+                  ? [{ id: "hardware", label: "Okucia" }]
+                  : []),
                 ...(plate?.kind === "drawer"
                   ? [{ id: "drawers", label: "System" }]
                   : []),
@@ -2087,6 +2140,28 @@ export function FurnitureCreator({
                 hidden={platePanel !== "drawers"}
               >
                 {drawerPanel}
+              </div>
+            )}
+            {(plate?.kind === "door" || plate?.kind === "drawer") && (
+              <div
+                role="tabpanel"
+                id={`${plateId}-panel-hardware`}
+                aria-labelledby={`${plateId}-tab-hardware`}
+                hidden={platePanel !== "hardware"}
+              >
+                <FurnitureHardware
+                  model={model}
+                  plate={plate}
+                  disabled={busy}
+                  onChange={(frontHardware) =>
+                    update((m) => ({
+                      ...m,
+                      plates: m.plates.map((p) =>
+                        p.id === plate.id ? { ...p, frontHardware } : p,
+                      ),
+                    }))
+                  }
+                />
               </div>
             )}
           </div>

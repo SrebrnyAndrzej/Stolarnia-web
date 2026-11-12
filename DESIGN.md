@@ -14,6 +14,9 @@ rounded:
 
 ## Overview
 
+### Okucia frontu — 12.11.2026
+`FurnitureHardware` w istniejącym inspektorze, zakładka Okucia dla drzwi i frontu szuflady. Domyślnie zwinięte sekcje parametrów; numerowane otwory na głównym rysunku 2D, na telefonie także lokalny podgląd w inspektorze. Zachowane tokeny i standardowe NumberField/select/details. Karta frontu do druku jest osobnym eksportem; zbiorcza krótka karta nie powiela tabel każdego otworu.
+
 ### Precyzyjna edycja — 11.11.2026
 `FurnitureDimensionEditor` pozostaje właścicielem edycji wymiaru bezpośrednio z rysunku. Pole przyjmuje ograniczone działania arytmetyczne i pokazuje wynik w istniejącej typografii liczbowej; dopiero Zastosuj zmienia szkic. Nie zapisujemy zależności ani formuł. `FurnitureCreator` rozszerza istniejącą sekcję operacji na zaznaczonych częściach o równe światła w pionie/poziomie, bez nowego panelu i bez zmiany tokenów. Skrajne części pozostają nieruchome; opis odróżnia światło od dotychczasowego kroku między początkami. Natywny select „Operacja na częściach” i „Zastosuj operację” zastępują zestaw osobnych przycisków wyrównania i rozstawu. Duplikowanie pozostaje bezpośrednią akcją, objaśnienia są rozwijane.
 

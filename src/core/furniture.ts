@@ -22,6 +22,7 @@ export interface PlateSpecification {
   >;
 }
 export interface FurniturePlate {
+  frontHardware?: import("./front-hardware.js").FrontHardware;
   id: string;
   name: string;
   kind: "board" | "drawer" | "door" | "cap";
@@ -998,6 +999,8 @@ export function refreshSuggestedLayout(
               ...p,
               id: old.id,
               name: old.name,
+              frontHardware:
+                old.kind === p.kind ? old.frontHardware : undefined,
               specification: old.specification ?? p.specification,
             }
           : p;

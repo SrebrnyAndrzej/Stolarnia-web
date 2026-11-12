@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { compartmentSchema } from "./furniture-compartments.js";
+import { frontHardwareSchema } from "./front-hardware.js";
 const mm = z.number().finite().min(1).max(10000);
 const coordinate = z.number().finite().min(0).max(10000);
 const edge = z
@@ -31,6 +32,7 @@ const plate = z
     height: mm,
     depth: mm,
     specification: specification.optional(),
+    frontHardware: frontHardwareSchema.optional(),
     layoutSlot: z.string().min(1).max(100).optional(),
     layoutCustomized: z.boolean().optional(),
   })

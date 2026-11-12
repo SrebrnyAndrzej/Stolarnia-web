@@ -7,6 +7,7 @@ import {
 import { verticalSection } from "../../../src/core/technical-openings";
 import { furnitureDrawerCalculations } from "../../../src/core/furniture-drawers";
 import { slopeRoofPanels } from "../../../src/core/slope-cut";
+import { frontHardwareDocument } from "./front-hardware-document";
 const esc = (v: unknown) =>
   String(v ?? "").replace(
     /[&<>"']/g,
@@ -64,5 +65,5 @@ export function furnitureDocument(
     })
     .join(
       "",
-    )}</section><p class="meta">Pełny indeks części: osobny eksport CSV/JSON. Drukuj w poziomie lub zapisz jako PDF.</p></html>`;
+    )}</section>${frontHardwareDocument(model)}<p class="meta">Pełny indeks części: osobny eksport CSV/JSON. Drukuj w poziomie lub zapisz jako PDF.</p></html>`;
 }

@@ -2,6 +2,14 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Ręczny plan okuć frontu — 12.11.2026
+- Canonical owner: `core/front-hardware` (schema i obliczenia), `FurnitureHardware` (inspektor), `front-hardware-document` (druk). Opcjonalne frontHardware na płycie, walidowane serwerowo, zgodne ze starymi modelami bez tego pola. Zapis i Cofnij przez istniejącego właściciela szkicu; regeneracja tego samego slotu/kind zachowuje dane. Współrzędne otworów nie są zapisywane jako niezależna kopia.
+- Zakładka Okucia ustawia rzut 2D od przodu i wyłącza ukrywanie frontów wymiarowaniem. X od lewej, Y od dołu rzutu; obróbka od tyłu samej płyty. Użytkownik zachowuje oznaczenie fizycznych krawędzi przy odwracaniu części. To nie wiercenie tafli lustra.
+- Wstępne parametry są ręcznym szkicem, nie katalogowym doborem ani zatwierdzeniem do produkcji. Masa z edytowalnych kg/m² z doliczeniem lustra, bez automatycznego wyznaczania liczby zawiasów. Źródło/model okucia jest opisem użytkownika; jego wpisanie nie zatwierdza poprawności technologii.
+- Kontrola pełnego prostokątnego frontu, obwodów i nakładania otworów oraz grubości płyty; błąd usuwa cały schemat otworów i możliwość pobrania karty. Po zmianie geometrii przeliczenie natychmiast, bez starych pozycji. Parametry błędnego szkicu można zachować do poprawy, ale nie uznać go za gotową technologię.
+- Strefa kontrolna przy półce jest ostrzeżeniem o przecięciu rzutu, nie symulacją ramienia zawiasu lub ruchu drzwi. Nie generujemy otworów prowadnika, śrub puszki ani CNC. Parametry położenia uchwytu są bezwzględne; po zmianie rozmiaru nie zakładamy ponownego centrowania.
+- Osobna karta HTML do druku/PDF w przeglądarce ma rysunek, numerację i tabelę; wszystkie teksty użytkownika escapowane. Krótka dokumentacja mebla zawiera tylko stan planu i ostrzeżenia. Brak zmian ról i zakresu dostępu API.
+
 ## Precyzyjna edycja — 11.11.2026
 - Właściciel działań wymiarowych: `core/dimension-expression`; tylko liczby dziesiętne, przecinek/kropka, +/−/*// i nawiasy. Bez eval, jednostek i odwołań do kodu. Limit długości, zagnieżdżenia i wielkości wyniku. Wymiary nadal waliduje istniejący `editFurnitureDimension`.
 - Właściciel UI: istniejący `FurnitureDimensionEditor`. Wynik w mm jest podglądem, zapis dopiero po Zastosuj; błąd zachowuje tekst i fokus, Escape/Anuluj pozostawiają model bez zmian. Jedno zatwierdzenie jest jednym krokiem historii. Jest to wyliczenie liczby, nie trwałe parametryczne powiązanie wymiarów. Pozostałe pola liczbowe zachowują dotychczasową obsługę.
