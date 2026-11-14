@@ -47,6 +47,7 @@ import {
   deskLegWidth,
   deskCabinetWidth,
   fitDrawerFronts,
+  setDrawerHeightLock,
   layoutVariants,
   type LayoutVariant,
   furnitureIssues,
@@ -419,6 +420,14 @@ export function FurnitureCreator({
       setError((e as Error).message);
     } finally {
       setBusy(false);
+    }
+  };
+  const changeHeightLock = (height: number | undefined) => {
+    try {
+      const next = setDrawerHeightLock(model, selected, height);
+      update(() => next);
+    } catch (e) {
+      setError((e as Error).message);
     }
   };
   const modifyPlate = (patch: Partial<FurniturePlate>) =>
@@ -908,6 +917,27 @@ export function FurnitureCreator({
                     <polygon points={points(poly)}>
                       <title>{p.name}</title>
                     </polygon>
+                    {p.kind === "drawer" &&
+                      p.drawerHeightLock !== undefined &&
+                      model.drawerFit === "fill" &&
+                      !dimensions && (
+                        <text
+                          pointerEvents="none"
+                          x={p.x + p.width / 2}
+                          y={model.height - p.y - p.height / 2 + 10}
+                          textAnchor="middle"
+                          fontSize={Math.max(24, model.height / 45)}
+                          fill="var(--text)"
+                          stroke="var(--panel)"
+                          strokeWidth="4"
+                          paintOrder="stroke"
+                        >
+                          {p.drawerHeightLock.toLocaleString("pl-PL", {
+                            maximumFractionDigits: 3,
+                          })}{" "}
+                          mm · stała
+                        </text>
+                      )}
                   </g>
                 );
               })}
@@ -1580,28 +1610,26 @@ export function FurnitureCreator({
       }
     />
   );
+  const partPicker = (
+    <label className="fc-plate-picker">
+      Wybierz płytę
+      <select
+        aria-label="Wybierz płytę"
+        disabled={busy}
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
+      >
+        <option value="">Wybierz element…</option>
+        {model.plates.map((p, i) => (
+          <option value={p.id} key={p.id}>
+            {i + 1}. {p.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
   const partParameters = (
     <div className="fc-plate-parameters">
-      <h2>Płyty · {model.plates.length}</h2>
-      <p className="fc-hint">
-        Wybierz element na rysunku lub z listy. Zmiany od razu zobaczysz w
-        projekcie.
-      </p>
-      <label>
-        Wybierz płytę
-        <select
-          aria-label="Wybierz płytę"
-          value={selected}
-          onChange={(e) => setSelected(e.target.value)}
-        >
-          <option value="">Wybierz element…</option>
-          {model.plates.map((p, i) => (
-            <option value={p.id} key={p.id}>
-              {i + 1}. {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
       {plate ? (
         <fieldset disabled={busy}>
           <legend>Parametry płyty</legend>
@@ -1622,36 +1650,83 @@ export function FurnitureCreator({
               konstrukcji, a gabaryty w wymiarach mebla.
             </p>
           )}
-          {plate.anchor !== "back" &&
-            (["x", "y", "z", "width", "height", "depth"] as const).map(
-              (k, i) => (
-                <NumberField
-                  key={k}
-                  label={
-                    [
-                      "Pozycja X",
-                      "Pozycja Y",
-                      "Pozycja Z",
-                      "Szerokość płyty",
-                      "Wysokość płyty",
-                      "Głębokość płyty",
-                    ][i]
+          {plate.kind === "drawer" && !model.compartments && (
+            <div className="fc-height-lock">
+              <label className="fc-check">
+                <input
+                  type="checkbox"
+                  checked={
+                    model.drawerFit === "fill" &&
+                    plate.drawerHeightLock !== undefined
                   }
-                  value={plate[k]}
-                  min={i < 3 ? 0 : 1}
-                  onChange={(v) =>
-                    modifyPlate({
-                      [k]: v,
-                      ...(plate.kind === "cap" && k !== "z" && k !== "depth"
-                        ? { kind: "board" as const }
-                        : {}),
-                    })
+                  disabled={model.drawerFit !== "fill"}
+                  onChange={(e) =>
+                    changeHeightLock(
+                      e.target.checked ? plate.height : undefined,
+                    )
                   }
                 />
-              ),
-            )}
+                Stała wysokość frontu
+              </label>
+              <small>
+                {model.drawerFit === "fill"
+                  ? "Zablokowane fronty zachowują wymiar; pozostałe dzielą resztę komory równo. Bez blokad obowiązują proporcje układu."
+                  : "Podział ręczny. Włącz wypełnianie komory, aby blokować pojedyncze wysokości."}
+              </small>
+              {model.drawerFit !== "fill" && (
+                <button
+                  onClick={() => update((m) => ({ ...m, drawerFit: "fill" }))}
+                >
+                  Włącz wypełnianie komory
+                </button>
+              )}
+            </div>
+          )}
+          {plate.anchor !== "back" &&
+            (plate.kind === "drawer"
+              ? (["height", "width", "depth", "x", "y", "z"] as const)
+              : (["x", "y", "z", "width", "height", "depth"] as const)
+            ).map((k) => (
+              <NumberField
+                key={k}
+                label={
+                  {
+                    x: "Pozycja X",
+                    y: "Pozycja Y",
+                    z: "Pozycja Z",
+                    width: "Szerokość płyty",
+                    height: "Wysokość płyty",
+                    depth: "Głębokość płyty",
+                  }[k]
+                }
+                value={plate[k]}
+                min={
+                  k === "height" &&
+                  plate.kind === "drawer" &&
+                  model.drawerFit === "fill" &&
+                  plate.drawerHeightLock !== undefined
+                    ? 60
+                    : k === "x" || k === "y" || k === "z"
+                      ? 0
+                      : 1
+                }
+                onChange={(v) =>
+                  k === "height" &&
+                  plate.kind === "drawer" &&
+                  model.drawerFit === "fill" &&
+                  plate.drawerHeightLock !== undefined
+                    ? changeHeightLock(v)
+                    : modifyPlate({
+                        [k]: v,
+                        ...(plate.kind === "cap" && k !== "z" && k !== "depth"
+                          ? { kind: "board" as const }
+                          : {}),
+                      })
+                }
+              />
+            ))}
           <div className="fc-spacing">
-            <h3>Równy rozstaw półek</h3>
+            <h2>Równy rozstaw półek</h2>
             <p>
               {spacing.issue ??
                 `Po rozstawieniu prześwity: ${spacing.clearance.toLocaleString("pl-PL", { maximumFractionDigits: 1 })} mm · ${spacing.ids.length} półek.`}
@@ -2090,6 +2165,7 @@ export function FurnitureCreator({
             aria-labelledby={`${rightId}-tab-plate`}
             hidden={inspectorMode !== "plate"}
           >
+            {partPicker}
             <StudioTabs
               id={plateId}
               label="Parametry płyty"
@@ -2202,7 +2278,7 @@ export function FurnitureCreator({
           aria-labelledby="fc-sheet-title"
           onCancel={() => setSheet(null)}
         >
-          <header>
+          <header role="presentation">
             <h2 id="fc-sheet-title">
               {sheet === "batch"
                 ? "Wspólny rozkrój biblioteki"

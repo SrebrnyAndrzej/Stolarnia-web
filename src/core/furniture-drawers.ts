@@ -1,5 +1,14 @@
-import { PROFILE_SZUFLAD, przeliczSzuflade } from "./catalog/drawers.js";
-import { backDepth, type FurnitureModel } from "./furniture.js";
+import {
+  PROFILE_SZUFLAD,
+  przeliczSzuflade,
+  mocowanieFrontu,
+} from "./catalog/drawers.js";
+import {
+  backDepth,
+  platePolygon,
+  polygonArea,
+  type FurnitureModel,
+} from "./furniture.js";
 
 /** Shared with the existing calculator; no inferred SKU, permitted NL or machine operations. */
 export const furnitureDrawerProfiles = PROFILE_SZUFLAD.map((p) => ({
@@ -8,6 +17,7 @@ export const furnitureDrawerProfiles = PROFILE_SZUFLAD.map((p) => ({
   family: p.family,
   scope: p.scope,
   variants: Object.keys(p.back.height_by_variant_mm),
+  firstHoleMinimum: p.front_mounting?.bottom_hole_min_from_front_bottom_mm,
 }));
 export const drawerBoundaryCandidates = (m: FurnitureModel) =>
   m.plates.filter(
@@ -169,6 +179,41 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
           result = null;
         }
       }
+      let mountingError: string | null = null;
+      if (result && profile && plan && left && right && width !== null) {
+        try {
+          if (
+            Math.abs(
+              polygonArea(platePolygon(m, front)) - front.width * front.height,
+            ) > 0.01
+          )
+            throw new Error(
+              "Front jest przycięty do skosu lub schodów. Pozycje mocowań wymagają osobnego sprawdzenia.",
+            );
+          if (
+            plan.firstHoleFromBottom !== undefined &&
+            (!Number.isFinite(plan.firstHoleFromBottom) ||
+              plan.firstHoleFromBottom < 0)
+          )
+            throw new Error(
+              "Pozycja pierwszego otworu musi być skończoną liczbą 0 lub większą.",
+            );
+          result.mocowanieFrontu = mocowanieFrontu(
+            profile,
+            width,
+            result.wariant,
+            {
+              szerokoscFrontu: front.width,
+              wysokoscFrontu: front.height,
+              pierwszyOtworOdDolu: plan.firstHoleFromBottom,
+              przesuniecieFrontu:
+                front.x + front.width / 2 - (left.x + left.width + right.x) / 2,
+            },
+          );
+        } catch (e) {
+          mountingError = (e as Error).message;
+        }
+      }
       return {
         frontId: front.id,
         frontName: front.name,
@@ -185,8 +230,10 @@ export function furnitureDrawerCalculations(m: FurnitureModel) {
             }
           : null,
         result,
+        mountingError,
         blockers,
         unresolved: [
+          ...(mountingError ? [mountingError] : []),
           "Materiał, dekor i usłojenie dna oraz drewnianych pleców.",
           "Dopuszczalna długość NL i minimalna głębokość montażu konkretnego artykułu.",
           "Położenie skrzynki, prześwity, nośność i pełny ruch szuflady.",

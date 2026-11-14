@@ -33,6 +33,7 @@ const plate = z
     depth: mm,
     specification: specification.optional(),
     frontHardware: frontHardwareSchema.optional(),
+    drawerHeightLock: z.number().finite().min(60).max(10000).optional(),
     layoutSlot: z.string().min(1).max(100).optional(),
     layoutCustomized: z.boolean().optional(),
   })
@@ -161,6 +162,7 @@ export const furnitureSave = z
                   .nullable(),
                 leftBoundaryId: z.string().uuid().optional(),
                 rightBoundaryId: z.string().uuid().optional(),
+                firstHoleFromBottom: coordinate.optional(),
               })
               .strict(),
           )

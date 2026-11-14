@@ -8,11 +8,16 @@ test("employee assigns a drawer system to a front and reopens the frozen calcula
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page.getByLabel("Liczba: średnie", { exact: true }).fill("0");
   await page.getByLabel("Liczba: wysokie", { exact: true }).fill("0");
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
+  await page
+    .getByLabel("Wybierz płytę", { exact: true })
+    .selectOption({ label: "5. Szuflada niska 1" });
+  await page.getByRole("tab", { name: "System", exact: true }).click();
   const region = page.getByRole("region", { name: "Systemy szuflad w meblu" });
   await expect(region).toContainText("Wybierz system szuflady.");
   await page
@@ -30,7 +35,12 @@ test("employee assigns a drawer system to a front and reopens the frozen calcula
     .click();
   await expect(region).toContainText("Wynik zapisanej wersji modelu.");
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await page
+    .getByLabel("Wybierz płytę", { exact: true })
+    .selectOption({ label: "5. Szuflada niska 1" });
+  await page.getByRole("tab", { name: "System", exact: true }).click();
   await expect(
     page.getByLabel("NL dla Szuflada niska 1 (mm)", { exact: true }),
   ).toHaveValue("500");
@@ -57,6 +67,7 @@ test("selected partition narrows the drawer compartment and deleting it blocks r
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
@@ -65,6 +76,7 @@ test("selected partition narrows the drawer compartment and deleting it blocks r
   const boundaryId = await plateSelect.inputValue();
   await plateSelect.selectOption({ label: "5. Szuflada niska 1" });
   await page.getByLabel("Szerokość płyty", { exact: true }).fill("478");
+  await page.getByRole("tab", { name: "System", exact: true }).click();
   await page
     .getByLabel("System dla Szuflada niska 1", { exact: true })
     .selectOption("amix-elite-standard");
@@ -81,6 +93,8 @@ test("selected partition narrows the drawer compartment and deleting it blocks r
   await expect(region).toContainText("407 × 474");
   await plateSelect.selectOption(boundaryId);
   await page.getByRole("button", { name: "Usuń płytę", exact: true }).click();
+  await plateSelect.selectOption({ label: "5. Szuflada niska 1" });
+  await page.getByRole("tab", { name: "System", exact: true }).click();
   await expect(region).toContainText("Brak jednoznacznych boków");
   await expect(region.getByRole("table")).toHaveCount(0);
 });
@@ -98,12 +112,19 @@ test("drawer selections remain editable when saving fails on mobile", async ({
     return route.fallback();
   });
   await page.goto("/#/panel/meble");
+  await page.getByRole("button", { name: "Narzędzia", exact: true }).click();
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
+  await page.getByText("Własny zestaw szuflad", { exact: true }).click();
   await page
     .getByRole("button", { name: "Ustaw zestaw szuflad", exact: true })
     .click();
+  await page.getByRole("button", { name: "Inspektor", exact: true }).click();
+  await page
+    .getByLabel("Wybierz płytę", { exact: true })
+    .selectOption({ label: "5. Szuflada niska 1" });
+  await page.getByRole("tab", { name: "System", exact: true }).click();
   await page
     .getByLabel("System dla Szuflada niska 1", { exact: true })
     .selectOption("amix-elite-standard");

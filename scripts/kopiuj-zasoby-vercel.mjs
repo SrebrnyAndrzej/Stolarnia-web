@@ -2,6 +2,9 @@
 // (/api/dekory/obrazy/...). Pliki statyczne mają pierwszeństwo przed przekierowaniem do funkcji API.
 import { cpSync, existsSync } from "node:fs";
 
+// PDF offers resolve their logo relative to the compiled exporter.
+cpSync("src/export/assets", "dist/export/assets", { recursive: true });
+
 const zrodlo = "docs/materialy/obrazy";
 const cel = "dist/web/api/dekory/obrazy";
 if (existsSync(zrodlo)) {

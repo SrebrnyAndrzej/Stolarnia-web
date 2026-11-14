@@ -1,4 +1,5 @@
 /** Parametric library models in millimetres; both views consume these polygons. */
+import { distributeDrawerFronts } from "./drawer-front-layout.js";
 import {
   rebuildCompartments,
   compartmentIssues,
@@ -22,6 +23,7 @@ export interface PlateSpecification {
   >;
 }
 export interface FurniturePlate {
+  drawerHeightLock?: number;
   frontHardware?: import("./front-hardware.js").FrontHardware;
   id: string;
   name: string;
@@ -281,6 +283,7 @@ export interface DrawerAssembly {
   profileId: string;
   variant: string;
   nominalLength: number | null;
+  firstHoleFromBottom?: number;
   leftBoundaryId?: string;
   rightBoundaryId?: string;
 }
@@ -509,6 +512,16 @@ export function furnitureIssues(m: FurnitureModel): string[] {
   issues.push(...compartmentIssues(m));
   if (m.drawerFit === "fill") {
     for (const group of drawerCompartments(m)) {
+      if (group.fronts.some((p) => p.drawerHeightLock !== undefined)) {
+        try {
+          distributeDrawerFronts(
+            group.top - group.bottom - 4 - (group.fronts.length - 1) * 2,
+            group.fronts,
+          );
+        } catch (e) {
+          issues.push((e as Error).message);
+        }
+      }
       if (
         group.top - group.bottom - 4 - (group.fronts.length - 1) * 2 <
         group.fronts.length * 60
@@ -754,34 +767,22 @@ export function fitDrawerFronts(m: FurnitureModel): FurnitureModel {
   if (m.drawerFit !== "fill") return m;
   const fitted = new Map<string, FurniturePlate>();
   for (const { fronts, bottom, top } of drawerCompartments(m)) {
+    // Even an impossible resize must retain the explicitly locked panel height.
+    // furnitureIssues reports the conflict; successful allocation below also sets Y.
+    for (const p of fronts)
+      if (
+        p.drawerHeightLock !== undefined &&
+        Number.isFinite(p.drawerHeightLock) &&
+        p.drawerHeightLock >= 60
+      )
+        fitted.set(p.id, { ...p, height: p.drawerHeightLock });
     const total = top - bottom - 4 - (fronts.length - 1) * 2;
     if (total < fronts.length * 60) continue;
-    const heights = new Map<string, number>();
-    let active = [...fronts],
-      budget = total;
-    while (active.length) {
-      const sum = active.reduce((s, p) => s + Math.max(1, p.height), 0);
-      const small = active.filter(
-        (p) => (budget * Math.max(1, p.height)) / sum < 60,
-      );
-      if (small.length) {
-        small.forEach((p) => heights.set(p.id, 60));
-        budget -= small.length * 60;
-        active = active.filter((p) => !heights.has(p.id));
-      } else {
-        let cumulative = 0,
-          previous = 0;
-        active.forEach((p, i) => {
-          cumulative += Math.max(1, p.height);
-          const share =
-            i === active.length - 1
-              ? budget
-              : Math.round((budget * cumulative) / sum);
-          heights.set(p.id, share - previous);
-          previous = share;
-        });
-        break;
-      }
+    let heights: Map<string, number>;
+    try {
+      heights = distributeDrawerFronts(total, fronts);
+    } catch {
+      continue;
     }
     let y = bottom + 2;
     fronts.forEach((p, i) => {
@@ -791,6 +792,33 @@ export function fitDrawerFronts(m: FurnitureModel): FurnitureModel {
     });
   }
   return { ...m, plates: m.plates.map((p) => fitted.get(p.id) ?? p) };
+}
+export function setDrawerHeightLock(
+  m: FurnitureModel,
+  id: string,
+  height: number | undefined,
+): FurnitureModel {
+  const plate = m.plates.find((p) => p.id === id);
+  if (
+    !plate ||
+    plate.kind !== "drawer" ||
+    plate.layoutSlot?.startsWith("compartment/") ||
+    m.compartments
+  )
+    throw new Error(
+      "Dla frontów układu komór zmieniaj wymiary komory. Wybierz samodzielny front szuflady.",
+    );
+  if (m.drawerFit !== "fill")
+    throw new Error("Najpierw włącz automatyczne wypełnianie szufladami.");
+  const next = fitDrawerFronts({
+    ...m,
+    plates: m.plates.map((p) =>
+      p.id === id ? { ...p, drawerHeightLock: height } : p,
+    ),
+  });
+  const issues = furnitureIssues(next);
+  if (issues.length) throw new Error(issues[0]);
+  return next;
 }
 function suggestedInterior(
   m: FurnitureModel,
@@ -1001,6 +1029,8 @@ export function refreshSuggestedLayout(
               name: old.name,
               frontHardware:
                 old.kind === p.kind ? old.frontHardware : undefined,
+              drawerHeightLock:
+                old.kind === p.kind ? old.drawerHeightLock : undefined,
               specification: old.specification ?? p.specification,
             }
           : p;

@@ -136,9 +136,15 @@ test("saved assembly calculations are frozen and exports cannot mutate or spoof 
     odczytaj: () => db,
   } as Magazyn;
   const m = model();
+  m.drawerAssemblies![0].firstHoleFromBottom = 50;
   const input = { id: randomUUID(), version: 0, model: m };
   const saved = saveFurniture(store, member, input);
   const frozen = saved.drawerCalculations![0].result!.dno.szer;
+  assert.equal(saved.model.drawerAssemblies![0].firstHoleFromBottom, 50);
+  assert.deepEqual(
+    saved.drawerCalculations![0].result!.mocowanieFrontu!.odDolnejKrawedziMM,
+    [50, 82],
+  );
   m.width = 1200;
   const card = furnitureConstruction(store, member, saved.id, 1);
   assert.equal(card.drawerAssemblies[0].result!.dno.szer, frozen);
@@ -170,4 +176,48 @@ test("saved assembly calculations are frozen and exports cannot mutate or spoof 
       }),
     /istniejący/,
   );
+});
+
+test("drawer front mounting uses actual width and offset, and never chooses the first hole from its minimum", () => {
+  const m = model();
+  const incomplete = furnitureDrawerCalculations(m)[0];
+  assert.equal(incomplete.result!.mocowanieFrontu!.status, "czesciowe");
+  assert.equal(
+    incomplete.result!.mocowanieFrontu!.odDolnejKrawedziMM,
+    undefined,
+  );
+  m.drawerAssemblies![0].firstHoleFromBottom = 50;
+  const a = furnitureDrawerCalculations(m)[0];
+  assert.equal(a.mountingError, null);
+  assert.equal(a.result!.mocowanieFrontu!.status, "pozycje");
+  assert.deepEqual(a.result!.mocowanieFrontu!.odDolnejKrawedziMM, [50, 82]);
+  assert.equal(a.result!.mocowanieFrontu!.odLewejKrawedziMM, 12.5);
+  assert.equal(a.result!.mocowanieFrontu!.odPrawejKrawedziMM, 12.5);
+  m.plates[4].width = 950;
+  m.plates[4].x = 30;
+  m.drawerAssemblies![0].leftBoundaryId = m.plates.find(
+    (p) => p.anchor === "left",
+  )!.id;
+  m.drawerAssemblies![0].rightBoundaryId = m.plates.find(
+    (p) => p.anchor === "right",
+  )!.id;
+  const b = furnitureDrawerCalculations(m)[0];
+  assert.equal(b.result!.mocowanieFrontu!.odLewejKrawedziMM, 2.5);
+  assert.equal(b.result!.mocowanieFrontu!.odPrawejKrawedziMM, 12.5);
+  assert.equal(b.readyForProduction, false);
+});
+test("invalid mounting withholds positions, preserves box dimensions and diagnoses a clipped front", () => {
+  const m = model();
+  for (const value of [1, 140, NaN, -1]) {
+    m.drawerAssemblies![0].firstHoleFromBottom = value;
+    const c = furnitureDrawerCalculations(m)[0];
+    assert.ok(c.mountingError);
+    assert.ok(c.result?.dno.szer);
+    assert.equal(c.result!.mocowanieFrontu, undefined);
+    assert.ok(c.unresolved.includes(c.mountingError!));
+  }
+  m.drawerAssemblies![0].firstHoleFromBottom = 50;
+  m.shape = "slope";
+  m.lowHeight = 100;
+  assert.match(furnitureDrawerCalculations(m)[0].mountingError!, /przycięty/);
 });

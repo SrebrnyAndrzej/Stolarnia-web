@@ -42,6 +42,12 @@ import {
   type Draft,
 } from "./model";
 import "./planner.css";
+import { KitchenQuote } from "./KitchenQuote";
+import {
+  KitchenCabinetEditor,
+  drawerCalculatorLink,
+} from "./KitchenCabinetEditor";
+import { suggestKitchen } from "../../../../src/core/kitchen-configuration";
 const View3D = lazy(() =>
   import("../../views/Widok3D").then((m) => ({ default: m.Widok3D })),
 );
@@ -290,6 +296,7 @@ export function KitchenPlanner() {
           <Logo />
         </a>
         <span className="kp-header-label">Kreator kuchni</span>
+        <a href="#/kalkulatory/szuflady">Kalkulatory</a>
         <a className="ps-text-button" href="#/">
           Strona główna <IconArrowLeft size={18} />
         </a>
@@ -316,7 +323,7 @@ export function KitchenPlanner() {
           </span>
         </div>
         <nav className="kp-steps" aria-label="Etapy planowania">
-          {["Pomieszczenie", "Szafki i wygląd", "Twój szkic"].map(
+          {["Pomieszczenie", "Szafki i wygląd", "Wycena i PDF"].map(
             (label, i) => (
               <button
                 key={label}
@@ -538,6 +545,25 @@ export function KitchenPlanner() {
                 <h2>{step === 1 ? "Dodaj szafki" : "Podsumowanie"}</h2>
                 {step === 1 ? (
                   <>
+                    <button
+                      className="ps-button secondary kp-suggestion"
+                      disabled={conflict !== null}
+                      onClick={() => {
+                        const next = {
+                          ...draft,
+                          items: suggestKitchen(draft, randomId),
+                        };
+                        change(next);
+                        setSelected(null);
+                        setNotice(
+                          "Wstawiono proponowany układ. Możesz zmieniać każdą szafkę lub cofnąć całą operację. Narożniki i przyłącza wymagają dopracowania.",
+                        );
+                      }}
+                    >
+                      {draft.items.length
+                        ? "Zastąp proponowanym układem"
+                        : "Wstaw proponowany układ"}
+                    </button>
                     <div
                       className="kp-wall-buttons"
                       role="group"
@@ -611,44 +637,48 @@ export function KitchenPlanner() {
                   </>
                 ) : (
                   <>
-                    <dl className="kp-summary">
-                      <dt>Układ</dt>
-                      <dd>
-                        {draft.layout === "u"
-                          ? "U"
-                          : draft.layout === "l"
-                            ? "L"
-                            : "Prosty"}
-                      </dd>
-                      <dt>Ściana A</dt>
-                      <dd>{draft.width} mm</dd>
-                      {draft.layout !== "straight" && (
-                        <>
-                          <dt>Ściana B</dt>
-                          <dd>{draft.depth} mm</dd>
-                        </>
-                      )}
-                      {draft.layout === "u" && (
-                        <>
-                          <dt>Ściana C</dt>
-                          <dd>{draft.returnLength} mm</dd>
-                        </>
-                      )}
-                      <dt>Wysokość</dt>
-                      <dd>{draft.height} mm</dd>
-                      <dt>Szafki</dt>
-                      <dd>{draft.items.length}</dd>
-                      <dt>Fronty</dt>
-                      <dd>
-                        {draft.decor
-                          ? `${draft.decor.manufacturer} ${draft.decor.id} — ${draft.decor.name}`
-                          : finishes.find((f) => f.id === draft.finish)?.name}
-                      </dd>
-                    </dl>
-                    <p>
-                      To punkt wyjścia do rozmowy. Stolarz sprawdzi układ,
-                      instalacje, materiały i przygotuje wycenę.
-                    </p>
+                    <KitchenQuote
+                      draft={draft}
+                      onChange={change}
+                      disabled={!!issues.length || conflict !== null}
+                    />
+                    <details className="kp-quote-parameters">
+                      <summary>Parametry szkicu</summary>
+                      <dl className="kp-summary">
+                        <dt>Układ</dt>
+                        <dd>
+                          {draft.layout === "u"
+                            ? "U"
+                            : draft.layout === "l"
+                              ? "L"
+                              : "Prosty"}
+                        </dd>
+                        <dt>Ściana A</dt>
+                        <dd>{draft.width} mm</dd>
+                        {draft.layout !== "straight" && (
+                          <>
+                            <dt>Ściana B</dt>
+                            <dd>{draft.depth} mm</dd>
+                          </>
+                        )}
+                        {draft.layout === "u" && (
+                          <>
+                            <dt>Ściana C</dt>
+                            <dd>{draft.returnLength} mm</dd>
+                          </>
+                        )}
+                        <dt>Wysokość</dt>
+                        <dd>{draft.height} mm</dd>
+                        <dt>Szafki</dt>
+                        <dd>{draft.items.length}</dd>
+                        <dt>Fronty</dt>
+                        <dd>
+                          {draft.decor
+                            ? `${draft.decor.manufacturer} ${draft.decor.id} — ${draft.decor.name}`
+                            : finishes.find((f) => f.id === draft.finish)?.name}
+                        </dd>
+                      </dl>
+                    </details>
                     <button
                       className="ps-button"
                       disabled={
@@ -752,6 +782,45 @@ export function KitchenPlanner() {
                     : `Ściana ${wall.toUpperCase()} · ${length} mm · wybierz szafkę na liście poniżej.`}{" "}
                   Kolory są poglądowe.
                 </p>
+                {selected &&
+                  draft.items.some((i) => i.id === selected) &&
+                  (() => {
+                    const item = draft.items.find((i) => i.id === selected)!;
+                    const module = analysis.projekt.moduly.find(
+                      (m) => m.id === selected,
+                    )!;
+                    const built = analysis.zbudowane.find(
+                      (b) => b.modul.id === selected,
+                    )!;
+                    const drawerLink = drawerCalculatorLink(draft, built);
+                    return (
+                      <>
+                        <KitchenCabinetEditor
+                          key={JSON.stringify(item)}
+                          draft={draft}
+                          item={item}
+                          module={module}
+                          onApply={change}
+                          disabled={conflict !== null}
+                        />
+                        {drawerLink && (
+                          <p className="kp-calculator-link">
+                            <a
+                              className="ps-button secondary"
+                              href={drawerLink}
+                            >
+                              Przelicz szufladę tej szafki
+                            </a>
+                            <small>
+                              Przeniesiemy światło korpusu, długość prowadnicy i
+                              wymiary pierwszego frontu. Wiercenia wymagają
+                              potwierdzenia profilu.
+                            </small>
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 {issues.length > 0 && (
                   <Feedback>
                     {issues.map((i) => (
@@ -927,9 +996,9 @@ export function KitchenPlanner() {
         )}
         <footer className="kp-footer">
           <p>
-            Szkic koncepcyjny · bez wyceny i dokumentacji produkcyjnej. Nie
-            sprawdzamy instalacji, kolizji otwierania i wymaganych luzów
-            montażowych.
+            Szkic koncepcyjny · wycena orientacyjna, bez dokumentacji
+            produkcyjnej. Nie sprawdzamy instalacji, kolizji otwierania i
+            wymaganych luzów montażowych.
           </p>
           <div className="kp-actions">
             <button className="ps-text-button" onClick={download}>

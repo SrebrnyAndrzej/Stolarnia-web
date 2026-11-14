@@ -22,8 +22,12 @@ test("compact furniture card has real clearances, no long part index and printab
   await expect(
     page.getByRole("img", { name: "Wnętrze i światło między półkami" }),
   ).toBeVisible();
-  await expect(page.getByRole("table")).toContainText("482");
-  await expect(page.getByRole("table")).toContainText("1464");
+  await expect(
+    page.getByRole("table", { name: "Prześwity", exact: true }),
+  ).toContainText("482");
+  await expect(
+    page.getByRole("table", { name: "Prześwity", exact: true }),
+  ).toContainText("1464");
   await expect(
     page.getByRole("heading", { name: "Indeks części" }),
   ).toHaveCount(0);

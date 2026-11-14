@@ -11,6 +11,7 @@ export const wejsciePrzelicznika = z.object({
   liczbaSzuflad: z.number().int().min(1).max(20).optional(),
   szczelinaFrontow: nieujemna.optional(), dolnaProwadnica: nieujemna.optional(),
   wysokoscWewnetrzna: dodatnia.optional(), gruboscFrontu: dodatnia.optional(),
+  gruboscDolnegoWienca: dodatnia.max(100).optional(),
   frontWewnetrzny: z.boolean().optional(),
   szerokoscFrontu: dodatnia.optional(), pierwszyOtworOdDolu: nieujemna.optional(),
   frontZaDrzwiami: z.boolean().optional(), stronaZawiasow: z.enum(["lewa", "prawa"]).optional(),
@@ -38,6 +39,8 @@ export function rozstawProwadnic(q: WejsciePrzelicznika) {
   return {
     baza: "Górna powierzchnia wieńca dolnego → dolna krawędź prowadnicy (nie oś wkrętów).",
     skokMM: r(skok), prowadnice, cofniecieMM,
+    prowadniceOdPodstawy: q.gruboscDolnegoWienca === undefined ? undefined : prowadnice.map((p,i)=>({numer:p.numer,dolnaKrawedzMM:r(dolna+i*skok+q.gruboscDolnegoWienca!)})),
+    gruboscDolnegoWiencaMM: q.gruboscDolnegoWienca,
     uwagi: [
       "Rozstaw zakłada jednakowe położenie mocowań względem każdego równego frontu. Nie zmienia konstrukcji zapisanego projektu ani wierceń w rastrze 32.",
       "Wysokość światła sprawdza położenie prowadnic; dopasowanie skrzynek, mocowań i nałożenie frontów wymaga osobnego sprawdzenia.",

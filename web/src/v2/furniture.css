@@ -1364,3 +1364,18 @@ dialog.fc-dimension-dialog {
 .fc-hardware .fc-fields {
   grid-template-columns: 1fr 1fr;
 }
+.fc-document-preview {
+  width: 100%;
+  min-width: 0;
+  height: min(68vh, 720px);
+  min-height: 280px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  margin-top: 12px;
+}
+.fc-plate-picker {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+}

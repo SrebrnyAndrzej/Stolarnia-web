@@ -1,4 +1,5 @@
 import { prepareFurnitureBatch } from "./furniture-batch-preparation.js";
+import { registerKitchenEstimate } from "./kitchen-estimate.js";
 import { drawerSystems, calculateDrawer, previewCalculator } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
@@ -42,6 +43,7 @@ export const app = express();
 app.get("/healthz", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ status: "ok", service: "pan-stolarz" }); });
 app.use(express.json({ limit: "30mb" }));
 const access = createAccess();
+registerKitchenEstimate(app,req=>access.checkOrigin(req));
 app.get("/api/v2/config", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ authReady: access.configured }); });
 app.post("/api/v2/login", access.login);
 app.post("/api/v2/logout", access.logout);

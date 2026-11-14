@@ -8,10 +8,11 @@ import type {
   FurnitureModel,
   DrawerAssembly,
 } from "../../../src/core/furniture";
+import { RysunekFrontu } from "../views/szuflady/RysunekFrontu";
 const mm = (v: number | null | undefined) =>
   v == null
     ? "Do ustalenia"
-    : v.toLocaleString("pl-PL", { maximumFractionDigits: 2 });
+    : v.toLocaleString("pl-PL", { maximumFractionDigits: 3 });
 export function FurnitureDrawers({
   model,
   disabled,
@@ -148,6 +149,88 @@ export function FurnitureDrawers({
               wybierz z karty konkretnej prowadnicy.
             </p>
             {profile && <p>{profile.scope}</p>}
+            {profile && (
+              <details className="fc-drawer-mounting">
+                <summary>Mocowanie frontu · osie X/Y</summary>
+                <label>
+                  Pierwszy otwór od dołu dla {c.frontName} (mm)
+                  <input
+                    type="number"
+                    min={0}
+                    max={10000}
+                    step="any"
+                    aria-describedby={`mount-hint-${c.frontId}${c.mountingError ? ` mount-error-${c.frontId}` : ""}`}
+                    aria-invalid={!!c.mountingError}
+                    value={selection?.firstHoleFromBottom ?? ""}
+                    onChange={(e) =>
+                      set({
+                        firstHoleFromBottom:
+                          e.target.value === ""
+                            ? undefined
+                            : e.target.valueAsNumber,
+                      })
+                    }
+                  />
+                </label>
+                <p id={`mount-hint-${c.frontId}`}>
+                  {profile.firstHoleMinimum !== undefined
+                    ? `Minimum ${mm(profile.firstHoleMinimum)} mm nie wyznacza pozycji otworu. Wpisz położenie wynikające z montażu konkretnej skrzynki.`
+                    : "Brak zweryfikowanego schematu zaczepów dla tego systemu. Pozycja nie tworzy brakujących danych katalogowych."}
+                </p>
+                {c.mountingError ? (
+                  <p id={`mount-error-${c.frontId}`} role="alert">
+                    Wiercenia wstrzymane: {c.mountingError}
+                  </p>
+                ) : (
+                  c.result?.mocowanieFrontu && (
+                    <>
+                      <RysunekFrontu
+                        mocowanie={c.result.mocowanieFrontu}
+                        szerokosc={
+                          model.plates.find((p) => p.id === c.frontId)?.width
+                        }
+                        wysokosc={c.frontHeight}
+                      />
+                      <p>
+                        Oś od lewej:{" "}
+                        <strong>
+                          {mm(c.result.mocowanieFrontu.odLewejKrawedziMM)} mm
+                        </strong>{" "}
+                        · od prawej:{" "}
+                        <strong>
+                          {mm(c.result.mocowanieFrontu.odPrawejKrawedziMM)} mm
+                        </strong>
+                        .
+                      </p>
+                      <p>
+                        Wysokości od dołu:{" "}
+                        <strong>
+                          {c.result.mocowanieFrontu.odDolnejKrawedziMM
+                            ?.map(mm)
+                            .join(" / ") ?? "Podaj pierwszy otwór"}
+                        </strong>
+                        .
+                      </p>
+                      <details>
+                        <summary>Bazy pomiaru i założenia</summary>
+                        <p>{c.result.mocowanieFrontu.opis}</p>
+                        <p>
+                          Zachowaj oznaczenia krawędzi L/P przy odwracaniu
+                          płyty. Pozycje uwzględniają rzeczywiste przesunięcie
+                          frontu względem boków komory.
+                        </p>
+                      </details>
+                      <p>
+                        Średnica i głębokość:{" "}
+                        {mm(c.result.mocowanieFrontu.srednicaMM)} /{" "}
+                        {mm(c.result.mocowanieFrontu.glebokoscMM)}. Obliczenie
+                        robocze.
+                      </p>
+                    </>
+                  )
+                )}
+              </details>
+            )}
             {!!c.blockers.length && (
               <div className="ps-feedback" role="status">
                 <strong>Uzupełnij lub popraw:</strong>
@@ -223,7 +306,7 @@ export function FurnitureDrawers({
                 ))}
               </ul>
               <p>
-                Nie wygenerowano pozycji wkrętów, otworów ani umiejscowienia
+                Nie wygenerowano pozycji wkrętów prowadnic ani umiejscowienia
                 skrzynki w bryle. Wymiary dna i pleców nie wyznaczają
                 samodzielnie baz montażowych.
               </p>

@@ -46,6 +46,7 @@ export function calculateDrawer(
     szczelinaFrontow: n("szczelinaFrontow"),
     dolnaProwadnica: n("dolnaProwadnica"),
     wysokoscWewnetrzna: n("wysokoscWewnetrzna"),
+    gruboscDolnegoWienca: n("gruboscDolnegoWienca"),
     gruboscFrontu: n("gruboscFrontu"),
     frontWewnetrzny: b("frontWewnetrzny"),
     szerokoscFrontu: n("szerokoscFrontu"),

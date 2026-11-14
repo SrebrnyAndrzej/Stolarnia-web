@@ -151,6 +151,7 @@ export function Landing() {
           <a href="#/wizualizacja">Wizualizacje</a>
           <a href="#/o-nas">O nas</a>
           <a href="#/kreator-kuchni">Kreator kuchni</a>
+          <a href="#/kalkulatory/szuflady">Kalkulatory</a>
           <a href="#/katalog-dekorow">Katalog dekorów</a>
           <a href="#/jak-dzialamy">Jak działamy</a>
         </nav>

@@ -28,4 +28,6 @@ Lista funkcji okuć opisuje boki, prowadnice, mocowania i dodatki; nie udaje kos
 
 ## Sprawdzenie
 
+Aktualizacja 13.11.2026: sekcja „Mocowanie frontu · osie X/Y” korzysta z mocowanieFrontu, wspólnego z kalkulatorem. Opcjonalne firstHoleFromBottom zapisuje dokładną pozycję pierwszego otworu; minimum z profilu nie zastępuje tej pozycji. Osie uwzględniają szerokość frontu i rzeczywiste przesunięcie względem środka wybranej komory. Przycięty front lub niepoprawne pozycje wstrzymują schemat mocowania, zachowując robocze formatki skrzynki. Komunikat trafia również do listy braków. Rysunek jest wspólny z kalkulatorem i pokazuje wartości Y z odnośnikami; średnice oraz głębokości bez danych pozostają do ustalenia. Parametr i obliczenia są zamrażane przy zapisie oraz obsługiwane przez Cofnij. Dotychczasowe ograniczenia produkcyjne i zakupowe pozostają.
+
 Testy: zgodność z istniejącym wzorem, przełączenie Amix/Blum i grubości 18/16, plecy korpusu, nieistniejący wariant, za długa prowadnica, przegrody i komory, utrata granicy, zamrożenie wyniku i brak mutacji przez eksport, odrzucenie podrabianych wyników i osieroconych frontów. Przeglądarka: przypisanie i ponowne otwarcie, Cofnij, konflikt zapisu i telefon 390 px. Dane testowe nie zapisują się do produkcji.

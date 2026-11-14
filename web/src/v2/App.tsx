@@ -58,6 +58,9 @@ const KitchenPlanner = lazy(() =>
     default: m.KitchenPlanner,
   })),
 );
+const Calculators = lazy(() =>
+  import("./calculators/Calculators").then((m) => ({ default: m.Calculators })),
+);
 
 export function App() {
   const [hash, setHash] = useState(location.hash || "#/");
@@ -128,23 +131,25 @@ export function App() {
     /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady|#\/szybki)/.test(hash);
   const href = (page: string) => `#/panel/${page}`;
   useEffect(() => {
-    const title = hash.startsWith("#/prezentacja/")
-      ? "Prezentacja mebla"
-      : hash === "#/katalog-dekorow"
-        ? "Katalog dekorów"
-        : plannerRoute
-          ? "Kreator kuchni"
-          : publicRoute
-            ? "Meble na wymiar"
-            : section === "szuflady"
-              ? "Kalkulator szuflad"
-              : isPanel
-                ? person?.role === "owner"
-                  ? "Panel właściciela"
-                  : person?.role === "employee"
-                    ? "Panel pracownika"
-                    : "Moje projekty"
-                : "Logowanie";
+    const title = hash.startsWith("#/kalkulatory")
+      ? "Kalkulatory stolarza"
+      : hash.startsWith("#/prezentacja/")
+        ? "Prezentacja mebla"
+        : hash === "#/katalog-dekorow"
+          ? "Katalog dekorów"
+          : plannerRoute
+            ? "Kreator kuchni"
+            : publicRoute
+              ? "Meble na wymiar"
+              : section === "szuflady"
+                ? "Kalkulator szuflad"
+                : isPanel
+                  ? person?.role === "owner"
+                    ? "Panel właściciela"
+                    : person?.role === "employee"
+                      ? "Panel pracownika"
+                      : "Moje projekty"
+                  : "Logowanie";
     document.title = publicRoute ? HOME_TITLE : `${title} · Pan Stolarz`;
     if (publicRoute)
       document
@@ -162,6 +167,12 @@ export function App() {
     }
   };
   if (hash === "#/katalog-dekorow") return <DecorCatalog />;
+  if (hash.startsWith("#/kalkulatory"))
+    return (
+      <Suspense fallback={<main role="status">Wczytywanie kalkulatorów…</main>}>
+        <Calculators hash={hash} />
+      </Suspense>
+    );
   if (hash.startsWith("#/prezentacja/"))
     return (
       <Suspense fallback={<p role="status">Ładowanie prezentacji…</p>}>

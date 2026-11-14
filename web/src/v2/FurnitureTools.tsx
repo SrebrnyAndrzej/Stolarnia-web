@@ -1,5 +1,5 @@
 import { furnitureDocument } from "./furniture-document";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { NumberField } from "./FurnitureNumberField";
 import { Feedback } from "./ui";
 import { FurniturePreparation } from "./FurniturePreparation";
@@ -53,6 +53,7 @@ export function FurnitureTools({
   dirty: boolean;
 }) {
   const [reference, setReference] = useState(""),
+    [documentPreview, setDocumentPreview] = useState(false),
     [labelBusy, setLabelBusy] = useState(false),
     [labelError, setLabelError] = useState(""),
     [roomSource, setRoomSource] = useState(""),
@@ -62,6 +63,10 @@ export function FurnitureTools({
   const room = model.installation,
     parts = furnitureParts(model),
     compare = library.find((e) => e.id === reference);
+  const documentHtml = useMemo(
+    () => (documentPreview ? furnitureDocument(model, id, version) : ""),
+    [documentPreview, model, id, version],
+  );
   const patch = (p: Partial<NonNullable<FurnitureModel["installation"]>>) =>
     onChange((m) => ({ ...m, installation: { ...m.installation!, ...p } }));
   const prefix = `${id}-v${version}-szkic`;
@@ -98,6 +103,7 @@ export function FurnitureTools({
         [
           [
             "ID",
+            "Oznaczenie na rysunku",
             "Część",
             "Materiał",
             "Dekor",
@@ -109,8 +115,9 @@ export function FurnitureTools({
             "Braki",
             "Status",
           ],
-          ...parts.map((p) => [
+          ...parts.map((p, i) => [
             p.id,
+            `P${i + 1}`,
             p.name,
             p.material,
             p.decor,
@@ -518,6 +525,13 @@ export function FurnitureTools({
         <legend>Dokumentacja bieżącego szkicu</legend>
         {labelError && <Feedback>{labelError}</Feedback>}
         <div className="fc-actions">
+          <button
+            aria-expanded={documentPreview}
+            aria-controls="furniture-document-preview"
+            onClick={() => setDocumentPreview((v) => !v)}
+          >
+            {documentPreview ? "Ukryj podgląd rysunków" : "Podgląd rysunków"}
+          </button>
           <button onClick={exportCSV}>Pobierz części CSV</button>
           <button onClick={exportDXF}>Pobierz obrysy DXF</button>
           <button onClick={exportHTML}>Pobierz kartę do druku / PDF</button>
@@ -531,11 +545,21 @@ export function FurnitureTools({
           </button>
         </div>
         <p>
-          Eksport obejmuje bieżący szkic. DXF zawiera obrysy od przodu ułożone
-          obok siebie, nie rozkrój ani CNC. Karta HTML otwiera się bez internetu
-          i pozwala zapisać PDF przez drukowanie. Braki i status szkicu
-          pozostają widoczne.
+          Eksport obejmuje bieżący szkic. Dwa arkusze: rzuty z prześwitami i
+          montaż korpusu. DXF zawiera obrysy od przodu ułożone obok siebie, nie
+          rozkrój ani CNC. Karta HTML otwiera się bez internetu i pozwala
+          zapisać PDF przez drukowanie. Braki i status szkicu pozostają
+          widoczne.
         </p>
+        {documentPreview && (
+          <iframe
+            id="furniture-document-preview"
+            className="fc-document-preview"
+            title="Podgląd rysunków technicznych i montażowych"
+            srcDoc={documentHtml}
+            sandbox=""
+          />
+        )}
       </fieldset>
       <details hidden={section !== "all" && section !== "documents"}>
         <summary>Przygotowanie płyt do rozkroju</summary>

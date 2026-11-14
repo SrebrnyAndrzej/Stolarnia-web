@@ -1,38 +1,27 @@
 import { z } from "zod";
-import {
-  KATALOG_MODULOW,
-  domyslnaKonfiguracja,
-} from "../../../../src/core/catalog/modules";
 import { zbudujModul } from "../../../../src/core/builder";
 import { USTAWIENIA_DOMYSLNE } from "../../../../src/core/settings";
-import type { Modul } from "../../../../src/core/types";
 import type { TechnicalAnalysis } from "../api";
+import {
+  customerKitchenCatalog,
+  kitchenModules,
+  kitchenIssues,
+  kitchenOptionsSchema,
+  kitchenOptions,
+  kitchenItemSchema,
+} from "../../../../src/core/kitchen-configuration";
 
 export const STORAGE_KEY = "pan-stolarz.kuchnia.v1";
 export const HANDOFF_KEY = "pan-stolarz.kuchnia.zapytanie";
-export const catalog = KATALOG_MODULOW.filter(
-  (m) =>
-    [
-      "shelves",
-      "drawers",
-      "sink",
-      "oven",
-      "dishwasherFront",
-      "refrigerator",
-    ].includes(m.construction) &&
-    ["base", "wall", "tall", "appliance"].includes(m.category),
-);
+export const catalog = customerKitchenCatalog;
+
 export const finishes = [
   { id: "white", name: "Biel matowa", color: "#eeede8" },
   { id: "oak", name: "Naturalny dąb", color: "#b89668" },
   { id: "sage", name: "Szałwia", color: "#929d87" },
   { id: "graphite", name: "Grafit", color: "#435058" },
+  { id: "cashmere", name: "Kaszmir", color: "#d8cfc1" },
 ] as const;
-const itemSchema = z.object({
-  id: z.string().uuid(),
-  catalogId: z.string().refine((id) => catalog.some((m) => m.id === id)),
-  wall: z.enum(["a", "b", "c"]),
-});
 export const draftSchema = z
   .object({
     version: z.literal(1),
@@ -41,7 +30,8 @@ export const draftSchema = z
     depth: z.number().int().min(1800).max(8000),
     returnLength: z.number().int().min(1800).max(8000).default(3600),
     height: z.number().int().min(2300).max(3500),
-    finish: z.enum(["white", "oak", "sage", "graphite"]),
+    finish: z.enum(["white", "oak", "sage", "graphite", "cashmere"]),
+    quote: kitchenOptionsSchema.default({}),
     decor: z
       .object({
         key: z.string().max(160),
@@ -51,7 +41,7 @@ export const draftSchema = z
         obraz: z.string().startsWith("/api/dekory/obrazy/").max(240),
       })
       .optional(),
-    items: z.array(itemSchema).max(24),
+    items: z.array(kitchenItemSchema).max(24),
   })
   .superRefine((d, ctx) => {
     if (new Set(d.items.map((i) => i.id)).size !== d.items.length)
@@ -74,6 +64,7 @@ export const newDraft = (): Draft => ({
   returnLength: 3600,
   height: 2600,
   finish: "oak",
+  quote: kitchenOptionsSchema.parse({}),
   items: [],
 });
 export function readDraft(raw: string): Draft {
@@ -89,28 +80,8 @@ export const startOffset = (d: Draft, wall: string) =>
   d.layout !== "straight" && wall !== "a" ? 650 : 0;
 export function toAnalysis(d: Draft): TechnicalAnalysis {
   // UI adapter only: catalog dimensions/configuration and existing engine build every part.
-  const ends: Record<string, number> = {};
-  const moduly: Modul[] = d.items.map((i) => {
-    const entry = catalog.find((m) => m.id === i.catalogId)!;
-    const key = `${i.wall}-${isUpper(i.catalogId) ? "upper" : "base"}`;
-    const x = ends[key] ?? startOffset(d, i.wall);
-    ends[key] = x + entry.widthMM;
-    return {
-      id: i.id,
-      katalogId: entry.id,
-      nazwa: entry.name,
-      scianaId: i.wall,
-      kategoria: entry.category,
-      konstrukcja: entry.construction,
-      pozycjaXMM: x,
-      pozycjaYMM: entry.category === "wall" ? entry.bottomOffsetMM : 100,
-      szerokoscMM: entry.widthMM,
-      wysokoscMM: entry.heightMM,
-      glebokoscMM: entry.depthMM,
-      konfiguracja: domyslnaKonfiguracja(entry),
-      materialFrontuId: d.finish,
-    };
-  });
+  const moduly = kitchenModules(d);
+
   return {
     projekt: {
       id: "szkic-klienta",
@@ -158,7 +129,11 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
       ],
     },
     zbudowane: moduly.map((m) => {
-      const b = zbudujModul(m, USTAWIENIA_DOMYSLNE.konstrukcja);
+      const b = zbudujModul(m, {
+        ...USTAWIENIA_DOMYSLNE.konstrukcja,
+        gruboscFrontuMM: d.quote.front === "lacquer" ? 19 : 18,
+        gruboscBlatuMM: d.quote.worktop === "compact" ? 12 : 38,
+      });
       return { modul: b.modul, elementy: b.elementy };
     }),
     materialy: finishes.map((f) => ({
@@ -172,37 +147,7 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
   };
 }
 export function layoutIssues(d: Draft): string[] {
-  const modules = toAnalysis(d).projekt.moduly;
-  const issues: string[] = [];
-  for (const wall of wallIds(d)) {
-    const length = wallLength(d, wall);
-    if (
-      modules.some(
-        (m) => m.scianaId === wall && m.pozycjaXMM + m.szerokoscMM > length,
-      )
-    )
-      issues.push(
-        `Szafki wychodzą poza ścianę ${wall.toUpperCase()}. Usuń szafkę lub zwiększ wymiar.`,
-      );
-  }
-  if (
-    modules.some(
-      (a) =>
-        a.wysokoscMM > 1500 &&
-        a.kategoria !== "wall" &&
-        modules.some(
-          (b) =>
-            b.kategoria === "wall" &&
-            a.scianaId === b.scianaId &&
-            a.pozycjaXMM < b.pozycjaXMM + b.szerokoscMM &&
-            b.pozycjaXMM < a.pozycjaXMM + a.szerokoscMM,
-        ),
-    )
-  )
-    issues.push(
-      "Szafka wisząca nakłada się na słupek. Usuń lub przestaw szafki w tej ścianie.",
-    );
-  return issues;
+  return kitchenIssues(d);
 }
 export function brief(d: Draft): string {
   const lines = [
@@ -212,6 +157,7 @@ export function brief(d: Draft): string {
       ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`
       : `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,
     "Szafki od początku każdej ściany, osobno dolne i wiszące:",
+    `Standard: ${kitchenOptions.front[d.quote.front]}; ${kitchenOptions.worktop[d.quote.worktop]}; ${kitchenOptions.drawers[d.quote.drawers]}; ${d.quote.installation ? "z montażem" : "bez montażu"}.`,
     ...toAnalysis(d).projekt.moduly.map(
       (m) =>
         `${m.scianaId.toUpperCase()} | ${m.katalogId} | x=${m.pozycjaXMM} mm | ${m.szerokoscMM}×${m.wysokoscMM}×${m.glebokoscMM} mm`,

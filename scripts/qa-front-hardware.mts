@@ -2,6 +2,14 @@ import express from "express";
 import { randomUUID } from "node:crypto";
 import { freshFurniture, carcass } from "../src/core/furniture.js";
 import { furnitureSave } from "../src/core/furniture-schema.js";
+import {
+  drawerSystems,
+  calculateDrawer,
+  previewCalculator,
+} from "../src/server/drawer-preview.js";
+import { Stolarnia } from "../src/service.js";
+import { Magazyn } from "../src/store/store.js";
+import { join } from "node:path";
 const model = freshFurniture();
 model.name = "Próba okuć - dane testowe";
 model.plates = carcass(model, randomUUID);
@@ -28,6 +36,19 @@ let library = [
 ];
 const app = express();
 app.use(express.json());
+const calculator = previewCalculator(
+  new Stolarnia(new Magazyn(join(process.cwd(), "../../work/qa-calculator"))),
+);
+for (const prefix of ["/api/demo", "/api"]) {
+  app.get(prefix + "/systemy-szuflad", (_q, s) => s.json(drawerSystems()));
+  app.get(prefix + "/przelicznik-szuflad", (q, s) => {
+    try {
+      s.json(calculateDrawer(q, calculator));
+    } catch (e) {
+      s.status(400).json({ blad: (e as Error).message });
+    }
+  });
+}
 app.get("/api/v2/session", (_q, s) =>
   s.json({
     user_id: "hardware-qa",
@@ -55,8 +76,9 @@ app.put("/api/v2/furniture", (q, s) => {
 });
 app.get("/api/*", (_q, s) => s.json([]));
 app.use(express.static("dist/web"));
-app.listen(4195, "127.0.0.1", () =>
+const port = Number(process.env.QA_PORT ?? 4195);
+app.listen(port, "127.0.0.1", () =>
   console.log(
-    `Test UI: http://127.0.0.1:4195/#/panel/meble?model=${library[0].id}&version=1`,
+    `Test UI: http://127.0.0.1:${port}/#/panel/meble?model=${library[0].id}&version=1`,
   ),
 );

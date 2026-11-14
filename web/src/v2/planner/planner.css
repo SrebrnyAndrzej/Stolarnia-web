@@ -3,6 +3,163 @@
   min-height: 100vh;
   color: var(--text);
 }
+.kp-suggestion {
+  width: 100%;
+  margin: 0 0 18px;
+}
+.kp-cabinet-editor {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 16px 0;
+}
+.kp-cabinet-editor h2 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+.kp-cabinet-editor p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.kp-cabinet-editor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.kp-cabinet-editor legend {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.kp-editor-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+.kp-editor-fields label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.kp-editor-fields input,
+.kp-editor-fields select {
+  width: 100%;
+  min-width: 0;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  font: inherit;
+  min-height: 43px;
+}
+.kp-calculator-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.kp-calculator-link small {
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 460px;
+}
+.kp-arrangement ol {
+  max-height: 340px;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+.kp-quote {
+  margin-bottom: 24px;
+  min-width: 0;
+}
+.kp-quote fieldset {
+  border: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  min-width: 0;
+}
+.kp-quote legend {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.kp-quote-field {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.kp-quote-field select {
+  min-width: 0;
+  width: 100%;
+  padding: 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.kp-quote-check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 0 16px;
+}
+.kp-quote-price {
+  background: var(--text);
+  color: var(--panel);
+  padding: 16px;
+  border-radius: var(--radius);
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+}
+.kp-quote-price > span {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.kp-quote-price > strong {
+  font-size: clamp(23px, 2.5vw, 32px);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.kp-quote-price > small {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.kp-quote-groups {
+  margin: 14px 0;
+}
+.kp-quote-groups > div {
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+  font-size: 12px;
+}
+.kp-quote-groups dd {
+  margin: 0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.kp-quote details {
+  font-size: 12px;
+  margin: 16px 0;
+  line-height: 1.6;
+}
+.kp-quote .ps-button {
+  width: 100%;
+}
+.kp-quote-parameters {
+  margin: 0 0 18px;
+  font-size: 12px;
+}
 .kp-main {
   max-width: 1640px;
   margin: auto;
