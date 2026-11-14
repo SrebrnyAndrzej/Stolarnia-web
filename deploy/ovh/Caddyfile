@@ -1,0 +1,10 @@
+# Install on the target after verifying DNS points to this server.
+# Preserve unrelated Caddy sites: import this file, do not replace the global config.
+panstolarz.pro {
+ encode zstd gzip
+ reverse_proxy 127.0.0.1:3210
+ header {
+  X-Content-Type-Options nosniff
+  Referrer-Policy strict-origin-when-cross-origin
+ }
+}

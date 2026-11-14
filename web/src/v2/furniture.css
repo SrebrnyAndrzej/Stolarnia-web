@@ -1,0 +1,1381 @@
+.fc {
+  max-width: 1800px;
+  margin: auto;
+}
+.fc h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 40px);
+  letter-spacing: -0.035em;
+}
+.fc h2 {
+  font-size: 17px;
+  margin: 0 0 18px;
+}
+.fc h3 {
+  font-size: 14px;
+  margin: 0;
+}
+.fc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.fc-header p {
+  margin: 6px 0;
+}
+.fc-actions,
+.fc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.fc button {
+  min-height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--text);
+}
+.fc button.ps-button {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+.fc button[aria-pressed="true"],
+.fc button[aria-current="true"] {
+  background: var(--accent-soft);
+  border-color: var(--text);
+}
+.fc-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 230px;
+  gap: 20px;
+  align-items: start;
+}
+.fc-library,
+.fc-inspector,
+.fc fieldset {
+  background: var(--panel);
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.fc fieldset {
+  margin: 0 0 16px;
+}
+.fc legend {
+  font-weight: 650;
+  padding: 0 6px;
+}
+.fc fieldset p,
+.fc-hint,
+.fc-library p,
+.fc-inspector p {
+  color: var(--muted);
+  font-size: 12px;
+}
+.fc label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 550;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+.fc input,
+.fc select,
+.fc textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: var(--panel);
+  color: var(--text);
+}
+.fc .fc-check {
+  flex-direction: row;
+  align-items: center;
+}
+.fc-check input {
+  width: 20px;
+}
+.fc-library ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.fc-library li {
+  margin-bottom: 8px;
+}
+.fc-library li button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-wrap: anywhere;
+}
+.fc-library span,
+.fc-library small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.fc-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 12px;
+}
+.fc-name {
+  grid-column: span 2;
+}
+.fc-toolbar {
+  margin: 18px 0 12px;
+}
+.fc-toolbar span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+.fc-drawing {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.fc-drawing svg {
+  width: 100%;
+  height: 480px;
+  display: block;
+  touch-action: none;
+}
+.fc-outline {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 6 6;
+  vector-effect: non-scaling-stroke;
+}
+.fc-plate polygon {
+  fill: #c5ab83;
+  stroke: #6e5c40;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  cursor: move;
+}
+.fc-plate.drawer polygon {
+  fill: #e2d9c8;
+}
+.fc-plate.selected polygon {
+  fill: var(--accent-soft);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.fc-drawers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.fc-camera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.fc-camera button {
+  min-width: 44px;
+}
+.fc-scene-host {
+  width: 100%;
+  height: 480px;
+  position: relative;
+}
+.fc-scene-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.fc-scene-host canvas:active {
+  cursor: grabbing;
+}
+.fc-scene-hint,
+.fc-scene-error {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 700px) {
+  .fc-scene-host {
+    height: 360px;
+  }
+}
+.fc-drawers h3 {
+  margin-bottom: 12px;
+}
+.fc-inspector fieldset {
+  padding: 12px;
+  margin: 16px 0 0;
+}
+.fc-inspector button {
+  margin-top: 8px;
+  width: 100%;
+}
+.fc dialog {
+  max-width: 460px;
+  width: calc(100% - 64px);
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+}
+.fc dialog::backdrop {
+  background: rgb(28 43 48 / 45%);
+}
+.fc dialog button {
+  margin: 8px 8px 0 0;
+}
+@media (max-width: 1250px) {
+  .fc-layout {
+    grid-template-columns: minmax(0, 1fr) 230px;
+  }
+  .fc-library {
+    grid-column: 1/-1;
+  }
+  .fc-library ul {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+  .fc-library li {
+    flex: 0 0 220px;
+  }
+  .fc-library label {
+    max-width: 320px;
+  }
+  .fc-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 700px) {
+  .fc-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fc-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fc-name {
+    grid-column: 1/-1;
+  }
+  .fc-drawing svg {
+    height: 360px;
+  }
+  .fc-inspector {
+    grid-column: 1;
+  }
+  .fc-drawers {
+    grid-template-columns: 1fr;
+  }
+  .fc-drawers > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .fc-drawers h3 {
+    grid-column: 1/-1;
+  }
+  .fc-actions {
+    width: 100%;
+  }
+  .fc-toolbar span {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+.fc {
+  padding: 24px;
+  box-sizing: border-box;
+}
+@media (max-width: 700px) {
+  .fc {
+    padding: 16px 10px;
+  }
+}
+.fc-cut {
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.fc-cut p,
+.fc-cut li {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fc-cut p strong {
+  color: var(--text);
+}
+.fc-edge-map {
+  width: 100%;
+  max-height: 160px;
+  color: var(--text);
+  background: var(--panel-2);
+}
+.fc-edge-map text {
+  fill: currentColor;
+  font-size: 13px;
+}
+.fc-part-review {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.fc-part-review summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.fc-part-review ul {
+  padding: 0;
+  list-style: none;
+}
+.fc-part-review li {
+  display: grid;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.fc-part-review small {
+  color: var(--muted);
+}
+.fc-specification {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.fc-part-review + .fc-part-review {
+  margin-top: 16px;
+}
+.fc-cut-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.fc-cut-table th,
+.fc-cut-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.fc-cut-table caption {
+  text-align: left;
+  padding: 12px 0;
+  font-weight: 600;
+}
+.fc-specification > p,
+.fc-specification > svg {
+  grid-column: 1 / -1;
+}
+@media (max-width: 700px) {
+  .fc-specification {
+    grid-template-columns: 1fr;
+  }
+}
+.fc-cut-diagram {
+  display: block;
+  width: 100%;
+  max-height: 250px;
+  background: var(--panel-2);
+  color: var(--text);
+  border-radius: var(--radius);
+  margin: 16px 0;
+}
+.fc-cut-diagram text {
+  fill: currentColor;
+  font:
+    14px Inter,
+    sans-serif;
+}
+.fc-cut-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.fc-cut-summary dt {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-cut-summary dd {
+  margin: 6px 0 16px;
+  font-size: 20px;
+  font-weight: 650;
+}
+.fc-cut-table {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+.fc-cut table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.fc-cut th,
+.fc-cut td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+@media (max-width: 700px) {
+  .fc-cut {
+    padding: 12px;
+  }
+  .fc-cut-summary {
+    grid-template-columns: 1fr;
+  }
+  .fc-cut-summary dd {
+    margin: 2px 0 8px;
+  }
+  .fc-cut .fc-fields {
+    grid-template-columns: 1fr;
+  }
+}
+.fc-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.fc-compare svg {
+  width: 100%;
+  height: 280px;
+}
+.fc-compartment-area {
+  cursor: pointer;
+}
+.fc-camera .fc-check {
+  margin: 0;
+}
+.fc-presentation {
+  max-width: 1200px;
+}
+.fc-presentation textarea {
+  min-height: 110px;
+  resize: none;
+}
+@media (max-width: 700px) {
+  .fc-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Furniture studio: the real drawing is the primary workspace. Tokens remain brand-owned. */
+.fc-stage {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  margin-bottom: 24px;
+  overflow: clip;
+  box-shadow: var(--shadow);
+}
+.fc-stage-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 22px 0;
+}
+.fc-stage-title h2 {
+  margin: 2px 0 0;
+  font-size: 20px;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+.fc-measures {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+}
+.fc-measures small {
+  color: var(--muted);
+  font-weight: 400;
+}
+.fc-stage .fc-toolbar {
+  margin: 12px 0 0;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.fc-stage .fc-toolbar label {
+  margin: 0;
+}
+.fc-stage .fc-drawing {
+  border: 0;
+  border-radius: 0;
+  background-color: var(--panel-2);
+  background-image: radial-gradient(
+    var(--line-strong) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 20px 20px;
+}
+.fc-stage .fc-drawing > svg {
+  height: 540px;
+}
+.fc-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 4px 0 20px;
+}
+.fc-presets button {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 8px;
+  min-width: 0;
+  font-size: 12px;
+  text-align: center;
+}
+.fc-presets svg {
+  width: 72px;
+  height: 58px;
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.fc-presets button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+.fc-library-preview {
+  width: 100%;
+  height: 90px;
+  padding: 6px;
+  box-sizing: border-box;
+  background: var(--panel-2);
+  border-radius: 4px;
+}
+.fc-library-preview polygon {
+  fill: var(--line-strong);
+  stroke: var(--text);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.fc-spacing {
+  margin: 16px 0;
+  border-block: 1px solid var(--line);
+  padding: 16px 0;
+}
+.fc-spacing p {
+  line-height: 1.6;
+}
+.fc button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+@media (min-width: 1251px) {
+  .fc-inspector {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100dvh - 40px);
+    overflow: auto;
+  }
+}
+@media (max-width: 700px) {
+  .fc-stage-title {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px 16px 0;
+    gap: 8px;
+  }
+  .fc-stage .fc-drawing > svg {
+    height: 360px;
+  }
+  .fc-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fc-measures {
+    white-space: normal;
+  }
+}
+
+.fc .fc-stage .fc-quick-dimensions {
+  margin: 12px 18px 0;
+  padding: 8px 12px 0;
+  background: var(--panel-2);
+}
+.fc-quick-dimensions .fc-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fc-quick-dimensions label {
+  margin-bottom: 8px;
+}
+.fc-quick-dimensions input {
+  font-variant-numeric: tabular-nums;
+}
+dialog.fc-focus-dialog {
+  width: calc(100vw - 32px);
+  max-width: 1400px;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+}
+.fc-focus-dialog::backdrop {
+  background: rgb(28 43 48 / 65%);
+}
+.fc-focus-dialog .fc-stage {
+  margin: 0;
+  border: 0;
+}
+.fc-focus-dialog .fc-stage .fc-drawing > svg,
+.fc-focus-dialog .fc-scene-host {
+  height: min(60dvh, 700px);
+}
+.fc-focus-dialog .fc-stage-title {
+  flex-wrap: wrap;
+}
+@media (max-width: 700px) {
+  .fc-quick-dimensions .fc-fields {
+    grid-template-columns: 1fr;
+  }
+  .fc-focus-dialog .fc-quick-dimensions .fc-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .fc-stage-title {
+    flex-wrap: wrap;
+  }
+}
+
+.fc-editable-dimension {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.fc-editable-dimension:hover {
+  fill: var(--text);
+  text-decoration-thickness: 2px;
+}
+.fc-editable-dimension:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 4px;
+}
+dialog.fc-dimension-dialog {
+  width: calc(100vw - 40px);
+  max-width: 480px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  background: var(--panel);
+}
+.fc-dimension-dialog::backdrop {
+  background: rgb(28 43 48 / 50%);
+}
+.fc-dimension-dialog h2 {
+  font-size: 20px;
+  margin: 0 0 20px;
+}
+.fc-dimension-dialog p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.fc-compartment-presets {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin: 0 0 18px;
+  background: var(--panel-2);
+}
+.fc-compartment-presets h3 {
+  margin-bottom: 12px;
+}
+.fc-readiness {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 22px;
+  background: var(--panel);
+}
+.fc-readiness-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.fc-readiness-heading h2 {
+  margin: 0;
+}
+.fc-readiness-heading span,
+.fc-readiness p {
+  color: var(--muted);
+  font-size: 12px;
+}
+.fc-readiness details {
+  border-top: 1px solid var(--line);
+  padding: 12px 0;
+}
+.fc-readiness summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.fc-readiness ul {
+  padding-left: 20px;
+}
+.fc-readiness li {
+  margin: 10px 0;
+}
+
+.fc .fc-appearance {
+  margin: 12px;
+  padding: 12px;
+  background: var(--panel);
+}
+.fc-appearance-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+.fc-appearance-fields label {
+  flex: 0 1 160px;
+}
+.fc-appearance input[type="color"] {
+  min-height: 44px;
+  padding: 4px;
+  cursor: pointer;
+}
+.fc-color-pair {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.fc-color-pair i {
+  flex: 1;
+}
+.fc-compartment-picking {
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.fc-compartment-picking label {
+  margin-top: 12px;
+  max-width: 360px;
+}
+.fc-compartment-picking p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 0;
+}
+
+/* Local studio viewport: only the editor owns panel scrolling. */
+.fc-studio {
+  height: var(--fc-available-height, 780px);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fc-studio [hidden],
+.fc-studio-sheet [hidden] {
+  display: none !important;
+}
+.fc-studio .fc-header {
+  margin: 0;
+  gap: 12px;
+}
+.fc-studio h1 {
+  font-size: 24px;
+}
+.fc-studio .fc-header button {
+  min-height: 38px;
+  padding: 6px 10px;
+}
+.fc-studio .ps-feedback {
+  margin: 0;
+}
+.fc-studio-grid {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr) 300px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+.fc-studio-left,
+.fc-studio-right {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+.fc-studio-tabs {
+  display: flex;
+  gap: 3px;
+  padding: 5px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.fc-studio-tabs button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+  border-color: transparent;
+  min-height: 40px;
+  font-size: 12px;
+}
+.fc-studio-tabs button[aria-selected="true"] {
+  background: var(--accent-soft);
+  border-color: var(--line-strong);
+  font-weight: 700;
+}
+.fc-studio-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px;
+}
+.fc-studio fieldset {
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.fc-studio label {
+  margin-bottom: 9px;
+  gap: 4px;
+}
+.fc-studio input,
+.fc-studio select {
+  min-height: 38px;
+  padding: 6px 8px;
+}
+.fc-studio h2 {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.fc-studio .fc-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 8px;
+}
+.fc-studio .fc-name {
+  grid-column: 1/-1;
+}
+.fc-studio-canvas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 8px;
+}
+.fc-studio .fc-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.fc-studio .fc-stage-title {
+  padding: 0;
+  gap: 8px;
+}
+.fc-studio .fc-stage-title .ps-eyebrow {
+  display: none;
+}
+.fc-studio .fc-stage-title h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.fc-studio .fc-measures {
+  font-size: 11px;
+}
+.fc-studio .fc-toolbar {
+  margin: 8px 0;
+  gap: 5px;
+}
+.fc-studio .fc-toolbar button {
+  padding: 6px 8px;
+  min-height: 36px;
+  font-size: 12px;
+}
+.fc-studio .fc-toolbar label {
+  margin: 0;
+}
+.fc-studio .fc-toolbar span {
+  font-size: 10px;
+}
+.fc-studio .fc-drawing {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.fc-studio .fc-drawing > svg {
+  height: 100%;
+}
+.fc-studio .fc-scene {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.fc-studio .fc-scene-host {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.fc-studio .fc-scene-hint {
+  font-size: 10px;
+  margin: 4px 0;
+}
+.fc-studio .fc-quick-dimensions {
+  margin: 6px 0 0;
+  padding: 4px 8px;
+}
+.fc-studio .fc-quick-dimensions .fc-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fc-studio .fc-quick-dimensions label {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+.fc-studio .fc-quick-dimensions legend {
+  font-size: 11px;
+}
+.fc-studio-bottom {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+.fc-studio-bottom button {
+  font-size: 12px;
+  padding: 8px 4px;
+}
+.fc-studio .fc-library {
+  border: 0;
+  padding: 0;
+}
+.fc-studio .fc-library-preview {
+  max-height: 54px;
+}
+.fc-studio .fc-presets {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+.fc-studio .fc-presets button {
+  min-height: 68px;
+  padding: 5px 2px;
+  font-size: 10px;
+}
+.fc-studio .fc-presets svg {
+  height: 32px;
+  width: 44px;
+}
+.fc-studio .fc-plate-parameters > label {
+  margin-bottom: 10px;
+}
+.fc-studio .fc-camera {
+  padding: 8px 0;
+  gap: 5px;
+}
+.fc-studio .fc-camera button {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+.fc-studio .fc-compartment-picking {
+  padding: 0 0 10px;
+}
+.fc-studio .fc-appearance {
+  padding: 0;
+}
+.fc-studio .fc-appearance-fields {
+  gap: 8px;
+}
+.fc-studio .fc-appearance-fields label {
+  flex: 1 1 90px;
+}
+.fc-parts-browser ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fc-parts-browser li {
+  margin-bottom: 6px;
+}
+.fc-parts-browser li button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fc-parts-browser small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-studio-mobile {
+  display: none;
+}
+.fc-studio-sheet {
+  position: fixed;
+  inset: 12px 12px 12px auto;
+  margin: 0;
+  width: min(700px, calc(100vw - 24px));
+  max-width: none;
+  max-height: none;
+  height: calc(100dvh - 24px);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel);
+}
+.fc-studio-sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+.fc-studio-sheet::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+.fc-studio-sheet > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.fc-studio-sheet > header h2 {
+  margin: 0;
+}
+.fc-sheet-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+  overscroll-behavior: contain;
+}
+@media (max-width: 1100px) {
+  .fc-studio-mobile {
+    display: flex;
+    gap: 6px;
+  }
+  .fc-studio-mobile button {
+    flex: 1;
+  }
+  .fc-studio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fc-studio[data-mobile-pane="preview"] .fc-studio-left,
+  .fc-studio[data-mobile-pane="preview"] .fc-studio-right,
+  .fc-studio[data-mobile-pane="tools"] .fc-studio-canvas,
+  .fc-studio[data-mobile-pane="tools"] .fc-studio-right,
+  .fc-studio[data-mobile-pane="inspector"] .fc-studio-canvas,
+  .fc-studio[data-mobile-pane="inspector"] .fc-studio-left {
+    display: none;
+  }
+  .fc-studio .fc-header {
+    flex-wrap: wrap;
+  }
+  .fc-studio .fc-header .fc-actions {
+    gap: 4px;
+  }
+  .fc-studio .fc-header button {
+    font-size: 12px;
+  }
+}
+@media (max-height: 600px) {
+  .fc-studio {
+    height: auto;
+  }
+  .fc-studio-grid {
+    min-height: 480px;
+  }
+  .fc-studio-scroll {
+    max-height: 520px;
+  }
+}
+.fc-studio .fc-stage {
+  margin-bottom: 0;
+}
+.fc-studio .fc-presets {
+  margin-bottom: 10px;
+}
+.fc-studio .fc-presets button {
+  gap: 4px;
+  min-height: 64px;
+}
+.fc-studio .fc-stage .fc-quick-dimensions {
+  margin: 6px 8px 8px;
+  padding: 4px 8px;
+}
+.fc-studio .fc-appearance .fc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.fc-studio .fc-appearance .fc-actions button {
+  padding: 6px;
+  font-size: 11px;
+  text-align: left;
+}
+@media (max-width: 700px) {
+  .fc-studio .fc-stage-title {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 6px;
+  }
+  .fc-studio .fc-stage .fc-toolbar {
+    padding: 6px;
+    gap: 4px;
+    margin: 0;
+  }
+  .fc-studio .fc-toolbar > span {
+    display: none;
+  }
+  .fc-studio .fc-stage-title h2 {
+    font-size: 12px;
+  }
+  .fc-studio .fc-stage-title > button {
+    min-height: 34px;
+    font-size: 11px;
+  }
+}
+.fc-recovery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+}
+.fc-recovery span {
+  flex: 1;
+  font-size: 12px;
+}
+.fc-recovery-status {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-studio .fc-plate.collision polygon {
+  fill: #f2c1b0;
+  stroke: #a83c24;
+  stroke-width: 3;
+}
+.fc-studio .fc-plate.marked polygon {
+  fill: var(--accent-soft);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.fc-multi .fc-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.fc-multi button {
+  padding: 6px;
+  font-size: 11px;
+}
+.fc-multi small,
+.fc-section-controls p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.fc-parts-browser li {
+  position: relative;
+}
+.fc-parts-browser li > .fc-check {
+  margin: 0 0 3px;
+}
+.fc-measure-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.fc-measure-panel output {
+  display: block;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.fc-measure-names {
+  font-size: 11px;
+  margin: 4px 0 8px;
+  overflow-wrap: anywhere;
+}
+.fc-measure-panel dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 8px 0;
+}
+.fc-measure-panel dt {
+  font-size: 10px;
+  color: var(--muted);
+}
+.fc-measure-panel dd {
+  margin: 3px 0 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.fc-measure-panel small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+}
+.fc-multi-details {
+  margin-bottom: 12px;
+}
+.fc-multi-details > summary {
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.fc-studio-parts {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  padding: 10px;
+  overflow: hidden;
+}
+.fc-studio-parts > .fc-measure-panel {
+  flex-shrink: 0;
+}
+.fc-parts-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+.fc-measure-help summary {
+  font-size: 11px;
+  cursor: pointer;
+  padding-top: 4px;
+}
+.fc-batch > p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fc-batch-list {
+  max-height: 290px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+}
+.fc-batch-entry {
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.fc-batch-entry:last-child {
+  border-bottom: 0;
+}
+.fc-batch-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 10px;
+  align-items: center;
+}
+.fc-batch-row > .fc-check {
+  margin: 0;
+}
+.fc-batch details > summary {
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+.fc-batch-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 14px;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.fc-batch-sheet svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 450px;
+  margin: 12px 0;
+}
+.fc-batch-sheet svg g[role="button"] {
+  cursor: pointer;
+}
+.fc-batch-sheet svg g[role="button"]:focus rect {
+  stroke-width: 3;
+  stroke: var(--text);
+}
+.fc-batch-sheet p,
+.fc-batch-result li {
+  font-size: 12px;
+}
+.fc-hardware p,
+.fc-hardware small,
+.fc-hole-list {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.fc-hardware svg {
+  display: none;
+  width: 100%;
+  height: 250px;
+  margin: 12px 0;
+}
+@media (max-width: 800px) {
+  .fc-hardware svg {
+    display: block;
+  }
+}
+.fc-hardware .fc-fields {
+  grid-template-columns: 1fr 1fr;
+}
+.fc-document-preview {
+  width: 100%;
+  min-width: 0;
+  height: min(68vh, 720px);
+  min-height: 280px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  margin-top: 12px;
+}
+.fc-plate-picker {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 10px;
+}

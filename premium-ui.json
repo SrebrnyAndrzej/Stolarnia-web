@@ -1,0 +1,23 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": ["web/src/v2"],
+  "locale": "pl-PL",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": [
+    "Select/Listbox",
+    "Form",
+    "Scrollbar",
+    "Toast",
+    "CRUD"
+  ],
+  "ownership": { "Select/Listbox": "native" },
+  "commands": {
+    "unit": "npm run test:v2:unit",
+    "e2e": "npm run test:v2:browser",
+    "accessibility": "npm run test:v2:browser -- --grep accessibility"
+  },
+  "evidence": {
+    "crudFullFlow": "tests/v2/interface.spec.ts",
+    "failurePaths": "scripts/verify-v2-access.mjs"
+  }
+}

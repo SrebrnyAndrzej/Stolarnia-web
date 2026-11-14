@@ -101,6 +101,14 @@ export function Temat({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
             <Pole etykieta="E-mail" typ="email" wartosc={p.klient.email} zapisz={(v) => zmien({ klient: { email: v } })} link={p.klient.email ? `mailto:${p.klient.email}` : undefined} />
             <Pole etykieta="Adres montażu" wartosc={p.klient.adres} zapisz={(v) => zmien({ klient: { adres: v } })} />
             <Pole etykieta="Termin montażu" typ="date" wartosc={p.terminMontazu ?? ""} zapisz={(v) => zmien({ terminMontazu: v || null })} />
+            <div className="field">
+              <label>Składanie korpusów</label>
+              <select className="input" value={p.skladanieKorpusow ?? ""} onChange={(e) => zmien({ skladanieKorpusow: e.target.value || null })}>
+                <option value="">— nie ustalono</option>
+                <option value="warsztat">w warsztacie — wozimy złożone</option>
+                <option value="naMiejscu">na miejscu — wozimy formatki w paczkach</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

@@ -15,3 +15,10 @@ __pycache__/
 .env.*
 !.env.example
 .vercel/
+
+# Browser verification artifacts
+test-results/
+playwright-report/
+
+# Generated from the maintained decor source before web build
+/web/public/catalog/decors.json

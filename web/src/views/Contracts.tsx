@@ -1,3 +1,4 @@
+import { randomId } from "../uuid";
 import { useEffect, useState } from "react";
 import { api, zl, type Analiza } from "../api";
 import { WARUNKI_UMOWY, ZAKRESY, type DaneUmowy, type Umowa } from "../../../src/core/contracts";
@@ -17,7 +18,7 @@ export function Contracts({ analiza }: { analiza: Analiza }) {
       if (!active) return;
       const f = u.daneFirmy;
       setLista(umowy);
-      setDane({ numer: `UM/${new Date().getFullYear()}/${crypto.randomUUID().slice(0, 8).toUpperCase()}`, rodzaj: "kuchnia",
+      setDane({ numer: `UM/${new Date().getFullYear()}/${randomId().slice(0, 8).toUpperCase()}`, rodzaj: "kuchnia",
         klient: analiza.projekt.klient.nazwa, adresKlienta: analiza.projekt.klient.adres,
         firma: [f.nazwaFirmy?.trim() || "Pan Stolarz", f.wlasciciel?.trim() || "Mateusz Wojciechowski"].join(" - "),
         adresFirmy: [f.adres?.trim() || "Poniatowskiego 4/4", [f.kodPocztowy?.trim() || "65-305", f.miasto?.trim() || "Zielona Góra"].join(" ")].join(", "),
@@ -47,7 +48,7 @@ export function Contracts({ analiza }: { analiza: Analiza }) {
     setBusy(true); setBlad("");setInfo("");
     try {
       const u = await api.dodajUmowe(id, dane);
-      setLista(l => [...l, u]); setDirty(false); setDane(v => v && ({ ...v, numer: `UM/${new Date().getFullYear()}/${crypto.randomUUID().slice(0, 8).toUpperCase()}` }));
+      setLista(l => [...l, u]); setDirty(false); setDane(v => v && ({ ...v, numer: `UM/${new Date().getFullYear()}/${randomId().slice(0, 8).toUpperCase()}` }));
       setInfo("Umowa zapisana. Pobierz PDF z listy poniżej. Zapis nie oznacza podpisania umowy.");
     } catch (e) { setBlad((e as Error).message); } finally { setBusy(false); }
   }
@@ -87,6 +88,6 @@ export function Contracts({ analiza }: { analiza: Analiza }) {
     </form>
     <h3>Zapisane umowy</h3>
     {!lista.length && <p className="muted">Ten projekt nie ma jeszcze zapisanych umów.</p>}
-    {[...lista].reverse().map(u => <article className="contract-item" key={u.id}><div><b>{u.numer}</b><p>{u.klient} · {zl(u.cena)} · {new Date(u.utworzono).toLocaleDateString("pl-PL")}</p></div><div className="row"><button className="btn" disabled={busy} onClick={() => pobierz(u)}>Pobierz PDF</button><button className="btn" disabled={busy} onClick={() => { if (dirty && !confirm("Zastąpić niezapisany formularz kopią tej umowy?")) return; const { id: _id, utworzono: _ut, ...d } = u;setDane({ ...d, numer: `UM/${new Date().getFullYear()}/${crypto.randomUUID().slice(0, 8).toUpperCase()}` });setDirty(true);setInfo("Wczytano kopię do formularza. Oryginał pozostaje bez zmian.");window.scrollTo({ top: 0, behavior: "smooth" }); }}>Utwórz na podstawie</button></div></article>)}
+    {[...lista].reverse().map(u => <article className="contract-item" key={u.id}><div><b>{u.numer}</b><p>{u.klient} · {zl(u.cena)} · {new Date(u.utworzono).toLocaleDateString("pl-PL")}</p></div><div className="row"><button className="btn" disabled={busy} onClick={() => pobierz(u)}>Pobierz PDF</button><button className="btn" disabled={busy} onClick={() => { if (dirty && !confirm("Zastąpić niezapisany formularz kopią tej umowy?")) return; const { id: _id, utworzono: _ut, ...d } = u;setDane({ ...d, numer: `UM/${new Date().getFullYear()}/${randomId().slice(0, 8).toUpperCase()}` });setDirty(true);setInfo("Wczytano kopię do formularza. Oryginał pozostaje bez zmian.");window.scrollTo({ top: 0, behavior: "smooth" }); }}>Utwórz na podstawie</button></div></article>)}
   </section>;
 }
