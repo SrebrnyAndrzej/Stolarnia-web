@@ -30,6 +30,9 @@ const FurniturePresentation = lazy(() =>
     default: m.FurniturePresentation,
   })),
 );
+const Marketing = lazy(() =>
+  import("./Marketing").then((m) => ({ default: m.Marketing })),
+);
 const Purchasing = lazy(() =>
   import("./Purchasing").then((m) => ({ default: m.Purchasing })),
 );
@@ -274,6 +277,7 @@ export function App() {
     ...(owner
       ? [
           { id: "zamowienia", label: "Zamówienia Mussi", icon: IconStack2 },
+          { id: "marketing", label: "Marketing", icon: IconMail },
           { id: "zapytania", label: "Zapytania klientów", icon: IconMail },
           { id: "pracownicy", label: "Pracownicy", icon: IconUsers },
         ]
@@ -445,6 +449,8 @@ export function App() {
               </a>
               <LegacyApp pracownik={employee && profile !== "wlasciciel" ? profile : undefined} />
             </div>
+          ) : section === "marketing" && owner ? (
+            <Marketing />
           ) : section === "zamowienia" && owner ? (
             <Purchasing />
           ) : section === "meble" && (owner || employee) ? (

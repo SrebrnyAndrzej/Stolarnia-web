@@ -44,19 +44,8 @@ export const schematTresci = z
   .strict();
 export type TrescPosta = z.infer<typeof schematTresci>;
 
-export type StanDostarczenia = "pending" | "queued" | "manual" | "blocked" | "publishing" | "published" | "simulated" | "failed" | "unknown" | "superseded";
-export const NAZWY_STANOW: Record<StanDostarczenia, string> = {
-  pending: "czeka na akceptację",
-  queued: "w kolejce",
-  manual: "do ręcznej publikacji",
-  blocked: "wstrzymane",
-  publishing: "wysyłanie",
-  published: "opublikowane",
-  simulated: "symulacja (nie wysłano)",
-  failed: "błąd",
-  unknown: "niepewne — sprawdź na profilu",
-  superseded: "zastąpione nowszą wersją",
-};
+export { NAZWY_STANOW, type StanDostarczenia } from "./marketing-stany.js";
+import type { StanDostarczenia } from "./marketing-stany.js";
 
 export interface PostMarketingu {
   id: string;
