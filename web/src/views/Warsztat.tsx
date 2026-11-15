@@ -34,8 +34,13 @@ function czytajRole(): Rola {
   }
 }
 
-export function Warsztat() {
-  const [rola, setRola] = useState<Rola>(czytajRole);
+/**
+ * `rolaStala` — konto pracownika (profil produkcja/montaż): rola wynika z profilu, bez przełącznika
+ * i bez przeglądu właściciela. Bez niej (właściciel) przełącznik porządkuje ekran jak dotąd.
+ */
+export function Warsztat({ rolaStala }: { rolaStala?: "produkcja" | "montaz" } = {}) {
+  const [rolaWybrana, setRola] = useState<Rola>(czytajRole);
+  const rola: Rola = rolaStala ?? rolaWybrana;
   const [projekty, setProjekty] = useState<ProjektSkrot[] | null>(null);
   const [wydania, setWydania] = useState<Record<string, WydanieMeta[]>>({});
   const [blad, setBlad] = useState("");
@@ -77,21 +82,23 @@ export function Warsztat() {
       <div className="card">
         <div className="card-h" style={{ flexWrap: "wrap", gap: 8 }}>
           <h2 style={{ flex: 1 }}>Warsztat</h2>
-          <div className="seg" role="tablist" aria-label="Widok roli">
+          {!rolaStala && <div className="seg" role="tablist" aria-label="Widok roli">
             {(Object.keys(NAZWY_ROL) as Rola[]).map((r) => (
               <button key={r} role="tab" aria-selected={rola === r} className={`btn small${rola === r ? " primary" : ""}`} onClick={() => ustawRole(r)}>
                 {NAZWY_ROL[r]}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
         <div className="card-b muted" style={{ fontSize: 13 }}>
           {rola === "wlasciciel" && "Wszystkie zlecenia według etapu i następny krok. Produkcja pracuje wyłącznie na wydaniach (zamrożonych rewizjach)."}
           {rola === "produkcja" && "Zlecenia do wykonania. Drukuj z wydania: pakiet produkcyjny P (sekcje T, R, E, I, S, C). Bez cen i danych kontaktowych klienta."}
           {rola === "montaz" && "Zlecenia gotowe do montażu. Pakiet montażowy (sekcje T, R, E, M, K) zawiera kolejność, wymiary montażowe, okucia i protokół odbioru."}
-          <div className="alert ostrzezenie" style={{ marginTop: 8 }}>
-            Przełącznik porządkuje ekran. Uprawnienia egzekwuje serwer wg profilu dostępu konta (produkcja / montaż).
-          </div>
+          {!rolaStala && (
+            <div className="alert ostrzezenie" style={{ marginTop: 8 }}>
+              Przełącznik porządkuje ekran. Uprawnienia egzekwuje serwer wg profilu dostępu konta (produkcja / montaż).
+            </div>
+          )}
         </div>
       </div>
       {blad && <div className="alert blad">{blad}</div>}

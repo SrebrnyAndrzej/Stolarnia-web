@@ -443,7 +443,7 @@ export function App() {
               <a href={href("projekty")} className="ps-back-link">
                 <IconArrowLeft size={16} /> Nowy widok projektów
               </a>
-              <LegacyApp />
+              <LegacyApp pracownik={employee && profile !== "wlasciciel" ? profile : undefined} />
             </div>
           ) : section === "zamowienia" && owner ? (
             <Purchasing />

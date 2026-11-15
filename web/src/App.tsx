@@ -38,7 +38,11 @@ function czytajTrase(): Trasa {
   return { widok: "projekty" };
 }
 
-export function LegacyApp() {
+/**
+ * `pracownik` — konto pracownika w starym panelu (v2 dopuszcza tylko jego widoki): bez menu właściciela,
+ * Warsztat z rolą z profilu konta. Właściciel dostaje pełne menu jak dotąd.
+ */
+export function LegacyApp({ pracownik }: { pracownik?: "sprzedaz" | "produkcja" | "montaz" } = {}) {
   const [trasa, setTrasa] = useState<Trasa>(czytajTrase);
   useEffect(() => {
     const f = () => setTrasa(czytajTrase());
@@ -56,20 +60,20 @@ export function LegacyApp() {
         <button className="brand" onClick={() => idz("#/")} aria-label="Pan Stolarz — projekty">
           <span className="brand-mark" aria-hidden /> Pan Stolarz
         </button>
-        <nav className="nav" aria-label="Menu główne">
+        {!pracownik && <nav className="nav" aria-label="Menu główne">
           <button className={trasa.widok === "projekty" || trasa.widok === "projekt" ? "on" : ""} onClick={() => idz("#/")}>Projekty</button>
           <button className={trasa.widok === "szuflady" ? "on" : ""} aria-current={trasa.widok === "szuflady" ? "page" : undefined} onClick={() => idz("#/szuflady")}>Kalkulator szuflad</button>
           <button className={trasa.widok === "szybki" ? "on" : ""} onClick={() => idz("#/szybki")}>Szybki projekt</button>
           <button className={trasa.widok === "warsztat" ? "on" : ""} onClick={() => idz("#/warsztat")}>Warsztat</button>
           <button className={trasa.widok === "materialy" ? "on" : ""} onClick={() => idz("#/materialy")}>Materiały i okucia</button>
           <button className={trasa.widok === "ustawienia" ? "on" : ""} onClick={() => idz("#/ustawienia")}>Ustawienia</button>
-        </nav>
+        </nav>}
       </header>
       <main className="main">
         {trasa.widok === "projekty" && <Projects />}
         {trasa.widok === "projekt" && <ProjektWidok id={trasa.id} zakladka={trasa.zakladka} />}
         {trasa.widok === "szybki" && <div className="page"><SzybkiProjekt key={trasa.n} projektId={trasa.id} /></div>}
-        {trasa.widok === "warsztat" && <Warsztat />}
+        {trasa.widok === "warsztat" && <Warsztat rolaStala={pracownik === "produkcja" || pracownik === "montaz" ? pracownik : undefined} />}
         {trasa.widok === "materialy" && <Materials />}
         {trasa.widok === "szuflady" && <PrzelicznikSzuflad />}
         {trasa.widok === "ustawienia" && <Settings />}
