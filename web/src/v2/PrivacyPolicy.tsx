@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Logo } from "./ui";
+import "./privacy.css";
 
 // Polityka prywatności formularza zapytań i strony (ST-APP-005). Dane administratora pochodzą z
 // Ustawienia → Dane firmy (te same co w umowach), więc zmiana w ustawieniach od razu zmienia politykę.
@@ -31,16 +33,23 @@ export function PrivacyPolicy() {
   const kompletny = !!a && !!(a.nazwaFirmy || a.wlasciciel) && !!a.adres && !!(a.email || a.telefon);
   const nazwa = a ? [a.nazwaFirmy, a.wlasciciel].filter(Boolean).join(" — ") : "";
   return (
-    <main className="ps-privacy" id="tresc">
+    <div className="ps-privacy-page">
+    <header className="ps-public-header">
+      <a href="#/" aria-label="Pan Stolarz — strona główna">
+        <Logo />
+      </a>
       <a className="ps-under-link" href="#/">
         ← Strona główna
       </a>
+    </header>
+    <main className="ps-privacy" id="tresc">
+      <span className="ps-eyebrow">Pan Stolarz · meble na wymiar</span>
       <h1>Polityka prywatności</h1>
-      <p className="ps-page-intro">Obowiązuje od {AKTUALIZACJA_POLITYKI}. Dotyczy strony Pan Stolarz, formularza zapytań i kontaktu w sprawie mebli na wymiar.</p>
+      <p className="ps-privacy-lead">Obowiązuje od {AKTUALIZACJA_POLITYKI}. Dotyczy strony Pan Stolarz, formularza zapytań i kontaktu w sprawie mebli na wymiar.</p>
 
       <h2>1. Administrator danych</h2>
       {kompletny ? (
-        <p>
+        <p className="ps-privacy-admin">
           Administratorem danych jest <b>{nazwa}</b>
           {a!.nip ? `, NIP ${a!.nip}` : ""}, {a!.adres}
           {a!.kodPocztowy || a!.miasto ? `, ${[a!.kodPocztowy, a!.miasto].filter(Boolean).join(" ")}` : ""}. Kontakt w sprawie danych:{" "}
@@ -49,7 +58,7 @@ export function PrivacyPolicy() {
           {a!.telefon && <a href={`tel:${a!.telefon.replace(/\s/g, "")}`}>{a!.telefon}</a>}.
         </p>
       ) : (
-        <p role="status">{blad ? "Nie udało się wczytać danych administratora. Odśwież stronę." : a ? "Dane administratora są w trakcie uzupełniania. W sprawie danych zadzwoń: +48 572 548 957." : "Wczytywanie danych administratora…"}</p>
+        <p className="ps-privacy-admin" role="status">{blad ? "Nie udało się wczytać danych administratora. Odśwież stronę." : a ? "Dane administratora są w trakcie uzupełniania. W sprawie danych zadzwoń: +48 572 548 957." : "Wczytywanie danych administratora…"}</p>
       )}
 
       <h2>2. Jakie dane i po co</h2>
@@ -90,6 +99,12 @@ export function PrivacyPolicy() {
       <p>
         Strona nie używa analityki ani reklam i nie śledzi odwiedzających. Pracownicy zalogowani do panelu dostają techniczne ciasteczko sesji. Przeglądarka może pamiętać ustawienia widoku (np. tryb oświetlenia 3D) oraz szkic opisu zapytania do czasu jego wysłania — te informacje nie są wysyłane do nas.
       </p>
+      <p className="ps-privacy-back">
+        <a className="ps-button secondary" href="#/zapytanie">
+          Wróć do formularza zapytania
+        </a>
+      </p>
     </main>
+    </div>
   );
 }
