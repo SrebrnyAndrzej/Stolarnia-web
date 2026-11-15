@@ -407,8 +407,10 @@ app.post("/api/projekty", api((r) => s.utworzProjekt(r.body)));
 app.get("/api/projekty/:id", api((r) => s.projekt(p(r, "id"))));
 // Produkcja i montaż zmieniają tylko status — w odpowiedzi tylko id i status (bez pozostałych danych projektu).
 app.patch("/api/projekty/:id", api((r) => {
-  const w = s.zmienProjekt(p(r, "id"), r.body);
   const pr = profil(r);
+  // Świadome zwolnienie do produkcji mimo braków — wyłącznie właściciel.
+  const body = pr === "wlasciciel" ? r.body : { ...(r.body ?? {}), zwolnienieMimoBrakow: undefined };
+  const w = s.zmienProjekt(p(r, "id"), body);
   return pr === "produkcja" || pr === "montaz" ? { id: w.id, status: w.status } : w;
 }));
 app.delete("/api/projekty/:id", api((r) => s.usunProjekt(p(r, "id"))));

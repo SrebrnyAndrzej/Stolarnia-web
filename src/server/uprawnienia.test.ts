@@ -32,7 +32,7 @@ function projekt(nazwa: string, status: "szkic" | "produkcja" | "gotoweDoMontazu
   svc.dodajNotatke(p.id, "Klient dzwonił: CRM-UWAGA-55, chce rabat");
   svc.dodajNotatke(p.id, "[Produkcja · Kuba] brak zawiasów");
   svc.utworzWydanie(p.id, {});
-  if (status !== "szkic") svc.zmienProjekt(p.id, { status });
+  if (status !== "szkic") svc.zmienProjekt(p.id, { status, zwolnienieMimoBrakow: "dane testowe — wydanie robocze" });
   return p.id;
 }
 const P = { szkic: projekt("Sonda szkic", "szkic"), prod: projekt("Sonda produkcja", "produkcja"), mont: projekt("Sonda montaż", "gotoweDoMontazu"), inny: projekt("Sonda nieprzydzielony", "produkcja") };

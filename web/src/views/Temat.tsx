@@ -10,6 +10,21 @@ export function Temat({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
   const [blad, setBlad] = useState<string | null>(null);
   const [nowa, setNowa] = useState("");
   const [pokazZalatwione, setPokazZalatwione] = useState(false);
+  // Zwolnienie do produkcji (R02): serwer odmawia przy wydaniu roboczym lub nieaktualnym; właściciel może świadomie z powodem.
+  const [zwolnienie, setZwolnienie] = useState<{ komunikat: string; powod: string } | null>(null);
+  const ustawStatus = async (s: StatusProjektu) => {
+    if (s !== "produkcja") return zmien({ status: s });
+    try {
+      await api.zmienProjekt(p.id, { status: s });
+      setBlad(null);
+      setZwolnienie(null);
+      await odswiez();
+    } catch (e) {
+      const m = (e as Error).message;
+      if (/podając powód/.test(m)) setZwolnienie({ komunikat: m, powod: "" });
+      else setBlad(m);
+    }
+  };
 
   const wykonaj = async (f: () => Promise<unknown>) => {
     try {
@@ -47,13 +62,36 @@ export function Temat({ analiza, odswiez }: { analiza: Analiza; odswiez: () => P
                 role="radio"
                 aria-checked={s === p.status}
                 className={`etap ${s === p.status ? "on" : i < idx ? "za" : ""}`}
-                onClick={() => s !== p.status && zmien({ status: s })}
+                onClick={() => s !== p.status && void ustawStatus(s)}
               >
                 <span className="etap-nr">{i + 1}</span>
                 {NAZWY_STATUSOW[s]}
               </button>
             ))}
           </div>
+          {zwolnienie && (
+            <div className="alert ostrzezenie" role="alert" style={{ marginTop: 10, display: "grid", gap: 8 }}>
+              <b>Projekt nie jest gotowy do produkcji</b>
+              <span>{zwolnienie.komunikat}</span>
+              <div className="field">
+                <label htmlFor="zwolnienie-powod">Powód świadomego zwolnienia (trafi do uwag, widzi go warsztat)</label>
+                <input id="zwolnienie-powod" className="input" maxLength={500} value={zwolnienie.powod} onChange={(e) => setZwolnienie({ ...zwolnienie, powod: e.target.value })} />
+              </div>
+              <div className="row">
+                <button className="btn" onClick={() => setZwolnienie(null)}>Anuluj</button>
+                <button
+                  className="btn primary"
+                  disabled={!zwolnienie.powod.trim()}
+                  onClick={async () => {
+                    await wykonaj(() => api.zmienProjekt(p.id, { status: "produkcja", zwolnienieMimoBrakow: zwolnienie.powod.trim() }));
+                    setZwolnienie(null);
+                  }}
+                >
+                  Zwolnij mimo braków
+                </button>
+              </div>
+            </div>
+          )}
           {!!p.historiaStatusow?.length && (
             <details className="historia">
               <summary className="muted">Historia etapów ({p.historiaStatusow.length})</summary>

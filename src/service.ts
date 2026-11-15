@@ -401,7 +401,7 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; skladanieKorpusow?: "warsztat" | "naMiejscu" | null; agd?: UrzadzenieAGD[] }): Projekt {
+  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; skladanieKorpusow?: "warsztat" | "naMiejscu" | null; agd?: UrzadzenieAGD[]; zwolnienieMimoBrakow?: string }): Projekt {
     const cena = dane.cenaUzgodnionaBrutto;
     if (cena !== undefined && cena !== null && (typeof cena !== "number" || !Number.isFinite(cena) || cena <= 0 || cena > 100000000 || Math.abs(cena * 100 - Math.round(cena * 100)) > 0.00001)) throw new BladUslugi("Cena uzgodniona musi być dodatnią kwotą do 100 000 000 zł, z maksymalnie dwoma miejscami po przecinku.");
     if (dane.agd !== undefined) dane = { ...dane, agd: sprawdzAGD(dane.agd) };
@@ -414,6 +414,7 @@ export class Stolarnia {
       if (dane.nazwa) p.nazwa = dane.nazwa;
       if (dane.klient) p.klient = { ...p.klient, ...dane.klient };
       if (dane.status && dane.status !== p.status) {
+        if (dane.status === "produkcja") this.sprawdzZwolnienie(p, dane.zwolnienieMimoBrakow);
         p.status = dane.status;
         (p.historiaStatusow ??= []).push({ status: dane.status, data: teraz() });
       }
@@ -423,6 +424,24 @@ export class Stolarnia {
       if (dane.skladanieKorpusow !== undefined) p.skladanieKorpusow = dane.skladanieKorpusow || undefined;
       if (dane.agd !== undefined) p.agd = dane.agd.length ? dane.agd : undefined;
     });
+  }
+
+  /**
+   * Zwolnienie do produkcji (R02, ST-APP-005): hala dostaje projekt tylko z kompletnym wydaniem bieżącej rewizji.
+   * Wydanie robocze albo zmiana projektu po wydaniu wymaga świadomej decyzji właściciela z powodem,
+   * który zostaje jako uwaga w Temacie (widoczna też dla warsztatu).
+   */
+  private sprawdzZwolnienie(p: Projekt, powod?: string) {
+    const ost = [...(p.wydania ?? [])].sort((a, b) => a.numer - b.numer).at(-1);
+    if (!ost) throw new BladUslugi("Brak wydania produkcyjnego — utwórz wydanie w zakładce Produkcja, zanim zwolnisz projekt do produkcji.");
+    const braki = [
+      ...(ost.gotowaDoProdukcji ? [] : [`wydanie ${ost.numer} jest robocze (braki danych: ${ost.podsumowanie?.brakDanych ?? "?"})`]),
+      ...(ost.rewizja === p.rewizja ? [] : [`projekt zmienił się po wydaniu ${ost.numer} (rew. ${ost.rewizja} → ${p.rewizja})`]),
+    ];
+    if (!braki.length) return;
+    const t = String(powod ?? "").trim();
+    if (!t) throw new BladUslugi(`Nie można zwolnić do produkcji: ${braki.join("; ")}. Uzupełnij projekt i utwórz nowe wydanie albo zwolnij świadomie, podając powód.`);
+    (p.notatkiRobocze ??= []).unshift({ id: id(), tekst: `[Właściciel] Zwolniono do produkcji mimo: ${braki.join("; ")}. Powód: ${t.slice(0, 500)}`, utworzono: teraz(), zalatwiona: false });
   }
 
   // ---------- Szkice wstępne dla klienta ----------

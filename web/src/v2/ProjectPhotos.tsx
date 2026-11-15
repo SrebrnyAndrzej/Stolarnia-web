@@ -11,12 +11,13 @@ import "./project-files.css";
 const KATEGORIE: [KategoriaZdjecia, string][] = [
   ["pomiar", "Pomiar"],
   ["montaz", "Montaż i odbiór"],
+  ["problem", "Problem z hali"],
   ["inne", "Inne"],
 ];
 const MAX_BOK = 2560;
 const LIMIT = 3 * 1024 * 1024;
 
-async function jpegBase64(file: File): Promise<string> {
+export async function jpegBase64(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file).catch(() => {
     throw new Error(`Nie udało się odczytać „${file.name}” jako zdjęcia.`);
   });

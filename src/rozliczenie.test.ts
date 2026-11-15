@@ -60,3 +60,21 @@ test("zapytanie → projekt: dane klienta i opis w Temacie, drugi raz ten sam pr
   assert.deepEqual([b.nowy, b.projekt.id], [false, a.projekt.id]);
   assert.equal(s.projekty().length, 1);
 });
+
+test("zwolnienie do produkcji: tylko z kompletnym wydaniem bieżącej rewizji albo świadomie z powodem (R02)", () => {
+  const s = nowa();
+  const p = s.utworzProjekt({ nazwa: "Szafa", sciany: [{ dlugoscMM: 3000 }] });
+  s.dodajModul(p.id, { katalogId: "base-drawers-600" });
+  assert.throws(() => s.zmienProjekt(p.id, { status: "produkcja" }), /Brak wydania produkcyjnego/);
+  const w = s.utworzWydanie(p.id, {});
+  if (!w.gotowaDoProdukcji) assert.throws(() => s.zmienProjekt(p.id, { status: "produkcja" }), /jest robocze.*podając powód/);
+  s.dodajModul(p.id, { katalogId: "base-drawers-600" }); // zmiana po wydaniu
+  assert.throws(() => s.zmienProjekt(p.id, { status: "produkcja" }), /zmienił się po wydaniu/);
+  const q = s.zmienProjekt(p.id, { status: "produkcja", zwolnienieMimoBrakow: "klient czeka, korpusy bez zmian" });
+  assert.equal(q.status, "produkcja");
+  assert.match(q.notatkiRobocze![0].tekst, /^\[Właściciel\] Zwolniono do produkcji mimo: .*Powód: klient czeka/);
+  // Kompletne wydanie bieżącej rewizji przechodzi bez powodu (inny projekt bez modułów — bez braków danych)
+  const k = s.utworzProjekt({ nazwa: "Pusty", sciany: [{ dlugoscMM: 1000 }] });
+  const wk = s.utworzWydanie(k.id, {});
+  if (wk.gotowaDoProdukcji) assert.equal(s.zmienProjekt(k.id, { status: "produkcja" }).status, "produkcja");
+});

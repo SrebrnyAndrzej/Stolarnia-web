@@ -12,7 +12,7 @@ import { profilOsoby } from "./uprawnienia.js";
 
 export const PHOTO_LIMIT = CAD_FILE_LIMIT; // ten sam limit co bucket (3 MiB)
 export const PHOTOS_PER_PROJECT = 200;
-export const KATEGORIE_ZDJEC = ["pomiar", "montaz", "inne"] as const;
+export const KATEGORIE_ZDJEC = ["pomiar", "montaz", "problem", "inne"] as const;
 export type KategoriaZdjecia = (typeof KATEGORIE_ZDJEC)[number];
 
 export interface ProjectPhoto {
