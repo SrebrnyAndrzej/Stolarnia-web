@@ -61,6 +61,7 @@ export const REGULY_TRAS: Regula[] = [
   { metody: "GET", sciezka: v2p(), profile: WSZYSCY, opis: "widok techniczny projektu" },
   { metody: "GET", sciezka: v2p("/documents(\\.pdf)?"), profile: WSZYSCY, opis: "dokumentacja techniczna z wydania" },
   { metody: "GET", sciezka: /^\/api\/v2\/requests$/, profile: TYLKO_WLASCICIEL, opis: "zapytania klientów" },
+  { metody: "POST", sciezka: new RegExp(`^/api/v2/requests/${ID}/project$`), profile: TYLKO_WLASCICIEL, opis: "zapytanie → projekt" },
   { metody: "GET|POST", sciezka: /^\/api\/v2\/members$/, profile: TYLKO_WLASCICIEL, opis: "konta zespołu" },
   { metody: "PATCH", sciezka: new RegExp(`^/api/v2/members/${ID}$`), profile: TYLKO_WLASCICIEL, opis: "zmiana dostępu pracownika" },
   { metody: "POST", sciezka: new RegExp(`^/api/v2/members/${ID}/activation$`), profile: TYLKO_WLASCICIEL, opis: "link aktywacyjny" },
@@ -95,6 +96,10 @@ export const REGULY_TRAS: Regula[] = [
   // ---- umowy
   { metody: "GET", sciezka: proj("/umowy"), profile: [S], opis: "umowy — odczyt" },
   { metody: "POST", sciezka: proj("/umowy"), profile: TYLKO_WLASCICIEL, opis: "nowa umowa" },
+  // ---- rozliczenie (ST-APP-005): wpłaty i kwota pozostała — finanse właściciela
+  { metody: "GET", sciezka: proj("/rozliczenie"), profile: TYLKO_WLASCICIEL, opis: "rozliczenie projektu" },
+  { metody: "POST", sciezka: proj("/wplaty"), profile: TYLKO_WLASCICIEL, opis: "nowa wpłata" },
+  { metody: "DELETE", sciezka: proj(`/wplaty/${ID}`), profile: TYLKO_WLASCICIEL, opis: "usunięcie wpłaty" },
   { metody: "GET", sciezka: proj(`/umowy/${ID}/pdf`), profile: [S], opis: "PDF umowy — odczyt" },
 
   // ---- projekty
@@ -201,7 +206,7 @@ export function sprawdzZmianeProjektu(profil: Profil, obecny: StatusProjektu, zm
 
 // Dopasowanie po granicach camelCase (wielkość liter ma znaczenie), żeby nie wycinać np. „producent” ani „wstawka”.
 /** Ceny, koszty, marże i umowy — niewidoczne dla produkcji i montażu. */
-const KLUCZ_CENOWY = /^(cen[ay]|koszt|marz|narzut|rabat|vat|stawk|minimalnaWartosc|umow|umov|zaliczk|maCene)|(Cen[ay]|Koszt|Marz|Narzut|Rabat|Vat|Zaliczk|Wyceny$)|^(finanse|warianty|cennikMaterialow)$/;
+const KLUCZ_CENOWY = /^(cen[ay]|koszt|marz|narzut|rabat|vat|stawk|minimalnaWartosc|umow|umov|zaliczk|wplat|maCene)|(Cen[ay]|Koszt|Marz|Narzut|Rabat|Vat|Zaliczk|Wyceny$)|^(finanse|warianty|cennikMaterialow)$/;
 /** Dane klienta (nazwa i kontakt) — niewidoczne dla produkcji, jak w pakiecie P (ukryjDaneKlienta). */
 const KLUCZ_KONTAKTOWY = /^(klient|telefon|email|e-mail|adres|kodPocztowy|miasto|nip)$/i;
 /** Koszty zakupu, marża, narzut i ceny jednostkowe — niewidoczne dla sprzedaży (ceny ofertowe zostają). */

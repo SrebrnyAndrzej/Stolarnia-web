@@ -394,6 +394,10 @@ export interface Projekt {
   /** Uzgodniona z klientem cena wariantu Standard, niezależna od bieżących kosztów. */
   cenaUzgodnionaBrutto?: number;
   umovy?: import("./contracts.js").Umowa[];
+  /** Wpłaty klienta poza zaliczką z umowy (ST-APP-005, rozliczenie). */
+  wplaty?: import("./rozliczenie.js").Wplata[];
+  /** Id zapytania z formularza strony, z którego powstał projekt (pan_stolarz_requests.id). */
+  zrodloZapytania?: string;
   id: string;
   nazwa: string;
   klient: Klient;

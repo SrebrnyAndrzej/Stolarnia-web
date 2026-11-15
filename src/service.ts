@@ -50,6 +50,7 @@ import { blatZDekoru, plytaZDekoru, type RolaStylu, type RozstrzygniecieStylu, t
 import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
 import { ofertaPdf } from "./export/oferta.js";
+import { rozliczenie, schematWplaty, type Rozliczenie } from "./core/rozliczenie.js";
 import { dokumentacjaPdf } from "./export/pdf.js";
 import { scianySzkicow, szkicePdf, type OpcjeSzkicow } from "./export/szkice.js";
 import dxfParserModul from "dxf-parser";
@@ -311,6 +312,46 @@ export class Stolarnia {
     return umowa;
   }
 
+  // ---------- Rozliczenie (ST-APP-005) ----------
+
+  rozliczenie(projektId: string): Rozliczenie {
+    return rozliczenie(this.projekt(projektId));
+  }
+
+  /** Wpłata klienta: zapis bez podbijania rewizji konstrukcji (jak dane Tematu). */
+  dodajWplate(projektId: string, dane: unknown): Rozliczenie {
+    const r = schematWplaty.safeParse(dane);
+    if (!r.success) throw new BladUslugi(r.error.issues.map((x) => `${x.path.join(".") || "dane"}: ${x.message}`).join("; "));
+    const p = this.edytujTemat(projektId, (p) => {
+      p.wplaty = [...(p.wplaty ?? []), { ...r.data, id: randomUUID(), dodano: teraz() }];
+    });
+    return rozliczenie(p);
+  }
+
+  usunWplate(projektId: string, wplataId: string): Rozliczenie {
+    const p = this.edytujTemat(projektId, (p) => {
+      if (!(p.wplaty ?? []).some((w) => w.id === wplataId)) throw new BladUslugi("Nie ma takiej wpłaty (zaliczkę z umowy zmienia się w umowie).");
+      p.wplaty = (p.wplaty ?? []).filter((w) => w.id !== wplataId);
+    });
+    return rozliczenie(p);
+  }
+
+  /**
+   * Zapytanie z formularza → projekt (ST-APP-005). Jednokrotne: drugi raz zwraca istniejący projekt.
+   * Dane klienta i opis z zapytania trafiają do Tematu; ściana domyślna jak przy nowym projekcie.
+   */
+  projektZZapytania(z: { id: string; name: string; email: string; kind: string; city: string; description: string }): { projekt: Projekt; nowy: boolean } {
+    const jest = this.magazyn.odczytaj().projekty.find((p) => p.zrodloZapytania === z.id);
+    if (jest) return { projekt: jest, nowy: false };
+    const rodzaj = z.kind === "kuchnia" ? "Kuchnia" : z.kind === "szafa" ? "Szafa" : "Zabudowa";
+    const p = this.utworzProjekt({
+      nazwa: `${rodzaj} — ${z.name}`.slice(0, 120),
+      klient: { nazwa: z.name, email: z.email, adres: z.city },
+      notatki: `Zapytanie ze strony: ${z.description}`.slice(0, 4000),
+    });
+    return { projekt: this.edytujTemat(p.id, (x) => void (x.zrodloZapytania = z.id)), nowy: true };
+  }
+
   umowa(projektId: string, umowaId: string): Umowa {
     const u = this.umowy(projektId).find(x => x.id === umowaId);
     if (!u) throw new BladUslugi("Nie znaleziono umowy w tym projekcie.");
@@ -449,7 +490,7 @@ export class Stolarnia {
     return this.magazyn.zmien((b) => {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
-      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], zamowienie: undefined, id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], zamowienie: undefined, wplaty: undefined, zrodloZapytania: undefined, id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
       delete kopia.cenaUzgodnionaBrutto;
       b.projekty.push(kopia);
       return kopia;

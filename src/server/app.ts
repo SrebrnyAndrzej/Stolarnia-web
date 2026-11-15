@@ -253,7 +253,20 @@ app.get("/api/v2/requests", v2(async (_req, person) => {
   if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do zapytań klientów.");
   const { data, error } = await access.admin!.from("pan_stolarz_requests").select("id,created_at,name,email,kind,city,description,status").order("created_at", { ascending: false }).limit(100);
   if (error) throw new AccessError(503, "Nie udało się pobrać zapytań.");
-  return data;
+  const zZapytania = new Map(s.magazyn.odczytaj().projekty.filter((x) => x.zrodloZapytania).map((x) => [x.zrodloZapytania!, x.id]));
+  return (data ?? []).map((r) => ({ ...r, projektId: zZapytania.get(r.id) ?? null }));
+}));
+// Zapytanie z formularza → projekt (ST-APP-005). Tabela zapytań jest tylko do odczytu dla serwera;
+// powiązanie zapisuje się w projekcie (zrodloZapytania), a lista zapytań pokazuje utworzony projekt.
+app.post("/api/v2/requests/:id/project", v2(async (req, person) => {
+  if (person.role !== "owner") throw new AccessError(403, "Nie masz dostępu do zapytań klientów.");
+  if (!access.admin) throw new AccessError(503, "Usługa zapytań jest niedostępna.");
+  const { data, error } = await access.admin.from("pan_stolarz_requests").select("id,name,email,kind,city,description").eq("id", p(req, "id")).maybeSingle();
+  if (error) throw new AccessError(503, "Nie udało się pobrać zapytania.");
+  if (!data) throw new AccessError(404, "Nie ma takiego zapytania.");
+  const wynik = s.projektZZapytania(data);
+  await s.magazyn.utrwal(); // v2 nie zapisuje automatycznie jak api()
+  return { projektId: wynik.projekt.id, nowy: wynik.nowy };
 }));
 app.post("/api/v2/members", v2(async (req, person) => {
   if (!access.admin) throw new AccessError(503, "Usługa kont jest niedostępna.");
@@ -359,6 +372,9 @@ app.patch("/api/ustawienia", api((r) => s.zmienUstawienia(r.body)));
 
 // Umowy są zapisanymi kopiami danych, niezależnymi od przyszłych zmian projektu.
 app.get("/api/projekty/:id/umowy", api(r => s.umowy(p(r, "id"))));
+app.get("/api/projekty/:id/rozliczenie", api(r => s.rozliczenie(p(r, "id"))));
+app.post("/api/projekty/:id/wplaty", api(r => s.dodajWplate(p(r, "id"), r.body)));
+app.delete("/api/projekty/:id/wplaty/:wid", api(r => s.usunWplate(p(r, "id"), p(r, "wid"))));
 app.post("/api/projekty/:id/umowy", api(r => s.dodajUmowe(p(r, "id"), r.body)));
 app.get("/api/projekty/:id/umowy/:uid/pdf", async (req, res, next) => {
   try {
