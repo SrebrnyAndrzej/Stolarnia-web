@@ -25,6 +25,7 @@ import { createEmployee, employeeActivation, memberFields, memberUpdate } from "
 import { saveFurniture, furnitureConstruction } from "./furniture.js";
 import { prepareFurniture, preparationMaterials } from "./furniture-preparation.js";
 import { projectFileObjects, listProjectFiles, uploadProjectFile, readProjectFile } from "./project-files.js";
+import { deleteProjectPhoto, listProjectPhotos, readProjectPhoto, uploadProjectPhoto } from "./project-photos.js";
 import { createFurniturePresentation,readFurniturePresentation,commentFurniturePresentation,listFurniturePresentations,revokeFurniturePresentation } from "./furniture-presentations.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
 import { MUSSI_CONNECTION } from "../core/purchasing.js";
@@ -185,6 +186,19 @@ const fileObjects = projectFileObjects(s.magazyn, access.admin);
 app.get("/api/v2/projects/:id/files", api(req => listProjectFiles(s.magazyn, osoba(req), p(req,"id"))));
 app.post("/api/v2/projects/:id/files", api(req => uploadProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
 app.get("/api/v2/projects/:id/files/:fid/content", api(req => readProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), p(req,"fid"))));
+// Zdjęcia z pomiaru i montażu (ST-APP-005): każdy z przydziałem do projektu; obraz jako binarny JPEG/PNG/WebP.
+app.get("/api/v2/projects/:id/photos", api(req => listProjectPhotos(s.magazyn, osoba(req), p(req,"id"))));
+app.post("/api/v2/projects/:id/photos", api(req => uploadProjectPhoto(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
+app.delete("/api/v2/projects/:id/photos/:fid", api(req => deleteProjectPhoto(s.magazyn, osoba(req), p(req,"id"), p(req,"fid"))));
+app.get("/api/v2/projects/:id/photos/:fid/content", async (req, res) => {
+  try {
+    const z = await readProjectPhoto(s.magazyn, fileObjects, osoba(req), p(req, "id"), p(req, "fid"));
+    res.setHeader("Content-Type", z.mime);
+    res.setHeader("Cache-Control", "private, max-age=3600");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.send(z.bytes);
+  } catch (error) { access.fail(res, error); }
+});
 app.get("/api/v2/furniture", api(() => s.magazyn.odczytaj().furnitureLibrary ?? []));
 app.get("/api/v2/furniture/materials",api(req=>preparationMaterials(s.magazyn,osoba(req))));
 app.post("/api/v2/furniture/batch-preparation",api(req=>prepareFurnitureBatch(s.magazyn,osoba(req),req.body)));

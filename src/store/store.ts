@@ -10,6 +10,8 @@ import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } 
 
 export interface BazaDanych {
   projectFiles?: import("../core/project-files.js").StoredProjectFile[];
+  /** Zdjęcia z pomiaru i montażu (ST-APP-005). */
+  projectPhotos?: import("../server/project-photos.js").StoredProjectPhoto[];
   furnitureLibrary?: FurnitureEntry[];
   furniturePresentations?: FurniturePresentation[];
   purchaseOrders?: PurchaseOrder[];
