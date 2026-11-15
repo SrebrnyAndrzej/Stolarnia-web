@@ -611,7 +611,8 @@ export function Landing() {
               </button>
               <p className="ps-form-note">
                 Dane wykorzystamy do obsługi tego zapytania. Nie przesyłaj
-                dokumentów ani danych wrażliwych.
+                dokumentów ani danych wrażliwych. Szczegóły:{" "}
+                <a href="#/polityka-prywatnosci">polityka prywatności</a>.
               </p>
             </form>
           )}
@@ -626,6 +627,9 @@ export function Landing() {
           </span>
           <small>{AREAS.join(" · ")}</small>
           <small>@panstolarz.meble</small>
+          <small>
+            <a href="#/polityka-prywatnosci">Polityka prywatności</a>
+          </small>
         </div>
       </footer>
     </div>

@@ -78,3 +78,11 @@ test("zwolnienie do produkcji: tylko z kompletnym wydaniem bieżącej rewizji al
   const wk = s.utworzWydanie(k.id, {});
   if (wk.gotowaDoProdukcji) assert.equal(s.zmienProjekt(k.id, { status: "produkcja" }).status, "produkcja");
 });
+
+test("polityka prywatności: dane administratora z Ustawień odczytywane bez zmiany stanu magazynu", async () => {
+  const magazyn = new Magazyn(mkdtempSync(join(tmpdir(), "adm-")));
+  const s = new Stolarnia(magazyn);
+  s.zmienUstawienia({ daneFirmy: { nazwaFirmy: "Pan Stolarz", adres: "ul. Testowa 1", email: "biuro@example.test" } });
+  const d = (await magazyn.odczytajNiezaleznie()).ustawienia.daneFirmy;
+  assert.deepEqual([d.nazwaFirmy, d.adres, d.email], ["Pan Stolarz", "ul. Testowa 1", "biuro@example.test"]);
+});

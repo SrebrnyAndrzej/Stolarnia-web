@@ -45,6 +45,16 @@ app.get("/healthz", (_req, res) => { res.setHeader("Cache-Control", "no-store");
 app.use(express.json({ limit: "30mb" }));
 const access = createAccess();
 registerKitchenEstimate(app,req=>access.checkOrigin(req));
+// Dane administratora do publicznej polityki prywatności (ST-APP-005): tylko pola firmy z Ustawień.
+app.get("/api/public/administrator", async (_req, res, next) => {
+  try {
+    const f = (await s.magazyn.odczytajNiezaleznie()).ustawienia.daneFirmy;
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ nazwaFirmy: f.nazwaFirmy, wlasciciel: f.wlasciciel, nip: f.nip, adres: f.adres, kodPocztowy: f.kodPocztowy, miasto: f.miasto, email: f.email, telefon: f.telefon });
+  } catch (e) {
+    next(e);
+  }
+});
 app.get("/api/v2/config", (_req, res) => { res.setHeader("Cache-Control", "no-store"); res.json({ authReady: access.configured }); });
 app.post("/api/v2/login", access.login);
 app.post("/api/v2/logout", access.logout);

@@ -16,6 +16,7 @@ import {
 } from "@tabler/icons-react";
 import { request, roles, type Principal } from "./api";
 import { Landing } from "./Landing";
+const PrivacyPolicy = lazy(() => import("./PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
 import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
@@ -117,6 +118,7 @@ export function App() {
     );
   }, [hash, previewRoute]);
   const plannerRoute = hash.split("?")[0] === "#/kreator-kuchni";
+  const privacyRoute = hash === "#/polityka-prywatnosci";
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
@@ -202,6 +204,12 @@ export function App() {
         }
       >
         <KitchenPlanner />
+      </Suspense>
+    );
+  if (privacyRoute)
+    return (
+      <Suspense fallback={<main className="ps-empty" role="status">Wczytywanie…</main>}>
+        <PrivacyPolicy />
       </Suspense>
     );
   if (publicRoute && !demo) return <Landing />;
