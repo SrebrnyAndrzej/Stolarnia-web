@@ -99,6 +99,11 @@ export const REGULY_TRAS: Regula[] = [
   // ---- umowy
   { metody: "GET", sciezka: proj("/umowy"), profile: [S], opis: "umowy — odczyt" },
   { metody: "POST", sciezka: proj("/umowy"), profile: TYLKO_WLASCICIEL, opis: "nowa umowa" },
+  // ---- panel publikacji social: tylko właściciel (posty idą publicznie z kont firmy)
+  { metody: "GET", sciezka: /^\/api\/marketing$/, profile: TYLKO_WLASCICIEL, opis: "panel publikacji" },
+  { metody: "POST", sciezka: /^\/api\/marketing\/(grafiki|import|wyslij)$/, profile: TYLKO_WLASCICIEL, opis: "grafiki, import, wysyłka" },
+  { metody: "PUT|DELETE", sciezka: new RegExp(`^/api/marketing/posty/[A-Za-z0-9._-]+$`), profile: TYLKO_WLASCICIEL, opis: "post" },
+  { metody: "POST", sciezka: new RegExp(`^/api/marketing/posty/[A-Za-z0-9._-]+/(akceptuj|cofnij|potwierdz|oznacz)$`), profile: TYLKO_WLASCICIEL, opis: "akceptacja i stany posta" },
   // ---- rozliczenie (ST-APP-005): wpłaty i kwota pozostała — finanse właściciela
   { metody: "GET", sciezka: proj("/rozliczenie"), profile: TYLKO_WLASCICIEL, opis: "rozliczenie projektu" },
   { metody: "POST", sciezka: proj("/wplaty"), profile: TYLKO_WLASCICIEL, opis: "nowa wpłata" },

@@ -10,6 +10,8 @@ import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } 
 
 export interface BazaDanych {
   projectFiles?: import("../core/project-files.js").StoredProjectFile[];
+  /** Panel publikacji social: posty, kolejka dostarczeń i audyt (src/core/marketing.ts). */
+  marketing?: import("../core/marketing.js").StanMarketingu;
   /** Zdjęcia z pomiaru i montażu (ST-APP-005). */
   projectPhotos?: import("../server/project-photos.js").StoredProjectPhoto[];
   furnitureLibrary?: FurnitureEntry[];

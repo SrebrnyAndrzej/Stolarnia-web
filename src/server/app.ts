@@ -26,6 +26,9 @@ import { saveFurniture, furnitureConstruction } from "./furniture.js";
 import { prepareFurniture, preparationMaterials } from "./furniture-preparation.js";
 import { projectFileObjects, listProjectFiles, uploadProjectFile, readProjectFile } from "./project-files.js";
 import { deleteProjectPhoto, listProjectPhotos, readProjectPhoto, uploadProjectPhoto } from "./project-photos.js";
+import { dodajGrafike, importujPaczke, konfiguracjaMeta, lokalnaGrafika, magazynGrafik, widokPostow, wyslijNalezne, wysylaczMeta } from "./marketing.js";
+import { BladMarketingu, cofnijAkceptacje, oznaczRecznie, potwierdzOferte, pustyStan, zaakceptuj, zapiszPost, type Kanal, type StanMarketingu } from "../core/marketing.js";
+import { Magazyn as MagazynBazy } from "../store/store.js";
 import { createFurniturePresentation,readFurniturePresentation,commentFurniturePresentation,listFurniturePresentations,revokeFurniturePresentation } from "./furniture-presentations.js";
 import { savePurchaseOrder, exportPurchaseOrder } from "./purchasing.js";
 import { MUSSI_CONNECTION } from "../core/purchasing.js";
@@ -45,6 +48,26 @@ app.get("/healthz", (_req, res) => { res.setHeader("Cache-Control", "no-store");
 app.use(express.json({ limit: "30mb" }));
 const access = createAccess();
 registerKitchenEstimate(app,req=>access.checkOrigin(req));
+// Panel publikacji: zadanie cykliczne (Vercel Cron) i lokalne grafiki (tylko tryb lokalny, w chmurze bucket publiczny).
+// Cron wymaga CRON_SECRET (Authorization: Bearer); bez sekretu automat jest wyłączony, a nie otwarty.
+app.get("/api/cron/marketing", async (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const sekret = process.env.CRON_SECRET;
+  if (!sekret) return res.status(503).json({ blad: "Automatyczna wysyłka jest wyłączona (brak CRON_SECRET)." });
+  if (req.get("authorization") !== `Bearer ${sekret}`) return res.status(401).json({ blad: "Brak uprawnień." });
+  try {
+    // Osobna instancja magazynu: przebieg nie współdzieli pamięci z żądaniami panelu.
+    res.json({ wyslano: await wyslijNalezne(new MagazynBazy(), wysylaczMeta()) });
+  } catch (e) {
+    res.status(500).json({ blad: (e as Error).message });
+  }
+});
+app.get("/api/public/marketing-media/:klucz", (req, res) => {
+  const b = lokalnaGrafika(s.magazyn, String(req.params.klucz));
+  if (!b) return res.status(404).end();
+  res.setHeader("Content-Type", "image/jpeg");
+  res.send(b);
+});
 // Dane administratora do publicznej polityki prywatności (ST-APP-005): tylko pola firmy z Ustawień.
 app.get("/api/public/administrator", async (_req, res, next) => {
   try {
@@ -196,6 +219,30 @@ const fileObjects = projectFileObjects(s.magazyn, access.admin);
 app.get("/api/v2/projects/:id/files", api(req => listProjectFiles(s.magazyn, osoba(req), p(req,"id"))));
 app.post("/api/v2/projects/:id/files", api(req => uploadProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
 app.get("/api/v2/projects/:id/files/:fid/content", api(req => readProjectFile(s.magazyn, fileObjects, osoba(req), p(req,"id"), p(req,"fid"))));
+// ---------- Panel publikacji social (właściciel) ----------
+const grafiki = magazynGrafik(s.magazyn, access.admin);
+const marketing = <T,>(fn: (st: StanMarketingu) => T) => s.magazyn.zmien((b) => fn((b.marketing ??= pustyStan())));
+const ktoTo = (req: Request) => osoba(req).display_name || "Właściciel";
+app.get("/api/marketing", api(() => ({ konfiguracja: konfiguracjaMeta(), posty: widokPostow(s.magazyn.odczytaj().marketing ?? pustyStan()) })));
+app.post("/api/marketing/grafiki", api((req) => dodajGrafike(grafiki, req.body)));
+app.post("/api/marketing/import", api((req) => marketing((st) => importujPaczke(st, req.body))));
+app.put("/api/marketing/posty/:id", api((req) => marketing((st) => zapiszPost(st, p(req, "id"), req.body).wynik)));
+app.post("/api/marketing/posty/:id/akceptuj", api((req) => marketing((st) => zaakceptuj(st, p(req, "id"), ktoTo(req)).id)));
+app.post("/api/marketing/posty/:id/cofnij", api((req) => marketing((st) => cofnijAkceptacje(st, p(req, "id"), ktoTo(req)).id)));
+app.post("/api/marketing/posty/:id/potwierdz", api((req) => marketing((st) => potwierdzOferte(st, p(req, "id"), ktoTo(req), String(req.body?.doKiedy ?? "")).id)));
+app.post("/api/marketing/posty/:id/oznacz", api((req) => marketing((st) => oznaczRecznie(st, p(req, "id"), req.body?.kanal as Kanal, req.body?.stan, ktoTo(req)).stan)));
+app.delete("/api/marketing/posty/:id", api((req) => marketing((st) => {
+  const id = p(req, "id");
+  if (st.dostarczenia.some((d) => d.postId === id && ["published", "publishing", "unknown"].includes(d.stan))) throw new BladMarketingu("Opublikowanego albo wysyłanego posta nie usuwamy — zostaje w historii.");
+  st.posty = st.posty.filter((x) => x.id !== id);
+  st.dostarczenia = st.dostarczenia.filter((d) => d.postId !== id);
+  return id;
+})));
+// Ręczne „wyślij należne teraz” — ta sama kolejka i reguły co automat; zapis jest już w trakcie żądania.
+app.post("/api/marketing/wyslij", api(async () => {
+  await s.magazyn.utrwal();
+  return wyslijNalezne(s.magazyn, wysylaczMeta());
+}));
 // Zdjęcia z pomiaru i montażu (ST-APP-005): każdy z przydziałem do projektu; obraz jako binarny JPEG/PNG/WebP.
 app.get("/api/v2/projects/:id/photos", api(req => listProjectPhotos(s.magazyn, osoba(req), p(req,"id"))));
 app.post("/api/v2/projects/:id/photos", api(req => uploadProjectPhoto(s.magazyn, fileObjects, osoba(req), p(req,"id"), req.body)));
