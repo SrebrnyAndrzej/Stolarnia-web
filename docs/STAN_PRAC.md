@@ -122,3 +122,14 @@ Braki danych oznaczają wydanie jako robocze; `tylkoKompletne` blokuje takie wyd
 
 ## 2026-09-25 - Widok 3D: studyjne HDRI (Claude)
 Przełącznik „Studio / Proste” w rogu widoku 3D. Studio to mapa środowiska generowana w przeglądarce (cyklorama i softboxy HDR przez PMREM) z tone mappingiem ACES i cieniem od głównego softboxu. Nie wymaga pobierania plików. Prawdziwy plik HDRI (np. Poly Haven, CC0) można dodać później, po zgodzie na pobranie. Kamera startowa stoi ponad najwyższą szafką.
+
+## 2026-11-01 - Workflow warsztatu i jeden schemat dokumentów (Claude)
+Na prośbę Mateusza: panele ról i czytelna dokumentacja dla pracowników według jednego schematu. Opis i plan: docs/WORKFLOW-WARSZTAT.md.
+- `src/export/pdf.ts`: każda strona ma kod sekcji (T, R, E, I, S, C, M, K + numer), wspólny blok rewizji i stopkę z nazwą pakietu; legenda schematu na stronach tytułowych. Nowy `rodzaj: "montaz"`: strona tytułowa z terminem/adresem i listą „przed wyjazdem”, rzut, elewacje z wysokością spodu nad podłogą, kolejność montażu na ścianach (etapy), okucia do zabrania, protokół odbioru z listą usterek i podpisami. Tabele montażu 9 pt; nagłówki tabel liczą wysokość zawiniętego tekstu.
+- `Stolarnia.montazPdf` + `GET /api/projekty/:id/montaz.pdf` i `/wydania/:wid/montaz.pdf` (geometria z wydania, adres/termin z bieżącego projektu).
+- `web/src/views/Warsztat.tsx` (zakładka „Warsztat”): właściciel — etapy, następny krok, kto; produkcja — wydania i pakiet P, „Gotowe do montażu”; montaż — pakiet M, „Montaż zakończony”; obie role zgłaszają uwagi. Widok roli NIE jest zabezpieczeniem (brak kont).
+- Serwer testowy na osobnych danych: `.claude/launch.json` „stolarnia-test” (API 3211, web 5174, bez Supabase); `vite.config.ts` czyta `STOLARNIA_API`.
+Sprawdzenie: `npm test` 57/57, `npm run typecheck` OK, podgląd panelu i obu PDF w przeglądarce na danych testowych.
+Braki: okucia do ściany, kierunek od narożnika, stare rysunki montażowe z JSON poza schematem, konta i uprawnienia (etap 3).
+- Uzupełnienie tego samego dnia: sekcja **Z — karta złożenia szafki** w pakiecie M (`Kontekst.zlozenie`): rysunek rozstrzelony korpusu (rzut ukośny) z etykietami formatek, kroki z ☐ wyprowadzone z konstrukcji (połączenia i liczba konfirmatów, plecy w rowku/nakładane, przekątna nominalna, podpórki, osie prowadnic, zawiasy, okucia, fronty) i uwagi z diagnostyki. Braki danych na czerwono. Decyzje Mateusza: produkcja/montaż zmieniają status — tak; montażysta bez cen — tak. Test pakietu M wymaga strony Z dla każdej szafki; 57/57, typecheck OK.
+- Dalej 1.11.2026: ekipa 2 montażystów (pola na T, „złożył/sprawdził” na Z, 2 podpisy w K), tolerancja przekątnych 2 mm, pole projektu `skladanieKorpusow` (warsztat / naMiejscu; Temat, Warsztat, REST, MCP) sterujące pakietem M. Testy 58/58, typecheck OK, mcp-smoke OK. Commity 81f90c1, 8413ddd, b171a7d (bez push).

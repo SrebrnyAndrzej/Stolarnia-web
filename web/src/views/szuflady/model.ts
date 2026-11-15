@@ -24,6 +24,7 @@ export interface FormularzSzuflad {
   szczelina: string;
   dolna: string;
   swiatloWys: string;
+  wieniecDolny: string;
   scianka: "drewniana" | "stalowa";
 }
 
@@ -31,7 +32,7 @@ export const DOMYSLNY_FORMULARZ: FormularzSzuflad = {
   system: "amix-elite-standard", wariant: "199", szerokoscTryb: "lw", lw: "564", korpus: "600", bok: "18", nl: "550",
   typFrontu: "zewnetrzny", montazWewnetrzny: "zaDrzwiami", frontZewSzer: "", frontWewSzer: "", otworZew: "", otworWew: "",
   frontZewWys: "357", frontWewWys: "357", frontGrubosc: "18", stronaZawiasow: "lewa", wystawanie: "", luzZawiasu: "1", przesuniecie: "0",
-  rozstaw: false, liczba: "2", szczelina: "3", dolna: "3", swiatloWys: "698", scianka: "drewniana",
+  rozstaw: false, liczba: "2", szczelina: "3", dolna: "3", swiatloWys: "698", wieniecDolny: "", scianka: "drewniana",
 };
 
 export const n = (value: string) => Number(value.trim().replace(",", "."));
@@ -64,6 +65,8 @@ export function bledyFormularza(f: FormularzSzuflad, minimumPierwszegoOtworu?: n
   if (f.rozstaw) {
     liczba("liczba", 1); liczba("szczelina", 0); liczba("dolna", 0); liczba("swiatloWys", 0.001, true);
     if (!Number.isInteger(n(f.liczba)) || n(f.liczba) > 20) errors.liczba = "Wpisz od 1 do 20 szuflad.";
+    liczba("wieniecDolny", .001, true);
+    if(f.wieniecDolny.trim() && n(f.wieniecDolny)>100)errors.wieniecDolny="Grubość wieńca nie może przekraczać 100 mm.";
   }
   return errors;
 }
@@ -92,6 +95,7 @@ export function parametryKalkulatora(f: FormularzSzuflad, minimumPierwszegoOtwor
   if (f.rozstaw) {
     liczba("liczbaSzuflad", f.liczba); liczba("szczelinaFrontow", f.szczelina);
     liczba("dolnaProwadnica", f.dolna); liczba("wysokoscWewnetrzna", f.swiatloWys);
+    liczba("gruboscDolnegoWienca", f.wieniecDolny);
   }
   return q.toString();
 }

@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { granice, obrysModulu, scianyNaRzucie } from "../../../src/core/geometry";
 import { mm, type Analiza, type Material } from "../api";
+import type { TechnicalAnalysis, VisualMaterial } from "../../../src/server/technical";
 
 interface Props {
-  analiza: Analiza;
+  analiza: Pick<TechnicalAnalysis, "projekt" | "zbudowane">;
   pomieszczenieId: string;
   scianaId: string;
   wybrany: string | null;
-  matMap: Map<string, Material>;
+  matMap: Map<string, VisualMaterial | Material>;
   onSciana: (id: string) => void;
   onWybierz: (id: string | null) => void;
 }

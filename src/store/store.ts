@@ -1,17 +1,28 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { OKUCIA_STARTOWE } from "../core/catalog/hardware.js";
+import type { FurnitureEntry } from "../core/furniture.js";
+import type { FurniturePresentation } from "../server/furniture-presentations.js";
+import type { PurchaseOrder } from "../core/purchasing.js";
 import { MATERIALY_STARTOWE } from "../core/catalog/materials.js";
 import { USTAWIENIA_DOMYSLNE } from "../core/settings.js";
 import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } from "../core/types.js";
 
 export interface BazaDanych {
+  projectFiles?: import("../core/project-files.js").StoredProjectFile[];
+  /** Zdjęcia z pomiaru i montażu (ST-APP-005). */
+  projectPhotos?: import("../server/project-photos.js").StoredProjectPhoto[];
+  furnitureLibrary?: FurnitureEntry[];
+  furniturePresentations?: FurniturePresentation[];
+  purchaseOrders?: PurchaseOrder[];
   wersja: number;
   ustawienia: UstawieniaStolarni;
   materialy: Material[];
   cennikMaterialow?: CennikMaterialow;
   okucia: Okucie[];
   projekty: Projekt[];
+  /** Krótka lista dekorów na start galerii szybkiego projektu (klucze „Producent:id”), ustawia właściciel. */
+  dekoryStolarni?: string[];
 }
 
 export class KonfliktZapisu extends Error {}
@@ -72,6 +83,16 @@ export class Magazyn {
     });
     if (!r.ok) throw new Error(`Baza danych (Supabase) odpowiedziała ${r.status}: ${(await r.text()).slice(0, 200)}`);
     return r.json();
+  }
+
+  /**
+   * Odczyt bieżących danych bez zmiany stanu w pamięci — dla tras publicznych obsługiwanych poza kolejką
+   * żądań (np. dane administratora w polityce prywatności). Lokalnie: plik; w chmurze: świeży dokument.
+   */
+  async odczytajNiezaleznie(): Promise<BazaDanych> {
+    if (!this.chmura) return this.odczytaj();
+    const w = await this.rest("GET", `?id=eq.${ID_DOKUMENTU}&select=dane,wersja`);
+    return w[0]?.dane ?? this.pusta();
   }
 
   /** Tryb chmurowy: pobiera aktualny dokument bazy (tworzy go przy pierwszym użyciu). Lokalnie nic nie robi. */

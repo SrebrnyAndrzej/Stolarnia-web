@@ -1,0 +1,74 @@
+/* Polityka prywatności (ST-APP-005): wąska kolumna do czytania, spójna z nagłówkiem strony publicznej. */
+.ps-privacy-page {
+  min-height: 100vh;
+  background: var(--panel);
+}
+.ps-privacy {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.ps-privacy .ps-eyebrow {
+  color: var(--muted);
+}
+.ps-privacy h1 {
+  margin: 10px 0 0;
+  font-size: clamp(30px, 5vw, 42px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.ps-privacy .ps-privacy-lead {
+  margin: 16px 0 8px;
+  color: var(--muted);
+  font-size: 17px;
+}
+.ps-privacy h2 {
+  margin: 44px 0 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  font-size: 19px;
+  line-height: 1.3;
+}
+.ps-privacy p {
+  margin: 0 0 14px;
+}
+.ps-privacy ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.ps-privacy li {
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+.ps-privacy li::marker {
+  color: var(--ps-lime);
+}
+.ps-privacy a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ps-privacy-admin {
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+.ps-privacy .ps-privacy-back {
+  margin-top: 48px;
+}
+.ps-privacy-back a.ps-button {
+  text-decoration: none;
+}
+@media (max-width: 640px) {
+  .ps-privacy {
+    padding: 36px 18px 56px;
+    font-size: 15.5px;
+  }
+  .ps-privacy-page .ps-public-header .ps-logo {
+    width: 170px;
+  }
+}

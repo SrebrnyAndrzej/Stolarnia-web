@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:3210",
-      "/mcp": "http://localhost:3210",
+      // STOLARNIA_API pozwala podpiąć frontend do serwera testowego na osobnych danych.
+      "/api": process.env.STOLARNIA_API ?? "http://localhost:3210",
+      "/mcp": process.env.STOLARNIA_API ?? "http://localhost:3210",
     },
   },
   build: {

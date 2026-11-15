@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type UstawieniaStolarni } from "../api";
+import { DekoryStolarni } from "./DekoryStolarni";
 
 type Sekcja = keyof UstawieniaStolarni;
 
@@ -93,6 +94,7 @@ export function Settings() {
           </div>
         </div>
       ))}
+      <DekoryStolarni />
       <div className="card">
         <div className="card-h"><h2>Dane firmy</h2></div>
         <div className="card-b grid3">

@@ -1,5 +1,9 @@
 # Stolarnia-web — instrukcje projektu
 
+## Integracja 3.11.2026 — bieżące upoważnienie użytkownika
+
+Mateusz bezpośrednio zlecił Codexowi „Wdrażaj co jest gotowe i zacznij pracować nad brakami”, następnie dodanie wymiarów wieńca pod skosem. W tym zakresie Codex integruje ST-APP-003 i ST-APP-004 z aktualną produkcją, recenzuje i poprawia błędy oraz rozpoczyna adapter biblioteki do rozkroju. Jest to nowsze upoważnienie niż historyczny podział „Codex tylko research”. Nie oznacza ukończenia pełnej technologii okuć ani zgody na rzeczywiste zamówienia Mussi. Stan funkcji i granice: docs/ROBOCZY-PAKIET-PLYT.md; aktualne wdrożenie sprawdzać przez release.json na panstolarz.pro.
+
 Przed zmianą konstrukcji, produkcji, doboru okuć lub katalogu materiałów przeczytaj:
 
 - [Wytyczne produktu v0.5](docs/WYTYCZNE.md)
@@ -25,3 +29,6 @@ Research funkcjonalny i kryteria odbioru: docs/RESEARCH-kreator-premium-dla-Clau
 
 ## Koordynacja z Codexem
 Kanał roboczy: docs/KOORDYNACJA-Claude-Codex.md (do przeglądu, zamówienia danych, uwagi Codexa).
+
+## Pan Stolarz 2.0 — wznowienie między urządzeniami
+Przeczytaj `docs/STATUS-PAN-STOLARZ.md`. Przydzielone zadania copy i mediów: `docs/handoff/CLAUDE-ZADANIA.md`. Codex prowadzi układ i integrację strony; nie edytuj równolegle tych samych plików UI. Brief w repo nie oznacza automatycznego uruchomienia sesji Claude.

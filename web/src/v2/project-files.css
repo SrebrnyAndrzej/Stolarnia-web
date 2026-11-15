@@ -1,0 +1,94 @@
+.ps-project-files {
+  min-width: 0;
+}
+.ps-file-drop {
+  border: 2px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 16px 0;
+}
+.ps-file-drop.is-dragging {
+  border-color: var(--text);
+  background: var(--accent-soft);
+}
+.ps-file-list {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+}
+.ps-file-list > li {
+  border-top: 1px solid var(--line);
+  padding: 16px 0;
+  overflow-wrap: anywhere;
+}
+.ps-file-list p {
+  margin: 6px 0;
+}
+.ps-file-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.ps-cad-preview {
+  display: block;
+  width: 100%;
+  height: 360px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+}
+.ps-project-files input[type="file"] {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .ps-file-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ps-cad-preview {
+    height: 280px;
+  }
+}
+/* Zdjęcia projektu (ST-APP-005) */
+.ps-photo-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+.ps-photo-add .field {
+  flex: 1 1 200px;
+}
+.ps-photo-add label.ps-button {
+  cursor: pointer;
+}
+.ps-photo-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.ps-photo-filter [aria-pressed="true"] {
+  outline: 2px solid currentColor;
+}
+.ps-photo-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.ps-photo-grid li {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.ps-photo-grid img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}

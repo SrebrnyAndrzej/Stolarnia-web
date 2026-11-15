@@ -126,6 +126,7 @@ export function Projects() {
         <h1>Projekty</h1>
         <span className="spacer" />
         <input className="input szukaj-projektow" value={szukaj} onChange={(e) => setSzukaj(e.target.value)} placeholder="Szukaj: projekt, klient, notatka…" aria-label="Szukaj tematów" />
+        <button className="btn" onClick={() => idz("#/szybki")}>Szybki projekt przy kliencie</button>
         <button className="btn primary" onClick={() => setNowy(true)}>+ Nowy projekt</button>
       </div>
       {blad && <div className="alert blad">{blad}</div>}

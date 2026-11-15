@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { z } from "zod";
 import { BladUslugi, jsonBezMigawek, Stolarnia } from "../service.js";
 import { STATUSY_PROJEKTU } from "../core/statusy.js";
+import { schematOkucProjektu, schematStylu, schematSzybkiegoUkladu, schematWypelnienia } from "../schematy-szybki.js";
 
 const KATEGORIE = ["base", "wall", "tall", "corner", "appliance", "open"] as const;
 const KONSTRUKCJE = [
@@ -272,6 +273,7 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
         status: z.enum(STATUSY_PROJEKTU).optional(),
         notatki: z.string().optional(),
         terminMontazu: z.string().nullable().optional().describe("RRRR-MM-DD, null usuwa termin"),
+        skladanieKorpusow: z.enum(["warsztat", "naMiejscu"]).nullable().optional().describe("Gdzie ekipa składa korpusy; null = nie ustalono"),
         agd: z
           .array(
             z.object({
@@ -472,6 +474,74 @@ export function utworzSerwerMcp(s = new Stolarnia()): McpServer {
       },
     },
     bezpiecznie((a) => s.wypelnijLuke(a.projektId, a.scianaId, a.xMM, a.szerokoscMM, !!a.wiszacy)),
+  );
+
+  // ---------- Szybki projekt (docs/SZYBKI-PROJEKT.md; schematy wspólne z REST: src/schematy-szybki.ts) ----------
+
+  const skrotModulow = (w: { moduly: { id: string; nazwa: string; rola: string; scianaId: string; pozycjaXMM: number; pozycjaYMM: number; szerokoscMM: number; katalogId?: string }[] }) =>
+    ({ ...w, moduly: w.moduly.map((m) => ({ id: m.id, rola: m.rola, nazwa: m.nazwa, katalogId: m.katalogId, scianaId: m.scianaId, x: m.pozycjaXMM, y: m.pozycjaYMM, szerokosc: m.szerokoscMM })) });
+
+  server.registerTool(
+    "wypelnij_cala_sciane",
+    {
+      title: "Wypełnij całą ścianę",
+      description:
+        "Rozkłada moduły z katalogu na wolnej długości ściany w rzędzie dolnym lub wiszącym: preferowane szerokości (600/500/400/800/900/300/450), " +
+        "blenda przy reszcie 20–149 mm, reszta < 20 mm = luz montażowy, 150–299 mm = cargo 150/200; stojące moduły zostają (także szafka narożna ze ściany prostopadłej — przy niej blenda narożna 50 mm). podglad=true bez zapisu.",
+      inputSchema: { projektId: z.string(), scianaId: z.string(), ...schematWypelnienia.shape },
+    },
+    bezpiecznie(({ projektId, scianaId, ...o }) => skrotModulow(s.wypelnijCalaSciane(projektId, scianaId, o))),
+  );
+
+  server.registerTool(
+    "szybki_uklad",
+    {
+      title: "Szybki układ kuchni I / L / U",
+      description:
+        "Układa całą kuchnię jednym wywołaniem: narożniki (ślepa 1100 lub L 900 + wiszący narożny), zlew z szafką zlewową i zmywarką, płyta (piekarnik pod spodem), " +
+        "lodówka (słupek lub wnęka wolnostojąca), wypełnienie dolnych i wiszących (bez wiszących nad słupkami, nad płytą szafka okapowa). " +
+        "Domyślnie: I — wszystko na ścianie 0; L — lodówka i zlew na 0, płyta na 1; U — lodówka 0, zlew 1, płyta 2. Odstępy ergonomiczne to ZAŁOŻENIA (lista w odpowiedzi). " +
+        "Moduły spoza układu przy końcach ścian (np. szafka narożna sąsiedniej ściany) są omijane. Istniejące moduły na ścianach układu blokują układ bez zastap=true. podglad=true bez zapisu.",
+      inputSchema: { projektId: z.string(), ...schematSzybkiegoUkladu.shape },
+    },
+    bezpiecznie(({ projektId, ...o }) => skrotModulow(s.szybkiUklad(projektId, o))),
+  );
+
+  server.registerTool(
+    "ustaw_styl",
+    {
+      title: "Pakiet stylu pomieszczenia",
+      description:
+        "Ustawia dekor korpusu, frontów i blatu pomieszczenia jednym wywołaniem — z materiałów (materialId) albo z galerii 644 dekorów (dekor). " +
+        "Dekor aktywowany automatycznie tylko, gdy grubość/format wynikają z artykułu producenta (Egger); inaczej zwraca braki ('wymaga wpisania grubości/formatu').",
+      inputSchema: { projektId: z.string(), ...schematStylu.shape },
+    },
+    bezpiecznie(({ projektId, ...d }) => {
+      const w = s.ustawStyl(projektId, d);
+      return { ...w, aktywowane: w.aktywowane.map((m) => ({ id: m.id, nazwa: m.nazwa, gruboscMM: m.gruboscMM, artykul: m.artykulProducenta })) };
+    }),
+  );
+
+  server.registerTool(
+    "styl_pomieszczenia",
+    { title: "Bieżący styl pomieszczenia", description: "Materiały korpusu, frontów i blatu pomieszczenia (z dekorem galerii, jeśli pochodzą z dekoru) — do odtworzenia wyboru w kreatorze.", inputSchema: { projektId: z.string(), pomieszczenieId: z.string().optional() } },
+    bezpiecznie((a) => s.stylPomieszczenia(a.projektId, a.pomieszczenieId)),
+  );
+
+  server.registerTool(
+    "opcje_okuc_projektu",
+    { title: "Okucia do wyboru na projekcie", description: "Systemy szuflad/prowadnice, zawiasy i podnośniki z bazy okuć (z informacją maCene) oraz profile konstrukcyjne szuflad.", inputSchema: {} },
+    bezpiecznie(() => s.opcjeOkuc()),
+  );
+
+  server.registerTool(
+    "ustaw_okucia_projektu",
+    {
+      title: "Wybór okuć projektu",
+      description: "Ustawia system szuflad, zawiasy, podnośniki (id z bazy okuć) i profil szuflad projektu; wycena używa ich we wszystkich wariantach. Pozycja bez ceny = jawny błąd wyceny (oferta PDF zablokowana). okucia=null usuwa wybór.",
+      inputSchema: { projektId: z.string(), okucia: schematOkucProjektu },
+    },
+    bezpiecznie((a) => s.ustawOkucia(a.projektId, a.okucia)),
   );
 
   server.registerTool(

@@ -10,6 +10,15 @@ const s = new Stolarnia(new Magazyn(mkdtempSync(join(tmpdir(), "kalkulator-szufl
 const baza = { LW: 528, NL: 550, profilId: "amix-elite-standard", wariant: "199" };
 const montaz = { liczbaSzuflad: 2, wysokoscFrontu: 357, szczelinaFrontow: 3, dolnaProwadnica: 3, wysokoscWewnetrzna: 698 };
 
+test("prowadnice mają dwie jawne bazy tylko po podaniu grubości wieńca",()=>{
+ const legacy=s.przelicznikSzuflad({...baza,...montaz});assert.equal(legacy.montaz!.prowadniceOdPodstawy,undefined);
+ const known=s.przelicznikSzuflad({...baza,...montaz,gruboscDolnegoWienca:18});
+ assert.deepEqual(known.montaz!.prowadnice.map(p=>p.dolnaKrawedzMM),[3,363]);
+ assert.deepEqual(known.montaz!.prowadniceOdPodstawy!.map(p=>p.dolnaKrawedzMM),[21,381]);
+ assert.equal(known.montaz!.gruboscDolnegoWiencaMM,18);
+ for(const thickness of [0,-1,101,NaN])assert.throws(()=>s.przelicznikSzuflad({...baza,...montaz,gruboscDolnegoWienca:thickness}),/Niepoprawne/);
+});
+
 test("Amix H199: przypadki warsztatowe i rozstaw 3/363 bez zaokrąglenia do rastra", () => {
   for (const [LW, dno, plecy] of [[578, 503, 491], [564, 489, 477], [528, 453, 441]]) {
     const r = s.przelicznikSzuflad({ ...baza, ...montaz, LW });

@@ -8,6 +8,8 @@ import { Production } from "./views/Production";
 import { Projects } from "./views/Projects";
 import { Quote } from "./views/Quote";
 import { Settings } from "./views/Settings";
+import { SzybkiProjekt } from "./views/SzybkiProjekt";
+import { Warsztat } from "./views/Warsztat";
 import { nazwaStatusu, Temat } from "./views/Temat";
 import { PrzelicznikSzuflad } from "./views/PrzelicznikSzuflad";
 
@@ -18,6 +20,8 @@ type Trasa =
   | { widok: "projekt"; id: string; zakladka: Zakladka }
   | { widok: "materialy" }
   | { widok: "szuflady" }
+  | { widok: "warsztat" }
+  | { widok: "szybki"; id?: string; n: number }
   | { widok: "ustawienia" };
 
 function czytajTrase(): Trasa {
@@ -28,11 +32,17 @@ function czytajTrase(): Trasa {
   }
   if (cz[0] === "materialy") return { widok: "materialy" };
   if (cz[0] === "szuflady") return { widok: "szuflady" };
+  if (cz[0] === "warsztat") return { widok: "warsztat" };
+  if (cz[0] === "szybki") return { widok: "szybki", id: cz[1] || undefined, n: Date.now() };
   if (cz[0] === "ustawienia") return { widok: "ustawienia" };
   return { widok: "projekty" };
 }
 
-export function App() {
+/**
+ * `pracownik` — konto pracownika w starym panelu (v2 dopuszcza tylko jego widoki): bez menu właściciela,
+ * Warsztat z rolą z profilu konta. Właściciel dostaje pełne menu jak dotąd.
+ */
+export function LegacyApp({ pracownik }: { pracownik?: "sprzedaz" | "produkcja" | "montaz" } = {}) {
   const [trasa, setTrasa] = useState<Trasa>(czytajTrase);
   useEffect(() => {
     const f = () => setTrasa(czytajTrase());
@@ -40,26 +50,30 @@ export function App() {
     return () => removeEventListener("hashchange", f);
   }, []);
   useEffect(() => {
-    const tytuly = { projekty: "Projekty", projekt: "Projekt", materialy: "Materiały i okucia", szuflady: "Kalkulator szuflad", ustawienia: "Ustawienia" };
-    document.title = `${tytuly[trasa.widok]} · Stolarnia Online`;
+    const tytuly = { projekty: "Projekty", projekt: "Projekt", materialy: "Materiały i okucia", szuflady: "Kalkulator szuflad", szybki: "Szybki projekt", warsztat: "Warsztat", ustawienia: "Ustawienia" };
+    document.title = `${tytuly[trasa.widok]} · Pan Stolarz`;
   }, [trasa.widok]);
 
   return (
     <div className="app">
       <header className="topbar">
-        <button className="brand" onClick={() => idz("#/")} aria-label="Stolarnia Online — projekty">
-          <span className="brand-mark" aria-hidden /> Stolarnia Online
+        <button className="brand" onClick={() => idz("#/")} aria-label="Pan Stolarz — projekty">
+          <span className="brand-mark" aria-hidden /> Pan Stolarz
         </button>
-        <nav className="nav" aria-label="Menu główne">
+        {!pracownik && <nav className="nav" aria-label="Menu główne">
           <button className={trasa.widok === "projekty" || trasa.widok === "projekt" ? "on" : ""} onClick={() => idz("#/")}>Projekty</button>
           <button className={trasa.widok === "szuflady" ? "on" : ""} aria-current={trasa.widok === "szuflady" ? "page" : undefined} onClick={() => idz("#/szuflady")}>Kalkulator szuflad</button>
+          <button className={trasa.widok === "szybki" ? "on" : ""} onClick={() => idz("#/szybki")}>Szybki projekt</button>
+          <button className={trasa.widok === "warsztat" ? "on" : ""} onClick={() => idz("#/warsztat")}>Warsztat</button>
           <button className={trasa.widok === "materialy" ? "on" : ""} onClick={() => idz("#/materialy")}>Materiały i okucia</button>
           <button className={trasa.widok === "ustawienia" ? "on" : ""} onClick={() => idz("#/ustawienia")}>Ustawienia</button>
-        </nav>
+        </nav>}
       </header>
       <main className="main">
         {trasa.widok === "projekty" && <Projects />}
         {trasa.widok === "projekt" && <ProjektWidok id={trasa.id} zakladka={trasa.zakladka} />}
+        {trasa.widok === "szybki" && <div className="page"><SzybkiProjekt key={trasa.n} projektId={trasa.id} /></div>}
+        {trasa.widok === "warsztat" && <Warsztat rolaStala={pracownik === "produkcja" || pracownik === "montaz" ? pracownik : undefined} />}
         {trasa.widok === "materialy" && <Materials />}
         {trasa.widok === "szuflady" && <PrzelicznikSzuflad />}
         {trasa.widok === "ustawienia" && <Settings />}

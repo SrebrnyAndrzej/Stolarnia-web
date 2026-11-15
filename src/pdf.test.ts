@@ -50,3 +50,34 @@ test("PDF: cztery krawędzie dostają osobny rysunek, długie uwagi kontynuację
   c.uwagi = Array.from({ length: 100 }, (_, i) => `Uwaga ${i + 1}: zachowaj wszystkie informacje o obróbce oraz montażu.`);
   assert.ok(strony(await dokumentacjaPdf(wejscie)) > zKrawedziami, "uwagi nie są obcinane do ostatniej strony tabeli");
 });
+
+test("Pakiet montażowy: ten sam schemat stron (T, R, E, M, Z, K), z wydania i z bieżącej rewizji", async () => {
+  const { s, p } = projekt();
+  s.zmienProjekt(p.id, { klient: { nazwa: "Test", telefon: "500000000", email: "", adres: "ul. Testowa 1" }, terminMontazu: "2026-12-01" });
+  const biezacy = await s.montazPdf(p.id);
+  assert.ok(strony(biezacy.pdf) >= 5 + s.analiza(p.id).zbudowane.length, "tytuł, rzut, elewacja, kolejność, karta złożenia Z każdej szafki, okucia, protokół");
+  const w = s.utworzWydanie(p.id);
+  const zWydania = await s.montazPdf(p.id, w.id);
+  assert.equal(zWydania.numer, w.numer);
+  assert.equal(strony(zWydania.pdf), strony(biezacy.pdf));
+  // Produkcyjny bez zmian liczby stron względem trybu domyślnego
+  assert.equal(strony(await s.dokumentacjaPdf(p.id)), strony(await dokumentacjaPdf({ ...wejscieZ(s, p.id) })));
+});
+
+function wejscieZ(s: Stolarnia, id: string) {
+  const a = s.analiza(id);
+  const d = s.dokumentacja(id);
+  return { projekt: a.projekt, zbudowane: a.zbudowane, dokumentacja: d, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined };
+}
+
+test("Składanie korpusów zależnie od projektu: zapis, walidacja i pakiet montażowy", async () => {
+  const { s, p } = projekt();
+  assert.equal(s.zmienProjekt(p.id, { skladanieKorpusow: "naMiejscu" }).skladanieKorpusow, "naMiejscu");
+  assert.throws(() => s.zmienProjekt(p.id, { skladanieKorpusow: "gdzies" as never }));
+  const naMiejscu = await s.montazPdf(p.id);
+  assert.equal(s.zmienProjekt(p.id, { skladanieKorpusow: null }).skladanieKorpusow, undefined);
+  const nieustalone = await s.montazPdf(p.id);
+  assert.ok(strony(naMiejscu.pdf) >= strony(nieustalone.pdf));
+});
+
+ test("compact documentation gives one card per simple module without changing full output or revision",async()=>{const {s,p,moduly}=projekt();const revision=s.projekt(p.id).rewizja;const full=await s.dokumentacjaPdf(p.id);const compact=await s.dokumentacjaPdf(p.id,{zwiezly:true});assert.equal(strony(compact),moduly.length);assert.ok(strony(full)>strony(compact)*3);assert.equal(strony(await s.dokumentacjaPdf(p.id,{zwiezly:true,moduly:[moduly[0].id]})),1);const w=s.utworzWydanie(p.id);const frozen=await s.wydaniePdf(p.id,w.id,{zwiezly:true});assert.equal(strony(frozen.pdf),moduly.length);assert.equal(frozen.rewizja,revision);});

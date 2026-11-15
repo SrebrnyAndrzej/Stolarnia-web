@@ -30,6 +30,13 @@ await call("wypelnij_sciane", { projektId: projekt.id, scianaId: sc, katalogIds:
 console.log("\nwaliduj_projekt:", await call("waliduj_projekt", { projektId: projekt.id }));
 console.log("\nwycen_projekt:", await call("wycen_projekt", { projektId: projekt.id }));
 console.log("\nrozkroj_plyt:", await call("rozkroj_plyt", { projektId: projekt.id }));
+const kuchnia = JSON.parse(await call("utworz_projekt", { nazwa: "Szybki L", sciany: [{ dlugoscMM: 3000 }, { dlugoscMM: 2400 }] }));
+const uklad = JSON.parse(await call("szybki_uklad", { projektId: kuchnia.id, typ: "L", zmywarka: { szerokoscMM: 450 } }));
+console.log("\nszybki_uklad L:", uklad.moduly.length, "modułów,", uklad.ostrzezenia.length, "ostrzeżeń");
+console.log("ustaw_styl:", JSON.parse(await call("ustaw_styl", { projektId: kuchnia.id, front: { dekor: "Kronospan:K680" } })).braki);
+JSON.parse(await call("opcje_okuc_projektu"));
+console.log("ustaw_okucia_projektu:", await call("ustaw_okucia_projektu", { projektId: kuchnia.id, okucia: { systemSzuflad: "blum.legrabox.pure" } }));
+await call("wypelnij_cala_sciane", { projektId: projekt.id, scianaId: sc, rzad: "dolny", podglad: true });
 const bladny = await client.callTool({ name: "dodaj_modul", arguments: { projektId: projekt.id, katalogId: "nie-ma" } });
 console.log("\nbłąd oczekiwany:", bladny.isError, tekst(bladny));
 const prompty = await client.listPrompts();

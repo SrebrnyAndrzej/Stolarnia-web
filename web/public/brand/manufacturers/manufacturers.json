@@ -1,0 +1,101 @@
+{
+  "source_repository": "https://github.com/SrebrnyAndrzej/mussi-plyta",
+  "source_commit": "ea25327a62a7eb3351ba2295fbeb05b145b50f9d",
+  "items": [
+    {
+      "name": "AMIX",
+      "src": "/brand/manufacturers/AMIX.webp",
+      "sha256": "9c10538d852c15f61744caee3d7792fe69f74bb3f0d009a533c7398656fb81e8"
+    },
+    {
+      "name": "Biuro Styl",
+      "src": "/brand/manufacturers/Biuro-Styl.webp",
+      "sha256": "77cf90758133b0df3e5662e10aee85cce3b78dcf580359deca4966b095954295"
+    },
+    {
+      "name": "Bosetti Marella",
+      "src": "/brand/manufacturers/Bosetti-Marella.webp",
+      "sha256": "84f229b4cd6f9eb3ffd5b37dab34c7e4dd3d33d4626546be08bcffc71bcc56e3"
+    },
+    {
+      "name": "CDO",
+      "src": "/brand/manufacturers/CDO.webp",
+      "sha256": "97041b5c95ed777d10946743a07e659dbe983f88eabc6b9347bd9efa7661de6c"
+    },
+    {
+      "name": "Domino",
+      "src": "/brand/manufacturers/Domino.webp",
+      "sha256": "6eb3e6c2edf7a8365195e0c0904cc960c18cf43aa522dbea3f4aa389b37bad20"
+    },
+    {
+      "name": "Drewpol",
+      "src": "/brand/manufacturers/Drewpol.webp",
+      "sha256": "cc5687c909c746dfde392b52f36d76ecaf296c296fd03dc67eac4740a560a8a1"
+    },
+    {
+      "name": "Elcavo",
+      "src": "/brand/manufacturers/Elcavo.webp",
+      "sha256": "e08b8efaca8def225aa91b53d3365fb3b3abff6c96e88cba4050246f0f833a1a"
+    },
+    {
+      "name": "Fest",
+      "src": "/brand/manufacturers/Fest.webp",
+      "sha256": "4eca80fa5c2c31a57af3be710100c20a9611fc89cb82fa9c541bd2e66db4c099"
+    },
+    {
+      "name": "Frontpol",
+      "src": "/brand/manufacturers/Frontpol.webp",
+      "sha256": "9a4eb08408e747ed6f5eea905fed648e97ba41b0b082971e56294bfb838d713e"
+    },
+    {
+      "name": "GTV",
+      "src": "/brand/manufacturers/GTV.webp",
+      "sha256": "3631a7aa3db6fa068f2b3fb80c041c6d668dc5a001bbb28a8dca37623758452a"
+    },
+    {
+      "name": "Hafele",
+      "src": "/brand/manufacturers/Hafele.webp",
+      "sha256": "33cf8e72c36314378354ddb54d5b2bca80e270753fbb7175429dbf314c8b24ff"
+    },
+    {
+      "name": "Hranipex",
+      "src": "/brand/manufacturers/Hranipex.webp",
+      "sha256": "e6b969bb7b79824cba3ca2bcb53ed9c4579326768a29bd1ad531e5d20a80dcb4"
+    },
+    {
+      "name": "Kash",
+      "src": "/brand/manufacturers/Kash.webp",
+      "sha256": "ad04c53240b1b285b5db74b335356255c417b3ab1c0cf969287fd02487200121"
+    },
+    {
+      "name": "Kronospan",
+      "src": "/brand/manufacturers/Kronospan.webp",
+      "sha256": "65bcd4729bbfc715724fe62352c972e6c7a52ab937afc189581275426d494f5b"
+    },
+    {
+      "name": "Laguna",
+      "src": "/brand/manufacturers/Laguna.webp",
+      "sha256": "7689ca9479a1f298bed6b57fd41401a039816315d4f38987e880dd4d034d2ebf"
+    },
+    {
+      "name": "Peka",
+      "src": "/brand/manufacturers/Peka.webp",
+      "sha256": "8f1e420dd3c0f22b59f8086436f5344013d57066edd58562bafd88a2f9268f5d"
+    },
+    {
+      "name": "Rehau",
+      "src": "/brand/manufacturers/Rehau.webp",
+      "sha256": "959fd1730e6849a716617c423363d48a474bfb941e928d74b825ee093cb66222"
+    },
+    {
+      "name": "Restol",
+      "src": "/brand/manufacturers/Restol.webp",
+      "sha256": "5c8cca768c20970903896cf72f10c457d66b85ab558459b5c82830295b82338d"
+    },
+    {
+      "name": "Sta Put",
+      "src": "/brand/manufacturers/Sta-Put.webp",
+      "sha256": "273138bd2cfdfe4a0f5cd1e0ef395fac974aa445fd3a9448f4c0b5e648db4ea0"
+    }
+  ]
+}
