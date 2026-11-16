@@ -59,14 +59,23 @@ export async function readArchitectFile(file: ArchitectFile): Promise<Blob> {
   }
 }
 export async function validateArchitectFile(file: Blob, name: string) {
-  const format = name.split(".").pop()?.toLowerCase();
+  const ext = name.split(".").pop()?.toLowerCase();
+  const format = ext === "jpeg" ? "jpg" : ext;
   if (
-    !["dxf", "dwg", "pdf"].includes(format ?? "") ||
+    !["dxf", "dwg", "pdf", "jpg", "png"].includes(format ?? "") ||
     name.length > 180 ||
     !file.size ||
     file.size > ARCHITECT_FILE_LIMIT
   )
-    throw new Error(`${name}: wybierz DXF, DWG lub PDF do 10 MiB.`);
+    throw new Error(`${name}: wybierz DXF, DWG, PDF, JPG lub PNG do 10 MiB.`);
+  if (format === "jpg" || format === "png") {
+    const bytes = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+    const signature =
+      format === "jpg" ? [255, 216, 255] : [137, 80, 78, 71, 13, 10, 26, 10];
+    if (!signature.every((b, i) => bytes[i] === b))
+      throw new Error(`${name}: nieprawidłowy nagłówek obrazu.`);
+    await imageDimensions(file);
+  }
   const head = new TextDecoder().decode(
     await file.slice(0, 1024).arrayBuffer(),
   );
@@ -77,6 +86,31 @@ export async function validateArchitectFile(file: Blob, name: string) {
   if (format === "dxf" && !/SECTION|AutoCAD Binary DXF/.test(head))
     throw new Error(`${name}: nieprawidłowy nagłówek DXF.`);
   return format as ArchitectFile["format"];
+}
+export async function imageDimensions(blob: Blob) {
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const width = img.naturalWidth,
+      height = img.naturalHeight;
+    if (
+      !width ||
+      !height ||
+      Math.max(width, height) > 20000 ||
+      width * height > 24000000
+    )
+      throw new Error(
+        "Obraz może mieć do 24 mln pikseli i 20 000 px na bok. Zmniejsz go przed dodaniem.",
+      );
+    return { width, height };
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("pikseli")) throw e;
+    throw new Error("Nie można odczytać obrazu. Wybierz poprawny JPG lub PNG.");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 export async function parseArchitectDxf(
   blob: Blob,

@@ -6,6 +6,7 @@ import {
   architectFilesSchema,
   architectRoles,
   ARCHITECT_TOTAL_LIMIT,
+  imageReferenceSize,
   type ArchitectFile,
 } from "../../../../src/core/architect-files";
 import type { CadPreview } from "../../../../src/core/cad-preview";
@@ -17,6 +18,10 @@ import {
   referencePaths,
 } from "./architect-storage";
 import { draftSchema, type Draft } from "./model";
+import {
+  ArchitectRasterEditor,
+  type RasterEditorHandle,
+} from "./ArchitectRasterEditor";
 const download = (blob: Blob, name: string) => {
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");
@@ -48,6 +53,8 @@ export function KitchenArchitectFiles({
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
+  const [rasterDirty, setRasterDirty] = useState(false);
+  const rasterEditor = useRef<RasterEditorHandle>(null);
   const [preview, setPreview] = useState<{
     file: ArchitectFile;
     data?: CadPreview;
@@ -70,7 +77,11 @@ export function KitchenArchitectFiles({
     onApply(next);
   };
   const dirty =
-    !!edit && JSON.stringify(edit) !== JSON.stringify(preview?.file);
+    rasterDirty ||
+    (!!edit && JSON.stringify(edit) !== JSON.stringify(preview?.file));
+  useEffect(() => {
+    setRasterDirty(false);
+  }, [preview]);
   useEffect(() => {
     onDirtyChange(dirty || !!busy);
     return () => onDirtyChange(false);
@@ -312,8 +323,36 @@ export function KitchenArchitectFiles({
       drawingError = (e as Error).message;
     }
   const blocked = disabled || !!busy;
-  const save = (next: Draft) => {
-    const parsed = edit ? architectFileSchema.safeParse(edit) : null;
+  const save = (next: Draft, useImageDimensions = false) => {
+    let imageReference = edit?.imageReference;
+    try {
+      if (rasterEditor.current) imageReference = rasterEditor.current.read();
+      if (useImageDimensions) {
+        if (!imageReference)
+          throw new Error("Włącz podkład obrazu i ustaw jego skalę.");
+        const size = imageReferenceSize(imageReference);
+        if (
+          size.width < 1800 ||
+          size.width > 8000 ||
+          size.depth < 1800 ||
+          size.depth > 8000
+        )
+          throw new Error(
+            "Wymiary kuchni muszą mieścić się w zakresie 180–800 cm. Wybierz kadr jednego pomieszczenia i sprawdź skalę.",
+          );
+        next = {
+          ...next,
+          ...size,
+          ...(next.layout === "u" ? { returnLength: size.width } : {}),
+        };
+      }
+    } catch (e) {
+      setError((e as Error).message);
+      return;
+    }
+    const parsed = edit
+      ? architectFileSchema.safeParse({ ...edit, imageReference })
+      : null;
     if (!parsed?.success) {
       setError("Sprawdź nazwę pomieszczenia i ustawienia podkładu.");
       return;
@@ -342,11 +381,11 @@ export function KitchenArchitectFiles({
   };
   return (
     <details className="kp-architect-tools">
-      <summary>Pliki architekta · {files.length} plików</summary>
+      <summary>Wczytaj rzut / pliki architekta · {files.length} plików</summary>
       <p>
-        Dodaj kilka rzutów, elewacji i instalacji. DXF, DWG i PDF: do 10 MiB na
-        plik, 20 plików i 40 MiB łącznie. Pliki pozostają na tym urządzeniu;
-        pobierz paczkę, aby zachować je lub przekazać dalej.
+        Dodaj kilka rzutów, elewacji i instalacji. DXF, DWG, PDF, JPG i PNG: do
+        10 MiB na plik, 20 plików i 40 MiB łącznie. Pliki pozostają na tym
+        urządzeniu; pobierz paczkę, aby zachować je lub przekazać dalej.
       </p>
       <div
         className="kp-file-drop"
@@ -362,7 +401,7 @@ export function KitchenArchitectFiles({
             aria-label="Dodaj pliki architekta"
             type="file"
             multiple
-            accept=".dxf,.dwg,.pdf"
+            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png"
             disabled={blocked || dirty}
             onChange={(e) => {
               void add(e.currentTarget.files);
@@ -374,8 +413,8 @@ export function KitchenArchitectFiles({
       </div>
       {files.length === 0 && (
         <p>
-          Nie dodano jeszcze dokumentacji. Możesz zacząć od rzutu PDF, a
-          następnie dołączyć DXF i elewacje.
+          Zacznij od zdjęcia lub skanu rzutu parteru / piętra (JPG, PNG), PDF
+          albo DXF. Na obrazie zaznaczysz kuchnię i ustawisz skalę.
         </p>
       )}
       <ul className="kp-architect-list">
@@ -386,7 +425,7 @@ export function KitchenArchitectFiles({
               <small>
                 {f.room} · {architectRoles[f.role]} ·{" "}
                 {(f.size / 1024).toFixed(0)} KiB
-                {f.reference ? " · podkład w rzucie" : ""}
+                {f.reference || f.imageReference ? " · podkład w rzucie" : ""}
               </small>
             </div>
             <div className="kp-actions">
@@ -489,6 +528,24 @@ export function KitchenArchitectFiles({
                   </select>
                 </label>
               </div>
+              {preview.blob && ["jpg", "png"].includes(preview.file.format) && (
+                <>
+                  <ArchitectRasterEditor
+                    key={`${preview.file.id}:${JSON.stringify(preview.file.imageReference)}`}
+                    ref={rasterEditor}
+                    blob={preview.blob}
+                    initial={preview.file.imageReference}
+                    onDirtyChange={setRasterDirty}
+                  />
+                  <button
+                    type="button"
+                    className="ps-button secondary"
+                    onClick={() => save(draft, true)}
+                  >
+                    Przyjmij kadr jako wymiary pomieszczenia
+                  </button>
+                </>
+              )}
               {preview.data && (
                 <>
                   <p>{preview.data.warnings.join(" ")}</p>

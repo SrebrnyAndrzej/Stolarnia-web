@@ -156,7 +156,7 @@ export function brief(d: Draft): string {
   const analysis = toAnalysis(d);
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
-    `Układ: ${d.layout === "u" ? "U z pustymi narożnikami po 650 mm na ścianach B i C" : d.layout === "l" ? "L z pustym narożnikiem 650 mm na ścianie B" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
+    `Układ: ${d.layout === "u" ? "U" : d.layout === "l" ? "L" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
     d.decor
       ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`
       : `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,

@@ -102,8 +102,9 @@ export function KitchenProjectReview({
       )}
       {!problems.length && (
         <p>
-          Gabaryty mieszczą się w zaznaczonych ścianach i otworach. Otwieranie
-          frontów oraz wentylację AGD sprawdzimy przy dopracowaniu projektu.
+          Nie wykryto kolizji gabarytów ani blokowania przyjętych rezerw
+          otwierania. Konkretny zawias, kąt otwarcia i wentylację AGD sprawdzimy
+          przy dopracowaniu projektu.
         </p>
       )}
     </details>

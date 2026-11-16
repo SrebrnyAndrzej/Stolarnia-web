@@ -25,6 +25,7 @@ export function trimKitchenStorage(
     return next;
   };
   for (const m of kitchenModules({ ...d, items })) {
+    if (m.scianaId === "island") continue;
     const original = items.find((i) => i.id === m.id)!;
     let intervals = [
       { start: m.pozycjaXMM, end: m.pozycjaXMM + m.szerokoscMM },

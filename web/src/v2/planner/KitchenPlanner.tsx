@@ -53,6 +53,7 @@ import { KitchenVariants, useKitchenVariants } from "./KitchenVariants";
 import { KitchenIslandTools } from "./KitchenIslandTools";
 import { KitchenArchitectFiles } from "./KitchenArchitectFiles";
 import { useArchitectReferences } from "./useArchitectReferences";
+import { kitchenCollisions } from "../../../../src/core/kitchen-collisions";
 import { fillKitchenGap } from "../../../../src/core/kitchen-runs";
 import { isKitchenUpper } from "../../../../src/core/kitchen-configuration";
 import { KitchenDrawerFronts } from "./KitchenDrawerFronts";
@@ -292,6 +293,11 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const resetDialog = useRef<HTMLDialogElement>(null);
   const resetTrigger = useRef<HTMLButtonElement>(null);
   const analysis = useMemo(() => toAnalysis(draft), [draft]);
+  const collisions = useMemo(
+    () => kitchenCollisions(draft, analysis.projekt.moduly),
+    [draft, analysis],
+  );
+  const collisionIds = [...new Set(collisions.flatMap((c) => c.ids))];
   useEffect(() => {
     if (!returnItem) return;
     if (
@@ -1064,9 +1070,10 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
               </p>
               {draft.layout !== "straight" && (
                 <p>
-                  W narożniku ściany B
-                  {draft.layout === "u" ? " i ściany C" : ""} zostawiamy po 650
-                  mm pustej strefy. Sposób zabudowy narożnika dobierze stolarz.
+                  W propozycji zostawiamy po 65 cm na obu ramionach każdego
+                  narożnika, żeby fronty sąsiednich szafek miały miejsce na
+                  otwarcie. Tę przestrzeń może wykorzystać właściwie dobrana
+                  szafka narożna.
                 </p>
               )}
               <strong>Szkic nie zastępuje pomiaru w Twoim domu.</strong>
@@ -1162,6 +1169,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 <div className="kp-canvas">
                   {view === "front" ? (
                     <Elewacja
+                      collisionIds={collisionIds}
                       showFunctions
                       analiza={analysis}
                       scianaId={wall}
@@ -1177,12 +1185,16 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                     />
                   ) : view === "plan" ? (
                     <Rzut
+                      collisionIds={collisionIds}
                       roomFootprint={
-                        draft.island || references.paths.length
+                        draft.island ||
+                        references.paths.length ||
+                        references.images.length
                           ? { width: draft.width, depth: draft.depth }
                           : undefined
                       }
                       architectPaths={references.paths}
+                      architectImages={references.images}
                       roomFeatures={draft.features}
                       analiza={analysis}
                       pomieszczenieId="kitchen"
@@ -1221,6 +1233,32 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                     </div>
                   )}
                 </div>
+                {collisions.length > 0 && (
+                  <div className="kp-collision-summary">
+                    <Feedback>
+                      <strong>Kolizja lub zablokowane otwieranie</strong>
+                      <p>{collisions[0].message}</p>
+                      <div className="kp-actions">
+                        {collisions[0].ids.map((id) => {
+                          const m = analysis.projekt.moduly.find(
+                            (m) => m.id === id,
+                          )!;
+                          return (
+                            <button
+                              key={id}
+                              className="ps-button secondary"
+                              onClick={() =>
+                                chooseCabinet(id, m.scianaId as "a" | "b" | "c")
+                              }
+                            >
+                              Popraw: {m.nazwa} · {m.scianaId.toUpperCase()}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </Feedback>
+                  </div>
+                )}
                 <p className="kp-preview-caption">
                   {view === "3d"
                     ? "Przeciągnij, aby obrócić. Przybliżaj kółkiem myszy lub gestem."
@@ -1610,8 +1648,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
         <footer className="kp-footer">
           <p>
             Szkic koncepcyjny · wycena orientacyjna, bez dokumentacji
-            produkcyjnej. Nie sprawdzamy instalacji, kolizji otwierania i
-            wymaganych luzów montażowych.
+            produkcyjnej. Sprawdzamy kolizje gabarytów i rezerwy otwierania
+            między zabudowami. Instalacje, rzeczywiste zawiasy i luzy wymagają
+            weryfikacji.
           </p>
           <div className="kp-actions">
             <button className="ps-text-button" onClick={download}>

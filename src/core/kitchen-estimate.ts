@@ -116,7 +116,7 @@ export function calculateKitchenEstimate(raw: unknown) {
     "Bez zakupu AGD, zlewu, baterii, podłączeń i przebudowy instalacji. Transport przyjęto jako lokalny; adres i warunki wniesienia do potwierdzenia.",
     input.items.some((i) => i.catalogId === "base-blind-corner-1100")
       ? "Wybrane szafki narożne ślepe są w cenie. Systemy wysuwane i otwieranie wymagają osobnego doboru; sąsiednia ściana zachowuje odsunięcie 650 mm."
-      : "Narożniki bez wybranej szafki pozostają puste (650 mm na ścianach B/C); systemy narożne wymagają osobnego doboru.",
+      : "Propozycja rezerwuje po 650 mm na obu ramionach zakrętu. Rezerwę może wykorzystać właściwa szafka narożna; systemy narożne wymagają osobnego doboru.",
     "Dobór okuć, luzów, wysokości i grubości materiałów wymaga weryfikacji. Rysunki są koncepcyjne, nie produkcyjne." +
       (input.features?.length
         ? " Oznaczenia okien, drzwi i przyłączy są koncepcyjne; instalacje i otwieranie do sprawdzenia."

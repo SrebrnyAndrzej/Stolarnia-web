@@ -27,6 +27,7 @@ interface ElewacjaProps {
   roomFeatures?: KitchenFeature[];
   kitchenGaps?: { id: string; start: number; width: number; tier: string }[];
   onKitchenGap?: (id: string) => void;
+  collisionIds?: string[];
 }
 
 /** Wolne odcinki w rzędzie dolnym lub wiszącym (słupki blokują oba rzędy). */
@@ -55,6 +56,7 @@ export function luki(
 export function Elewacja({
   readOnly = false,
   showFunctions = false,
+  collisionIds = [],
   analiza,
   scianaId,
   dlugosc,
@@ -414,6 +416,9 @@ export function Elewacja({
           <g
             key={m.id}
             data-kitchen-cabinet={m.id}
+            data-kitchen-collision={
+              collisionIds.includes(m.id) ? "true" : undefined
+            }
             style={{
               cursor: readOnly
                 ? "pointer"
@@ -691,6 +696,22 @@ export function Elewacja({
                 strokeWidth={10}
                 rx={8}
               />
+            )}
+            {collisionIds.includes(m.id) && (
+              <rect
+                x={x - 10}
+                y={Y(m.pozycjaYMM + m.wysokoscMM) - 10}
+                width={m.szerokoscMM + 20}
+                height={m.wysokoscMM + 20}
+                fill="none"
+                stroke="var(--danger)"
+                strokeWidth={12}
+                pointerEvents="none"
+              >
+                <title>
+                  Kolizja lub zablokowane otwieranie — sprawdź wskazane szafki.
+                </title>
+              </rect>
             )}
             <Wymiar
               x1={x}

@@ -10,6 +10,7 @@ import {
 } from "./kitchen-configuration.js";
 import { kitchenFunctionalReview } from "./kitchen-functions.js";
 import { trimKitchenStorage } from "./kitchen-room-layout.js";
+import { kitchenPlanningEnd } from "./kitchen-collisions.js";
 
 type Wall = KitchenItem["wall"];
 type Slot = { catalogId: string; width: number; gapBefore?: number };
@@ -155,7 +156,7 @@ export function suggestKitchen(
           let feasible = true;
           for (const wall of walls) {
             const onWall = order.filter((g) => g.wall === wall);
-            if (!onWall.length) continue;
+            if (!onWall.length && preserve) continue;
             const fridgeIndex = onWall.findIndex((g) => g.key === "fridge");
             if (fridgeIndex > 0 && fridgeIndex < onWall.length - 1) {
               feasible = false;
@@ -181,8 +182,7 @@ export function suggestKitchen(
               feasible = false;
               break;
             }
-            const length =
-              wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+            const length = kitchenPlanningEnd(d, wall);
             let slots: Slot[] = [],
               x = start;
             for (const g of onWall) {
@@ -252,6 +252,19 @@ export function suggestKitchen(
             preparation = lower.find(
               (s) => s.catalogId === "base-drawers-600",
             )!;
+          const proposedFridge = lower.find(
+            (s) => s.catalogId === "tall-refrigerator-600",
+          );
+          if (
+            proposedFridge &&
+            !(
+              (proposedFridge.wall === "a" && proposedFridge.x === 0) ||
+              (proposedFridge.wall === walls.at(-1) &&
+                proposedFridge.x + proposedFridge.width ===
+                  kitchenPlanningEnd(d, proposedFridge.wall))
+            )
+          )
+            continue;
           if (
             !preserve &&
             sink.wall === oven.wall &&
@@ -364,7 +377,9 @@ export function suggestKitchen(
               "Nie ma brakujących urządzeń do dodania. Możesz dopełnić rząd szafkami do przechowywania lub przygotowania.",
             );
           // Trial layouts do not consume IDs; existing items retain identity and every field.
-          const usedIds = new Set(existingItems.map((i) => i.id));
+          const usedIds = new Set(
+            [...existingItems, ...(d.island?.items ?? [])].map((i) => i.id),
+          );
           return candidate.map((i, index) => {
             if (index < existingItems.length) return i;
             let next = id(),

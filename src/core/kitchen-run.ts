@@ -7,6 +7,7 @@ import {
 } from "./kitchen-configuration.js";
 
 import { fillKitchenGap, kitchenFreeGaps } from "./kitchen-runs.js";
+import { kitchenPlanningEnd } from "./kitchen-collisions.js";
 
 export type KitchenRow = "base" | "wall";
 export function kitchenRunSpace(
@@ -25,8 +26,7 @@ export function kitchenRunSpace(
     d.layout !== "straight" && wall !== "a" ? 650 : 0,
     ...modules.map((m) => kitchenOuterBounds(m).end),
   );
-  const length =
-    wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+  const length = kitchenPlanningEnd(d, wall as KitchenItem["wall"]);
   return { end, remaining: length - end, modules };
 }
 
@@ -38,8 +38,7 @@ export function fillKitchenRun(
   id: () => string,
   purpose: "storage" | "preparation" = "storage",
 ): KitchenItem[] {
-  const length =
-    wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+  const length = kitchenPlanningEnd(d, wall);
   const gap = kitchenFreeGaps(d, wall, row).find((g) => g.end === length);
   if (!gap)
     throw new Error(

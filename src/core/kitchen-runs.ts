@@ -11,6 +11,7 @@ import {
 } from "./kitchen-configuration.js";
 import type { Modul } from "./types.js";
 import { isKitchenOpening } from "./kitchen-room.js";
+import { kitchenPlanningEnd } from "./kitchen-collisions.js";
 
 export type KitchenTier = "base" | "wall" | "tall";
 export const kitchenTierName = {
@@ -127,7 +128,7 @@ export function kitchenFreeGaps(
     throw new Error("Wybierz ścianę należącą do układu kuchni.");
   const modules = kitchenModules(d).filter((m) => m.scianaId === wall),
     start = wallStart(d, wall),
-    end = wallLength(d, wall);
+    end = kitchenPlanningEnd(d, wall);
   const upperBottom = Math.min(
     1400,
     ...modules

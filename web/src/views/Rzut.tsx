@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 import {
+  imageReferenceSize,
+  type ArchitectImage,
+} from "../../../src/core/architect-files";
+import {
   granice,
   obrysModulu,
   punktNaRzucie,
@@ -26,7 +30,9 @@ interface Props {
   onWybierz: (id: string | null) => void;
   roomFeatures?: KitchenFeature[];
   architectPaths?: { layer: string; points: [number, number][] }[];
+  architectImages?: ArchitectImage[];
   roomFootprint?: { width: number; depth: number };
+  collisionIds?: string[];
 }
 
 /** Rzut pomieszczenia z góry: lica ścian, szafki dolne pełne, wiszące kreskowane. */
@@ -40,7 +46,9 @@ export function Rzut({
   onWybierz,
   roomFeatures = [],
   architectPaths = [],
+  architectImages = [],
   roomFootprint,
+  collisionIds = [],
 }: Props) {
   const p = analiza.projekt;
   const pom =
@@ -72,6 +80,10 @@ export function Rzut({
   });
   if (roomFootprint)
     coverPoints.push([0, 0], [roomFootprint.width, roomFootprint.depth]);
+  for (const { reference: r } of architectImages) {
+    const size = imageReferenceSize(r);
+    coverPoints.push([r.x, r.y], [r.x + size.width, r.y + size.depth]);
+  }
   if (architectPaths.length) {
     let left = Infinity,
       top = Infinity,
@@ -123,6 +135,30 @@ export function Rzut({
         onPointerDown={() => onWybierz(null)}
       />
       <g data-architect-underlay pointerEvents="none" opacity="0.45">
+        {architectImages.map(({ url, reference: r }) => {
+          const w = r.crop.width * r.mmPerPixel,
+            h = r.crop.height * r.mmPerPixel;
+          const transform =
+            r.rotation === 90
+              ? `translate(${r.x + h} ${r.y}) rotate(90)`
+              : r.rotation === 180
+                ? `translate(${r.x + w} ${r.y + h}) rotate(180)`
+                : r.rotation === 270
+                  ? `translate(${r.x} ${r.y + w}) rotate(270)`
+                  : `translate(${r.x} ${r.y})`;
+          return (
+            <g key={url} data-architect-image transform={transform}>
+              <svg
+                width={w}
+                height={h}
+                viewBox={`${r.crop.x} ${r.crop.y} ${r.crop.width} ${r.crop.height}`}
+                overflow="hidden"
+              >
+                <image href={url} width={r.pixelWidth} height={r.pixelHeight} />
+              </svg>
+            </g>
+          );
+        })}
         {architectPaths.map((p, n) => (
           <polyline
             key={n}
@@ -274,6 +310,9 @@ export function Rzut({
           <g
             key={m.id}
             data-kitchen-cabinet={m.id}
+            data-kitchen-collision={
+              collisionIds.includes(m.id) ? "true" : undefined
+            }
             onClick={(e) => {
               e.stopPropagation();
               onWybierz(m.id);
@@ -285,9 +324,17 @@ export function Rzut({
               fill={wiszacy ? "none" : kolor}
               fillOpacity={wiszacy ? 0 : 0.85}
               stroke={
-                sel ? "var(--accent)" : wiszacy ? "var(--muted)" : "#3b3128"
+                collisionIds.includes(m.id)
+                  ? "var(--danger)"
+                  : sel
+                    ? "var(--accent)"
+                    : wiszacy
+                      ? "var(--muted)"
+                      : "#3b3128"
               }
-              strokeWidth={sel ? 30 : wiszacy ? 10 : 8}
+              strokeWidth={
+                collisionIds.includes(m.id) ? 28 : sel ? 30 : wiszacy ? 10 : 8
+              }
               strokeDasharray={wiszacy ? "40 30" : undefined}
             />
             {analiza.zbudowane

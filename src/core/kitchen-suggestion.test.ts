@@ -60,7 +60,7 @@ test("L and U use the room's arms for functional groups rather than repeat appli
     for (const rows of [r.sinks, r.dishwashers, r.ovens, r.hoods, r.fridges])
       assert.equal(rows.length, 1);
     assert.equal(r.ovens[0].scianaId, layout === "l" ? "b" : "c");
-    assert.equal(r.sinks[0].scianaId, layout === "l" ? "a" : "b");
+    assert.equal(r.sinks[0].scianaId, "a"); // 2400-mm B has only 1100 mm after reserving both corners.
     assert.deepEqual(r.warnings, []);
     assert.ok(d.items.length <= 24);
   }

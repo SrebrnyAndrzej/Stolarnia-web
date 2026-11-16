@@ -2,6 +2,7 @@ import { z } from "zod";
 import { KATALOG_MODULOW, domyslnaKonfiguracja } from "./catalog/modules.js";
 import type { Modul, ModulKatalogowy } from "./types.js";
 import { islandIssues } from "./kitchen-island.js";
+import { kitchenCollisions, kitchenPlanningEnd } from "./kitchen-collisions.js";
 import { architectFilesSchema } from "./architect-files.js";
 import { drawerStackHeights } from "./drawer-front-layout.js";
 import { USTAWIENIA_DOMYSLNE } from "./settings.js";
@@ -367,6 +368,7 @@ export function kitchenIssues(d: KitchenGeometryInput): string[] {
     issues: string[] = [];
   issues.push(...featureRoomIssues(d, kitchenWalls(d)));
   issues.push(...islandIssues(d, modules));
+  issues.push(...kitchenCollisions(d, modules).map((c) => c.message));
   for (const m of modules)
     for (const f of d.features ?? [])
       if (openingOverlaps(m, f, d.quote?.worktop === "compact" ? 12 : 38))
@@ -450,12 +452,10 @@ export function kitchenFitWidth(
   if (!selected) throw new Error("Wybierz szafkę do dopasowania.");
   if (selected.kategoria === "appliance")
     throw new Error("Szerokość zabudowy AGD wynika z wybranego wariantu.");
-  const length =
-    selected.scianaId === "a"
-      ? d.width
-      : selected.scianaId === "b"
-        ? d.depth
-        : d.returnLength;
+  const length = kitchenPlanningEnd(
+    d,
+    selected.scianaId as KitchenItem["wall"],
+  );
   const start = d.layout !== "straight" && selected.scianaId !== "a" ? 650 : 0;
   const others = modules.filter(
     (m) =>
