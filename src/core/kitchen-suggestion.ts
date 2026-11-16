@@ -11,6 +11,7 @@ import {
 import { kitchenFunctionalReview } from "./kitchen-functions.js";
 import { trimKitchenStorage } from "./kitchen-room-layout.js";
 import { kitchenPlanningEnd } from "./kitchen-collisions.js";
+import { kitchenWallStart } from "./kitchen-layout.js";
 
 type Wall = KitchenItem["wall"];
 type Slot = { catalogId: string; width: number; gapBefore?: number };
@@ -69,7 +70,7 @@ export function suggestKitchen(
     existing.some((m) => m.konstrukcja === construction);
   const endAt = (wall: Wall, upper: boolean) =>
     Math.max(
-      wall === "a" ? 0 : 650,
+      kitchenWallStart(d, wall),
       ...existing
         .filter(
           (m) =>
@@ -92,11 +93,13 @@ export function suggestKitchen(
   if (p.waterWall !== "auto" && !walls.includes(p.waterWall))
     throw new Error("Wybierz ścianę zlewu należącą do układu kuchni.");
   const preferred: Wall[] =
-    d.layout === "u"
-      ? ["a", "b", "c"]
-      : d.layout === "l"
-        ? ["a", "a", "b"]
-        : ["a", "a", "a"];
+    d.layout === "parallel"
+      ? ["a", "c", "a"]
+      : d.layout === "u"
+        ? ["a", "b", "c"]
+        : d.layout === "l"
+          ? ["a", "a", "b"]
+          : ["a", "a", "a"];
   const combinations = walls.flatMap((fridge) =>
     walls.flatMap((wet) => walls.map((cook) => ({ fridge, wet, cook }))),
   );

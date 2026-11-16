@@ -9,6 +9,7 @@ import {
   type ScianaNaRzucie,
 } from "./geometry.js";
 import { kitchenRoomWalls } from "./kitchen-island.js";
+import { kitchenWallLength } from "./kitchen-layout.js";
 
 /** Design allowance for handles/assembly, not a hinge manufacturer's drilling rule. */
 export const KITCHEN_CORNER_RESERVE = 650;
@@ -17,10 +18,9 @@ export function kitchenPlanningEnd(
   d: Pick<KitchenGeometryInput, "layout" | "width" | "depth" | "returnLength">,
   wall: KitchenItem["wall"],
 ) {
-  const length =
-    wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+  const length = kitchenWallLength(d, wall);
   const turns =
-    (wall === "a" && d.layout !== "straight") ||
+    (wall === "a" && (d.layout === "l" || d.layout === "u")) ||
     (wall === "b" && d.layout === "u");
   return length - (turns ? KITCHEN_CORNER_RESERVE : 0);
 }

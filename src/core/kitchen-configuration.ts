@@ -4,6 +4,12 @@ import type { Modul, ModulKatalogowy } from "./types.js";
 import { islandIssues } from "./kitchen-island.js";
 import { kitchenCollisions, kitchenPlanningEnd } from "./kitchen-collisions.js";
 import { architectFilesSchema } from "./architect-files.js";
+import {
+  kitchenLayoutSchema,
+  kitchenLayoutWalls,
+  kitchenWallStart,
+  kitchenWallLength,
+} from "./kitchen-layout.js";
 import { drawerStackHeights } from "./drawer-front-layout.js";
 import { USTAWIENIA_DOMYSLNE } from "./settings.js";
 import {
@@ -211,7 +217,7 @@ export const kitchenPlanningSchema = z.object({
 });
 export const kitchenInputSchema = z
   .object({
-    layout: z.enum(["straight", "l", "u"]),
+    layout: kitchenLayoutSchema,
     width: z.number().int().min(1800).max(8000),
     depth: z.number().int().min(1800).max(8000),
     returnLength: z.number().int().min(1800).max(8000).default(3600),
@@ -262,8 +268,7 @@ export type KitchenInput = z.infer<typeof kitchenInputSchema>;
 export type KitchenQuoteOptions = z.infer<typeof kitchenOptionsSchema>;
 export const kitchenWalls = (d: {
   layout: KitchenInput["layout"];
-}): ("a" | "b" | "c")[] =>
-  d.layout === "u" ? ["a", "b", "c"] : d.layout === "l" ? ["a", "b"] : ["a"];
+}): ("a" | "b" | "c")[] => kitchenLayoutWalls(d);
 export const isKitchenUpper = (
   m: Pick<ModulKatalogowy, "category" | "construction">,
 ) => m.category === "wall" || m.construction === "hood";
@@ -286,7 +291,7 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
     const key = `${i.wall}-${isKitchenUpper(m) ? "upper" : "base"}`;
     const thickness = kitchenPanelThickness(d);
     const x =
-      (ends[key] ?? (d.layout !== "straight" && i.wall !== "a" ? 650 : 0)) +
+      (ends[key] ?? kitchenWallStart(d, i.wall)) +
       (i.gapBefore ?? 0) +
       (i.surround?.left ? thickness : 0);
     const width = i.width ?? m.widthMM,
@@ -377,7 +382,7 @@ export function kitchenIssues(d: KitchenGeometryInput): string[] {
         );
   for (const m of modules.filter((m) => m.konstrukcja === "blindCorner")) {
     const next =
-      m.scianaId === "a" && d.layout !== "straight"
+      m.scianaId === "a" && (d.layout === "l" || d.layout === "u")
         ? "b"
         : m.scianaId === "b" && d.layout === "u"
           ? "c"
@@ -394,8 +399,7 @@ export function kitchenIssues(d: KitchenGeometryInput): string[] {
       );
   }
   for (const wall of kitchenWalls(d)) {
-    const len =
-      wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+    const len = kitchenWallLength(d, wall);
     if (
       modules.some(
         (m) => m.scianaId === wall && kitchenOuterBounds(m).end > len,
@@ -456,7 +460,7 @@ export function kitchenFitWidth(
     d,
     selected.scianaId as KitchenItem["wall"],
   );
-  const start = d.layout !== "straight" && selected.scianaId !== "a" ? 650 : 0;
+  const start = kitchenWallStart(d, selected.scianaId);
   const others = modules.filter(
     (m) =>
       m.id !== id &&

@@ -12,6 +12,7 @@ import {
 import type { Modul } from "./types.js";
 import { isKitchenOpening } from "./kitchen-room.js";
 import { kitchenPlanningEnd } from "./kitchen-collisions.js";
+import { kitchenWallStart, kitchenWallLength } from "./kitchen-layout.js";
 
 export type KitchenTier = "base" | "wall" | "tall";
 export const kitchenTierName = {
@@ -27,10 +28,8 @@ export const kitchenTier = (m: Modul): KitchenTier =>
         m.wysokoscMM > 1500
       ? "tall"
       : "base";
-const wallStart = (d: KitchenGeometryInput, wall: string) =>
-  d.layout !== "straight" && wall !== "a" ? 650 : 0;
-const wallLength = (d: KitchenGeometryInput, wall: string) =>
-  wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+const wallStart = kitchenWallStart;
+const wallLength = kitchenWallLength;
 const track = (m: Modul, tier: KitchenTier) =>
   (kitchenTier(m) === "wall") === (tier === "wall");
 

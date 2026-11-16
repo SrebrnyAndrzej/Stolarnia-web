@@ -122,7 +122,7 @@ export function KitchenCornerTools({
 }) {
   const [wall, setWall] = useState<"a" | "b">("a"),
     [error, setError] = useState("");
-  if (draft.layout === "straight") return null;
+  if (draft.layout !== "l" && draft.layout !== "u") return null;
   return (
     <details className="kp-corner-tools">
       <summary>Zabudowa narożnika L / U</summary>

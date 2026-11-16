@@ -13,11 +13,15 @@ export const roomKeys = (layout: KitchenInput["layout"]): RoomKey[] => [
   "height",
 ];
 export const roomLabel = (key: RoomKey, layout?: KitchenInput["layout"]) =>
-  key === "depth" && layout === "straight"
-    ? "Głębokość pomieszczenia"
-    : key === "height"
-      ? "Wysokość pomieszczenia"
-      : `Długość ściany ${{ width: "A", depth: "B", returnLength: "C" }[key]}`;
+  key === "depth" && layout === "parallel"
+    ? "Odległość między ścianami A i C"
+    : key === "width" && layout === "parallel"
+      ? "Długość ciągów A i C"
+      : key === "depth" && layout === "straight"
+        ? "Głębokość pomieszczenia"
+        : key === "height"
+          ? "Wysokość pomieszczenia"
+          : `Długość ściany ${{ width: "A", depth: "B", returnLength: "C" }[key]}`;
 export const roomFields = (
   draft: Pick<KitchenInput, RoomKey>,
   unit: RoomUnit,

@@ -116,7 +116,9 @@ export function calculateKitchenEstimate(raw: unknown) {
     "Bez zakupu AGD, zlewu, baterii, podłączeń i przebudowy instalacji. Transport przyjęto jako lokalny; adres i warunki wniesienia do potwierdzenia.",
     input.items.some((i) => i.catalogId === "base-blind-corner-1100")
       ? "Wybrane szafki narożne ślepe są w cenie. Systemy wysuwane i otwieranie wymagają osobnego doboru; sąsiednia ściana zachowuje odsunięcie 650 mm."
-      : "Propozycja rezerwuje po 650 mm na obu ramionach zakrętu. Rezerwę może wykorzystać właściwa szafka narożna; systemy narożne wymagają osobnego doboru.",
+      : input.layout === "parallel"
+        ? "Dwa równoległe ciągi A i C. Odległość między ścianami oznacza wymiar od tyłu jednego ciągu do tyłu drugiego; przejście pomniejszają rzeczywiste głębokości mebli i blatów."
+        : "Propozycja rezerwuje po 650 mm na obu ramionach zakrętu. Rezerwę może wykorzystać właściwa szafka narożna; systemy narożne wymagają osobnego doboru.",
     "Dobór okuć, luzów, wysokości i grubości materiałów wymaga weryfikacji. Rysunki są koncepcyjne, nie produkcyjne." +
       (input.features?.length
         ? " Oznaczenia okien, drzwi i przyłączy są koncepcyjne; instalacje i otwieranie do sprawdzenia."
@@ -165,7 +167,7 @@ export function calculateKitchenEstimate(raw: unknown) {
     scope: [
       {
         label: "Konstrukcja",
-        description: `Szafki: ${modules.filter((m) => m.konstrukcja !== "filler").length}; blendy: ${modules.filter((m) => m.konstrukcja === "filler").length}. Korpusy laminowane 18 mm. Układ ${input.layout === "straight" ? "prosty" : input.layout.toUpperCase()}; ściany ${[input.width, ...(input.layout !== "straight" ? [input.depth] : []), ...(input.layout === "u" ? [input.returnLength] : [])].join(" / ")} mm.${built.some((b) => b.elementy.some((e) => e.kod.startsWith("OSLONA-"))) ? ` ${island ? "Panele wykończeniowe" : "Boki i wieńce osłonowe"}: ${built.flatMap((b) => b.elementy).filter((e) => e.kod.startsWith("OSLONA-")).length} płyt; wysunięcie przed fronty ${[...new Set(modules.filter((m) => m.konfiguracja.obudowaZewnetrzna).map((m) => m.konfiguracja.obudowaZewnetrzna!.wysuniecieMM))].join(" / ")} mm, w cenie.` : ""}`,
+        description: `Szafki: ${modules.filter((m) => m.konstrukcja !== "filler").length}; blendy: ${modules.filter((m) => m.konstrukcja === "filler").length}. Korpusy laminowane 18 mm. Układ ${input.layout === "parallel" ? "równoległy A/C" : input.layout === "straight" ? "prosty" : input.layout.toUpperCase()}; ściany ${[input.width, ...(input.layout === "parallel" ? [input.width] : input.layout !== "straight" ? [input.depth] : []), ...(input.layout === "u" ? [input.returnLength] : [])].join(" / ")} mm.${input.layout === "parallel" ? ` Odległość A–C: ${input.depth} mm.` : ""}${built.some((b) => b.elementy.some((e) => e.kod.startsWith("OSLONA-"))) ? ` ${island ? "Panele wykończeniowe" : "Boki i wieńce osłonowe"}: ${built.flatMap((b) => b.elementy).filter((e) => e.kod.startsWith("OSLONA-")).length} płyt; wysunięcie przed fronty ${[...new Set(modules.filter((m) => m.konfiguracja.obudowaZewnetrzna).map((m) => m.konfiguracja.obudowaZewnetrzna!.wysuniecieMM))].join(" / ")} mm, w cenie.` : ""}`,
       },
       {
         label: "Fronty",

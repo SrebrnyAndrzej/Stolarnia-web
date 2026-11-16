@@ -31,9 +31,11 @@ function Variant({
         <>
           <p>
             Elementy: {modules.length} · {draft.width / 10} cm ·{" "}
-            {draft.layout === "straight"
-              ? "jedna ściana"
-              : draft.layout.toUpperCase()}
+            {draft.layout === "parallel"
+              ? "dwa ciągi naprzeciwko"
+              : draft.layout === "straight"
+                ? "jedna ściana"
+                : draft.layout.toUpperCase()}
           </p>
           {draft.island && (
             <p>

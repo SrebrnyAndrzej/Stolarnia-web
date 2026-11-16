@@ -8,6 +8,7 @@ import {
 
 import { fillKitchenGap, kitchenFreeGaps } from "./kitchen-runs.js";
 import { kitchenPlanningEnd } from "./kitchen-collisions.js";
+import { kitchenWallStart } from "./kitchen-layout.js";
 
 export type KitchenRow = "base" | "wall";
 export function kitchenRunSpace(
@@ -23,7 +24,7 @@ export function kitchenRunSpace(
       (m.kategoria === "wall" || m.konstrukcja === "hood") === (row === "wall"),
   );
   const end = Math.max(
-    d.layout !== "straight" && wall !== "a" ? 650 : 0,
+    kitchenWallStart(d, wall),
     ...modules.map((m) => kitchenOuterBounds(m).end),
   );
   const length = kitchenPlanningEnd(d, wall as KitchenItem["wall"]);

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import {kitchenWallLength, type KitchenLayout} from "./kitchen-layout.js";
 import type { Modul } from "./types.js";
 
 export const kitchenFeatureSchema = z
@@ -51,6 +52,7 @@ export function featureRoomIssues(
     depth: number;
     returnLength: number;
     height: number;
+    layout?: KitchenLayout;
     features?: KitchenFeature[];
   },
   walls: string[],
@@ -63,8 +65,7 @@ export function featureRoomIssues(
   if (new Set(d.features?.map((f) => f.id)).size !== (d.features?.length ?? 0))
     issues.push("Powtarzające się oznaczenia pomieszczenia.");
   for (const f of d.features ?? []) {
-    const length =
-      f.wall === "a" ? d.width : f.wall === "b" ? d.depth : d.returnLength;
+    const length = kitchenWallLength({...d, layout: d.layout ?? "u"}, f.wall);
     if (
       !walls.includes(f.wall) ||
       f.x + f.width > length ||

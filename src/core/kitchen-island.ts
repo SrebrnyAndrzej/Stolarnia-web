@@ -43,6 +43,30 @@ export function islandWall(d: KitchenGeometryInput): Sciana[] {
   ];
 }
 export function kitchenRoomWalls(d: KitchenGeometryInput): Sciana[] {
+  if (d.layout === "parallel")
+    return [
+      {
+        id: "a",
+        nazwa: "Ściana A",
+        dlugoscMM: d.width,
+        wysokoscMM: d.height,
+        x1: 0,
+        y1: 0,
+        x2: d.width,
+        y2: 0,
+      },
+      {
+        id: "c",
+        nazwa: "Ściana C · naprzeciwko A",
+        dlugoscMM: d.width,
+        wysokoscMM: d.height,
+        x1: d.width,
+        y1: d.depth,
+        x2: 0,
+        y2: d.depth,
+      },
+      ...islandWall(d),
+    ];
   return [
     { id: "a", nazwa: "Ściana A", dlugoscMM: d.width, wysokoscMM: d.height },
     ...(d.layout !== "straight"

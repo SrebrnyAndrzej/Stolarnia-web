@@ -41,8 +41,14 @@ export const ArchitectRasterEditor = forwardRef<
   });
   const [mode, setMode] = useState<"crop" | "ruler">("crop");
   const [first, setFirst] = useState<Point>();
-  const [ruler, setRuler] = useState<[Point, Point]>();
-  const [lengthCm, setLengthCm] = useState("");
+  const [ruler, setRuler] = useState<[Point, Point] | undefined>(
+    initial?.calibration
+      ? [initial.calibration.from, initial.calibration.to]
+      : undefined,
+  );
+  const [lengthCm, setLengthCm] = useState(
+    initial?.calibration ? String(initial.calibration.lengthMM / 10) : "",
+  );
   const [widthCm, setWidthCm] = useState(
     initial ? String((initial.crop.width * initial.mmPerPixel) / 10) : "",
   );
@@ -83,6 +89,15 @@ export const ArchitectRasterEditor = forwardRef<
     rotation,
     ...offset,
     mmPerPixel: scale,
+    ...(ruler
+      ? {
+          calibration: {
+            from: ruler[0],
+            to: ruler[1],
+            lengthMM: Number(lengthCm) * 10,
+          },
+        }
+      : {}),
   });
   const size = candidate.success ? imageReferenceSize(candidate.data) : null;
   useImperativeHandle(ref, () => ({
@@ -245,6 +260,19 @@ export const ArchitectRasterEditor = forwardRef<
               strokeWidth="3"
               vectorEffect="non-scaling-stroke"
             />
+            {ruler && (
+              <button
+                type="button"
+                className="ps-button secondary"
+                onClick={() => {
+                  dirty();
+                  setLengthCm("60");
+                  setEnabled(true);
+                }}
+              >
+                Głębokość blatu: 60 cm
+              </button>
+            )}
             {ruler && (
               <line
                 x1={ruler[0].x}

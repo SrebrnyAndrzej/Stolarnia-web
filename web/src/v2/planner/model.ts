@@ -5,6 +5,13 @@ import {
 } from "../../../../src/core/architect-files";
 import { kitchenRoomWalls } from "../../../../src/core/kitchen-island";
 import {
+  kitchenLayoutSchema,
+  kitchenLayoutWalls,
+  kitchenWallStart,
+  kitchenWallLength,
+  kitchenLayoutName,
+} from "../../../../src/core/kitchen-layout";
+import {
   kitchenFeatureSchema,
   featureRoomIssues,
   featureName,
@@ -38,7 +45,7 @@ export const finishes = [
 export const draftSchema = z
   .object({
     version: z.literal(1),
-    layout: z.enum(["straight", "l", "u"]),
+    layout: kitchenLayoutSchema,
     width: z.number().int().min(1800).max(8000),
     depth: z.number().int().min(1800).max(8000),
     returnLength: z.number().int().min(1800).max(8000).default(3600),
@@ -103,11 +110,11 @@ export function readDraft(raw: string): Draft {
 export const isUpper = (id: string) =>
   catalog.some((m) => m.id === id && isKitchenUpper(m));
 export const wallIds = (d: Pick<Draft, "layout">): ("a" | "b" | "c")[] =>
-  d.layout === "u" ? ["a", "b", "c"] : d.layout === "l" ? ["a", "b"] : ["a"];
+  kitchenLayoutWalls(d);
 export const wallLength = (d: Draft, wall: string) =>
-  wall === "a" ? d.width : wall === "b" ? d.depth : d.returnLength;
+  kitchenWallLength(d, wall);
 export const startOffset = (d: Draft, wall: string) =>
-  d.layout !== "straight" && wall !== "a" ? 650 : 0;
+  kitchenWallStart(d, wall);
 export function toAnalysis(d: Draft): TechnicalAnalysis {
   // UI adapter only: catalog dimensions/configuration and existing engine build every part.
   const moduly = kitchenModules(d);
@@ -156,7 +163,7 @@ export function brief(d: Draft): string {
   const analysis = toAnalysis(d);
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
-    `Układ: ${d.layout === "u" ? "U" : d.layout === "l" ? "L" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
+    `Układ: ${kitchenLayoutName(d.layout)}. Ściana A: ${d.width} mm${d.layout === "parallel" ? `, C: ${d.width} mm, odległość między ścianami: ${d.depth} mm` : d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
     d.decor
       ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`
       : `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,

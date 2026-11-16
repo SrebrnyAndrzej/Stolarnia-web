@@ -55,3 +55,26 @@ test("raster and DXF share the four active underlay limit", () => {
   assert.equal(architectFilesSchema.safeParse(files.slice(0, 4)).success, true);
   assert.equal(architectFilesSchema.safeParse(files).success, false);
 });
+test("a saved countertop calibration keeps its endpoints and must agree with the pixel scale", () => {
+  const r = {
+    ...reference,
+    mmPerPixel: 15,
+    calibration: {
+      from: { x: 680, y: 468 },
+      to: { x: 680, y: 508 },
+      lengthMM: 600,
+    },
+  };
+  assert.equal(imageReferenceSchema.parse(r).calibration!.lengthMM, 600);
+  assert.equal(
+    imageReferenceSchema.safeParse({ ...r, mmPerPixel: 16 }).success,
+    false,
+  );
+  assert.equal(
+    imageReferenceSchema.safeParse({
+      ...r,
+      calibration: { ...r.calibration, to: { x: 680, y: 1000 } },
+    }).success,
+    false,
+  );
+});

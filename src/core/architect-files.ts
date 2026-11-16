@@ -12,6 +12,19 @@ export const imageReferenceSchema = z
       height: z.number().int().min(1),
     }),
     mmPerPixel: z.number().positive().max(1000),
+    calibration: z
+      .object({
+        from: z.object({
+          x: z.number().int().min(0),
+          y: z.number().int().min(0),
+        }),
+        to: z.object({
+          x: z.number().int().min(0),
+          y: z.number().int().min(0),
+        }),
+        lengthMM: z.number().positive().max(20000),
+      })
+      .optional(),
     rotation: z.union([
       z.literal(0),
       z.literal(90),
@@ -22,6 +35,19 @@ export const imageReferenceSchema = z
     y: z.number().int().min(-8000).max(8000),
   })
   .superRefine((r, ctx) => {
+    if (r.calibration) {
+      const { from, to, lengthMM } = r.calibration;
+      const distance = Math.hypot(to.x - from.x, to.y - from.y);
+      if (
+        distance < 2 ||
+        [from, to].some((p) => p.x > r.pixelWidth || p.y > r.pixelHeight) ||
+        Math.abs(distance * r.mmPerPixel - lengthMM) > 0.1
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Odcinek odniesienia nie zgadza się z obrazem lub skalą.",
+        });
+    }
     if (
       r.pixelWidth * r.pixelHeight > 24000000 ||
       r.crop.x + r.crop.width > r.pixelWidth ||

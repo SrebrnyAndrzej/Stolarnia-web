@@ -5,6 +5,7 @@ import {
   type KitchenItem,
 } from "./kitchen-configuration.js";
 import { openingOverlaps } from "./kitchen-room.js";
+import { kitchenWallStart } from "./kitchen-layout.js";
 
 /** Cut only newly proposed storage around measured openings; never move existing furniture or appliances. */
 export function trimKitchenStorage(
@@ -75,7 +76,7 @@ export function trimKitchenStorage(
   for (const wall of ["a", "b", "c"] as const)
     for (const upper of [false, true]) {
       let end = Math.max(
-        d.layout !== "straight" && wall !== "a" ? 650 : 0,
+        kitchenWallStart(d, wall),
         ...kitchenModules({ ...d, items: result })
           .filter((m) => m.scianaId === wall && m.pozycjaYMM >= 1000 === upper)
           .map((m) => kitchenOuterBounds(m).end),

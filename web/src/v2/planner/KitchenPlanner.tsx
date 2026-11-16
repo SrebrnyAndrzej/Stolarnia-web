@@ -54,6 +54,7 @@ import { KitchenIslandTools } from "./KitchenIslandTools";
 import { KitchenArchitectFiles } from "./KitchenArchitectFiles";
 import { useArchitectReferences } from "./useArchitectReferences";
 import { kitchenCollisions } from "../../../../src/core/kitchen-collisions";
+import { kitchenLayoutName } from "../../../../src/core/kitchen-layout";
 import { fillKitchenGap } from "../../../../src/core/kitchen-runs";
 import { isKitchenUpper } from "../../../../src/core/kitchen-configuration";
 import { KitchenDrawerFronts } from "./KitchenDrawerFronts";
@@ -730,16 +731,10 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
             <summary>Parametry szkicu</summary>
             <dl className="kp-summary">
               <dt>Układ</dt>
-              <dd>
-                {draft.layout === "u"
-                  ? "U"
-                  : draft.layout === "l"
-                    ? "L"
-                    : "Prosty"}
-              </dd>
+              <dd>{kitchenLayoutName(draft.layout)}</dd>
               <dt>Ściana A</dt>
               <dd>{draft.width} mm</dd>
-              {draft.layout !== "straight" && (
+              {(draft.layout === "l" || draft.layout === "u") && (
                 <>
                   <dt>Ściana B</dt>
                   <dd>{draft.depth} mm</dd>
@@ -749,6 +744,14 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 <>
                   <dt>Ściana C</dt>
                   <dd>{draft.returnLength} mm</dd>
+                </>
+              )}
+              {draft.layout === "parallel" && (
+                <>
+                  <dt>Ściana C</dt>
+                  <dd>{draft.width} mm</dd>
+                  <dt>Odległość A–C</dt>
+                  <dd>{draft.depth} mm</dd>
                 </>
               )}
               <dt>Wysokość</dt>
@@ -884,7 +887,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
             <div className="kp-panel">
               <h2>Jaki układ planujesz?</h2>
               <div className="kp-layouts">
-                {(["straight", "l", "u"] as const).map((layout) => (
+                {(["straight", "l", "u", "parallel"] as const).map((layout) => (
                   <button
                     key={layout}
                     aria-pressed={draft.layout === layout}
@@ -929,17 +932,15 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                       className={`kp-layout-symbol ${layout}`}
                       aria-hidden="true"
                     />
-                    {layout === "straight"
-                      ? "Jedna ściana"
-                      : layout === "l"
-                        ? "Układ L"
-                        : "Układ U"}
+                    {kitchenLayoutName(layout)}
                     <small>
-                      {layout === "straight"
-                        ? "Zabudowa w jednej linii"
-                        : layout === "l"
-                          ? "Dwie ściany pod kątem prostym"
-                          : "Trzy ściany wokół Ciebie"}
+                      {layout === "parallel"
+                        ? "Dwa równoległe ciągi z przejściem"
+                        : layout === "straight"
+                          ? "Zabudowa w jednej linii"
+                          : layout === "l"
+                            ? "Dwie ściany pod kątem prostym"
+                            : "Trzy ściany wokół Ciebie"}
                     </small>
                   </button>
                 ))}
@@ -1068,7 +1069,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 Podaj wymiary obok. Ułożymy AGD, strefę zmywania, blat roboczy i
                 szafki. Potem zmienisz wybrane elementy.
               </p>
-              {draft.layout !== "straight" && (
+              {(draft.layout === "l" || draft.layout === "u") && (
                 <p>
                   W propozycji zostawiamy po 65 cm na obu ramionach każdego
                   narożnika, żeby fronty sąsiednich szafek miały miejsce na

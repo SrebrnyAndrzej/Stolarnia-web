@@ -13,7 +13,7 @@ export function addKitchenBlindCorner(
   id: () => string,
 ): KitchenItem[] {
   const nextWall =
-    wall === "a" && d.layout !== "straight"
+    wall === "a" && (d.layout === "l" || d.layout === "u")
       ? "b"
       : wall === "b" && d.layout === "u"
         ? "c"
