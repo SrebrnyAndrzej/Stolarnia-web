@@ -50,6 +50,7 @@ import { blatZDekoru, plytaZDekoru, type RolaStylu, type RozstrzygniecieStylu, t
 import { czyStatus, STATUSY_PROJEKTU } from "./core/statusy.js";
 import { dokumentacjaProjektu } from "./core/technologia.js";
 import { ofertaPdf } from "./export/oferta.js";
+import { rozliczenie, schematWplaty, type Rozliczenie } from "./core/rozliczenie.js";
 import { dokumentacjaPdf } from "./export/pdf.js";
 import { scianySzkicow, szkicePdf, type OpcjeSzkicow } from "./export/szkice.js";
 import dxfParserModul from "dxf-parser";
@@ -311,6 +312,46 @@ export class Stolarnia {
     return umowa;
   }
 
+  // ---------- Rozliczenie (ST-APP-005) ----------
+
+  rozliczenie(projektId: string): Rozliczenie {
+    return rozliczenie(this.projekt(projektId));
+  }
+
+  /** Wpłata klienta: zapis bez podbijania rewizji konstrukcji (jak dane Tematu). */
+  dodajWplate(projektId: string, dane: unknown): Rozliczenie {
+    const r = schematWplaty.safeParse(dane);
+    if (!r.success) throw new BladUslugi(r.error.issues.map((x) => `${x.path.join(".") || "dane"}: ${x.message}`).join("; "));
+    const p = this.edytujTemat(projektId, (p) => {
+      p.wplaty = [...(p.wplaty ?? []), { ...r.data, id: randomUUID(), dodano: teraz() }];
+    });
+    return rozliczenie(p);
+  }
+
+  usunWplate(projektId: string, wplataId: string): Rozliczenie {
+    const p = this.edytujTemat(projektId, (p) => {
+      if (!(p.wplaty ?? []).some((w) => w.id === wplataId)) throw new BladUslugi("Nie ma takiej wpłaty (zaliczkę z umowy zmienia się w umowie).");
+      p.wplaty = (p.wplaty ?? []).filter((w) => w.id !== wplataId);
+    });
+    return rozliczenie(p);
+  }
+
+  /**
+   * Zapytanie z formularza → projekt (ST-APP-005). Jednokrotne: drugi raz zwraca istniejący projekt.
+   * Dane klienta i opis z zapytania trafiają do Tematu; ściana domyślna jak przy nowym projekcie.
+   */
+  projektZZapytania(z: { id: string; name: string; email: string; kind: string; city: string; description: string }): { projekt: Projekt; nowy: boolean } {
+    const jest = this.magazyn.odczytaj().projekty.find((p) => p.zrodloZapytania === z.id);
+    if (jest) return { projekt: jest, nowy: false };
+    const rodzaj = z.kind === "kuchnia" ? "Kuchnia" : z.kind === "szafa" ? "Szafa" : "Zabudowa";
+    const p = this.utworzProjekt({
+      nazwa: `${rodzaj} — ${z.name}`.slice(0, 120),
+      klient: { nazwa: z.name, email: z.email, adres: z.city },
+      notatki: `Zapytanie ze strony: ${z.description}`.slice(0, 4000),
+    });
+    return { projekt: this.edytujTemat(p.id, (x) => void (x.zrodloZapytania = z.id)), nowy: true };
+  }
+
   umowa(projektId: string, umowaId: string): Umowa {
     const u = this.umowy(projektId).find(x => x.id === umowaId);
     if (!u) throw new BladUslugi("Nie znaleziono umowy w tym projekcie.");
@@ -360,7 +401,7 @@ export class Stolarnia {
     });
   }
 
-  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; skladanieKorpusow?: "warsztat" | "naMiejscu" | null; agd?: UrzadzenieAGD[] }): Projekt {
+  zmienProjekt(projektId: string, dane: { cenaUzgodnionaBrutto?: number | null; nazwa?: string; klient?: Partial<Klient>; status?: StatusProjektu; notatki?: string; terminMontazu?: string | null; skladanieKorpusow?: "warsztat" | "naMiejscu" | null; agd?: UrzadzenieAGD[]; zwolnienieMimoBrakow?: string }): Projekt {
     const cena = dane.cenaUzgodnionaBrutto;
     if (cena !== undefined && cena !== null && (typeof cena !== "number" || !Number.isFinite(cena) || cena <= 0 || cena > 100000000 || Math.abs(cena * 100 - Math.round(cena * 100)) > 0.00001)) throw new BladUslugi("Cena uzgodniona musi być dodatnią kwotą do 100 000 000 zł, z maksymalnie dwoma miejscami po przecinku.");
     if (dane.agd !== undefined) dane = { ...dane, agd: sprawdzAGD(dane.agd) };
@@ -373,6 +414,7 @@ export class Stolarnia {
       if (dane.nazwa) p.nazwa = dane.nazwa;
       if (dane.klient) p.klient = { ...p.klient, ...dane.klient };
       if (dane.status && dane.status !== p.status) {
+        if (dane.status === "produkcja") this.sprawdzZwolnienie(p, dane.zwolnienieMimoBrakow);
         p.status = dane.status;
         (p.historiaStatusow ??= []).push({ status: dane.status, data: teraz() });
       }
@@ -382,6 +424,24 @@ export class Stolarnia {
       if (dane.skladanieKorpusow !== undefined) p.skladanieKorpusow = dane.skladanieKorpusow || undefined;
       if (dane.agd !== undefined) p.agd = dane.agd.length ? dane.agd : undefined;
     });
+  }
+
+  /**
+   * Zwolnienie do produkcji (R02, ST-APP-005): hala dostaje projekt tylko z kompletnym wydaniem bieżącej rewizji.
+   * Wydanie robocze albo zmiana projektu po wydaniu wymaga świadomej decyzji właściciela z powodem,
+   * który zostaje jako uwaga w Temacie (widoczna też dla warsztatu).
+   */
+  private sprawdzZwolnienie(p: Projekt, powod?: string) {
+    const ost = [...(p.wydania ?? [])].sort((a, b) => a.numer - b.numer).at(-1);
+    if (!ost) throw new BladUslugi("Brak wydania produkcyjnego — utwórz wydanie w zakładce Produkcja, zanim zwolnisz projekt do produkcji.");
+    const braki = [
+      ...(ost.gotowaDoProdukcji ? [] : [`wydanie ${ost.numer} jest robocze (braki danych: ${ost.podsumowanie?.brakDanych ?? "?"})`]),
+      ...(ost.rewizja === p.rewizja ? [] : [`projekt zmienił się po wydaniu ${ost.numer} (rew. ${ost.rewizja} → ${p.rewizja})`]),
+    ];
+    if (!braki.length) return;
+    const t = String(powod ?? "").trim();
+    if (!t) throw new BladUslugi(`Nie można zwolnić do produkcji: ${braki.join("; ")}. Uzupełnij projekt i utwórz nowe wydanie albo zwolnij świadomie, podając powód.`);
+    (p.notatkiRobocze ??= []).unshift({ id: id(), tekst: `[Właściciel] Zwolniono do produkcji mimo: ${braki.join("; ")}. Powód: ${t.slice(0, 500)}`, utworzono: teraz(), zalatwiona: false });
   }
 
   // ---------- Szkice wstępne dla klienta ----------
@@ -449,7 +509,7 @@ export class Stolarnia {
     return this.magazyn.zmien((b) => {
       const zrodlo = b.projekty.find((p) => p.id === projektId);
       if (!zrodlo) throw new BladUslugi(`Nie ma projektu o id "${projektId}".`);
-      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], zamowienie: undefined, id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
+      const kopia: Projekt = { ...structuredClone(zrodlo), umovy: [], wydania: [], zamowienie: undefined, wplaty: undefined, zrodloZapytania: undefined, id: id(), nazwa: nazwa ?? `${zrodlo.nazwa} (kopia)`, status: "szkic", rewizja: 1, utworzono: teraz(), zmieniono: teraz() };
       delete kopia.cenaUzgodnionaBrutto;
       b.projekty.push(kopia);
       return kopia;

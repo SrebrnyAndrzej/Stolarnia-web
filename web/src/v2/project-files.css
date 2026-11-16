@@ -50,3 +50,45 @@
     height: 280px;
   }
 }
+/* Zdjęcia projektu (ST-APP-005) */
+.ps-photo-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+.ps-photo-add .field {
+  flex: 1 1 200px;
+}
+.ps-photo-add label.ps-button {
+  cursor: pointer;
+}
+.ps-photo-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.ps-photo-filter [aria-pressed="true"] {
+  outline: 2px solid currentColor;
+}
+.ps-photo-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+.ps-photo-grid li {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.ps-photo-grid img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}

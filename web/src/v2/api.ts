@@ -19,6 +19,8 @@ export interface CustomerRequest {
   city: string;
   description: string;
   status: string;
+  /** Projekt utworzony z tego zapytania (ST-APP-005). */
+  projektId?: string | null;
 }
 export async function request<T>(
   url: string,

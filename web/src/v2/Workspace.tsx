@@ -30,6 +30,9 @@ import { Elewacja } from "../views/Elewacja";
 import type { Analiza } from "../api";
 import { NAZWY_STATUSOW } from "../../../src/core/statusy";
 import { ProjectDocuments } from "./ProjectDocuments";
+const ProjectPhotos = lazy(() =>
+  import("./ProjectPhotos").then((m) => ({ default: m.ProjectPhotos })),
+);
 const ProjectFiles = lazy(() =>
   import("./ProjectFiles").then((m) => ({ default: m.ProjectFiles })),
 );
@@ -351,6 +354,7 @@ export function Workspace({
             key={`${person.user_id}-${id}`}
             id={id}
             owner={owner}
+            personId={person.user_id}
             architectFiles={owner || person.access_profile === "sprzedaz"}
             technicalOnly={employee}
             demo={demo}
@@ -393,12 +397,14 @@ export function Workspace({
 function ProjectDetail({
   id,
   owner,
+  personId,
   architectFiles,
   technicalOnly,
   demo,
 }: {
   id: string;
   owner: boolean;
+  personId: string;
   architectFiles: boolean;
   technicalOnly: boolean;
   demo: boolean;
@@ -419,6 +425,8 @@ function ProjectDetail({
   );
   const [documentsOpen, setDocumentsOpen] = useState(false);
   const [filesOpen, setFilesOpen] = useState(false);
+  const [photosOpen, setPhotosOpen] = useState(false);
+  const photosButton = useRef<HTMLButtonElement>(null);
   const filesButton = useRef<HTMLButtonElement>(null);
   const documentsButton = useRef<HTMLButtonElement>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
@@ -496,6 +504,32 @@ function ProjectDetail({
               Pliki od architekta
             </button>
           </div>
+        )}
+        {!demo && (
+          <div className="ps-project-documents-entry">
+            <button
+              ref={photosButton}
+              className="ps-button secondary"
+              aria-expanded={photosOpen}
+              onClick={() => setPhotosOpen((v) => !v)}
+            >
+              Zdjęcia (pomiar, montaż)
+            </button>
+          </div>
+        )}
+        {!demo && photosOpen && (
+          <Suspense fallback={<p role="status">Wczytywanie zdjęć…</p>}>
+            <ProjectPhotos
+              key={id}
+              id={id}
+              userId={personId}
+              owner={owner}
+              onClose={() => {
+                setPhotosOpen(false);
+                photosButton.current?.focus();
+              }}
+            />
+          </Suspense>
         )}
         {architectFiles && !demo && filesOpen && (
           <Suspense fallback={<p role="status">Wczytywanie plików…</p>}>

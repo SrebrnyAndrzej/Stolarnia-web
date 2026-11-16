@@ -10,7 +10,7 @@
     "Toast",
     "CRUD"
   ],
-  "ownership": { "Select/Listbox": "native" },
+  "ownership": { "Select/Listbox": "native", "Date": "native" },
   "commands": {
     "unit": "npm run test:v2:unit",
     "e2e": "npm run test:v2:browser",

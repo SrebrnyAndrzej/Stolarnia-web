@@ -16,6 +16,7 @@ import {
 } from "@tabler/icons-react";
 import { request, roles, type Principal } from "./api";
 import { Landing } from "./Landing";
+const PrivacyPolicy = lazy(() => import("./PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
 import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
@@ -28,6 +29,9 @@ const FurniturePresentation = lazy(() =>
   import("./FurnitureSharing").then((m) => ({
     default: m.FurniturePresentation,
   })),
+);
+const Marketing = lazy(() =>
+  import("./Marketing").then((m) => ({ default: m.Marketing })),
 );
 const Purchasing = lazy(() =>
   import("./Purchasing").then((m) => ({ default: m.Purchasing })),
@@ -115,6 +119,7 @@ export function App() {
   const calculatorRoute = /^#\/(kalkulatory|szuflady)(\/|\?|$)/.test(hash);
   const staff =
     !!person?.active && (person.role === "owner" || person.role === "employee");
+  const privacyRoute = hash === "#/polityka-prywatnosci";
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
@@ -195,6 +200,12 @@ export function App() {
         }
       >
         <KitchenPlanner staff={staff} />
+      </Suspense>
+    );
+  if (privacyRoute)
+    return (
+      <Suspense fallback={<main className="ps-empty" role="status">Wczytywanie…</main>}>
+        <PrivacyPolicy />
       </Suspense>
     );
   if (publicRoute && !demo) return <Landing />;
@@ -289,6 +300,7 @@ export function App() {
     ...(owner
       ? [
           { id: "zamowienia", label: "Zamówienia Mussi", icon: IconStack2 },
+          { id: "marketing", label: "Marketing", icon: IconMail },
           { id: "zapytania", label: "Zapytania klientów", icon: IconMail },
           { id: "pracownicy", label: "Pracownicy", icon: IconUsers },
         ]
@@ -458,8 +470,10 @@ export function App() {
               <a href={href("projekty")} className="ps-back-link">
                 <IconArrowLeft size={16} /> Nowy widok projektów
               </a>
-              <LegacyApp />
+              <LegacyApp pracownik={employee && profile !== "wlasciciel" ? profile : undefined} />
             </div>
+          ) : section === "marketing" && owner ? (
+            <Marketing />
           ) : section === "zamowienia" && owner ? (
             <Purchasing />
           ) : section === "meble" && (owner || employee) ? (

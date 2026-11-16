@@ -213,13 +213,13 @@ test("mikro CRM: etapy z historią, termin montażu i notatki robocze bez zmiany
   const p = s.utworzProjekt({ nazwa: "Temat", sciany: [{ dlugoscMM: 2000 }] });
   const rew = s.projekt(p.id).rewizja;
   s.zmienProjekt(p.id, { status: "wZamowieniu", terminMontazu: "2026-10-15" });
-  s.zmienProjekt(p.id, { status: "produkcja" });
+  s.zmienProjekt(p.id, { status: "zaakceptowany" }); // „produkcja” wymaga wydania — osobny test zwolnienia (ST-APP-005)
   const n = s.dodajNotatke(p.id, "  brakuje wkrętów 4×16  ");
   s.dodajNotatke(p.id, "zamówić zawiasy");
   s.zmienNotatke(p.id, n.id, { zalatwiona: true });
   const q = s.projekt(p.id);
   assert.equal(q.rewizja, rew, "CRM nie podbija rewizji konstrukcji");
-  assert.deepEqual(q.historiaStatusow?.map((h) => h.status), ["wZamowieniu", "produkcja"]);
+  assert.deepEqual(q.historiaStatusow?.map((h) => h.status), ["wZamowieniu", "zaakceptowany"]);
   assert.equal(q.terminMontazu, "2026-10-15");
   assert.equal(q.notatkiRobocze?.find((x) => x.id === n.id)?.tekst, "brakuje wkrętów 4×16");
   assert.ok(q.notatkiRobocze?.find((x) => x.id === n.id)?.zalatwiono);

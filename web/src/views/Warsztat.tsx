@@ -34,8 +34,13 @@ function czytajRole(): Rola {
   }
 }
 
-export function Warsztat() {
-  const [rola, setRola] = useState<Rola>(czytajRole);
+/**
+ * `rolaStala` — konto pracownika (profil produkcja/montaż): rola wynika z profilu, bez przełącznika
+ * i bez przeglądu właściciela. Bez niej (właściciel) przełącznik porządkuje ekran jak dotąd.
+ */
+export function Warsztat({ rolaStala }: { rolaStala?: "produkcja" | "montaz" } = {}) {
+  const [rolaWybrana, setRola] = useState<Rola>(czytajRole);
+  const rola: Rola = rolaStala ?? rolaWybrana;
   const [projekty, setProjekty] = useState<ProjektSkrot[] | null>(null);
   const [wydania, setWydania] = useState<Record<string, WydanieMeta[]>>({});
   const [blad, setBlad] = useState("");
@@ -68,12 +73,7 @@ export function Warsztat() {
     await api.zmienProjekt(p.id, { status });
     await odswiez();
   };
-  const zglosUwage = async (p: ProjektSkrot) => {
-    const tekst = prompt(`Uwaga do „${p.nazwa}” (np. brak okucia, uszkodzony front, nr mebla):`);
-    if (!tekst?.trim()) return;
-    await api.dodajNotatke(p.id, `[${NAZWY_ROL[rola]}] ${tekst.trim()}`);
-    await odswiez();
-  };
+  const [zgloszenie, setZgloszenie] = useState<string | null>(null);
 
   const widoczne = (projekty ?? []).filter((p) => STATUSY_ROLI[rola].includes(p.status));
 
@@ -82,21 +82,23 @@ export function Warsztat() {
       <div className="card">
         <div className="card-h" style={{ flexWrap: "wrap", gap: 8 }}>
           <h2 style={{ flex: 1 }}>Warsztat</h2>
-          <div className="seg" role="tablist" aria-label="Widok roli">
+          {!rolaStala && <div className="seg" role="tablist" aria-label="Widok roli">
             {(Object.keys(NAZWY_ROL) as Rola[]).map((r) => (
               <button key={r} role="tab" aria-selected={rola === r} className={`btn small${rola === r ? " primary" : ""}`} onClick={() => ustawRole(r)}>
                 {NAZWY_ROL[r]}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
         <div className="card-b muted" style={{ fontSize: 13 }}>
           {rola === "wlasciciel" && "Wszystkie zlecenia według etapu i następny krok. Produkcja pracuje wyłącznie na wydaniach (zamrożonych rewizjach)."}
           {rola === "produkcja" && "Zlecenia do wykonania. Drukuj z wydania: pakiet produkcyjny P (sekcje T, R, E, I, S, C). Bez cen i danych kontaktowych klienta."}
           {rola === "montaz" && "Zlecenia gotowe do montażu. Pakiet montażowy (sekcje T, R, E, M, K) zawiera kolejność, wymiary montażowe, okucia i protokół odbioru."}
-          <div className="alert ostrzezenie" style={{ marginTop: 8 }}>
-            Przełącznik porządkuje ekran. Uprawnienia egzekwuje serwer wg profilu dostępu konta (produkcja / montaż).
-          </div>
+          {!rolaStala && (
+            <div className="alert ostrzezenie" style={{ marginTop: 8 }}>
+              Przełącznik porządkuje ekran. Uprawnienia egzekwuje serwer wg profilu dostępu konta (produkcja / montaż).
+            </div>
+          )}
         </div>
       </div>
       {blad && <div className="alert blad">{blad}</div>}
@@ -165,9 +167,21 @@ export function Warsztat() {
                     <a className={`btn small${rola === "montaz" ? " primary" : ""}`} href={pdf("montaz")} target="_blank" rel="noreferrer">Pakiet montażowy M</a>
                   </div>
                 )}
+                {ost && !ost.gotowaDoProdukcji && <div className="alert ostrzezenie">Wydanie robocze — właściciel zwolnił je świadomie (powód w uwagach). Sprawdzaj wymiary i wiercenia przed cięciem.</div>}
+                {zgloszenie === p.id && (
+                  <ZgloszenieProblemu
+                    projekt={p}
+                    rola={NAZWY_ROL[rola]}
+                    wydanie={ost?.numer}
+                    onDone={async () => {
+                      setZgloszenie(null);
+                      await odswiez();
+                    }}
+                  />
+                )}
                 {p.otwarteNotatki > 0 && <div className="muted" style={{ fontSize: 13 }}>Otwarte uwagi: {p.otwarteNotatki}{p.ostatniaNotatka ? ` · ostatnia: ${p.ostatniaNotatka}` : ""}</div>}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  <button className="btn small" onClick={() => zglosUwage(p)}>Zgłoś uwagę / brak</button>
+                  <button className="btn small" aria-expanded={zgloszenie === p.id} onClick={() => setZgloszenie(zgloszenie === p.id ? null : p.id)}>Zgłoś problem</button>
                   {rola === "produkcja" && p.status === "produkcja" && <button className="btn small" disabled={!ost} onClick={() => zmienStatus(p, "gotoweDoMontazu")}>Gotowe do montażu</button>}
                   {rola === "montaz" && <button className="btn small" disabled={!ost} onClick={() => zmienStatus(p, "zakonczony")}>Montaż zakończony (protokół podpisany)</button>}
                 </div>
@@ -176,5 +190,76 @@ export function Warsztat() {
           );
         })}
     </>
+  );
+}
+
+// ---------- Zgłoszenie problemu z hali (ST-APP-005) ----------
+// Trafia jako otwarta uwaga do Tematu projektu (właściciel odhacza po załatwieniu), podpisana profilem z konta.
+// Zdjęcie (opcjonalne) dołącza się do zdjęć projektu w kategorii „Problem z hali”.
+const RODZAJE_PROBLEMU = ["brak materiału", "brak okucia", "błąd wymiaru", "uszkodzenie", "niejasny rysunek", "inne"];
+
+function ZgloszenieProblemu({ projekt, rola, wydanie, onDone }: { projekt: ProjektSkrot; rola: string; wydanie?: number; onDone: () => Promise<void> }) {
+  const [rodzaj, setRodzaj] = useState(RODZAJE_PROBLEMU[0]);
+  const [element, setElement] = useState("");
+  const [opis, setOpis] = useState("");
+  const [zdjecie, setZdjecie] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [blad, setBlad] = useState("");
+  const wyslij = async () => {
+    setBusy(true);
+    setBlad("");
+    try {
+      let nazwaZdjecia = "";
+      if (zdjecie) {
+        const { jpegBase64 } = await import("../v2/ProjectPhotos");
+        nazwaZdjecia = zdjecie.name.replace(/\.[^.]+$/, "") + ".jpg";
+        const r = await fetch(`/api/v2/projects/${projekt.id}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: crypto.randomUUID(), name: nazwaZdjecia, base64: await jpegBase64(zdjecie), kategoria: "problem", opis: `${rodzaj}${element ? ` · ${element}` : ""}`.slice(0, 200) }),
+        });
+        if (!r.ok) throw new Error(((await r.json().catch(() => ({}))) as { blad?: string }).blad ?? "Nie udało się dodać zdjęcia.");
+      }
+      const tekst = [`PROBLEM: ${rodzaj}`, wydanie ? `wydanie ${wydanie}` : "", element ? `element: ${element}` : "", opis.trim(), nazwaZdjecia ? `zdjęcie: ${nazwaZdjecia}` : ""].filter(Boolean).join(" · ");
+      await api.dodajNotatke(projekt.id, `[${rola}] ${tekst}`);
+      await onDone();
+    } catch (e) {
+      setBlad((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="card" style={{ background: "var(--panel-2)" }}>
+      <div className="card-b" style={{ display: "grid", gap: 8 }}>
+        <b>Zgłoś problem — {projekt.nazwa}</b>
+        {blad && <div className="alert blad">{blad}</div>}
+        <div className="field">
+          <label htmlFor={`pr-rodzaj-${projekt.id}`}>Rodzaj</label>
+          <select id={`pr-rodzaj-${projekt.id}`} className="input" value={rodzaj} onChange={(e) => setRodzaj(e.target.value)}>
+            {RODZAJE_PROBLEMU.map((r) => (
+              <option key={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor={`pr-element-${projekt.id}`}>Mebel / część (opcjonalnie)</label>
+          <input id={`pr-element-${projekt.id}`} className="input" maxLength={80} placeholder="np. D3 bok lewy, front F2" value={element} onChange={(e) => setElement(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor={`pr-opis-${projekt.id}`}>Co się stało</label>
+          <textarea id={`pr-opis-${projekt.id}`} className="input" rows={3} maxLength={600} value={opis} onChange={(e) => setOpis(e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor={`pr-foto-${projekt.id}`}>Zdjęcie (opcjonalnie)</label>
+          <input id={`pr-foto-${projekt.id}`} type="file" accept="image/*" capture="environment" onChange={(e) => setZdjecie(e.target.files?.[0] ?? null)} />
+        </div>
+        <div className="row">
+          <button className="btn primary" disabled={busy || !opis.trim()} onClick={() => void wyslij()}>
+            {busy ? "Wysyłam…" : "Wyślij zgłoszenie"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

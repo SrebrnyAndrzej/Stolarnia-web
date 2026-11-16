@@ -10,6 +10,10 @@ import type { CennikMaterialow, Material, Okucie, Projekt, UstawieniaStolarni } 
 
 export interface BazaDanych {
   projectFiles?: import("../core/project-files.js").StoredProjectFile[];
+  /** Panel publikacji social: posty, kolejka dostarczeń i audyt (src/core/marketing.ts). */
+  marketing?: import("../core/marketing.js").StanMarketingu;
+  /** Zdjęcia z pomiaru i montażu (ST-APP-005). */
+  projectPhotos?: import("../server/project-photos.js").StoredProjectPhoto[];
   furnitureLibrary?: FurnitureEntry[];
   furniturePresentations?: FurniturePresentation[];
   purchaseOrders?: PurchaseOrder[];
@@ -81,6 +85,16 @@ export class Magazyn {
     });
     if (!r.ok) throw new Error(`Baza danych (Supabase) odpowiedziała ${r.status}: ${(await r.text()).slice(0, 200)}`);
     return r.json();
+  }
+
+  /**
+   * Odczyt bieżących danych bez zmiany stanu w pamięci — dla tras publicznych obsługiwanych poza kolejką
+   * żądań (np. dane administratora w polityce prywatności). Lokalnie: plik; w chmurze: świeży dokument.
+   */
+  async odczytajNiezaleznie(): Promise<BazaDanych> {
+    if (!this.chmura) return this.odczytaj();
+    const w = await this.rest("GET", `?id=eq.${ID_DOKUMENTU}&select=dane,wersja`);
+    return w[0]?.dane ?? this.pusta();
   }
 
   /** Tryb chmurowy: pobiera aktualny dokument bazy (tworzy go przy pierwszym użyciu). Lokalnie nic nie robi. */

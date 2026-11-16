@@ -60,7 +60,11 @@ export const REGULY_TRAS: Regula[] = [
   { metody: "GET", sciezka: /^\/api\/v2\/projects$/, profile: WSZYSCY, opis: "lista projektów (technicznie, wg przydziału)" },
   { metody: "GET", sciezka: v2p(), profile: WSZYSCY, opis: "widok techniczny projektu" },
   { metody: "GET", sciezka: v2p("/documents(\\.pdf)?"), profile: WSZYSCY, opis: "dokumentacja techniczna z wydania" },
+  { metody: "GET|POST", sciezka: v2p("/photos"), profile: WSZYSCY, opis: "zdjęcia z pomiaru i montażu (wg przydziału)" },
+  { metody: "GET", sciezka: v2p(`/photos/${ID}/content`), profile: WSZYSCY, opis: "zdjęcie projektu" },
+  { metody: "DELETE", sciezka: v2p(`/photos/${ID}`), profile: WSZYSCY, opis: "usunięcie zdjęcia (właściciel lub autor)" },
   { metody: "GET", sciezka: /^\/api\/v2\/requests$/, profile: TYLKO_WLASCICIEL, opis: "zapytania klientów" },
+  { metody: "POST", sciezka: new RegExp(`^/api/v2/requests/${ID}/project$`), profile: TYLKO_WLASCICIEL, opis: "zapytanie → projekt" },
   { metody: "GET|POST", sciezka: /^\/api\/v2\/members$/, profile: TYLKO_WLASCICIEL, opis: "konta zespołu" },
   { metody: "PATCH", sciezka: new RegExp(`^/api/v2/members/${ID}$`), profile: TYLKO_WLASCICIEL, opis: "zmiana dostępu pracownika" },
   { metody: "POST", sciezka: new RegExp(`^/api/v2/members/${ID}/activation$`), profile: TYLKO_WLASCICIEL, opis: "link aktywacyjny" },
@@ -95,6 +99,15 @@ export const REGULY_TRAS: Regula[] = [
   // ---- umowy
   { metody: "GET", sciezka: proj("/umowy"), profile: [S], opis: "umowy — odczyt" },
   { metody: "POST", sciezka: proj("/umowy"), profile: TYLKO_WLASCICIEL, opis: "nowa umowa" },
+  // ---- panel publikacji social: tylko właściciel (posty idą publicznie z kont firmy)
+  { metody: "GET", sciezka: /^\/api\/marketing$/, profile: TYLKO_WLASCICIEL, opis: "panel publikacji" },
+  { metody: "POST", sciezka: /^\/api\/marketing\/(grafiki|import|wyslij)$/, profile: TYLKO_WLASCICIEL, opis: "grafiki, import, wysyłka" },
+  { metody: "PUT|DELETE", sciezka: new RegExp(`^/api/marketing/posty/[A-Za-z0-9._-]+$`), profile: TYLKO_WLASCICIEL, opis: "post" },
+  { metody: "POST", sciezka: new RegExp(`^/api/marketing/posty/[A-Za-z0-9._-]+/(akceptuj|cofnij|potwierdz|oznacz)$`), profile: TYLKO_WLASCICIEL, opis: "akceptacja i stany posta" },
+  // ---- rozliczenie (ST-APP-005): wpłaty i kwota pozostała — finanse właściciela
+  { metody: "GET", sciezka: proj("/rozliczenie"), profile: TYLKO_WLASCICIEL, opis: "rozliczenie projektu" },
+  { metody: "POST", sciezka: proj("/wplaty"), profile: TYLKO_WLASCICIEL, opis: "nowa wpłata" },
+  { metody: "DELETE", sciezka: proj(`/wplaty/${ID}`), profile: TYLKO_WLASCICIEL, opis: "usunięcie wpłaty" },
   { metody: "GET", sciezka: proj(`/umowy/${ID}/pdf`), profile: [S], opis: "PDF umowy — odczyt" },
 
   // ---- projekty
@@ -201,7 +214,7 @@ export function sprawdzZmianeProjektu(profil: Profil, obecny: StatusProjektu, zm
 
 // Dopasowanie po granicach camelCase (wielkość liter ma znaczenie), żeby nie wycinać np. „producent” ani „wstawka”.
 /** Ceny, koszty, marże i umowy — niewidoczne dla produkcji i montażu. */
-const KLUCZ_CENOWY = /^(cen[ay]|koszt|marz|narzut|rabat|vat|stawk|minimalnaWartosc|umow|umov|zaliczk|maCene)|(Cen[ay]|Koszt|Marz|Narzut|Rabat|Vat|Zaliczk|Wyceny$)|^(finanse|warianty|cennikMaterialow)$/;
+const KLUCZ_CENOWY = /^(cen[ay]|koszt|marz|narzut|rabat|vat|stawk|minimalnaWartosc|umow|umov|zaliczk|wplat|maCene)|(Cen[ay]|Koszt|Marz|Narzut|Rabat|Vat|Zaliczk|Wyceny$)|^(finanse|warianty|cennikMaterialow)$/;
 /** Dane klienta (nazwa i kontakt) — niewidoczne dla produkcji, jak w pakiecie P (ukryjDaneKlienta). */
 const KLUCZ_KONTAKTOWY = /^(klient|telefon|email|e-mail|adres|kodPocztowy|miasto|nip)$/i;
 /** Koszty zakupu, marża, narzut i ceny jednostkowe — niewidoczne dla sprzedaży (ceny ofertowe zostają). */

@@ -14,6 +14,44 @@ import { demoProjects } from "./demo";
 import { ActivationLink, CreateEmployee, ProfileSelect } from "./StaffAccounts";
 import { NAZWY_PROFILI, profilOsoby, type ProfilDostepu } from "../../../src/server/uprawnienia";
 
+/** Zapytanie → projekt jednym kliknięciem; drugi raz otwiera istniejący projekt (ST-APP-005). */
+function RequestProject({ request: r }: { request: CustomerRequest }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (r.projektId)
+    return (
+      <a className="ps-button secondary" href={`#/p/${r.projektId}`}>
+        Otwórz projekt
+      </a>
+    );
+  return (
+    <div className="ps-request-action">
+      <button
+        type="button"
+        className="ps-button"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            const w = await request<{ projektId: string }>(
+              `/api/v2/requests/${r.id}/project`,
+              { method: "POST" },
+            );
+            location.hash = `#/p/${w.projektId}`;
+          } catch (e) {
+            setError((e as Error).message);
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? "Tworzę projekt…" : "Utwórz projekt z zapytania"}
+      </button>
+      {error && <Feedback>{error}</Feedback>}
+    </div>
+  );
+}
+
 export function Requests({ demo }: { demo: boolean }) {
   const list = useResource<CustomerRequest[]>(
     demo ? null : "/api/v2/requests",
@@ -118,7 +156,11 @@ export function Requests({ demo }: { demo: boolean }) {
                   </p>
                 </div>
                 <span className="ps-status">
-                  {r.status === "nowe" ? "Nowe zapytanie" : r.status}
+                  {r.projektId
+                    ? "Projekt utworzony"
+                    : r.status === "nowe"
+                      ? "Nowe zapytanie"
+                      : r.status}
                 </span>
               </header>
               <p className="ps-request-description">{r.description}</p>
@@ -126,6 +168,7 @@ export function Requests({ demo }: { demo: boolean }) {
                 <IconMail size={17} />
                 {r.email}
               </a>
+              {!demo && <RequestProject request={r} />}
               <small>Numer: {r.id}</small>
             </article>
           ))}

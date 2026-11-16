@@ -32,7 +32,7 @@ function projekt(nazwa: string, status: "szkic" | "produkcja" | "gotoweDoMontazu
   svc.dodajNotatke(p.id, "Klient dzwonił: CRM-UWAGA-55, chce rabat");
   svc.dodajNotatke(p.id, "[Produkcja · Kuba] brak zawiasów");
   svc.utworzWydanie(p.id, {});
-  if (status !== "szkic") svc.zmienProjekt(p.id, { status });
+  if (status !== "szkic") svc.zmienProjekt(p.id, { status, zwolnienieMimoBrakow: "dane testowe — wydanie robocze" });
   return p.id;
 }
 const P = { szkic: projekt("Sonda szkic", "szkic"), prod: projekt("Sonda produkcja", "produkcja"), mont: projekt("Sonda montaż", "gotoweDoMontazu"), inny: projekt("Sonda nieprzydzielony", "produkcja") };
@@ -249,7 +249,7 @@ test("kalkulatory i stare adresy demo wymagają aktywnego właściciela lub prac
 
 test("każda chroniona trasa aplikacji ma regułę w macierzy (nowa trasa bez reguły = błąd testu)", () => {
   // Publiczne, rejestrowane przed bramką dostępu: logowanie, aktywacja, formularz zapytań, podgląd demo, healthz.
-  const PUBLICZNE = new Set(["GET /healthz", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments", "POST /api/public/kitchen-estimate", "POST /api/public/kitchen-estimate/pdf"]);
+  const PUBLICZNE = new Set(["GET /healthz", "GET /api/cron/marketing", "GET /api/public/marketing-media/:klucz", "GET /api/public/administrator", "POST /api/public/kitchen-estimate", "POST /api/public/kitchen-estimate/pdf", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments"]);
   type Warstwa = { route?: { path: string | RegExp; methods: Record<string, boolean> } };
   const stos = (app as unknown as { _router: { stack: Warstwa[] } })._router.stack;
   const brak: string[] = [];

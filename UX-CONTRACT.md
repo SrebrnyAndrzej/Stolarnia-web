@@ -17,6 +17,8 @@ Nadpisanie zajętego slotu A/B wymaga jawnego potwierdzenia w natywnym dialogu. 
 
 ## Wyspa i pliki architekta — 15.11.2026
 
+Terminy w dołączonym panelu Marketing pozostają natywnym datetime-local. Przeglądarka jest właścicielem kalendarza, klawiatury i formatu lokalnego; formularz przechowuje datę lokalną użytkownika, adapter zapisuje ISO. Nie wprowadzamy drugiego kalendarza ani własnego wzorca dat dla kreatora.
+
 - KitchenPlanner pozostaje właścicielem szkicu, historii, ceny, konfliktu kart oraz ochrony niezastosowanej edycji. kitchenIslandSchema i architectFilesSchema są wspólne z API. Wyspa jest dodatkiem do I/L/U; maksymalnie 8 szafek dolnych półkowych/szufladowych 720 × 560 mm, obrót 0/90°, blat 600–1200 mm, osobne położenie w rzucie. Nie dodajemy pozornego muru.
 - kitchen-island wyznacza wspólny obrys i odległości. Przekroczenie prostokątnego pomieszczenia lub kolizja z dolną zabudową blokują zastosowanie i cenę. Odsunięcie poniżej 1200 mm jest wskazówką, nie przepisem; otwieranie, podparcie nadwieszenia, mocowanie i instalacje nadal wymagają sprawdzenia. Dla U z nierównymi A/C wyspa wymaga wyrównania obrysu.
 - Builder generuje tył dekoracyjny jako fizyczny element frontowy dodatkowy do HDF. Tył jest widoczny w 3D i cenie, ale nie zasłania elewacji ani wnętrza w PDF. Blat ma rzeczywistą głębokość; oferta pokazuje maksymalnie 4 elewacje, łącznie z wyspą.

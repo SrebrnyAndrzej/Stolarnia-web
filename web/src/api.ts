@@ -175,6 +175,9 @@ async function zadanie<T>(metoda: string, url: string, body?: unknown): Promise<
 }
 
 export const api = {
+  rozliczenie: (id: string) => zadanie<import("../../src/core/rozliczenie").Rozliczenie>("GET", `/api/projekty/${id}/rozliczenie`),
+  dodajWplate: (id: string, w: { data: string; kwota: number; sposob: import("../../src/core/rozliczenie").SposobWplaty; opis: string }) => zadanie<import("../../src/core/rozliczenie").Rozliczenie>("POST", `/api/projekty/${id}/wplaty`, w),
+  usunWplate: (id: string, wid: string) => zadanie<import("../../src/core/rozliczenie").Rozliczenie>("DELETE", `/api/projekty/${id}/wplaty/${wid}`),
   umowy: (id: string) => zadanie<import("../../src/core/contracts").Umowa[]>("GET", `/api/projekty/${id}/umowy`),
   dodajUmowe: (id: string, dane: import("../../src/core/contracts").DaneUmowy) => zadanie<import("../../src/core/contracts").Umowa>("POST", `/api/projekty/${id}/umowy`, dane),
   katalog: () => zadanie<ModulKatalogowy[]>("GET", "/api/katalog"),
