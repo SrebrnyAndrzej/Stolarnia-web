@@ -53,6 +53,11 @@ select,
 textarea {
   font: inherit;
 }
+/* Native selection controls share the brand color across public and staff tools. */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
+}
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,

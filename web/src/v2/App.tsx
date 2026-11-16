@@ -38,11 +38,6 @@ const LegacyApp = lazy(() =>
 const QuickProject = lazy(() =>
   import("./QuickProject").then((m) => ({ default: m.QuickProject })),
 );
-const PrzelicznikSzuflad = lazy(() =>
-  import("../views/PrzelicznikSzuflad").then((m) => ({
-    default: m.PrzelicznikSzuflad,
-  })),
-);
 const Workspace = lazy(() =>
   import("./Workspace").then((m) => ({ default: m.Workspace })),
 );
@@ -117,6 +112,9 @@ export function App() {
     );
   }, [hash, previewRoute]);
   const plannerRoute = hash.split("?")[0] === "#/kreator-kuchni";
+  const calculatorRoute = /^#\/(kalkulatory|szuflady)(\/|\?|$)/.test(hash);
+  const staff =
+    !!person?.active && (person.role === "owner" || person.role === "employee");
   const publicRoute =
     hash === "#/" ||
     hash.startsWith("#/zapytanie") ||
@@ -126,6 +124,7 @@ export function App() {
     hash === "#/o-nas";
   const section = hash.split("?")[0].split("/")[2] || "projekty";
   const isPanel =
+    calculatorRoute ||
     hash.startsWith("#/panel") ||
     previewRoute ||
     /^(#\/p\/|#\/materialy|#\/ustawienia|#\/szuflady|#\/szybki)/.test(hash);
@@ -167,12 +166,6 @@ export function App() {
     }
   };
   if (hash === "#/katalog-dekorow") return <DecorCatalog />;
-  if (hash.startsWith("#/kalkulatory"))
-    return (
-      <Suspense fallback={<main role="status">Wczytywanie kalkulatorów…</main>}>
-        <Calculators hash={hash} />
-      </Suspense>
-    );
   if (hash.startsWith("#/prezentacja/"))
     return (
       <Suspense fallback={<p role="status">Ładowanie prezentacji…</p>}>
@@ -201,7 +194,7 @@ export function App() {
           </main>
         }
       >
-        <KitchenPlanner />
+        <KitchenPlanner staff={staff} />
       </Suspense>
     );
   if (publicRoute && !demo) return <Landing />;
@@ -219,16 +212,40 @@ export function App() {
         onLogin={(p) => {
           setSession(p);
           setSessionError("");
-          location.hash = hash.startsWith("#/panel/")
-            ? hash
-            : "#/panel/projekty";
+          location.hash =
+            hash.startsWith("#/panel/") || calculatorRoute
+              ? hash
+              : "#/panel/projekty";
         }}
       />
     );
   }
   if (!person) return <Landing />;
+  if (!person.active)
+    return (
+      <main className="ps-empty">
+        <h1>Brak dostępu</h1>
+        <p>Konto nie ma aktywnego dostępu do stolarni.</p>
+        <a href="#/kreator-kuchni">Zaprojektuj kuchnię</a>
+      </main>
+    );
   const owner = person.role === "owner";
   const employee = person.role === "employee";
+  if (calculatorRoute)
+    return staff ? (
+      <Suspense fallback={<main role="status">Wczytywanie kalkulatorów…</main>}>
+        <Calculators hash={hash} />
+      </Suspense>
+    ) : (
+      <main className="ps-empty">
+        <h1>Brak dostępu</h1>
+        <p>
+          Kalkulatory są dostępne wyłącznie dla właściciela i aktywnych
+          pracowników.
+        </p>
+        <a href="#/kreator-kuchni">Zaprojektuj kuchnię</a>
+      </main>
+    );
   const quick = /^#\/szybki(\/|$)/.test(hash);
   const legacy = /^(#\/p\/|#\/materialy|#\/ustawienia|#\/warsztat)/.test(hash);
   // Widoki starego panelu wg profilu (serwer i tak egzekwuje uprawnienia i filtruje pola).
@@ -261,7 +278,13 @@ export function App() {
       icon: IconFolder,
     },
     ...(owner || employee
-      ? [{ id: "szuflady", label: "Kalkulator szuflad", icon: IconCalculator }]
+      ? [
+          {
+            id: "szuflady",
+            label: "Kalkulatory stolarza",
+            icon: IconCalculator,
+          },
+        ]
       : []),
     ...(owner
       ? [
@@ -445,16 +468,8 @@ export function App() {
               owner={person?.role === "owner"}
               accountId={person?.user_id}
             />
-          ) : section === "szuflady" ? (
-            <>
-              {demo && (
-                <p className="ps-feedback" role="status">
-                  Podgląd kalkulatora bez logowania. Domyślne ustawienia
-                  konstrukcji; obliczenia nie zapisują się w projektach.
-                </p>
-              )}
-              <PrzelicznikSzuflad demo={demo} />
-            </>
+          ) : section === "szuflady" && staff ? (
+            <Calculators hash={hash} embedded />
           ) : section === "zadania" && (owner || employee) ? (
             <Tasks person={person} demo={demo} />
           ) : section === "pracownicy" && owner ? (

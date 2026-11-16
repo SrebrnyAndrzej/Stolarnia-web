@@ -1,3 +1,5 @@
+import { frontZaZwyklymiZawiasami } from "../../../../src/core/kalkulator-szuflad";
+
 export interface FormularzSzuflad {
   system: string;
   wariant: string;
@@ -10,6 +12,7 @@ export interface FormularzSzuflad {
   montazWewnetrzny: "zaDrzwiami" | "zlicowany";
   frontZewSzer: string;
   frontWewSzer: string;
+  frontWewSzerAuto: boolean;
   otworZew: string;
   otworWew: string;
   frontZewWys: string;
@@ -30,7 +33,7 @@ export interface FormularzSzuflad {
 
 export const DOMYSLNY_FORMULARZ: FormularzSzuflad = {
   system: "amix-elite-standard", wariant: "199", szerokoscTryb: "lw", lw: "564", korpus: "600", bok: "18", nl: "550",
-  typFrontu: "zewnetrzny", montazWewnetrzny: "zaDrzwiami", frontZewSzer: "", frontWewSzer: "", otworZew: "", otworWew: "",
+  typFrontu: "zewnetrzny", montazWewnetrzny: "zaDrzwiami", frontZewSzer: "", frontWewSzer: "", frontWewSzerAuto: true, otworZew: "", otworWew: "",
   frontZewWys: "357", frontWewWys: "357", frontGrubosc: "18", stronaZawiasow: "lewa", wystawanie: "", luzZawiasu: "1", przesuniecie: "0",
   rozstaw: false, liczba: "2", szczelina: "3", dolna: "3", swiatloWys: "698", wieniecDolny: "", scianka: "drewniana",
 };
@@ -39,7 +42,19 @@ export const n = (value: string) => Number(value.trim().replace(",", "."));
 export const mm = (value: number) => value.toLocaleString("pl-PL", { maximumFractionDigits: 3 });
 export const wewnetrzny = (f: FormularzSzuflad) => f.typFrontu === "wewnetrzny";
 export const zaDrzwiami = (f: FormularzSzuflad) => wewnetrzny(f) && f.montazWewnetrzny === "zaDrzwiami";
-export const frontSzer = (f: FormularzSzuflad) => wewnetrzny(f) ? f.frontWewSzer : f.frontZewSzer;
+export function autoFrontWewnetrzny(f: FormularzSzuflad) {
+  if (!zaDrzwiami(f)) return undefined;
+  const raw = f.szerokoscTryb === "lw" ? [f.lw] : [f.korpus, f.bok];
+  if (raw.some(v => !v.trim() || !Number.isFinite(n(v)) || n(v) <= 0)) return undefined;
+  const LW = f.szerokoscTryb === "lw" ? n(f.lw) : n(f.korpus) - 2 * n(f.bok);
+  if (LW <= 0) return undefined;
+  try {
+    const result = frontZaZwyklymiZawiasami({ frontZaDrzwiami: true, stronaZawiasow: f.stronaZawiasow }, LW)!;
+    const width = Math.round(result.LWPoDystansach * 1000) / 1000;
+    return width > 0 ? { light: LW, deduction: result.potracenieMM, width } : undefined;
+  } catch { return undefined; }
+}
+export const frontSzer = (f: FormularzSzuflad) => zaDrzwiami(f) && f.frontWewSzerAuto ? String(autoFrontWewnetrzny(f)?.width ?? "") : wewnetrzny(f) ? f.frontWewSzer : f.frontZewSzer;
 export const frontWys = (f: FormularzSzuflad) => wewnetrzny(f) ? f.frontWewWys : f.frontZewWys;
 export const otwor = (f: FormularzSzuflad) => wewnetrzny(f) ? f.otworWew : f.otworZew;
 
@@ -55,7 +70,13 @@ export function bledyFormularza(f: FormularzSzuflad, minimumPierwszegoOtworu?: n
   liczba("nl", 0.001); liczba(wewnetrzny(f) ? "frontWewWys" : "frontZewWys", 0.001);
   const szerKey = wewnetrzny(f) ? "frontWewSzer" : "frontZewSzer";
   const otworKey = wewnetrzny(f) ? "otworWew" : "otworZew";
-  liczba(szerKey, 0.001, true); liczba(otworKey, 0, true);
+  if (zaDrzwiami(f) && f.frontWewSzerAuto) {
+    if (!autoFrontWewnetrzny(f)) {
+      const source = f.szerokoscTryb === "lw" ? "lw" : "korpus";
+      errors[source] ??= "Światło między bokami musi być większe od potrącenia 36 mm.";
+    }
+  } else liczba(szerKey, 0.001, true);
+  liczba(otworKey, 0, true);
   if (minimumPierwszegoOtworu !== undefined && otwor(f).trim() && Number.isFinite(n(otwor(f))) && n(otwor(f)) < minimumPierwszegoOtworu) errors[otworKey] = `Minimum ${mm(minimumPierwszegoOtworu)} mm od dołu frontu.`;
   if (zaDrzwiami(f)) {
     liczba("wystawanie", 0, true); liczba("luzZawiasu", 0);
@@ -105,9 +126,10 @@ const ENUMY: Partial<Record<keyof FormularzSzuflad, string[]>> = {
   stronaZawiasow: ["lewa", "prawa"], scianka: ["drewniana", "stalowa"],
 };
 
-export function przywrocFormularz(value: unknown): FormularzSzuflad {
-  const wynik = { ...DOMYSLNY_FORMULARZ };
+export function przywrocFormularz(value: unknown, defaults: FormularzSzuflad = DOMYSLNY_FORMULARZ): FormularzSzuflad {
+  const wynik = { ...defaults };
   if (!value || typeof value !== "object") return wynik;
+  if (!("frontWewSzerAuto" in value) && "frontWewSzer" in value && typeof value.frontWewSzer === "string" && value.frontWewSzer.trim()) wynik.frontWewSzerAuto = false;
   for (const key of Object.keys(wynik) as (keyof FormularzSzuflad)[]) {
     const v = (value as Record<string, unknown>)[key];
     if (typeof v !== typeof wynik[key]) continue;

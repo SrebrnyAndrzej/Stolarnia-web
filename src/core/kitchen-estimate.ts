@@ -19,6 +19,7 @@ import { OKUCIA_STARTOWE } from "./catalog/hardware.js";
 import { listaFormatek, zapotrzebowanieObrzeza } from "./production.js";
 import { zbudujProjektWyceny, wycenWariant } from "./pricing.js";
 import type { Material, Okucie } from "./types.js";
+import { islandSize, islandClearances } from "./kitchen-island.js";
 
 export function calculateKitchenEstimate(raw: unknown) {
   const input = kitchenInputSchema.parse(raw),
@@ -63,6 +64,7 @@ export function calculateKitchenEstimate(raw: unknown) {
   settings.konstrukcja.gruboscFrontuMM = opts.front === "lacquer" ? 19 : 18;
   settings.konstrukcja.gruboscBlatuMM = opts.worktop === "compact" ? 12 : 38;
   const modules = kitchenModules(input);
+  const island = islandSize(input);
   const built = modules.map((m) => zbudujModul(m, settings.konstrukcja));
   const mapped = built.map((zm) => ({
     zm,
@@ -112,9 +114,19 @@ export function calculateKitchenEstimate(raw: unknown) {
   const notes = [
     "Cena orientacyjna na stawkach modelowych, do potwierdzenia po pomiarze i wyborze dekorów. Nie jest potwierdzonym cennikiem zakładu.",
     "Bez zakupu AGD, zlewu, baterii, podłączeń i przebudowy instalacji. Transport przyjęto jako lokalny; adres i warunki wniesienia do potwierdzenia.",
-    "Narożniki w układach L/U pozostają puste (650 mm na ścianach B/C); ich wykończenie i ewentualne systemy narożne wymagają osobnej wyceny.",
-    "Dobór okuć, luzów, wysokości i grubości materiałów wymaga weryfikacji. Rysunki są koncepcyjne, nie produkcyjne.",
+    input.items.some((i) => i.catalogId === "base-blind-corner-1100")
+      ? "Wybrane szafki narożne ślepe są w cenie. Systemy wysuwane i otwieranie wymagają osobnego doboru; sąsiednia ściana zachowuje odsunięcie 650 mm."
+      : "Narożniki bez wybranej szafki pozostają puste (650 mm na ścianach B/C); systemy narożne wymagają osobnego doboru.",
+    "Dobór okuć, luzów, wysokości i grubości materiałów wymaga weryfikacji. Rysunki są koncepcyjne, nie produkcyjne." +
+      (input.features?.length
+        ? " Oznaczenia okien, drzwi i przyłączy są koncepcyjne; instalacje i otwieranie do sprawdzenia."
+        : "") +
+      (input.items.some((i) => (i.gapBefore ?? 0) > 0)
+        ? " Przerwy pozostają puste, bez blatu nad nimi; ciągły blat wymaga osobnej wyceny."
+        : ""),
   ];
+  if (island)
+    notes[3] += ` Wyspa ${island.length} × ${input.island!.depth} mm: szafki, blat, boki i tył dekoracyjny w cenie. Nadwieszenie i mocowanie do weryfikacji; bez instalacji na wyspie.${islandClearances(input, modules).some((c) => c.distance < 1200) ? " Przejście przy wyspie poniżej zalecanych 120 cm — do sprawdzenia." : ""}`;
   const rawGroups = [
     {
       label: "Meble z frontami i okuciami",
@@ -153,7 +165,7 @@ export function calculateKitchenEstimate(raw: unknown) {
     scope: [
       {
         label: "Konstrukcja",
-        description: `${modules.length} szafek, korpusy laminowane 18 mm. Układ ${input.layout === "straight" ? "prosty" : input.layout.toUpperCase()}; ściany ${[input.width, ...(input.layout !== "straight" ? [input.depth] : []), ...(input.layout === "u" ? [input.returnLength] : [])].join(" / ")} mm.`,
+        description: `Szafki: ${modules.filter((m) => m.konstrukcja !== "filler").length}; blendy: ${modules.filter((m) => m.konstrukcja === "filler").length}. Korpusy laminowane 18 mm. Układ ${input.layout === "straight" ? "prosty" : input.layout.toUpperCase()}; ściany ${[input.width, ...(input.layout !== "straight" ? [input.depth] : []), ...(input.layout === "u" ? [input.returnLength] : [])].join(" / ")} mm.${built.some((b) => b.elementy.some((e) => e.kod.startsWith("OSLONA-"))) ? ` ${island ? "Panele wykończeniowe" : "Boki i wieńce osłonowe"}: ${built.flatMap((b) => b.elementy).filter((e) => e.kod.startsWith("OSLONA-")).length} płyt; wysunięcie przed fronty ${[...new Set(modules.filter((m) => m.konfiguracja.obudowaZewnetrzna).map((m) => m.konfiguracja.obudowaZewnetrzna!.wysuniecieMM))].join(" / ")} mm, w cenie.` : ""}`,
       },
       {
         label: "Fronty",

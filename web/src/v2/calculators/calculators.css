@@ -8,12 +8,23 @@
   margin: auto;
   padding: 28px 24px;
 }
+.pc-panel .pc-main {
+  max-width: none;
+}
+.pc-panel .drawer-results,
+.pc-panel .drawer-form {
+  scroll-margin-top: 96px;
+}
 .pc-main > .fc-studio-tabs {
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
 .pc-main [role="tabpanel"] {
   min-width: 0;
+}
+.pc-page .drawer-results,
+.pc-page .drawer-form {
+  scroll-margin-top: 120px;
 }
 .pc-main h1 {
   font-size: clamp(25px, 3vw, 36px);

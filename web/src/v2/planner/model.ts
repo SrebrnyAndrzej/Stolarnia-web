@@ -1,4 +1,14 @@
 import { z } from "zod";
+import {
+  architectFilesSchema,
+  architectRoles,
+} from "../../../../src/core/architect-files";
+import { kitchenRoomWalls } from "../../../../src/core/kitchen-island";
+import {
+  kitchenFeatureSchema,
+  featureRoomIssues,
+  featureName,
+} from "../../../../src/core/kitchen-room";
 import { zbudujModul } from "../../../../src/core/builder";
 import { USTAWIENIA_DOMYSLNE } from "../../../../src/core/settings";
 import type { TechnicalAnalysis } from "../api";
@@ -9,6 +19,9 @@ import {
   kitchenOptionsSchema,
   kitchenOptions,
   kitchenItemSchema,
+  kitchenPlanningSchema,
+  kitchenIslandSchema,
+  isKitchenUpper,
 } from "../../../../src/core/kitchen-configuration";
 
 export const STORAGE_KEY = "pan-stolarz.kuchnia.v1";
@@ -42,9 +55,16 @@ export const draftSchema = z
       })
       .optional(),
     items: z.array(kitchenItemSchema).max(24),
+    planning: kitchenPlanningSchema.optional(),
+    features: z.array(kitchenFeatureSchema).max(20).optional(),
+    island: kitchenIslandSchema.optional(),
+    architectFiles: architectFilesSchema.optional(),
   })
   .superRefine((d, ctx) => {
-    if (new Set(d.items.map((i) => i.id)).size !== d.items.length)
+    for (const message of featureRoomIssues(d, wallIds(d)))
+      ctx.addIssue({ code: "custom", path: ["features"], message });
+    const allItems = [...d.items, ...(d.island?.items ?? [])];
+    if (new Set(allItems.map((i) => i.id)).size !== allItems.length)
       ctx.addIssue({
         code: "custom",
         message: "Powtarzające się identyfikatory szafek.",
@@ -53,6 +73,16 @@ export const draftSchema = z
       ctx.addIssue({
         code: "custom",
         message: "Szafki znajdują się na ścianie spoza wybranego układu.",
+      });
+    if (
+      d.planning?.waterWall &&
+      d.planning.waterWall !== "auto" &&
+      !wallIds(d).includes(d.planning.waterWall)
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["planning", "waterWall"],
+        message: "Ściana zlewu nie należy do układu.",
       });
   });
 export type Draft = z.infer<typeof draftSchema>;
@@ -71,7 +101,7 @@ export function readDraft(raw: string): Draft {
   return draftSchema.parse(JSON.parse(raw));
 }
 export const isUpper = (id: string) =>
-  catalog.find((m) => m.id === id)?.category === "wall";
+  catalog.some((m) => m.id === id && isKitchenUpper(m));
 export const wallIds = (d: Pick<Draft, "layout">): ("a" | "b" | "c")[] =>
   d.layout === "u" ? ["a", "b", "c"] : d.layout === "l" ? ["a", "b"] : ["a"];
 export const wallLength = (d: Draft, wall: string) =>
@@ -97,34 +127,7 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
           materialKorpusuId: "white",
           materialFrontuId: d.finish,
           materialBlatuId: "white",
-          sciany: [
-            {
-              id: "a",
-              nazwa: "Ściana A",
-              dlugoscMM: d.width,
-              wysokoscMM: d.height,
-            },
-            ...(d.layout !== "straight"
-              ? [
-                  {
-                    id: "b",
-                    nazwa: "Ściana B",
-                    dlugoscMM: d.depth,
-                    wysokoscMM: d.height,
-                  },
-                ]
-              : []),
-            ...(d.layout === "u"
-              ? [
-                  {
-                    id: "c",
-                    nazwa: "Ściana C",
-                    dlugoscMM: d.returnLength,
-                    wysokoscMM: d.height,
-                  },
-                ]
-              : []),
-          ],
+          sciany: kitchenRoomWalls(d),
         },
       ],
     },
@@ -150,19 +153,51 @@ export function layoutIssues(d: Draft): string[] {
   return kitchenIssues(d);
 }
 export function brief(d: Draft): string {
+  const analysis = toAnalysis(d);
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
     `Układ: ${d.layout === "u" ? "U z pustymi narożnikami po 650 mm na ścianach B i C" : d.layout === "l" ? "L z pustym narożnikiem 650 mm na ścianie B" : "prosty"}. Ściana A: ${d.width} mm${d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
     d.decor
       ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`
       : `Fronty: ${finishes.find((f) => f.id === d.finish)!.name} (kolor poglądowy).`,
-    "Szafki od początku każdej ściany, osobno dolne i wiszące:",
-    `Standard: ${kitchenOptions.front[d.quote.front]}; ${kitchenOptions.worktop[d.quote.worktop]}; ${kitchenOptions.drawers[d.quote.drawers]}; ${d.quote.installation ? "z montażem" : "bez montażu"}.`,
-    ...toAnalysis(d).projekt.moduly.map(
-      (m) =>
-        `${m.scianaId.toUpperCase()} | ${m.katalogId} | x=${m.pozycjaXMM} mm | ${m.szerokoscMM}×${m.wysokoscMM}×${m.glebokoscMM} mm`,
+    "Elementy od początku każdej ściany, osobno dolne i wiszące:",
+    ...(d.island
+      ? [
+          `Wyspa: położenie ${d.island.x} / ${d.island.y} mm, obrót ${d.island.rotation}°, blat głębokości ${d.island.depth} mm, szafki ${d.island.items.length}.`,
+        ]
+      : []),
+    ...(d.architectFiles ?? []).map(
+      (f) =>
+        `Plik architekta: ${f.name} | ${f.room} | ${architectRoles[f.role]}. Oryginał w lokalnej paczce projektu; nie jest wysyłany tym opisem.`,
     ),
-    "Nie uwzględniono okien, drzwi, instalacji, otwierania frontów ani luzów montażowych. To koncepcja, nie dokumentacja produkcyjna.",
+    ...(d.features ?? []).map(
+      (f) =>
+        `${featureName[f.kind]}: ściana ${f.wall.toUpperCase()}, od początku ${f.x} mm, od podłogi ${f.bottom} mm${f.width ? `, ${f.width} × ${f.height} mm` : ""}.`,
+    ),
+    ...(d.planning
+      ? [
+          `Założenia hydrauliki: ściana ${d.planning.waterWall === "auto" ? "Auto" : d.planning.waterWall.toUpperCase()}, środek zlewu ${d.planning.sinkCenter ?? "Auto"} mm; zmywarka ${d.planning.dishwasher === "none" ? "brak" : `${d.planning.dishwasher} mm`}. To założenie rozmieszczenia, nie plan przyłączy.`,
+        ]
+      : []),
+    `Standard: ${kitchenOptions.front[d.quote.front]}; ${kitchenOptions.worktop[d.quote.worktop]}; ${kitchenOptions.drawers[d.quote.drawers]}; ${d.quote.installation ? "z montażem" : "bez montażu"}.`,
+    ...analysis.projekt.moduly.map((m) => {
+      const fronts = analysis.zbudowane
+        .find((b) => b.modul.id === m.id)!
+        .elementy.filter(
+          (e) => e.rola === "front" && e.kod.startsWith("FRONT-SZ"),
+        )
+        .sort((a, b) => b.y - a.y);
+      return (
+        `${m.scianaId.toUpperCase()} | ${m.katalogId} | x=${m.pozycjaXMM} mm | ${m.szerokoscMM}×${m.wysokoscMM}×${m.glebokoscMM} mm` +
+        (fronts.length
+          ? ` | fronty szuflad od góry: ${fronts.map((f) => f.wys).join(" / ")} mm`
+          : "") +
+        (m.konfiguracja.obudowaZewnetrzna
+          ? ` | obudowa: ${[m.konfiguracja.obudowaZewnetrzna.lewy ? "bok lewy" : "", m.konfiguracja.obudowaZewnetrzna.prawy ? "bok prawy" : "", m.konfiguracja.obudowaZewnetrzna.gora ? "wieniec górny" : "", m.konfiguracja.obudowaZewnetrzna.dol ? "wieniec dolny" : ""].filter(Boolean).join(", ")}; wysunięcie ${m.konfiguracja.obudowaZewnetrzna.wysuniecieMM} mm przed lico frontów`
+          : "")
+      );
+    }),
+    "Oznaczenia okien, drzwi i przyłączy oraz podkłady są koncepcyjne. Otwieranie frontów, instalacje i luzy montażowe wymagają sprawdzenia. To koncepcja, nie dokumentacja produkcyjna.",
   ];
   return lines.join("\n");
 }

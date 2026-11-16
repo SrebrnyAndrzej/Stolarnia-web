@@ -1,5 +1,6 @@
 import { dobierzNL, profilSzuflady, wymiarySzuflady } from "./catalog/drawers.js";
 import { USTAWIENIA_DOMYSLNE } from "./settings.js";
+import { drawerStackHeights } from "./drawer-front-layout.js";
 import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "./types.js";
 
 // Budowa korpusu i frontów modułu — port DomainCore/CabinetBuilders.swift
@@ -163,6 +164,18 @@ export function zbudujModul(m: Modul, k: UstawieniaKonstrukcyjne, tech: Ustawien
 
   // --- Blat ---
   if (cfg.blat) el.push(blatModulu(m, k));
+  if (cfg.plecyDekoracyjne) el.push(p("OSLONA-TYL", "back", 0, 0, D, W, H, cfg.plecyDekoracyjne.gruboscMM, "front"));
+  const cover = cfg.obudowaZewnetrzna;
+  if (cover) {
+    const tCover = cover.gruboscMM;
+    const front = tf + gap + cover.wysuniecieMM;
+    const bottom = m.pozycjaYMM < 1000 ? -m.pozycjaYMM : cover.dol ? -tCover : 0;
+    const sideHeight = H - bottom + (cover.gora ? tCover : 0);
+    if (cover.lewy) el.push(p("OSLONA-BOK-L", "side", -tCover, bottom, -front, tCover, sideHeight, D + front, "front"));
+    if (cover.prawy) el.push(p("OSLONA-BOK-P", "side", W, bottom, -front, tCover, sideHeight, D + front, "front"));
+    if (cover.gora) el.push(p("OSLONA-WIENIEC-G", "top", 0, H, -front, W, tCover, D + front, "front"));
+    if (cover.dol) el.push(p("OSLONA-WIENIEC-D", "bottom", 0, -tCover, -front, W, tCover, D + front, "front"));
+  }
 
   // --- Okucia modułu ---
   const drzwi = fronty.filter((f) => f.kod.startsWith("FRONT-D"));
@@ -223,8 +236,9 @@ function zbudujFronty(m: Modul, k: UstawieniaKonstrukcyjne, ostrzezenia: string[
       const netto = strefaH - gap * (liczbaSzuflad + 1);
       // Górna szuflada niższa (≈20%), pozostałe równe — typowy układ 3-szufladowy.
       // Z podaną podziałką (wysokoscSzufladyMM) albo pod drzwiami — wszystkie równe, linie frontów w sąsiednich słupkach się pokrywają.
-      const wysokosci =
-        liczbaSzuflad === 1 || cfg.wysokoscSzufladyMM || mieszany > 0
+      const wysokosci = cfg.podzialFrontowSzuflad
+        ? drawerStackHeights(strefaH, liczbaSzuflad, gap, cfg.podzialFrontowSzuflad).reverse()
+        : liczbaSzuflad === 1 || cfg.wysokoscSzufladyMM || mieszany > 0
           ? Array(liczbaSzuflad).fill(netto / liczbaSzuflad)
           : (() => {
               const gorna = Math.max(120, Math.round(netto * 0.2));
@@ -326,7 +340,8 @@ function pad(n: number): string {
 export function blatModulu(m: Modul, k: UstawieniaKonstrukcyjne): Element {
   const b = m.konfiguracja.blatWymiar;
   if (b) return { kod: "BLAT", rola: "worktop", x: b.xMM, y: m.wysokoscMM, z: b.zMM, szer: b.szerokoscMM, wys: k.gruboscBlatuMM, gl: b.glebokoscMM, materialRola: "blat" };
-  return { kod: "BLAT", rola: "worktop", x: 0, y: m.wysokoscMM, z: -k.gruboscFrontuMM - k.szczelinaFrontowMM, szer: m.szerokoscMM, wys: k.gruboscBlatuMM, gl: k.glebokoscBlatuMM, materialRola: "blat" };
+  const cover = m.konfiguracja.obudowaZewnetrzna, left = cover?.lewy ? cover.gruboscMM : 0, right = cover?.prawy ? cover.gruboscMM : 0;
+  return { kod: "BLAT", rola: "worktop", x: -left, y: m.wysokoscMM, z: -k.gruboscFrontuMM - k.szczelinaFrontowMM, szer: m.szerokoscMM + left + right, wys: k.gruboscBlatuMM, gl: k.glebokoscBlatuMM, materialRola: "blat" };
 }
 
 /** Kółka meblowe modułu (z hamulcem i bez) jako pozycje okuć; profilID odróżnia je w wycenie. */

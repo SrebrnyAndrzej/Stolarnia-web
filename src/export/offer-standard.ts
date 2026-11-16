@@ -6,6 +6,7 @@ import type { Modul, ZbudowanyModul } from "../core/types.js";
 
 export const OFFER_STANDARD = "oferta-2-a4-v1";
 export interface StandardOffer {
+  roomFeatures?: import("../core/kitchen-room.js").KitchenFeature[];
   title: string;
   date: Date;
   reference: string;
@@ -171,12 +172,55 @@ export function standardOfferPdf(w: StandardOffer): Promise<Buffer> {
   ) => {
     const mods = w.modules.filter((m) => m.scianaId === wall);
     if (!mods.length) return;
-    const maxX = Math.max(...mods.map((m) => m.pozycjaXMM + m.szerokoscMM));
-    const maxY = Math.max(...mods.map((m) => m.pozycjaYMM + m.wysokoscMM));
+    const openings = (w.roomFeatures ?? []).filter(
+      (f) => f.wall === wall && (f.kind === "window" || f.kind === "door"),
+    );
+    const maxX = Math.max(
+      ...openings.map((f) => f.x + f.width),
+      ...mods.map(
+        (m) =>
+          m.pozycjaXMM +
+          Math.max(
+            m.szerokoscMM,
+            ...(w.built.find((b) => b.modul.id === m.id)?.elementy ?? []).map(
+              (e) => e.x + e.szer,
+            ),
+          ),
+      ),
+    );
+    const maxY = Math.max(
+      ...openings.map((f) => f.bottom + f.height),
+      ...mods.map(
+        (m) =>
+          m.pozycjaYMM +
+          Math.max(
+            m.wysokoscMM,
+            ...(w.built.find((b) => b.modul.id === m.id)?.elementy ?? []).map(
+              (e) => e.y + e.wys,
+            ),
+          ),
+      ),
+    );
     const scale = Math.min(
       width / Math.max(maxX, 1),
       (height - 17) / Math.max(maxY, 1),
     );
+    for (const f of openings) {
+      const fy = y + height - 17 - (f.bottom + f.height) * scale;
+      d.rect(x + f.x * scale, fy, f.width * scale, f.height * scale)
+        .lineWidth(0.5)
+        .fillAndStroke("#ffffff", C.muted);
+      text(
+        f.kind === "window" ? "Okno" : "Drzwi",
+        x + f.x * scale + 2,
+        fy + 2,
+        6,
+        false,
+        Math.max(1, f.width * scale - 4),
+        C.muted,
+        1,
+      );
+    }
     for (const m of mods) {
       const mx = x + m.pozycjaXMM * scale,
         my = y + height - 17 - (m.pozycjaYMM + m.wysokoscMM) * scale;
@@ -196,6 +240,16 @@ export function standardOfferPdf(w: StandardOffer): Promise<Buffer> {
       }
       const built = w.built.find((b) => b.modul.id === m.id);
       for (const e of built?.elementy ?? []) {
+        if (e.kod === "OSLONA-TYL") continue; // Behind the cabinet, never covers fronts/interior in elevation.
+        if (e.kod.startsWith("OSLONA-")) {
+          d.rect(
+            mx + e.x * scale,
+            my + (m.wysokoscMM - e.y - e.wys) * scale,
+            Math.max(0.35, e.szer * scale),
+            Math.max(0.35, e.wys * scale),
+          ).fillAndStroke(w.frontColor ?? "#d8cfc1", C.muted);
+          continue;
+        }
         if (
           inside
             ? !["shelf", "fixedShelf", "divider", "drawerFrontBack"].includes(
@@ -327,11 +381,27 @@ export function standardOfferPdf(w: StandardOffer): Promise<Buffer> {
     C.muted,
     2,
   );
-  const shown = walls.slice(0, 3),
-    rowH = shown.length === 1 ? 330 : shown.length === 2 ? 185 : 129;
+  const shown = walls.slice(0, 4),
+    rowH =
+      shown.length === 1
+        ? 330
+        : shown.length === 2
+          ? 185
+          : shown.length === 3
+            ? 129
+            : 90;
   shown.forEach((wall, i) => {
     const top = 178 + i * (rowH + 14);
-    text(`ŚCIANA ${wall.toUpperCase()}`, 36, top, 8, true, 523, C.muted, 1);
+    text(
+      wall === "island" ? "WYSPA" : `ŚCIANA ${wall.toUpperCase()}`,
+      36,
+      top,
+      8,
+      true,
+      523,
+      C.muted,
+      1,
+    );
     elevation(wall, 52, top + 16, 491, rowH - 8, true);
   });
   rule(617);

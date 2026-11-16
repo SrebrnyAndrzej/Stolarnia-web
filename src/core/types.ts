@@ -255,6 +255,8 @@ export interface KonfiguracjaModulu {
   liczbaSzuflad: number;
   liczbaCargo: number;
   plecy: boolean;
+  /** Zewnętrzny panel wykończeniowy tyłu wyspy, dodatkowo do pleców konstrukcyjnych. */
+  plecyDekoracyjne?: { gruboscMM: number };
   blat: boolean;
   nogi: boolean;
   /** Szuflady w systemie (Tandembox/Legrabox) zamiast skrzynek z płyty. */
@@ -268,6 +270,8 @@ export interface KonfiguracjaModulu {
    * Przy typFrontu „drzwi” z liczbaSzuflad > 0 (słupek): szuflady na dole, półka stała, drzwi nad nimi (domyślnie 360).
    */
   wysokoscSzufladyMM?: number;
+  /** Explicit front arrangement. Missing keeps the historical construction. */
+  podzialFrontowSzuflad?: import("./drawer-front-layout.js").DrawerFrontLayout;
   /** Szafka narożna ślepa: strona drzwi (domyślnie prawa, część ślepa po przeciwnej stronie). */
   stronaDrzwiNaroznika?: "lewa" | "prawa";
   /** Szafka narożna ślepa: szerokość drzwi [mm] (domyślnie 450 — pod LeMans). */
@@ -294,6 +298,8 @@ export interface KonfiguracjaModulu {
    * do ściany, głębszy od frontów o `wysuniecieMM` (np. 20 mm). Szerokość modułu = grubość panelu.
    */
   panelBoczny?: { wysuniecieMM: number };
+  /** Dekoracyjne płyty osłonowe; wysunięcie przed lico frontów, oddzielnie od korpusu. */
+  obudowaZewnetrzna?: { lewy?: boolean; prawy?: boolean; gora?: boolean; dol?: boolean; wysuniecieMM: number; gruboscMM: number };
 }
 
 export interface Modul {

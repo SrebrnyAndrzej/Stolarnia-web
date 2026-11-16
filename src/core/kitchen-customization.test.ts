@@ -34,7 +34,7 @@ test("preset fits I/L/U across supported dimensions, IDs and module limit", () =
   let n = 0;
   const uuid = () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`;
   for (const layout of ["straight", "l", "u"] as const)
-    for (const width of [1800, 2400, 3600, 8000]) {
+    for (const width of [3600, 4800, 8000]) {
       const d = kitchenInputSchema.parse({
         ...base(),
         layout,

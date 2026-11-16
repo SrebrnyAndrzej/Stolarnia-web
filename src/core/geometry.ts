@@ -43,8 +43,9 @@ export function scianyNaRzucie(p: Pick<Pomieszczenie, "sciany">): ScianaNaRzucie
 
   // 2) Strona wnętrza z orientacji wielokąta (pole ze wzoru Gaussa, łańcuch domknięty umownie).
   let pole = 0;
-  for (const o of odcinki) pole += o.x1 * o.y2 - o.x2 * o.y1;
-  if (odcinki.length) pole += odcinki[odcinki.length - 1].x2 * odcinki[0].y1 - odcinki[0].x1 * odcinki[odcinki.length - 1].y2;
+  const rzeczywiste = odcinki.filter(o => !o.s.wirtualna);
+  for (const o of rzeczywiste) pole += o.x1 * o.y2 - o.x2 * o.y1;
+  if (rzeczywiste.length) pole += rzeczywiste[rzeczywiste.length - 1].x2 * rzeczywiste[0].y1 - rzeczywiste[0].x1 * rzeczywiste[rzeczywiste.length - 1].y2;
   const zgodnie = pole >= 0; // w układzie Y-w-dół dodatnie pole = zgodnie z ruchem wskazówek zegara
 
   return odcinki.map(({ s, x1, y1, x2, y2 }) => {

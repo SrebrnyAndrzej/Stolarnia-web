@@ -7,6 +7,9 @@ test("public planner persists, reorders, undoes, exports and hands off a kitchen
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await expect(
     page.getByRole("heading", { name: "Zaplanuj swoją kuchnię" }),
   ).toBeVisible();
@@ -68,10 +71,13 @@ test("dimensions and capacity prevent invalid handoff; narrow viewport is usable
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await page.getByLabel("Długość ściany A").fill("0");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await expect(
-    page.getByText("Podaj całe milimetry:", { exact: false }),
+    page.getByText("Długość ściany A: wpisz", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Długość ściany A").fill("1800");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
@@ -98,6 +104,9 @@ test("L layout reserves the corner and import validation preserves the draft", a
   page,
 }) => {
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await page.getByRole("button", { name: "Układ L", exact: false }).click();
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page
@@ -112,7 +121,7 @@ test("L layout reserves the corner and import validation preserves the draft", a
     })
     .click();
   await expect(page.getByText("od 650 mm", { exact: false })).toBeVisible();
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByLabel("Plik szkicu kuchni", { exact: true }).setInputFiles({
     name: "bad.json",
     mimeType: "application/json",
     buffer: Buffer.from('{"version":1,"items":[]}'),
@@ -131,6 +140,9 @@ test("planner accessibility and 3D use the same engine geometry", async ({
   page,
 }) => {
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page
     .getByRole("button", {
@@ -158,6 +170,9 @@ test("multiple tabs require an explicit draft choice", async ({
   context,
 }) => {
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page
     .getByRole("button", {
@@ -193,6 +208,9 @@ test("unavailable storage still allows editing and valid file import", async ({
     };
   });
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await expect(
     page.getByText("Zapis lokalny niedostępny", { exact: false }),
   ).toBeVisible();
@@ -211,7 +229,7 @@ test("unavailable storage still allows editing and valid file import", async ({
       },
     ],
   };
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByLabel("Plik szkicu kuchni", { exact: true }).setInputFiles({
     name: "kitchen.json",
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(draft)),
@@ -225,6 +243,9 @@ test("U kitchen supports wall C, safe layout changes, restore and handoff", asyn
 }) => {
   test.setTimeout(45000);
   await page.goto("/#/kreator-kuchni");
+  await page
+    .getByLabel("Jednostka wymiarów", { exact: true })
+    .selectOption("mm");
   await page.getByRole("button", { name: "Układ U", exact: false }).click();
   await page.getByLabel("Długość ściany C").fill("1800");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();

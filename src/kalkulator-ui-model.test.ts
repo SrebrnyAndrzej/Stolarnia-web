@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bledyFormularza, DOMYSLNY_FORMULARZ, parametryKalkulatora, przywrocFormularz } from "../web/src/views/szuflady/model.js";
+import { bledyFormularza, DOMYSLNY_FORMULARZ, parametryKalkulatora, przywrocFormularz, frontSzer } from "../web/src/views/szuflady/model.js";
 
 test("UI: front zewnętrzny i wewnętrzny mają niezależne wymiary i otwory", () => {
   const f = { ...DOMYSLNY_FORMULARZ, frontZewSzer: "598", frontWewSzer: "528", frontWewWys: "250", otworZew: "60", otworWew: "65" };
@@ -17,6 +17,33 @@ test("UI: front zewnętrzny i wewnętrzny mają niezależne wymiary i otwory", (
   assert.equal(wew.get("frontZaDrzwiami"), "true");
   assert.equal(wew.get("wystawanieZawiasuLewe"), "0");
   assert.equal(wew.get("wystawanieZawiasuPrawe"), "30");
+});
+
+test("UI: internal automatic front subtracts hinge spacer once from either width input", () => {
+  const f = { ...DOMYSLNY_FORMULARZ, typFrontu: "wewnetrzny" as const, frontWewSzer: "999" };
+  for (const stronaZawiasow of ["lewa", "prawa"] as const) {
+    const input = { ...f, stronaZawiasow };
+    assert.equal(frontSzer(input), "528");
+    const q = new URLSearchParams(parametryKalkulatora(input)!);
+    assert.equal(q.get("LW"), "564");
+    assert.equal(q.get("szerokoscFrontu"), "528");
+    assert.equal(frontSzer({ ...input, szerokoscTryb: "korpus", korpus: "800", bok: "18" }), "728");
+    assert.equal(frontSzer({ ...input, szerokoscTryb: "korpus", korpus: "600,5", bok: "18" }), "528.5");
+  }
+});
+
+test("UI: automatic internal width refuses bad light; manual and flush fronts retain their own values", () => {
+  const f = { ...DOMYSLNY_FORMULARZ, typFrontu: "wewnetrzny" as const, frontWewSzer: "526" };
+  for (const lw of ["", "bad", "Infinity", "36", "35", "36.0001"]) {
+    assert.equal(frontSzer({ ...f, lw }), "");
+    assert.equal(parametryKalkulatora({ ...f, lw }), null);
+  }
+  assert.equal(frontSzer({ ...f, frontWewSzerAuto: false }), "526");
+  assert.equal(new URLSearchParams(parametryKalkulatora({ ...f, frontWewSzerAuto: false })!).get("szerokoscFrontu"), "526");
+  assert.equal(frontSzer({ ...f, montazWewnetrzny: "zlicowany" }), "526");
+  assert.equal(przywrocFormularz({ frontWewSzer: "526" }).frontWewSzerAuto, false);
+  assert.equal(przywrocFormularz({ frontWewSzer: "" }).frontWewSzerAuto, true);
+  assert.equal(przywrocFormularz({ frontWewSzer: "526", frontWewSzerAuto: true }).frontWewSzerAuto, true);
 });
 
 test("UI: front zlicowany nie włącza dystansu, pola rozstawu nie wpływają na pojedynczą szufladę", () => {

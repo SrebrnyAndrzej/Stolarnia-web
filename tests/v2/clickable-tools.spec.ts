@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./staff-fixture";
 import AxeBuilder from "@axe-core/playwright";
 
 test("shelf cabinet can be edited on a phone with visible shelf clearances", async ({
@@ -43,7 +43,7 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   await page.goto("/#/kreator-kuchni");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page.getByRole("button", { name: "Wstaw proponowany układ" }).click();
-  await expect(page.locator(".kp-arrangement li")).toHaveCount(12);
+  await expect(page.locator(".kp-arrangement li")).toHaveCount(11);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami 600" })
@@ -59,8 +59,16 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   let saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("pan-stolarz.kuchnia.v1")!),
   );
-  expect(saved.items[0].drawers).toBe(4);
-  expect(saved.items[0].width).toBe(500);
+  expect(
+    saved.items.find(
+      (i: { catalogId: string }) => i.catalogId === "base-drawers-600",
+    ).drawers,
+  ).toBe(4);
+  expect(
+    saved.items.find(
+      (i: { catalogId: string }) => i.catalogId === "base-drawers-600",
+    ).width,
+  ).toBe(500);
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   await expect(
     page.getByLabel("Szerokość szafki", { exact: true }),
@@ -83,7 +91,7 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
     .getByRole("link", { name: "Przelicz szufladę tej szafki" })
     .click();
   await expect(
-    page.getByText(/Wczytano wymiary pierwszej szuflady/),
+    page.getByText(/Wczytano wymiary wybranej szuflady/),
   ).toBeVisible();
   await expect(
     page.getByLabel("Światło korpusu LW", { exact: false }),
@@ -93,7 +101,7 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   ).toHaveValue("500");
   await expect(page.locator(".drawer-cut").first()).toBeVisible();
   await page.getByRole("link", { name: "Wróć do kreatora kuchni" }).click();
-  await page.getByRole("button", { name: "Przejdź do szafek" }).click();
+  await expect(page.locator(".kp-cabinet-editor")).toBeVisible();
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami 500" })
@@ -106,10 +114,14 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("pan-stolarz.kuchnia.v1")!),
   );
-  expect(saved.items[0].width).toBe(500);
+  expect(
+    saved.items.find(
+      (i: { catalogId: string }) => i.catalogId === "base-drawers-600",
+    ).width,
+  ).toBe(500);
 });
 
-test("public front split distinguishes gaps, persists inputs and hides invalid results", async ({
+test("staff front split distinguishes gaps, persists inputs and hides invalid results", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });

@@ -1,27 +1,10 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./staff-fixture";
 import AxeBuilder from "@axe-core/playwright";
-import { staffApi } from "./staff-api-fixture";
 for (const mobile of [false, true])
   test(`calculator explicitly distinguishes runner reference bases (${mobile ? "phone" : "desktop"})`, async ({
     page,
-    request,
-    baseURL,
   }) => {
     if (mobile) await page.setViewportSize({ width: 390, height: 844 });
-    await staffApi(page);
-    await page.route(
-      /\/api\/(?:systemy-szuflad|przelicznik-szuflad)(?:\?|$)/,
-      async (r) => {
-        const u = new URL(r.request().url());
-        const response = await request.get(
-          new URL(
-            u.pathname.replace("/api/", "/api/demo/") + u.search,
-            baseURL,
-          ).toString(),
-        );
-        await r.fulfill({ response });
-      },
-    );
     await page.goto("/#/panel/szuflady");
     await page.getByRole("checkbox", { name: /Rozstaw kilku szuflad/ }).check();
     const thickness = page.getByLabel("Grubość dolnego wieńca opcjonalnie", {

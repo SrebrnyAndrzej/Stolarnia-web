@@ -87,7 +87,7 @@ export const REGULY_TRAS: Regula[] = [
   { metody: "PUT", sciezka: new RegExp(`^/api/okucia/${ID}$`), profile: TYLKO_WLASCICIEL, opis: "zmiana okucia i ceny" },
   { metody: "GET", sciezka: /^\/api\/ustawienia$/, profile: [S], opis: "ustawienia (z finansów tylko VAT)" },
   { metody: "PATCH", sciezka: /^\/api\/ustawienia$/, profile: TYLKO_WLASCICIEL, opis: "ustawienia firmy" },
-  { metody: "GET", sciezka: /^\/api\/(systemy-szuflad|przelicznik-szuflad)$/, profile: WSZYSCY, opis: "kalkulator szuflad" },
+  { metody: "GET", sciezka: /^\/api\/(?:demo\/)?(systemy-szuflad|przelicznik-szuflad)$/, profile: WSZYSCY, opis: "kalkulator szuflad — wyłącznie zespół, także stare adresy demo" },
   { metody: "GET", sciezka: /^\/api\/cad\/konwerter$/, profile: [S], opis: "import CAD" },
   { metody: "POST", sciezka: /^\/api\/cad\/analiza$/, profile: [S], opis: "import CAD" },
   { metody: "GET", sciezka: /^\/api\/okucia-projektu\/opcje$/, profile: [S], opis: "opcje okuć projektu (bez cen zakupu)" },

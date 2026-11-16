@@ -1,6 +1,6 @@
 import { prepareFurnitureBatch } from "./furniture-batch-preparation.js";
 import { registerKitchenEstimate } from "./kitchen-estimate.js";
-import { drawerSystems, calculateDrawer, previewCalculator } from "./drawer-preview.js";
+import { drawerSystems, calculateDrawer } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
 import { umowaPdf } from "../export/umowa.js";
@@ -71,13 +71,6 @@ app.post("/api/v2/requests", async (req, res) => {
 });
 app.get("/api/demo/dekory", (_req, res) => res.json(DEKORY.map(d => ({ key: kluczDekoru(d), id:d.id, name:d.name, manufacturer:d.manufacturer, obraz:obrazDekoru(d) }))));
 app.use("/api/dekory/obrazy", express.static(join(process.cwd(), "docs/materialy/obrazy")));
-// Public stateless preview only. Never loads or persists workshop data.
-const drawerPreview = previewCalculator(s);
-app.get("/api/demo/systemy-szuflad", (_req, res) => res.json(drawerSystems()));
-app.get("/api/demo/przelicznik-szuflad", (req, res) => {
-  try { res.json(calculateDrawer(req, drawerPreview)); }
-  catch (error) { res.status(400).json({ blad: error instanceof BladUslugi ? error.message : "Nie udało się przeliczyć szuflady." }); }
-});
 // Owner-only by default, including legacy PDF/CSV exports and HTTP MCP.
 app.use(["/api", "/mcp"],(req,res,next)=>{
   const path=req.baseUrl+req.path;
@@ -411,8 +404,11 @@ app.get("/api/okucia-projektu/opcje", api(() => s.opcjeOkuc()));
 app.put("/api/projekty/:id/okucia", api((r) => s.ustawOkucia(p(r, "id"), r.body?.okucia === undefined ? r.body : r.body.okucia)));
 app.patch("/api/projekty/:id/moduly/:mid", api((r) => s.zmienModul(p(r, "id"), p(r, "mid"), r.body)));
 // Przelicznik dna i pleców szuflad (Amix, GTV, Blum)
-app.get("/api/systemy-szuflad", api(drawerSystems));
-app.get("/api/przelicznik-szuflad", api(r => calculateDrawer(r, s)));
+// Both current routes and old demo URLs require the same authenticated staff access.
+for (const prefix of ["/api", "/api/demo"]) {
+  app.get(`${prefix}/systemy-szuflad`, api(drawerSystems));
+  app.get(`${prefix}/przelicznik-szuflad`, api(r => calculateDrawer(r, s)));
+}
 // Silnik konstrukcji: polecenia edycji modułu (np. {"typ":"zamienDrzwiNaSzuflady","liczba":3}) i powrót do konstrukcji standardowej
 app.post("/api/projekty/:id/moduly/:mid/polecenie", api((r) => s.polecenieKonstrukcji(p(r, "id"), p(r, "mid"), r.body)));
 app.delete("/api/projekty/:id/moduly/:mid/drzewo", api((r) => s.przywrocKonstrukcjeStandardowa(p(r, "id"), p(r, "mid"))));

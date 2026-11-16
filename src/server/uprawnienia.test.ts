@@ -191,11 +191,65 @@ test("pliki CAD HTTP: prywatny zapis, pobranie, deduplikacja i zakres profili", 
   assert.equal((await zadanie("GET", `${base}/${result.json.id}/content`, "t-montaz")).status, 403);
 });
 
+test("publiczna wycena kuchni: bez sesji, z kontrolą Origin i bez odczytu ani zapisu danych firmy", async () => {
+  const previous = structuredClone(doc), membershipReads = zapytaniaCzlonkow.length;
+  const input = {
+    layout: "straight", width: 3600, depth: 2400, height: 2600, finish: "cashmere",
+    items: [{id: "00000000-0000-4000-8000-000000000001", catalogId: "base-drawers-600", wall: "a", drawers: 3,
+      drawerFronts: {mode: "custom", heightsFromTop: [140, null, null]}}],
+  };
+  const send = (path: string, origin?: string, body: unknown = input) => oryginalnyFetch(adres + path, {
+    method: "POST", headers: {"content-type": "application/json", ...(origin ? {origin} : {})}, body: JSON.stringify(body),
+  });
+  for (const path of ["/api/public/kitchen-estimate", "/api/public/kitchen-estimate/pdf"]) {
+    const response = await send(path, process.env.PAN_STOLARZ_ORIGIN ?? adres);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("cache-control") ?? "", /no-store/);
+    if (path.endsWith("/pdf")) {
+      assert.match(response.headers.get("content-type") ?? "", /application\/pdf/);
+      assert.equal(Buffer.from(await response.arrayBuffer()).subarray(0, 5).toString(), "%PDF-");
+    } else {
+      const result = await response.json();
+      assert.equal(result.status, "estimated"); assert.ok(result.gross > 0);
+      assert.ok(!JSON.stringify(result).includes("PRIVATE"));
+    }
+    assert.equal((await send(path, "https://example.invalid")).status, 403);
+    assert.equal((await send(path)).status, 403);
+    assert.equal((await send(path, process.env.PAN_STOLARZ_ORIGIN ?? adres, {...input, items: [{...input.items[0], drawerFronts: {mode: "custom", heightsFromTop: [700, null, null]}}]})).status, 400);
+  }
+  assert.deepEqual(doc, previous);
+  assert.equal(zapytaniaCzlonkow.length, membershipReads);
+});
+
 // ---------- Macierz: każda trasa ma regułę ----------
+
+test("kalkulatory i stare adresy demo wymagają aktywnego właściciela lub pracownika", async () => {
+  const inactiveId = "00000000-0000-4000-8000-0000000000e1", clientId = "00000000-0000-4000-8000-0000000000e2";
+  CZLONKOWIE[inactiveId] = { ...CZLONKOWIE[ID.produkcja], user_id: inactiveId, active: false };
+  CZLONKOWIE[clientId] = { ...CZLONKOWIE[ID.produkcja], user_id: clientId, role: "client" };
+  TOKENY["t-inactive"] = inactiveId; TOKENY["t-client"] = clientId;
+  const query = "?profilId=amix-elite-standard&LW=564&NL=500&wysokoscFrontu=300";
+  try {
+    for (const prefix of ["/api", "/api/demo"]) for (const path of [`${prefix}/systemy-szuflad`, `${prefix}/przelicznik-szuflad${query}`]) {
+      const anonymous = await fetch(adres + path);
+      assert.equal(anonymous.status, 401, path);
+      assert.match(anonymous.headers.get("cache-control") ?? "", /private.*no-store/);
+      assert.equal((await oryginalnyFetch(adres + path, { headers: { cookie: "pan_stolarz_qa_staff=owner" } })).status, 401, "Serwer aplikacji nie przyjmuje cookie pomocniczego QA");
+      for (const token of ["bad-token", "t-inactive", "t-client"]) assert.equal((await zadanie("GET", path, token)).status, token === "bad-token" ? 401 : 403, `${token} ${path}`);
+      for (const token of ["t-owner", "t-sprzedaz", "t-produkcja", "t-montaz"]) {
+        const response = await zadanie("GET", path, token);
+        assert.equal(response.status, 200, `${token} ${path}: ${response.tekst}`);
+        assert.ok(path.includes("systemy-szuflad") ? Array.isArray(response.json) : response.json.wyniki.length > 0);
+      }
+    }
+  } finally {
+    delete CZLONKOWIE[inactiveId]; delete CZLONKOWIE[clientId]; delete TOKENY["t-inactive"]; delete TOKENY["t-client"];
+  }
+});
 
 test("każda chroniona trasa aplikacji ma regułę w macierzy (nowa trasa bez reguły = błąd testu)", () => {
   // Publiczne, rejestrowane przed bramką dostępu: logowanie, aktywacja, formularz zapytań, podgląd demo, healthz.
-  const PUBLICZNE = new Set(["GET /healthz", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/demo/systemy-szuflad", "GET /api/demo/przelicznik-szuflad", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments"]);
+  const PUBLICZNE = new Set(["GET /healthz", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments", "POST /api/public/kitchen-estimate", "POST /api/public/kitchen-estimate/pdf"]);
   type Warstwa = { route?: { path: string | RegExp; methods: Record<string, boolean> } };
   const stos = (app as unknown as { _router: { stack: Warstwa[] } })._router.stack;
   const brak: string[] = [];

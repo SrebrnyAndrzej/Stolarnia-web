@@ -5,7 +5,12 @@ import { PrzelicznikSzuflad } from "../../views/PrzelicznikSzuflad";
 import { SlopeCutting } from "../SlopeCutting";
 import { freshFurniture, carcass } from "../../../../src/core/furniture";
 import { splitFronts } from "../../../../src/core/front-split";
-import { drawerBridge } from "./model";
+import {
+  drawerBridge,
+  drawerSource,
+  drawerQuery,
+  drawerReturnLink,
+} from "./model";
 import { useCalculatorParameters } from "./useCalculatorParameters";
 import "../furniture.css";
 import "./calculators.css";
@@ -231,16 +236,31 @@ function FrontCalculator() {
     </section>
   );
 }
-export function Calculators({ hash }: { hash: string }) {
+export function Calculators({
+  hash,
+  embedded = false,
+}: {
+  hash: string;
+  embedded?: boolean;
+}) {
   const [path, search = ""] = hash.split("?");
-  const tool = path.split("/")[2] ?? "szuflady";
+  const params = new URLSearchParams(search);
+  const tool = embedded
+    ? (params.get("narzedzie") ?? "szuflady")
+    : (path.split("/")[2] ?? "szuflady");
+  params.delete("narzedzie");
+  const bridgeSearch = params.toString();
   const active = ["szuflady", "skosy", "fronty"].includes(tool)
     ? tool
     : "szuflady";
   let initial: ReturnType<typeof drawerBridge>,
+    source: ReturnType<typeof drawerSource>,
+    query = "",
     bridgeError = "";
   try {
-    initial = drawerBridge(search);
+    initial = drawerBridge(bridgeSearch);
+    source = drawerSource(bridgeSearch);
+    query = drawerQuery(bridgeSearch);
   } catch {
     bridgeError =
       "Link zawiera niepoprawne wymiary szuflady. Wpisz je ręcznie lub wróć do szafki w kreatorze.";
@@ -250,16 +270,19 @@ export function Calculators({ hash }: { hash: string }) {
     { id: "skosy", label: "Skosy i wieniec" },
     { id: "fronty", label: "Podział frontów" },
   ];
+  const Content = embedded ? "section" : "main";
   return (
-    <div className="pc-page">
-      <header className="ps-public-header">
-        <a href="#/">
-          <Logo />
-        </a>
-        <a href="#/kreator-kuchni">Wróć do kreatora kuchni</a>
-        <a href="#/">Strona główna</a>
-      </header>
-      <main className="pc-main">
+    <div className={embedded ? "pc-panel" : "pc-page"}>
+      {!embedded && (
+        <header className="ps-public-header">
+          <a href="#/">
+            <Logo />
+          </a>
+          <a href={drawerReturnLink(source)}>Wróć do kreatora kuchni</a>
+          <a href="#/panel/szuflady">Panel stolarni</a>
+        </header>
+      )}
+      <Content className="pc-main" aria-label="Kalkulatory stolarza">
         <p className="ps-eyebrow">Narzędzia stolarza</p>
         <StudioTabs
           id="public-tools"
@@ -267,7 +290,9 @@ export function Calculators({ hash }: { hash: string }) {
           value={active}
           items={tabs}
           onChange={(id) => {
-            location.hash = `#/kalkulatory/${id}`;
+            location.hash = embedded
+              ? `#/panel/szuflady?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(query)), narzedzie: id })}`
+              : `#/kalkulatory/${id}${query ? `?${query}` : ""}`;
           }}
         />
         {tabs.map((t) => (
@@ -283,11 +308,18 @@ export function Calculators({ hash }: { hash: string }) {
                 {bridgeError && <Feedback>{bridgeError}</Feedback>}
                 {initial && !bridgeError && (
                   <p className="pc-bridge" role="status">
-                    Wczytano wymiary pierwszej szuflady z wybranej szafki.
-                    Dopasuj wariant boku i sprawdź mocowania.
+                    Wczytano wymiary wybranej szuflady z kreatora kuchni.
+                    Dopasuj wariant boku i sprawdź mocowania. Wyniki nie
+                    zmieniają projektu.
+                    {source && " Powrót wskaże tę samą szafkę i front."}
                   </p>
                 )}
-                <PrzelicznikSzuflad key={search} demo initialValues={initial} />
+                <PrzelicznikSzuflad
+                  key={query || bridgeSearch}
+                  demo={false}
+                  initialValues={bridgeError ? undefined : initial}
+                  sourceKey={source ? `${source.cabinet}:${source.front}` : ""}
+                />
               </>
             ) : t.id === "skosy" ? (
               <SlopeCalculator />
@@ -296,7 +328,7 @@ export function Calculators({ hash }: { hash: string }) {
             )}
           </div>
         ))}
-      </main>
+      </Content>
     </div>
   );
 }

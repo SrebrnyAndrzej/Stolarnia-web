@@ -7,10 +7,14 @@ import type {
 import {
   bledyFormularza,
   parametryKalkulatora,
-  przywrocFormularz,
-  DOMYSLNY_FORMULARZ,
   type FormularzSzuflad,
+  frontSzer,
 } from "./model";
+import {
+  drawerSession,
+  restoreDrawerSession,
+  serializeDrawerSession,
+} from "./persistence";
 
 export interface SystemSzuflady {
   id: string;
@@ -27,27 +31,22 @@ export interface OdpowiedzKalkulatora {
   montaz?: MontazSzuflad;
   zaDrzwiami?: FrontZaDrzwiami;
 }
-const PAMIEC = "stolarnia.kalkulator-szuflad.v1";
-function wczytaj() {
+function wczytaj(session: ReturnType<typeof drawerSession>) {
   try {
-    return przywrocFormularz(
-      JSON.parse(localStorage.getItem(PAMIEC) ?? "null"),
-    );
+    return restoreDrawerSession(localStorage.getItem(session.key), session);
   } catch {
-    return przywrocFormularz(null);
+    return { ...session.defaults };
   }
 }
 
 export function useKalkulator(
   demo = false,
   initialValues?: Partial<FormularzSzuflad>,
+  sourceKey = "",
 ) {
   const prefix = demo ? "/api/demo" : "/api";
-  const [form, setForm] = useState(() =>
-    initialValues
-      ? przywrocFormularz({ ...DOMYSLNY_FORMULARZ, ...initialValues })
-      : wczytaj(),
-  );
+  const [session] = useState(() => drawerSession(initialValues, sourceKey));
+  const [form, setForm] = useState(() => wczytaj(session));
   const [systemy, setSystemy] = useState<SystemSzuflady[]>([]);
   const [bladKatalogu, setBladKatalogu] = useState("");
   const [blad, setBlad] = useState("");
@@ -66,12 +65,12 @@ export function useKalkulator(
 
   useEffect(() => {
     try {
-      localStorage.setItem(PAMIEC, JSON.stringify(form));
+      localStorage.setItem(session.key, serializeDrawerSession(form, session));
       setPamiec(true);
     } catch {
       setPamiec(false);
     }
-  }, [form]);
+  }, [form, session]);
 
   useEffect(() => {
     const c = new AbortController();
@@ -86,6 +85,8 @@ export function useKalkulator(
     setBladKatalogu("");
     fetch(`${prefix}/systemy-szuflad`, { signal: c.signal })
       .then(async (r) => {
+        if (r.status === 401 || r.status === 403)
+          window.dispatchEvent(new Event("pan-stolarz-session-expired"));
         if (!r.ok) throw new Error("Nie udało się pobrać systemów szuflad.");
         return r.json() as Promise<SystemSzuflady[]>;
       })
@@ -125,6 +126,8 @@ export function useKalkulator(
         const r = await fetch(`${prefix}/przelicznik-szuflad?${query}`, {
           signal: c.signal,
         });
+        if (r.status === 401 || r.status === 403)
+          window.dispatchEvent(new Event("pan-stolarz-session-expired"));
         const dane = await r.json();
         if (!r.ok)
           throw new Error(dane.blad ?? "Nie udało się przeliczyć szuflady.");
@@ -150,7 +153,15 @@ export function useKalkulator(
     setForm((f) =>
       key === "system"
         ? { ...f, system: String(value), wariant: "", scianka: "drewniana" }
-        : { ...f, [key]: value },
+        : key === "frontWewSzerAuto" && value === false
+          ? {
+              ...f,
+              frontWewSzerAuto: false,
+              frontWewSzer: f.frontWewSzer.trim()
+                ? f.frontWewSzer
+                : frontSzer(f),
+            }
+          : { ...f, [key]: value },
     );
   };
   return {
@@ -164,5 +175,6 @@ export function useKalkulator(
     liczenie: liczenie && query !== null,
     dane: !blad && wynik?.query === query ? wynik.dane : null,
     ponow: () => setRetry((r) => r + 1),
+    reset: () => setForm({ ...session.defaults }),
   };
 }

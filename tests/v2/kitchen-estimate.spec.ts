@@ -30,7 +30,7 @@ test("customer configures kitchen, gets server price, PDF and persistent selecti
     .click();
   await page
     .getByRole("combobox", { name: "Rodzaj szafek", exact: true })
-    .selectOption("appliance");
+    .selectOption("water");
   await page
     .getByRole("button", { name: "Dodaj: Szafka pod zlew 600", exact: false })
     .click();

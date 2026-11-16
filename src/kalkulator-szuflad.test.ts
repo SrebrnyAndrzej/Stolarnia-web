@@ -110,6 +110,7 @@ test("kolizja z zawiasem blokuje współrzędne frontu, brak obrysu nie daje poz
   const q = { ...baza, LW: 564, szerokoscFrontu: 528, frontZaDrzwiami: true, pierwszyOtworOdDolu: 60 };
   const brak = s.przelicznikSzuflad(q);
   assert.equal(brak.zaDrzwiami!.kolizje.status, "brakDanych");
+  assert.doesNotMatch(brak.zaDrzwiami!.kolizje.opis, /Podaj osobną szerokość/);
   assert.equal(brak.wyniki[0].mocowanieFrontu!.status, "czesciowe");
   const kolizja = s.przelicznikSzuflad({ ...q, wystawanieZawiasuLewe: 36, wystawanieZawiasuPrawe: 0 });
   assert.equal(kolizja.zaDrzwiami!.kolizje.status, "kolizja");
@@ -132,6 +133,7 @@ test("dystans nie zwęża ręcznego frontu i nie tworzy wymiaru frontu przy jego
   const q = { ...baza, LW: 564, frontZaDrzwiami: true };
   const bez = s.przelicznikSzuflad(q);
   assert.equal(bez.zaDrzwiami!.szerokoscFrontu, undefined);
+  assert.match(bez.zaDrzwiami!.kolizje.opis, /Podaj osobną szerokość/);
   assert.equal(bez.wyniki[0].mocowanieFrontu!.odLewejKrawedziMM, undefined);
   const r = s.przelicznikSzuflad({ ...q, szerokoscFrontu: 520 });
   assert.equal(r.zaDrzwiami!.szerokoscFrontu, 520);

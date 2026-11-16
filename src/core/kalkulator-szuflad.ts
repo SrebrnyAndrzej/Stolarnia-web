@@ -67,6 +67,7 @@ export function frontZaZwyklymiZawiasami(q: WejsciePrzelicznika, LW: number) {
   const przeswitPrawy = q.wystawanieZawiasuPrawe === undefined ? undefined : Math.min(prawy, krawedzPrawa ?? Infinity) - q.wystawanieZawiasuPrawe;
   const kolizja = (przeswitLewy !== undefined && przeswitLewy < (q.wystawanieZawiasuLewe === 0 ? 0 : luz)) || (przeswitPrawy !== undefined && przeswitPrawy < (q.wystawanieZawiasuPrawe === 0 ? 0 : luz));
   const status = kolizja ? "kolizja" : szerokoscFrontu === undefined || przeswitLewy === undefined || przeswitPrawy === undefined ? "brakDanych" : "przeswitBocznySprawdzony";
+  const opisBrakow = `${szerokoscFrontu === undefined ? "Podaj osobną szerokość frontu i maksymalne" : "Podaj maksymalne"} wystawanie zawiasów po obu stronach w całym ruchu wysuwania (0 po stronie bez zawiasów). Do tego czasu pozycje wierceń są niezweryfikowane.`;
   return {
     potracenieMM: lewy + prawy,
     szerokoscFrontu, LWPrzedDystansami: LW, LWPoDystansach,
@@ -75,7 +76,7 @@ export function frontZaZwyklymiZawiasami(q: WejsciePrzelicznika, LW: number) {
     przesuniecieWzgledemSwiatla: przesuniecie + (prawy - lewy) / 2,
     kolizje: {
       status, przeswitLewy, przeswitPrawy, wymaganyLuzMM: luz,
-      opis: kolizja ? "Front lub skrzynka wchodzi w obrys zawiasu albo nie zachowuje wymaganego luzu. Wiercenia frontu zablokowane." : status === "brakDanych" ? "Podaj osobną szerokość frontu i maksymalne wystawanie zawiasów po obu stronach w całym ruchu wysuwania (0 po stronie bez zawiasów). Do tego czasu pozycje wierceń są niezweryfikowane." : "Sprawdzono boczny prześwit frontu i skrzynki względem podanego obrysu zawiasów. Nie obejmuje toru drzwi, głębokości ani kolizji wkrętów z samym zaczepem.",
+      opis: kolizja ? "Front lub skrzynka wchodzi w obrys zawiasu albo nie zachowuje wymaganego luzu. Wiercenia frontu zablokowane." : status === "brakDanych" ? opisBrakow : "Sprawdzono boczny prześwit frontu i skrzynki względem podanego obrysu zawiasów. Nie obejmuje toru drzwi, głębokości ani kolizji wkrętów z samym zaczepem.",
     },
   };
 }

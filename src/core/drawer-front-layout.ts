@@ -7,7 +7,7 @@ export function distributeDrawerFronts(
     drawerHeightLock?: number;
   }>,
   minimum = 60,
-  rounding?: 1 | 1000,
+  rounding?: 1 | 10 | 1000,
 ) {
   if (
     !Number.isFinite(total) ||
@@ -74,4 +74,59 @@ export function distributeDrawerFronts(
     break;
   }
   return heights;
+}
+
+export interface DrawerFrontLayout {
+  mode: "equal" | "graduated" | "custom";
+  /** Physical heights, ordered from the top. Null leaves a front automatic. */
+  heightsFromTop?: ReadonlyArray<number | null>;
+}
+
+/** Front heights from the top, including the budget for both end gaps. */
+export function drawerStackHeights(
+  height: number,
+  count: number,
+  gap: number,
+  layout: DrawerFrontLayout,
+): number[] {
+  if (
+    !Number.isFinite(height) ||
+    height <= 0 ||
+    height > 10000 ||
+    !Number.isInteger(count) ||
+    count < 1 ||
+    count > 20 ||
+    !Number.isFinite(gap) ||
+    gap < 0 ||
+    gap > 20
+  )
+    throw new Error("Sprawdź wysokość strefy, liczbę szuflad i szczeliny.");
+  if (!["equal", "graduated", "custom"].includes(layout.mode))
+    throw new Error("Wybierz sposób podziału frontów.");
+  const locks = layout.heightsFromTop;
+  if (layout.mode === "custom" && (!locks || locks.length !== count))
+    throw new Error("Podaj wysokość lub pozostaw Auto dla każdego frontu.");
+  if (layout.mode !== "custom" && locks !== undefined)
+    throw new Error("Własne wysokości wymagają własnego podziału frontów.");
+  if (
+    locks?.some(
+      (v) =>
+        v !== null &&
+        (!Number.isFinite(v) ||
+          v < 60 ||
+          v > 10000 ||
+          Math.abs(v * 10 - Math.round(v * 10)) > 1e-7),
+    )
+  )
+    throw new Error("Wysokość frontu: minimum 60 mm, dokładność do 0,1 mm.");
+  const net = Math.round((height - gap * (count + 1)) * 10) / 10;
+  const parts = Array.from({ length: count }, (_, i) => ({
+    id: String(i),
+    height: layout.mode === "graduated" && i > 0 ? 2 : 1,
+    ...(layout.mode === "custom" && locks?.[i] !== null
+      ? { drawerHeightLock: locks?.[i] }
+      : {}),
+  }));
+  const result = distributeDrawerFronts(net, parts, 60, 10);
+  return parts.map((p) => Math.round(result.get(p.id)! * 10) / 10);
 }

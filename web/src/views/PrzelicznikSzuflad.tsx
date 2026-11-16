@@ -8,6 +8,7 @@ import {
   wewnetrzny,
   zaDrzwiami,
   type FormularzSzuflad,
+  autoFrontWewnetrzny,
 } from "./szuflady/model";
 import { useKalkulator } from "./szuflady/useKalkulator";
 
@@ -18,6 +19,7 @@ function Pole({
   error,
   hint,
   optional = false,
+  readOnly = false,
 }: {
   label: string;
   value: string;
@@ -25,6 +27,7 @@ function Pole({
   error?: string;
   hint?: string;
   optional?: boolean;
+  readOnly?: boolean;
 }) {
   const id = useId();
   return (
@@ -39,6 +42,7 @@ function Pole({
           className="input num"
           inputMode="decimal"
           value={value}
+          readOnly={readOnly}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!error}
           aria-describedby={error || hint ? `${id}-help` : undefined}
@@ -98,7 +102,12 @@ function Wybor({
 export function PrzelicznikSzuflad({
   demo = false,
   initialValues,
-}: { demo?: boolean; initialValues?: Partial<FormularzSzuflad> } = {}) {
+  sourceKey = "",
+}: {
+  demo?: boolean;
+  initialValues?: Partial<FormularzSzuflad>;
+  sourceKey?: string;
+} = {}) {
   const {
     form: f,
     ustaw,
@@ -110,12 +119,15 @@ export function PrzelicznikSzuflad({
     liczenie,
     dane,
     ponow,
-  } = useKalkulator(demo, initialValues);
+    reset,
+  } = useKalkulator(demo, initialValues, sourceKey);
   const results = useRef<HTMLElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [kopiowanie, setKopiowanie] = useState("");
   const internal = wewnetrzny(f),
     behind = zaDrzwiami(f);
+  const autoFront = behind && f.frontWewSzerAuto;
+  const frontCalculation = autoFrontWewnetrzny(f);
   const system = systemy.find((s) => s.id === f.system);
   const w = dane?.wyniki[0];
   const mocowanie = w?.mocowanieFrontu;
@@ -150,7 +162,10 @@ export function PrzelicznikSzuflad({
   ) => (
     <Pole
       label={label}
-      value={String(f[key])}
+      value={
+        key === "frontWewSzer" && autoFront ? frontSzer(f) : String(f[key])
+      }
+      readOnly={key === "frontWewSzer" && autoFront}
       onChange={(v) => ustaw(key, v)}
       error={errors[key]}
       hint={hint}
@@ -227,6 +242,22 @@ export function PrzelicznikSzuflad({
         </div>
         <span className="drawer-unit-badge">mm</span>
       </header>
+      {initialValues && (
+        <div className="drawer-source-actions">
+          <p>
+            {pamiec
+              ? "Zapamiętujemy ostatnią kalkulację z projektu. Odświeżenie zachowa jej ustawienia; zmiana wymiarów w projekcie rozpocznie nowe obliczenie."
+              : "Dane z projektu są w formularzu. Zapis lokalny jest niedostępny; odświeżenie przywróci dane z projektu."}
+          </p>
+          <button type="button" className="drawer-link" onClick={reset}>
+            Przywróć dane z projektu
+          </button>
+          <small>
+            Przywraca także wybór systemu i usuwa ręcznie wpisane pozycje
+            otworów.
+          </small>
+        </div>
+      )}
       <div className="drawer-layout">
         <form
           className="drawer-form"
@@ -415,12 +446,32 @@ export function PrzelicznikSzuflad({
                 </select>
               </label>
             )}
+            {behind && (
+              <label className="drawer-check">
+                <input
+                  type="checkbox"
+                  checked={f.frontWewSzerAuto}
+                  onChange={(e) => ustaw("frontWewSzerAuto", e.target.checked)}
+                />
+                <span>
+                  <strong>Automatyczna szerokość frontu</strong>
+                  <small>
+                    Światło korpusu − 36 mm po stronie zawiasów. Odznacz, aby
+                    wpisać własny wymiar.
+                  </small>
+                </span>
+              </label>
+            )}
             <div className="drawer-fields">
               {pole(
                 szerKey,
                 "Szerokość frontu",
-                "Osobny wymiar — bez potrącania 36 mm.",
-                true,
+                autoFront
+                  ? frontCalculation
+                    ? `${mm(frontCalculation.light)} − ${mm(frontCalculation.deduction)} = ${mm(frontCalculation.width)} mm. Bez dodatkowego luzu; dystans po ${f.stronaZawiasow === "lewa" ? "lewej" : "prawej"}.`
+                    : "Uzupełnij światło korpusu, aby obliczyć front."
+                  : "Własny wymiar frontu; bez dodatkowego potrącenia.",
+                !autoFront,
               )}
               {pole(wysKey, "Wysokość frontu")}
             </div>
@@ -449,8 +500,9 @@ export function PrzelicznikSzuflad({
                 <div className="drawer-callout">
                   <strong>Dno i plecy węższe o 36 mm</strong>
                   <span>
-                    Dystans tylko po stronie zawiasów. Wymiar frontu pozostaje
-                    osobny.
+                    {autoFront
+                      ? "Front także liczony ze światła pomniejszonego o ten sam dystans. Potrącenie 36 mm stosujemy raz."
+                      : "Dystans tylko po stronie zawiasów. Front ma podany ręcznie wymiar."}
                   </span>
                 </div>
                 <div
@@ -540,7 +592,7 @@ export function PrzelicznikSzuflad({
           <button type="submit" className="drawer-primary">
             Pokaż rozkrój i wiercenia <span aria-hidden="true">↓</span>
           </button>
-          <p className="drawer-memory">
+          <p className="drawer-memory" role="status">
             {pamiec
               ? "Ostatnie wymiary zapamiętane na tym urządzeniu."
               : "Wymiary pozostają w formularzu podczas pracy."}
@@ -616,6 +668,26 @@ export function PrzelicznikSzuflad({
                   {mm(w.grubosc)} mm
                 </span>
               </div>
+              <section
+                className="drawer-front-summary"
+                aria-label="Wymiar frontu meblowego"
+              >
+                <div>
+                  <span>
+                    Front meblowy · {internal ? "wewnętrzny" : "zewnętrzny"}
+                  </span>
+                  <strong className="num">
+                    {frontSzer(f).trim() ? mm(n(frontSzer(f))) : "—"} ×{" "}
+                    {mm(n(frontWys(f)))} mm
+                  </strong>
+                </div>
+                <small>
+                  {autoFront
+                    ? "Szerokość automatyczna: światło minus dystans. Wysokość z formularza. "
+                    : "Wymiar wejściowy: szerokość × wysokość. "}
+                  Wysokość frontu nie jest wysokością boku szuflady.
+                </small>
+              </section>
               {dane.zaDrzwiami && (
                 <div className="drawer-callout">
                   <strong>
@@ -643,7 +715,9 @@ export function PrzelicznikSzuflad({
                   <strong className="num">
                     {mm(w.dno.szer)} <span>×</span> {mm(w.dno.gl)}
                   </strong>
-                  <small>szerokość × głębokość · mm</small>
+                  <small>
+                    szerokość × głębokość · mm · płyta {mm(w.grubosc)} mm
+                  </small>
                 </div>
                 <div className="card drawer-cut">
                   <span className="drawer-cut-label">
@@ -655,7 +729,9 @@ export function PrzelicznikSzuflad({
                   <strong className="num">
                     {mm(w.plecy.szer)} <span>×</span> {mm(w.plecy.wys)}
                   </strong>
-                  <small>szerokość × wysokość · mm</small>
+                  <small>
+                    szerokość × wysokość · mm · płyta {mm(w.grubosc)} mm
+                  </small>
                 </div>
               </section>
               {dane.zaDrzwiami && (

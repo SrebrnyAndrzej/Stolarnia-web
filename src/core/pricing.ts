@@ -79,7 +79,7 @@ export function zbudujProjektWyceny(
       if (e.rola === "worktop") {
         // Blat głębszy niż standardowe 600 mm (wyspa, stół) liczony proporcjonalnie do głębokości — przybliżenie.
         mbBlatu += (e.szer / 1000) * Math.max(1, e.gl / 600);
-      } else if (e.rola === "front" || e.rola === "filler") {
+      } else if (e.materialRola === "front" || e.rola === "front" || e.rola === "filler") {
         pFrontow += m2;
         dodaj("front", materialy.front, m2);
         if (e.rola === "front") fronty += 1;
@@ -105,13 +105,14 @@ export function zbudujProjektWyceny(
       dolne += 1;
       cokol += m.szerokoscMM / 1000;
     }
-    if (m.kategoria === "wall" || m.kategoria === "open" || m.konstrukcja === "hood" || m.konstrukcja === "wallCorner") wiszace += 1;
+    if (m.konstrukcja !== "filler" && (m.kategoria === "wall" || m.kategoria === "open" || m.konstrukcja === "hood" || m.konstrukcja === "wallCorner")) wiszace += 1;
   }
 
-  const liczba = moduly.length;
+  // A filler panel contributes material/edges/run length, not a complete cabinet or hanger pair.
+  const liczba = moduly.filter(({zm}) => zm.modul.konstrukcja !== "filler").length;
   // Normy czasowe z ProjektWycenyBuilder.swift
-  const godzinyProdukcji = liczba === 0 ? 0 : Math.max(4, liczba * 2.8 + pPlyt * 0.45 + szuflady * 0.7 + cargo * 1.8 + narozne * 1.5);
-  const godzinyMontazu = liczba === 0 ? 0 : Math.max(3, liczba * 0.85 + mbZabudowy * 0.6);
+  const godzinyProdukcji = moduly.length === 0 ? 0 : Math.max(4, liczba * 2.8 + pPlyt * 0.45 + szuflady * 0.7 + cargo * 1.8 + narozne * 1.5);
+  const godzinyMontazu = moduly.length === 0 ? 0 : Math.max(3, liczba * 0.85 + mbZabudowy * 0.6);
 
   return {
     nazwaProjektu,
@@ -127,7 +128,7 @@ export function zbudujProjektWyceny(
     liczbaSystemowNaroznych: narozne,
     liczbaGodzinProdukcji: r2(godzinyProdukcji),
     liczbaGodzinMontazu: r2(godzinyMontazu),
-    liczbaTransportow: liczba === 0 ? 0 : liczba > 14 ? 2 : 1,
+    liczbaTransportow: moduly.length === 0 ? 0 : liczba > 14 ? 2 : 1,
     liczbaModulowDolnych: dolne,
     liczbaNog,
     liczbaKolek,

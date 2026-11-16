@@ -34,6 +34,7 @@ export function registerKitchenEstimate(
             scope: estimate.scope,
             notes: estimate.notes,
             modules,
+            roomFeatures: input.features,
             built,
             preliminary: true,
             frontColor: {
