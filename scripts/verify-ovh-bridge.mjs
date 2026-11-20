@@ -1,5 +1,35 @@
 // Stateless probes only: no credentials, account creation, project or library writes.
 import assert from "node:assert/strict";
+// Optional read-only synthetic project: verifies Authorization survives Apache/PHP, not just cookies.
+if (process.env.PAN_STOLARZ_QA_PROJECT_LINK) {
+  const link = new URL(process.env.PAN_STOLARZ_QA_PROJECT_LINK);
+  assert.equal(link.origin, "https://panstolarz.pro");
+  const params = new URLSearchParams(link.hash.split("?")[1] ?? "");
+  const id = params.get("projekt"),
+    token = params.get("klucz");
+  assert.match(id ?? "", /^[a-f0-9-]{36}$/);
+  assert.match(token ?? "", /^[a-f0-9]{64}$/);
+  const responses = await Promise.all(
+    ["https://backend.panstolarz.pro", "https://panstolarz.pro"].map(
+      async (base) => {
+        const r = await fetch(`${base}/api/public/kitchen-projects/${id}`, {
+          headers: { Authorization: `Kitchen ${token}` },
+          signal: AbortSignal.timeout(20000),
+        });
+        assert.equal(
+          r.status,
+          200,
+          "Private project Authorization was not forwarded",
+        );
+        return r.json();
+      },
+    ),
+  );
+  assert.deepEqual(responses[0], responses[1]);
+  console.log(
+    "GET private kitchen project: direct = bridge = 200 (Authorization preserved)",
+  );
+}
 const checks = [
   { path: "/api/v2/config", status: 200 },
   { path: "/api/v2/session", status: 401 },

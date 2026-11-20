@@ -16,7 +16,16 @@ if (!function_exists('curl_init')) failResponse(503, 'Połączenie z API nie zos
 $body = file_get_contents('php://input', false, null, 0, 31457281);
 if ($body === false || strlen($body) > 31457280 || (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 31457280) failResponse(413, 'Przesłane dane są zbyt duże.');
 $headers = ['Accept: application/json, application/pdf'];
-foreach (['CONTENT_TYPE'=>'Content-Type','HTTP_ORIGIN'=>'Origin','HTTP_COOKIE'=>'Cookie','HTTP_AUTHORIZATION'=>'Authorization'] as $key=>$name) {
+// An internal Apache rewrite may prefix environment headers with REDIRECT_.
+// FPM can also expose the original header only through getallheaders().
+$authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+if ($authorization === '' && function_exists('getallheaders')) {
+    foreach (getallheaders() as $headerName => $headerValue) {
+        if (strtolower($headerName) === 'authorization') { $authorization = $headerValue; break; }
+    }
+}
+if ($authorization !== '' && !preg_match('/[\r\n]/', $authorization)) $headers[] = 'Authorization: ' . $authorization;
+foreach (['CONTENT_TYPE'=>'Content-Type','HTTP_ORIGIN'=>'Origin','HTTP_COOKIE'=>'Cookie'] as $key=>$name) {
     $value = $_SERVER[$key] ?? '';
     if ($value !== '' && !preg_match('/[\r\n]/', $value)) $headers[] = $name . ': ' . $value;
 }
