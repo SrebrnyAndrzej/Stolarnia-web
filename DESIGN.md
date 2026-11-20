@@ -273,3 +273,6 @@ Kolizja gabarytów lub rezerwy otwierania ma tekst pod rysunkiem oraz odnośniki
 ## Dwa ciągi naprzeciwko i odniesienie blatem — 16.11.2026
 Układ równoległy korzysta z istniejących kart wyboru, w siatce 2 × 2 także na telefonie. Ściany A/C mają wspólną długość; osobne pole oznacza odległość między ich tyłami, nie szerokość przejścia. Nie pokazujemy narzędzi ani rezerw narożnikowych. Rzut i 3D korzystają z jawnych przeciwnych kierunków ścian. Obrót lub numer ciągu nie oznacza odbicia całego obrazu.
 Kalibracja obrazem zachowuje końce znanego odcinka i jego długość. Przycisk Głębokość blatu: 60 cm uzupełnia wymiar już zaznaczonego odcinka; nie zgaduje miejsca na zdjęciu. Po ponownym otwarciu edytor pokazuje ten sam odcinek i skalę. Brak zmian w kolorach, typografii lub mechanizmie zapisu plików.
+
+## Uzgodnienia i zapis kuchni — 20.11.2026
+KitchenProjectHub rozszerza istniejące akcje zapisu o osobne linki edycji/podglądu i natywny kp-dialog. KitchenProjectExtras używa natywnych pól, checkboxów i disclosure dla pomiarów, budżetu i gabarytów. KitchenBudgetAdvice i KitchenRepairPreview korzystają z istniejącej wyceny i rzutu. Tokeny panel/line/text/radius z styles.css pozostają właścicielem kolorów. Telefon zachowuje podgląd i następny krok przed katalogiem; zapis online ma zwarty pasek. Źródło: docs/KUCHNIA-ZAPIS-I-PRZEKAZANIE.md.

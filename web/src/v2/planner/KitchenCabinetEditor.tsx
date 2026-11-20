@@ -186,6 +186,28 @@ export function KitchenCabinetEditor({
           mm do szerokości korpusu. Zmienisz je w wykończeniu ciągu.
         </p>
       )}
+      <label className="kp-check kp-lock-control">
+        <input
+          type="checkbox"
+          checked={!!item.locked}
+          disabled={disabled || dirty}
+          onChange={(e) =>
+            onApply({
+              ...draft,
+              items: draft.items.map((i) =>
+                i.id === item.id ? { ...i, locked: e.target.checked } : i,
+              ),
+            })
+          }
+        />
+        Zachowaj tę szafkę i jej położenie przy automatycznym układaniu
+      </label>
+      {item.locked && (
+        <p className="kp-muted">
+          Szafka jest zablokowana. Odznacz blokadę, aby zmienić jej wymiary,
+          wnętrze albo położenie.
+        </p>
+      )}
       <form
         id="kp-cabinet-form"
         noValidate
@@ -284,7 +306,7 @@ export function KitchenCabinetEditor({
           setError("");
         }}
       >
-        <fieldset disabled={disabled}>
+        <fieldset disabled={disabled || item.locked}>
           <legend>Wymiary i wnętrze</legend>
           {canChangeStorage && (
             <div

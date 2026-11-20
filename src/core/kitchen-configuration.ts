@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { kitchenNeedsSchema } from "./kitchen-needs-schema.js";
+import { kitchenProjectDetailsSchema } from "./kitchen-project-details.js";
 import { KATALOG_MODULOW, domyslnaKonfiguracja } from "./catalog/modules.js";
 import type { Modul, ModulKatalogowy } from "./types.js";
 import { islandIssues } from "./kitchen-island.js";
@@ -83,6 +84,7 @@ export const kitchenFinishes = {
 export const kitchenItemSchema = z
   .object({
     id: z.string().uuid(),
+    locked: z.boolean().optional(),
     catalogId: z
       .string()
       .refine((id) => customerKitchenCatalog.some((m) => m.id === id)),
@@ -236,6 +238,7 @@ export const kitchenInputSchema = z
     items: z.array(kitchenItemSchema).max(24),
     planning: kitchenPlanningSchema.optional(),
     needs: kitchenNeedsSchema.optional(),
+    projectDetails: kitchenProjectDetailsSchema,
     features: z.array(kitchenFeatureSchema).max(20).optional(),
     island: kitchenIslandSchema.optional(),
     architectFiles: architectFilesSchema.optional(),

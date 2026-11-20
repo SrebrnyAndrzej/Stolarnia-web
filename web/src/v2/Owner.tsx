@@ -12,7 +12,11 @@ import {
 import { useResource } from "./useResource";
 import { demoProjects } from "./demo";
 import { ActivationLink, CreateEmployee, ProfileSelect } from "./StaffAccounts";
-import { NAZWY_PROFILI, profilOsoby, type ProfilDostepu } from "../../../src/server/uprawnienia";
+import {
+  NAZWY_PROFILI,
+  profilOsoby,
+  type ProfilDostepu,
+} from "../../../src/server/uprawnienia";
 
 /** Zapytanie → projekt jednym kliknięciem; drugi raz otwiera istniejący projekt (ST-APP-005). */
 function RequestProject({ request: r }: { request: CustomerRequest }) {
@@ -164,6 +168,14 @@ export function Requests({ demo }: { demo: boolean }) {
                 </span>
               </header>
               <p className="ps-request-description">{r.description}</p>
+              {requestKitchenLink(r.description) && (
+                <a
+                  className="ps-button secondary"
+                  href={requestKitchenLink(r.description)!}
+                >
+                  Otwórz przekazany projekt kuchni
+                </a>
+              )}
               <a className="ps-under-link" href={`mailto:${r.email}`}>
                 <IconMail size={17} />
                 {r.email}
@@ -221,10 +233,17 @@ export function Members({ demo }: { demo: boolean }) {
     <section className="ps-owner-page">
       <span className="ps-eyebrow">Dostęp do pracowni</span>
       <h1>Pracownicy i dostęp</h1>
-      {demo && <div className="ps-feedback" role="status">
-        <p>To demonstracja właściciela. Dodawanie prawdziwych kont jest dostępne po zalogowaniu.</p>
-        <a className="ps-button" href="#/panel/pracownicy">Przejdź do zarządzania pracownikami</a>
-      </div>}
+      {demo && (
+        <div className="ps-feedback" role="status">
+          <p>
+            To demonstracja właściciela. Dodawanie prawdziwych kont jest
+            dostępne po zalogowaniu.
+          </p>
+          <a className="ps-button" href="#/panel/pracownicy">
+            Przejdź do zarządzania pracownikami
+          </a>
+        </div>
+      )}
       {!demo && <CreateEmployee onCreated={members.retry} />}
       <p className="ps-page-intro">
         Pracownik korzysta z kalkulatora szuflad i widzi udostępnione projekty.
@@ -282,7 +301,9 @@ function Member({
   const [ids, setIds] = useState(member.project_ids);
   const [active, setActive] = useState(member.active);
   const [job, setJob] = useState(member.job_role ?? "Pracownik");
-  const [profile, setProfile] = useState<ProfilDostepu>(member.access_profile ?? "produkcja");
+  const [profile, setProfile] = useState<ProfilDostepu>(
+    member.access_profile ?? "produkcja",
+  );
   const [link, setLink] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -295,7 +316,12 @@ function Member({
     try {
       await request(`/api/v2/members/${encodeURIComponent(member.user_id)}`, {
         method: "PATCH",
-        body: JSON.stringify({ active, project_ids: ids, job_role: job, access_profile: profile }),
+        body: JSON.stringify({
+          active,
+          project_ids: ids,
+          job_role: job,
+          access_profile: profile,
+        }),
       });
       setSaved(true);
       onSaved();
@@ -352,10 +378,18 @@ function Member({
             />
             Aktywny dostęp do stolarni
           </label>
-          <ProfileSelect name={`staff-profile-${member.user_id}`} value={profile} onChange={setProfile} disabled={demo || busy} />
+          <ProfileSelect
+            name={`staff-profile-${member.user_id}`}
+            value={profile}
+            onChange={setProfile}
+            disabled={demo || busy}
+          />
           <fieldset disabled={demo || busy}>
             <legend>Udostępnione projekty</legend>
-            <p>Produkcja i montaż widzą tylko udostępnione projekty. Sprzedaż widzi wszystkie projekty (projektuje także nowe przy kliencie).</p>
+            <p>
+              Produkcja i montaż widzą tylko udostępnione projekty. Sprzedaż
+              widzi wszystkie projekty (projektuje także nowe przy kliencie).
+            </p>
             {projects.length ? (
               projects.map((p) => (
                 <label className="ps-check" key={p.id}>
@@ -419,3 +453,4 @@ function Member({
     </article>
   );
 }
+import { requestKitchenLink } from "./planner/request-kitchen-link";

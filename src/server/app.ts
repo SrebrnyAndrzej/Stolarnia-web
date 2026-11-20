@@ -1,5 +1,6 @@
 import { prepareFurnitureBatch } from "./furniture-batch-preparation.js";
 import { registerKitchenEstimate } from "./kitchen-estimate.js";
+import { registerKitchenProjects } from "./kitchen-projects.js";
 import { drawerSystems, calculateDrawer } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
@@ -48,6 +49,7 @@ app.get("/healthz", (_req, res) => { res.setHeader("Cache-Control", "no-store");
 app.use(express.json({ limit: "30mb" }));
 const access = createAccess();
 registerKitchenEstimate(app,req=>access.checkOrigin(req));
+registerKitchenProjects(app,{store:s.magazyn,admin:access.admin,checkOrigin:req=>access.checkOrigin(req),identify:req=>access.identify(req)});
 // Panel publikacji: zadanie cykliczne (Vercel Cron) i lokalne grafiki (tylko tryb lokalny, w chmurze bucket publiczny).
 // Cron wymaga CRON_SECRET (Authorization: Bearer); bez sekretu automat jest wyłączony, a nie otwarty.
 app.get("/api/cron/marketing", async (req, res) => {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { kitchenProjectDetailsSchema } from "../../../../src/core/kitchen-project-details";
 import {
   kitchenNeedsSchema,
   kitchenNeedsBrief,
@@ -68,6 +69,7 @@ export const draftSchema = z
     items: z.array(kitchenItemSchema).max(24),
     planning: kitchenPlanningSchema.optional(),
     needs: kitchenNeedsSchema.optional(),
+    projectDetails: kitchenProjectDetailsSchema,
     features: z.array(kitchenFeatureSchema).max(20).optional(),
     island: kitchenIslandSchema.optional(),
     architectFiles: architectFilesSchema.optional(),

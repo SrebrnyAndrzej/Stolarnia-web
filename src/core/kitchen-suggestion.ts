@@ -13,6 +13,7 @@ import { trimKitchenStorage } from "./kitchen-room-layout.js";
 import { kitchenPlanningEnd } from "./kitchen-collisions.js";
 import { kitchenWallStart } from "./kitchen-layout.js";
 import { adaptKitchenStorage } from "./kitchen-needs.js";
+import { retainKitchenLocks } from "./kitchen-locks.js";
 
 type Wall = KitchenItem["wall"];
 type Slot = { catalogId: string; width: number; gapBefore?: number };
@@ -415,12 +416,25 @@ export function suggestKitchen(
   id: () => string,
   preserve = false,
 ): KitchenItem[] {
+  const lockedIds = new Set(d.items.filter((i) => i.locked).map((i) => i.id));
+  const nextId = () => {
+    let value = id(),
+      attempts = 0;
+    while (!preserve && lockedIds.has(value) && attempts++ < 100) value = id();
+    if (!preserve && lockedIds.has(value))
+      throw new Error(
+        "Nie udało się nadać identyfikatora szafki. Spróbuj ponownie.",
+      );
+    return value;
+  };
+  const finish = (items: KitchenItem[]) =>
+    preserve ? items : retainKitchenLocks(d, items);
   if (d.needs?.priority === "worktop" && !preserve) {
     try {
-      return findKitchenSuggestion(d, id, preserve, 900);
+      return finish(findKitchenSuggestion(d, nextId, preserve, 900));
     } catch {
       /* A larger work cabinet is a preference, not permission to violate room constraints. */
     }
   }
-  return findKitchenSuggestion(d, id, preserve);
+  return finish(findKitchenSuggestion(d, nextId, preserve));
 }

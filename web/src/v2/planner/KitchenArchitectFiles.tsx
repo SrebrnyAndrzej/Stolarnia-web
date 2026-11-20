@@ -16,6 +16,7 @@ import {
   validateArchitectFile,
   parseArchitectDxf,
   referencePaths,
+  architectBlobBase64 as base64,
 } from "./architect-storage";
 import { draftSchema, type Draft } from "./model";
 import {
@@ -30,14 +31,6 @@ const download = (blob: Blob, name: string) => {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
-const base64 = async (blob: Blob) =>
-  new Promise<string>((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(String(r.result).split(",")[1]);
-    r.onerror = () => reject(new Error("Nie udało się zapakować pliku."));
-    r.readAsDataURL(blob);
-  });
-
 export function KitchenArchitectFiles({
   draft,
   disabled,
@@ -385,7 +378,9 @@ export function KitchenArchitectFiles({
       <p>
         Dodaj kilka rzutów, elewacji i instalacji. DXF, DWG, PDF, JPG i PNG: do
         10 MiB na plik, 20 plików i 40 MiB łącznie. Pliki pozostają na tym
-        urządzeniu; pobierz paczkę, aby zachować je lub przekazać dalej.
+        urządzeniu. Zapisz projekt online, aby zachować je w prywatnym linku,
+        lub pobierz paczkę na dysk. Przejście do zapytania zachowuje oryginały w
+        przekazanej wersji projektu.
       </p>
       <div
         className="kp-file-drop"

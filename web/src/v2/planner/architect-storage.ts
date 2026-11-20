@@ -8,6 +8,14 @@ import {
   CAD_SCALES,
 } from "../../../../src/core/project-files";
 const DB = "pan-stolarz-architect-files-v1";
+export async function architectBlobBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(",")[1]);
+    r.onerror = () => reject(new Error("Nie udało się zapakować pliku."));
+    r.readAsDataURL(blob);
+  });
+}
 function database(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB, 1);

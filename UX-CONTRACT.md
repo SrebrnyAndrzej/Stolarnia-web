@@ -391,3 +391,12 @@ Właściciel: core/furniture-measure + FurnitureMeasure; źródłem geometrii je
 - kitchen-layout współdzieli identyfikatory ścian, długości i odsunięcia klienta oraz serwera. Parallel ma ściany A/C, długość width i rozstaw depth, bez B oraz 650 mm rezerw narożnikowych. C biegnie od prawej do lewej, normalną do wnętrza. Istniejące I/L/U i ich współrzędne zachowują reguły.
 - Wspólne obrysy sprawdzają kolizje przeciwnych rzędów; generator, dopełnianie, hydraulika, osłony, wycena, opis i PDF korzystają z tych samych osi. Nie dodajemy narożnika do układu równoległego. Głębokość pokoju oznacza odległość ścian, a nie wolne przejście.
 - Opcjonalna calibration w imageReference przechowuje from/to w oryginalnych pikselach oraz lengthMM. Walidacja sprawdza położenie końców i zgodność ze skalą. Stare podkłady bez calibration pozostają zgodne. Preset 60 cm uzupełnia długość odcinka wskazanego przez użytkownika, nie oznacza rozpoznawania obrazu.
+
+## Zapis i uzgodnienia kuchni — 20.11.2026
+- Prywatne linki mają rozłączne prawa odczytu i zapisu; podgląd nie zmienia lokalnego projektu. Jawne wczytanie zachowuje Cofnij. Oryginały pobierają się przed zastąpieniem szkicu.
+- Zapis online oczekuje aktualnej rewizji; konflikt prowadzi do wczytania lub osobnej kopii. W trakcie zapisu/pobierania akcje zmiany są blokowane. Błędy są widoczne i zachowują lokalny szkic.
+- Pomiary są deklaracjami przypisanymi do geometrii; zmiana wymiarów/przyłączy oznacza ponowne sprawdzenie. Budżet i przedmiot mają jawne Zapisz/Anuluj oraz wspólne strażniki niezapisanej edycji.
+- Blokada szafki chroni pozycję i wyposażenie także przy zmianie sąsiednich szafek. Nieudana propozycja zachowuje dotychczasowy układ. Odblokowanie jest osobną, jawną akcją.
+- Korekty kolizji pokazują rzut i zmianę położenia przed zastosowaniem. Oszczędności używają dwóch aktualnych wycen serwera i wspólnego Cofnij.
+- Przekazanie do formularza zapisuje niezmienną wersję z oryginałami; samo przejście do formularza nie deklaruje wysłania zapytania. Pakiet formatek/okuć tylko dla właściciela, wyraźnie roboczy do weryfikacji, bez wysyłki Mussi.
+- Weryfikacja: kitchen-online.spec.ts (drugie urządzenie, konflikt, telefon, dostępność dialogu, migawka zapytania), kitchen-projects.test.ts (uprawnienia, oryginały, CAS, idempotencja), kitchen-project-tools.test.ts (blokady, pomiary, światła i poprawki).

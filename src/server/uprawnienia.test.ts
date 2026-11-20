@@ -249,7 +249,7 @@ test("kalkulatory i stare adresy demo wymagają aktywnego właściciela lub prac
 
 test("każda chroniona trasa aplikacji ma regułę w macierzy (nowa trasa bez reguły = błąd testu)", () => {
   // Publiczne, rejestrowane przed bramką dostępu: logowanie, aktywacja, formularz zapytań, podgląd demo, healthz.
-  const PUBLICZNE = new Set(["GET /healthz", "GET /api/cron/marketing", "GET /api/public/marketing-media/:klucz", "GET /api/public/administrator", "POST /api/public/kitchen-estimate", "POST /api/public/kitchen-estimate/pdf", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments"]);
+  const PUBLICZNE = new Set(["GET /healthz", "GET /api/cron/marketing", "GET /api/public/marketing-media/:klucz", "GET /api/public/administrator", "POST /api/public/kitchen-estimate", "POST /api/public/kitchen-estimate/pdf", "POST /api/public/kitchen-projects", "GET /api/public/kitchen-projects/:id", "PUT /api/public/kitchen-projects/:id", "PUT /api/public/kitchen-projects/:id/files/:file", "GET /api/public/kitchen-projects/:id/files/:file", "POST /api/public/kitchen-projects/:id/handoff", "POST /api/public/kitchen-projects/:id/workshop-packet", "GET /api/v2/config", "POST /api/v2/login", "POST /api/v2/logout", "POST /api/v2/activate", "GET /api/v2/session", "POST /api/v2/requests", "GET /api/demo/dekory", "GET /api/v2/presentation/:token", "POST /api/v2/presentation/:token/comments"]);
   type Warstwa = { route?: { path: string | RegExp; methods: Record<string, boolean> } };
   const stos = (app as unknown as { _router: { stack: Warstwa[] } })._router.stack;
   const brak: string[] = [];

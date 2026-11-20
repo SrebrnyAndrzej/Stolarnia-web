@@ -63,6 +63,14 @@ import { kitchenFreeGaps } from "../../../../src/core/kitchen-runs";
 import { KitchenPlanningTools } from "./KitchenPlanningTools";
 import { KitchenZones } from "./KitchenZones";
 import { KitchenNeeds, KitchenNeedsReview } from "./KitchenNeeds";
+import {
+  KitchenProjectExtras,
+  KitchenBudgetAdvice,
+  KitchenRepairPreview,
+} from "./KitchenProjectExtras";
+import { KitchenProjectHub } from "./KitchenProjectHub";
+import { freezeKitchenOnline, onlineLink } from "./kitchen-online";
+import { kitchenLockProblem } from "../../../../src/core/kitchen-locks";
 import { kitchenFunction } from "../../../../src/core/kitchen-functions";
 import { drawerSourceSchema } from "../calculators/model";
 import {
@@ -112,7 +120,10 @@ function initialDraft() {
     };
   }
 }
-export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
+export function KitchenPlanner({
+  staff = false,
+  owner = false,
+}: { staff?: boolean; owner?: boolean } = {}) {
   const [initial] = useState(initialDraft);
   const [returnSource] = useState(() => {
     const q = new URLSearchParams(location.hash.split("?")[1] ?? "");
@@ -197,10 +208,21 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const [islandDirty, setIslandDirty] = useState(false);
   const [architectDirty, setArchitectDirty] = useState(false);
   const [needsDirty, setNeedsDirty] = useState(false);
+  const [detailsDirty, setDetailsDirty] = useState(false);
+  const [cloudBusy, setCloudBusy] = useState(false);
   const [roomFormRevision, setRoomFormRevision] = useState(0);
   const variantModel = useKitchenVariants();
   const pending =
-    editorDirty || roomDirty || islandDirty || architectDirty || needsDirty;
+    editorDirty ||
+    roomDirty ||
+    islandDirty ||
+    architectDirty ||
+    needsDirty ||
+    detailsDirty ||
+    cloudBusy;
+  const dimensionsPending = roomKeys(draft.layout).some(
+    (key) => roomMillimetres(dims[key], unit) !== draft[key],
+  );
   const references = useArchitectReferences(draft.architectFiles);
   const [showPlanFunctions, setShowPlanFunctions] = useState(true);
   const [showPlanUnderlay, setShowPlanUnderlay] = useState(true);
@@ -212,15 +234,19 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const editorBlocked = () => {
     if (!pending) return false;
     setError(
-      needsDirty
-        ? "Zapisz potrzeby domowników albo anuluj odpowiedzi."
-        : islandDirty
-          ? "Zastosuj wyspę albo anuluj jej zmiany."
-          : architectDirty
-            ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
-            : roomDirty
-              ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
-              : UNAPPLIED,
+      cloudBusy
+        ? "Trwa zapis lub odczyt projektu online. Poczekaj na jego zakończenie."
+        : detailsDirty
+          ? "Zapisz budżet lub przedmiot albo anuluj te zmiany."
+          : needsDirty
+            ? "Zapisz potrzeby domowników albo anuluj odpowiedzi."
+            : islandDirty
+              ? "Zastosuj wyspę albo anuluj jej zmiany."
+              : architectDirty
+                ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
+                : roomDirty
+                  ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
+                  : UNAPPLIED,
     );
     requestAnimationFrame(() => {
       if (needsDirty) {
@@ -382,7 +408,16 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
     () => new Map(analysis.materialy.map((m) => [m.id, m])),
     [analysis],
   );
-  const change = (next: Draft) => {
+  const change = (next: Draft, replaceProject = false) => {
+    if (cloudBusy && !replaceProject) {
+      setError("Poczekaj na zakończenie zapisu lub odczytu online.");
+      return;
+    }
+    const lockedProblem = replaceProject ? "" : kitchenLockProblem(draft, next);
+    if (lockedProblem) {
+      setError(lockedProblem);
+      return;
+    }
     setHistory((h) => [...h.slice(-29), draft]);
     setDraft(next);
     setNotice("");
@@ -513,15 +548,25 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
       );
     }
   };
-  const handoff = () => {
+  const handoff = async () => {
     if (editorBlocked()) return;
+    setCloudBusy(true);
     try {
-      sessionStorage.setItem(HANDOFF_KEY, brief(draft));
-      location.hash = "#/zapytanie/kuchnia";
-    } catch {
-      setError(
-        "Nie można przenieść opisu. Pobierz szkic i zachowaj go do rozmowy ze stolarnią.",
+      const snapshot = await freezeKitchenOnline(draft);
+      const link = onlineLink(snapshot.id, snapshot.readToken!);
+      const header = `Projekt kuchni · wersja ${snapshot.sourceRevision} · zamknięty szkic do konsultacji\n${link}\nOryginalne pliki, pomiary, potrzeby i wyposażenie są przypisane do tej wersji.\n\n`;
+      sessionStorage.setItem(
+        HANDOFF_KEY,
+        header + brief(draft).slice(0, 6000 - header.length),
       );
+      location.hash = "#/zapytanie/kuchnia";
+    } catch (problem) {
+      setError(
+        (problem as Error).message ||
+          "Nie można przekazać projektu. Szkic pozostał na urządzeniu. Spróbuj ponownie lub pobierz go do pliku.",
+      );
+    } finally {
+      setCloudBusy(false);
     }
   };
   useEffect(() => {
@@ -582,7 +627,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   ?.focus(),
               );
             }}
-            disabled={conflict !== null || roomDirty}
+            disabled={
+              conflict !== null || roomDirty || detailsDirty || cloudBusy
+            }
             onDirtyChange={setEditorDirty}
           />
           {staff && (
@@ -828,15 +875,17 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
             disabled={
               (!draft.items.length && !draft.island?.items.length) ||
               !!issues.length ||
-              conflict !== null
+              conflict !== null ||
+              pending
             }
             onClick={handoff}
           >
             Przejdź do zapytania <IconArrowRight size={18} />
           </button>
           <p className="kp-muted">
-            Opis układu trafi do formularza. Przed wysłaniem podasz dane
-            kontaktowe.
+            Zamknięta wersja projektu i oryginalne pliki trafią do zapytania.
+            Przed wysłaniem podasz dane kontaktowe. Późniejsze zmiany szkicu nie
+            zmienią przekazanej wersji.
           </p>
           <button className="ps-button secondary" onClick={download}>
             <IconDownload size={18} />
@@ -885,6 +934,21 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                     : "Zapisywanie szkicu…"}
           </span>
         </div>
+        <KitchenProjectHub
+          draft={draft}
+          disabled={pending || dimensionsPending || conflict !== null}
+          owner={owner}
+          onBusy={setCloudBusy}
+          onLoad={(next) => {
+            change(next, true);
+            syncDimensions(next);
+            setWall("a");
+            setSelected(null);
+            setNotice(
+              "Wczytano projekt i oryginalne pliki. Poprzedni szkic możesz przywrócić przez Cofnij.",
+            );
+          }}
+        />
         <nav className="kp-steps" aria-label="Etapy planowania">
           {["Pomieszczenie", "Szafki i wygląd", "Wycena i PDF"].map(
             (label, i) => (
@@ -1073,6 +1137,24 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   </p>
                 )}
               </form>
+              {dimensionsPending && (
+                <p className="kp-muted">
+                  Zmienione wymiary czekają na zastosowanie.{" "}
+                  <button
+                    className="ps-text-button"
+                    disabled={pending || conflict !== null}
+                    onClick={() => {
+                      const next = prepareRoom();
+                      if (next) {
+                        change(next);
+                        syncDimensions(next);
+                      }
+                    }}
+                  >
+                    Zastosuj wymiary przed zapisem online
+                  </button>
+                </p>
+              )}
               <KitchenPlanningTools
                 key={JSON.stringify([draft.planning, draft.layout])}
                 draft={draft}
@@ -1109,7 +1191,15 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 key={roomFormRevision}
                 onDirtyChange={setRoomDirty}
                 draft={draft}
-                disabled={conflict !== null || needsDirty}
+                disabled={
+                  conflict !== null || needsDirty || detailsDirty || cloudBusy
+                }
+                onApply={change}
+              />
+              <KitchenProjectExtras
+                draft={draft}
+                disabled={conflict !== null || (pending && !detailsDirty)}
+                onDirty={setDetailsDirty}
                 onApply={change}
               />
               <KitchenArchitectFiles
@@ -1120,7 +1210,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   editorDirty ||
                   roomDirty ||
                   islandDirty ||
-                  needsDirty
+                  needsDirty ||
+                  detailsDirty ||
+                  cloudBusy
                 }
                 onDirtyChange={setArchitectDirty}
                 onApply={(next) => {
@@ -1142,7 +1234,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   editorDirty ||
                   roomDirty ||
                   islandDirty ||
-                  architectDirty
+                  architectDirty ||
+                  detailsDirty ||
+                  cloudBusy
                 }
                 onDirtyChange={setNeedsDirty}
                 onApply={(next) => {
@@ -1432,6 +1526,23 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   onSelect={chooseCabinet}
                   onEdit={() => go(0)}
                 />
+                <KitchenProjectExtras
+                  draft={draft}
+                  disabled={conflict !== null || (pending && !detailsDirty)}
+                  onDirty={setDetailsDirty}
+                  onApply={change}
+                />
+                <KitchenBudgetAdvice
+                  draft={draft}
+                  estimate={estimate}
+                  disabled={pending || conflict !== null}
+                  onApply={change}
+                />
+                <KitchenRepairPreview
+                  draft={draft}
+                  disabled={pending || conflict !== null}
+                  onApply={change}
+                />
                 {references.errors.map((message, n) => (
                   <Feedback key={n}>{message}</Feedback>
                 ))}
@@ -1445,7 +1556,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                         conflict !== null ||
                         editorDirty ||
                         roomDirty ||
-                        architectDirty
+                        architectDirty ||
+                        detailsDirty ||
+                        cloudBusy
                       }
                       onDirtyChange={setIslandDirty}
                       onApply={(next) => {
@@ -1461,7 +1574,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                         conflict !== null ||
                         editorDirty ||
                         roomDirty ||
-                        islandDirty
+                        islandDirty ||
+                        detailsDirty ||
+                        cloudBusy
                       }
                       onDirtyChange={setArchitectDirty}
                       onApply={(next) => {
@@ -1518,7 +1633,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                         editorDirty ||
                         islandDirty ||
                         architectDirty ||
-                        conflict !== null
+                        conflict !== null ||
+                        detailsDirty ||
+                        cloudBusy
                       }
                       onApply={(next) => {
                         change(next);
@@ -1658,6 +1775,8 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                             >
                               <strong>{m.nazwa}</strong>
                               <small>
+                                {draft.items.find((i) => i.id === m.id)
+                                  ?.locked && "Zablokowana · "}
                                 {kitchenFunction(m)} · od {m.pozycjaXMM} mm
                               </small>
                             </button>

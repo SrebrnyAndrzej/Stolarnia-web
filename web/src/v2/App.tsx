@@ -199,7 +199,7 @@ export function App() {
           </main>
         }
       >
-        <KitchenPlanner staff={staff} />
+        <KitchenPlanner staff={staff} owner={person?.role === "owner"} />
       </Suspense>
     );
   if (privacyRoute)
