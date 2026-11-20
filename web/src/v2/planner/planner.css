@@ -1570,6 +1570,187 @@
 .kp-dialog .kp-actions {
   margin-top: 24px;
 }
+.kp-compare-proposals {
+  margin-top: 12px;
+}
+.kp-proposals-dialog {
+  width: min(1120px, calc(100vw - 32px));
+  max-width: min(1120px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+.kp-proposals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.kp-proposals-header h2 {
+  margin: 0 0 8px;
+}
+.kp-proposals-header p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.kp-proposals-header > button {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
+}
+.kp-proposals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.kp-proposal-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kp-proposal-card:first-child {
+  border-color: var(--text);
+}
+.kp-proposal-kicker {
+  font-size: 12px;
+  color: var(--muted);
+}
+.kp-proposal-card h3 {
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.kp-proposals-scope {
+  display: block;
+  margin-top: 3px;
+}
+.kp-proposal-card p {
+  margin: 0;
+  font-size: 13px;
+}
+.kp-proposal-price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 64px;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+}
+.kp-proposal-price strong {
+  font-size: 23px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.kp-proposal-price small {
+  font-size: 11px;
+}
+.kp-proposal-card dl {
+  margin: 0;
+  font-size: 13px;
+}
+.kp-proposal-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.kp-proposal-card dd {
+  margin: 0;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.kp-proposal-card > .ps-button {
+  margin-top: auto;
+  justify-content: center;
+}
+.kp-proposal-error {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.kp-proposal-same {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  color: var(--muted);
+}
+.kp-proposal-same svg {
+  flex-shrink: 0;
+}
+.kp-proposals-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+}
+.kp-proposals-dialog > footer p {
+  max-width: 680px;
+}
+.kp-proposals-dialog > footer button {
+  flex-shrink: 0;
+}
+.kp-proposals-unavailable {
+  margin-top: 16px;
+  font-size: 13px;
+}
+.kp-proposals-unavailable summary {
+  cursor: pointer;
+}
+.kp-proposals-tabs {
+  display: none;
+}
+@media (max-width: 720px) {
+  .kp-proposals-dialog {
+    padding: 18px;
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+  .kp-proposals-header h2 {
+    font-size: 20px;
+  }
+  .kp-proposals-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .kp-proposals-tabs button {
+    min-height: 44px;
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .kp-proposals-tabs button[aria-pressed="true"] {
+    background: var(--accent-soft);
+    border-color: var(--text);
+  }
+  .kp-proposals-grid {
+    display: block;
+  }
+  .kp-proposal-card[data-active="false"] {
+    display: none;
+  }
+  .kp-proposals-dialog > footer {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
 .kp-page button:disabled {
   opacity: 0.45;
   cursor: not-allowed;

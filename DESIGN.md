@@ -14,6 +14,9 @@ rounded:
 
 ## Overview
 
+### Porównanie propozycji kuchni — 20.11.2026
+KitchenPlanningTools rozszerza istniejącą akcję układania o opcjonalne Porównaj propozycje kuchni. Natywny dialog kp-dialog ma biznesowy wariant kp-proposals-dialog, z maksymalnie trzema kartami obok siebie na komputerze. Karty pokazują priorytet, rzeczywistą orientacyjną cenę, liczbę szuflad, szafek półkowych i szerokość szafki roboczej. Na telefonie przyciski wyboru pokazują jedną kartę naraz, bez szerokiej tabeli i poziomego przewijania. Kolory i kontrolki dziedziczą istniejące tokeny. Powrót nie zmienia szkicu; wybranie kuchni wraca do normalnego podglądu. To porównanie projektów klienta, nie nowy ekran kalkulatora technicznego.
+
 ### Kuchnia według potrzeb domowników — 20.11.2026
 Pierwszy etap zachowuje układ i wymiary, a obok pokazuje KitchenNeeds: trzy krótkie pytania o domowników, przechowywanie i priorytet z wyborem zmywarki. Na telefonie potrzeby poprzedzają wymiary; można je pominąć. Natywne selecty, checkboxy i radio korzystają ze wspólnych tokenów grafitu/oliwki, bez nowej palety. Na komputerze karty układów i pola wymiarowe są zwarte. Krótki nagłówek kp-editing obowiązuje od początku procesu. Jeden przycisk Dalej, widoczny postęp 1/3 i Wstecz ograniczają długość ankiety. Zapisane potrzeby mają krótkie podsumowanie i jawne Zmień potrzeby. Lista proponowanych miejsc pod podglądem łączy potrzeby z rzeczywistymi szafkami i wybiera je w istniejącym inspektorze; braki pozostają jawne.
 

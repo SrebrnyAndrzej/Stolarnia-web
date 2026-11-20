@@ -2,6 +2,13 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Propozycje przed zastosowaniem — 20.11.2026
+- core/kitchen-proposals jest właścicielem przygotowania alternatyw: każdy kandydat przechodzi istniejący suggestKitchen i jego walidację. Pierwszy odpowiada zapisanym potrzebom. Te same zestawy szafek bez względu na ID są scalane; brak dopuszczalnego rozwiązania pokazuje powód, nie fikcyjny trzeci wariant. Materiały, pliki i wyspa są dziedziczone z bieżącego szkicu.
+- KitchenPlanningTools używa tego samego parsera wymiarów/założeń dla układania i porównania. Podgląd nie zapisuje szkicu, historii ani A/B. Dopiero Wybierz tę kuchnię zatwierdza dokładnie pokazany kandydat jako jeden krok historii. Cofnij odtwarza poprzedni projekt i potrzeby.
+- KitchenProposals jest wariantem istniejącego natywnego kp-dialog: showModal zapewnia modalność i klawiaturę, tytuł dostaje fokus; Escape, zamknięcie i Wróć bez zmian przywracają fokus wywołującemu przyciskowi. Mobilne przyciski porównania są natywną grupą z aria-pressed, nie niepełną implementacją ARIA tabs.
+- Cena każdej karty pochodzi z istniejącego useKitchenEstimate: odpowiedź powiązana z pełnym szkicem, anulowanie po zamknięciu, ponowienie po błędzie. Nie wyliczamy ceny w przeglądarce ani rabatu procentowego. Wybór prostszego wyposażenia nie gwarantuje konkretnej oszczędności. Zmiana źródłowego szkicu lub konflikt pamięci w czasie dialogu ukrywa ceny i blokuje zatwierdzenie; klient wraca do rozwiązania konfliktu.
+- Regresja: src/core/kitchen-proposals.test.ts, tests/v2/kitchen-proposals.spec.ts; istniejące przepływy potrzeb, edytora i PDF pozostają weryfikacją wspólnych właścicieli.
+
 ## Potrzeby domowników — 20.11.2026
 - Właściciel danych: core/kitchen-needs-schema, opcjonalne needs w kitchenInputSchema i szkicu wersji 1. Stare szkice bez needs zachowują zachowanie. Potrzeby przechodzą przez import/eksport, lokalny zapis, A/B i opis zapytania; nie tworzą konta ani wysyłki danych.
 - KitchenNeeds używa natywnych pól i bufora odpowiedzi. Dalej/Wstecz przenoszą fokus do nagłówka pytania. Dopiero Zapisz potrzeby zatwierdza jedną zmianę historii; anulowanie odtwarza poprzednie odpowiedzi. Dirty blokuje zastąpienie kuchni, import, cofanie i opuszczenie etapu; beforeunload obejmuje odpowiedzi. Zapis preferencji nie regeneruje szafek ani nie zmienia wybranych materiałów.
