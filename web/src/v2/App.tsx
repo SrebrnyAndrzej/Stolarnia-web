@@ -60,6 +60,7 @@ const KitchenPlanner = lazy(() =>
 const Calculators = lazy(() =>
   import("./calculators/Calculators").then((m) => ({ default: m.Calculators })),
 );
+const FairQuoteCalculator=lazy(()=>import("./calculators/FairQuoteCalculator").then(m=>({default:m.FairQuoteCalculator})));
 
 export function App() {
   const [hash, setHash] = useState(location.hash || "#/");
@@ -299,6 +300,7 @@ export function App() {
       : []),
     ...(owner
       ? [
+          {id:"wycena",label:"Wyceniarka i zarobek",icon:IconCalculator},
           { id: "zamowienia", label: "Zamówienia Mussi", icon: IconStack2 },
           { id: "marketing", label: "Marketing", icon: IconMail },
           { id: "zapytania", label: "Zapytania klientów", icon: IconMail },
@@ -474,6 +476,8 @@ export function App() {
             </div>
           ) : section === "marketing" && owner ? (
             <Marketing />
+          ) : section === "wycena" && owner ? (
+            <FairQuoteCalculator />
           ) : section === "zamowienia" && owner ? (
             <Purchasing />
           ) : section === "meble" && (owner || employee) ? (

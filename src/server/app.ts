@@ -1,6 +1,7 @@
 import { prepareFurnitureBatch } from "./furniture-batch-preparation.js";
 import { registerKitchenEstimate } from "./kitchen-estimate.js";
 import { registerKitchenProjects } from "./kitchen-projects.js";
+import { fairKitchenSource } from "./fair-kitchen-quote.js";
 import { drawerSystems, calculateDrawer } from "./drawer-preview.js";
 import { taskCreate, taskUpdate, requireWorkshop, taskFailure } from "./tasks.js";
 import { DEKORY, artykulyDekoru, kluczDekoru, obrazDekoru, wariantyDekoru, materialDekoru } from "../core/catalog/decors.js";
@@ -275,6 +276,7 @@ const v2 = (fn: (req: Request, person: Principal) => unknown) => async (req: Req
   }
   catch (error) { access.fail(res, error); }
 };
+app.post("/api/v2/kitchen-pricing-source",v2((req,person)=>fairKitchenSource(person,req.body)));
 app.get("/api/v2/projects", v2((_req, person) => s.magazyn.odczytaj().projekty.filter(p => mayReadProject(person, p.id)).map(projectSummary)));
 app.get("/api/v2/projects/:id", v2((req, person) => {
   const id = p(req, "id");

@@ -400,3 +400,9 @@ Właściciel: core/furniture-measure + FurnitureMeasure; źródłem geometrii je
 - Korekty kolizji pokazują rzut i zmianę położenia przed zastosowaniem. Oszczędności używają dwóch aktualnych wycen serwera i wspólnego Cofnij.
 - Przekazanie do formularza zapisuje niezmienną wersję z oryginałami; samo przejście do formularza nie deklaruje wysłania zapytania. Pakiet formatek/okuć tylko dla właściciela, wyraźnie roboczy do weryfikacji, bez wysyłki Mussi.
 - Weryfikacja: kitchen-online.spec.ts (drugie urządzenie, konflikt, telefon, dostępność dialogu, migawka zapytania), kitchen-projects.test.ts (uprawnienia, oryginały, CAS, idempotencja), kitchen-project-tools.test.ts (blokady, pomiary, światła i poprawki).
+
+## Wewnętrzna wyceniarka — 20.11.2026
+- Dostęp wyłącznie aktywnego właściciela, także do źródłowych kosztów w API. Publiczny DTO nie zawiera kosztorysu ani marż.
+- Ręczne koszty nie są zapisywane w localStorage. Edycja ukrywa wynik; Oblicz sprawdza dane i ustawia fokus na błędzie albo nowym wyniku. Wczytanie szkicu zachowuje politykę marży i nie zmienia źródła ani ofert.
+- Mnożnik jest kandydatem; dolny próg obejmuje wynagrodzenie i koszty raz, a docelowa marża ogranicza nadmierny mnożnik. Zysk jest kalkulacyjny, nie gwarantowany. Dane dostawcy i czas wymagają sprawdzenia.
+- Nowy symulator nie przełącza publicznej metody wyceny. Eksport JSON jest wyraźnie wewnętrzny. Testy: fair-quote.test.ts, fair-kitchen-quote.test.ts, uprawnienia.test.ts, fair-quote.spec.ts.

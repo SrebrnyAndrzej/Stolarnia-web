@@ -276,3 +276,6 @@ Kalibracja obrazem zachowuje końce znanego odcinka i jego długość. Przycisk 
 
 ## Uzgodnienia i zapis kuchni — 20.11.2026
 KitchenProjectHub rozszerza istniejące akcje zapisu o osobne linki edycji/podglądu i natywny kp-dialog. KitchenProjectExtras używa natywnych pól, checkboxów i disclosure dla pomiarów, budżetu i gabarytów. KitchenBudgetAdvice i KitchenRepairPreview korzystają z istniejącej wyceny i rzutu. Tokeny panel/line/text/radius z styles.css pozostają właścicielem kolorów. Telefon zachowuje podgląd i następny krok przed katalogiem; zapis online ma zwarty pasek. Źródło: docs/KUCHNIA-ZAPIS-I-PRZEKAZANIE.md.
+
+## Wyceniarka właściciela — 20.11.2026
+FairQuoteCalculator rozszerza panel właściciela o porównanie materiał ×2, dolnego progu kosztów i docelowej marży. Reużywa pc-number-grid, Feedback, ps-button i tokenów panel/line/text/accent-soft/radius. Wynik ma jedną hierarchię cena → zarobek po pracy → porównanie metod. Na telefonie przechodzi pod formularz; brak poziomego przewijania. Kwoty netto i osobogodziny są jawne. Źródło: docs/WYCENIARKA-MATERIAL-X2.md.

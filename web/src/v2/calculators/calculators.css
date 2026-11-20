@@ -132,3 +132,128 @@
     padding: 12px;
   }
 }
+.fq-heading,
+.fq-toolbar {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fq-heading h1 {
+  margin-block: 4px 10px;
+}
+.fq-heading p {
+  max-width: 700px;
+}
+.fq-toolbar {
+  justify-content: start;
+  margin-block: 16px;
+}
+.fq-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-block: 20px;
+}
+.fq-layout form,
+.fq-result {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 22px;
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.fq-layout fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.fq-layout legend {
+  font-size: 18px;
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+.fq-fields small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.fq-fields small.ps-field-error {
+  color: var(--text);
+  font-weight: 650;
+}
+.fq-result {
+  position: sticky;
+  top: 96px;
+}
+.fq-result h2 {
+  font-size: 25px;
+  line-height: 1.25;
+}
+.fq-result dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.fq-result dd {
+  margin: 0;
+  font-weight: 650;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.fq-result table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+  margin-block: 18px;
+}
+.fq-result th,
+.fq-result td {
+  padding: 9px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+.fq-result th:last-child,
+.fq-result td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 10px;
+}
+.fq-result caption {
+  text-align: left;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.fq-policy,
+.fq-assumptions {
+  margin-block: 18px;
+}
+.fq-policy summary,
+.fq-assumptions summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 650;
+}
+.fq-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fq-decision {
+  background: var(--accent-soft);
+  padding: 12px;
+  border-radius: var(--radius);
+}
+@media (max-width: 1000px) {
+  .fq-layout {
+    grid-template-columns: 1fr;
+  }
+  .fq-result {
+    position: static;
+  }
+}

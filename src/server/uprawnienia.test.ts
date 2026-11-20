@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import {pdfText} from "../../tests/helpers/pdf-text.js";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -191,6 +192,13 @@ test("pliki CAD HTTP: prywatny zapis, pobranie, deduplikacja i zakres profili", 
   assert.equal((await zadanie("GET", `${base}/${result.json.id}/content`, "t-montaz")).status, 403);
 });
 
+test("wewnętrzna wyceniarka udostępnia koszty tylko właścicielowi",async()=>{
+ const body={layout:"straight",width:3600,depth:3000,height:2600,items:[{id:randomUUID(),catalogId:"base-shelves-600",wall:"a"}]};
+ for(const token of [undefined,"t-sprzedaz","t-produkcja","t-montaz"]){const r=await zadanie("POST","/api/v2/kitchen-pricing-source",token,body);assert.equal(r.status,403);assert.ok(!r.tekst.includes("productionHourCostNet"));}
+ const anonymous=await oryginalnyFetch(adres+"/api/v2/kitchen-pricing-source",{method:"POST",headers:{origin:process.env.PAN_STOLARZ_ORIGIN??adres,"content-type":"application/json"},body:JSON.stringify(body)});
+ assert.equal(anonymous.status,401);
+ const r=await zadanie("POST","/api/v2/kitchen-pricing-source","t-owner",body);assert.equal(r.status,200,r.tekst);assert.ok(r.json.inputs.materialsNet>0);assert.ok(r.json.lines.length);
+});
 test("publiczna wycena kuchni: bez sesji, z kontrolą Origin i bez odczytu ani zapisu danych firmy", async () => {
   const previous = structuredClone(doc), membershipReads = zapytaniaCzlonkow.length;
   const input = {
@@ -603,3 +611,4 @@ test("prezentacje HTTP: właściciel tworzy, klient odczytuje tylko migawkę, pr
   assert.equal((await zadanie("GET",path)).status,404);
   assert.equal((await zadanie("GET","/api/v2/furniture")).status,401);
 });
+import { randomUUID } from "node:crypto";

@@ -196,5 +196,6 @@ export function calculateKitchenEstimate(raw: unknown) {
     notes,
     issues,
   };
-  return { input, estimate, modules, built };
+  // Internal costing is consumed only by owner-only preview routes. Public handlers return estimate alone.
+  return { input, estimate, modules, built, costing:{legacy:priced,quantities,settings} };
 }
