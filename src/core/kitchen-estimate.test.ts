@@ -28,6 +28,12 @@ test("server calculates sale-only groups and quantities from actual cabinet geom
     e.gross,
   );
   assert.equal(modules.length, 3);
+  assert.match(e.notes.join(" "), /Häfele AXILO/);
+  assert.match(
+    e.scope.find((s) => s.label === "Okucia")!.description,
+    /AMIX \+ zawiasy Häfele/,
+  );
+  assert.doesNotMatch(JSON.stringify(e), /Hettich/);
   for (const secret of [
     "cenaNetto",
     "kosztBazowyNetto",

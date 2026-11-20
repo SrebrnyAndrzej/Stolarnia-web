@@ -2,6 +2,21 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Dobór i inspektor kuchni klienta — 20.11.2026
+- planner/catalog-placement jest wspólnym właścicielem podglądu dostępności i dodania katalogowego: ta sama geometria kitchenIssues i wstawianie w luce fillKitchenGap. Niepasujące szafki nie są oferowane; pusty wynik wskazuje zmianę istniejącej szafki lub miejsca. Kontrola dostępności nie zmienia szkicu ani identyfikatorów istniejących elementów. API nadal niezależnie waliduje projekt.
+- KitchenCabinetEditor pozostaje właścicielem niezatwierdzonych pól. Cztery wizualne zestawy wyposażenia używają istniejących konfiguracji półek i podziału frontów, zachowując pozycję, gabaryty, obudowy i ID. Dopiero Zastosuj zatwierdza wynik istniejącym schematem; Anuluj i Cofnij pozostają dostępne. Zestaw opisuje przeznaczenie, nie dołącza fizycznego organizera ani zatwierdzonego okucia.
+- Katalog/inspektor po prawej na komputerze ma ograniczoną wysokość i własny scroll. Narzędzia pod modelem zachowują naturalny scroll strony, niezależny od panelu. Inspektor edycji z podsumowania mieści się w tej samej karcie co cena i nie może być przykrywany przez sticky katalog. Na telefonie edytor poprzedza dodatkowe narzędzia.
+- Widok3D przyjmuje jawny fitRequest. Pokaż całość dopasowuje kamerę do brył z buildera, bez zmiany geometrii, historii lub ceny; zwykła edycja nie resetuje kamery. Publiczna wycena prezentuje standard AMIX/Häfele/AXILO oraz jawne stawki modelowe, bez potwierdzenia konkretnego SKU.
+- Regresja: planner/catalog-placement.test.ts, tests/v2/kitchen-research-ux.spec.ts i istniejące przepływy kitchen-customer-ux.spec.ts.
+
+## Rzut i przejście między ciągami - 20.11.2026
+
+- Rzut ma opcjonalne symbole AGD i zlewu oraz rzeczywiste obrysy blatów z tego samego buildera co projekt. Symbole oznaczają funkcję, nie wycięcia produkcyjne.
+- kitchenParallelPassage liczy najwęższy wspólny rzut obrysów zamkniętych szafek stojących między A i C, wliczając fronty, blaty i osłony. Nie odejmuje stałych 120 cm od pokoju. Wiszące nie zwężają wyniku; bez przeciwnych części nie ma liczby. Dla wyspy obowiązuje istniejący osobny pomiar. To wymiar zamkniętej zabudowy, nie aprobata otwierania ani ergonomii.
+- Checkboxy warstw w KitchenPlanner są stanem widoku, poza szkicem, ceną, historią i plikami. Ukryty podkład pozostaje częścią obliczenia kadru. Nie usuwa oryginału ani kalibracji.
+- Każdą szafkę w Rzut można wybrać kliknięciem, Enter lub Spacją. KitchenPlanner rozpoznaje ścianę wybranego elementu również bez jawnego targetWall. Obowiązuje dotychczasowa ochrona niezastosowanych zmian i przeniesienie fokusu do nagłówka edytora.
+- Właściciele: widok Rzut / KitchenPlanSymbol; geometria kitchen-passage; zapis i akcje KitchenPlanner. Regresja: src/core/kitchen-passage.test.ts oraz tests/v2/kitchen-readable-plan.spec.ts.
+
 ## Pomieszczenie, luki, cena i warianty klienta — 15.11.2026
 
 - Dane pozostają w mm. roomMillimetres jest wspólnym parserem cm/mm dla pokoju i szerokości/przerwy szafki. Przełączenie poprawnych pól nie zmienia geometrii ani stanu dirty; niepoprawny wpis wymaga korekty przed zmianą jednostki. Domyślna jednostka edycji klienta odpowiada pomieszczeniu, zespołu mm; jawny wybór przetrwa zastosowanie i zmianę wybranej szafki w tej sesji.

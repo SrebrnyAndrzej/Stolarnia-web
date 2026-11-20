@@ -14,6 +14,9 @@ rounded:
 
 ## Overview
 
+### Kreator klienta po researchu — 20.11.2026
+Na komputerze model jest po lewej, a katalog i istniejący KitchenCabinetEditor po prawej. Krótki nagłówek odzyskuje miejsce dla podglądu. Inspektor ma własne przewijanie; dodatkowe narzędzia i lista szafek pozostają w naturalnie przewijanej części poniżej, bez blokady wysokości całej strony. Na telefonie kolejność to podgląd, katalog z edytorem, narzędzia; w wycenie karta ceny pozostaje pierwsza. Graficzne zestawy wyposażenia są natywnymi przyciskami w palecie marki, bez nowych tokenów. Wybór tylko uzupełnia formularz; Zastosuj i Cofnij zachowują swoje znaczenie. Widok 3D ma jawne Pokaż całość, poza szkicem i ceną.
+
 ### Wyspa i dokumentacja architekta — 15.11.2026
 Obecny publiczny kreator otrzymuje dwie zwinięte sekcje pod podglądem: wyspę i pliki architekta. Pozostają te same tokeny, natywne pola i Feedback; bez dodatkowego ekranu lub nowej palety. Wyspa jest osobnym rzędem na wirtualnej linii bez muru, z normalnym builderem szafek, rzeczywistymi panelami i blatem. Formularz w cm stosuje zmiany jednym krokiem historii, a oczekująca edycja chroni nawigację i cenę. Podkłady DXF są przygaszone w rzucie, meble mają pierwszeństwo wizualne. Oryginały i podgląd dokumentacji są w tej samej sekcji; nazwa pomieszczenia i rodzaj rysunku opisują każdy plik. Dodatkowy natywny wybór plików służy całej paczce projektu; dotychczasowy Plik szkicu kuchni zachowuje własne wejście.
 
@@ -57,7 +60,12 @@ Integracja 3.11.2026 zachowuje istniejące tokeny i układ. Szybki projekt używ
 Pliki od architekta są rozwijaną sekcją w szczegółach projektu, obok dokumentacji. Właściciel UI: `ProjectFiles.tsx`, wspólne `.field/.input`, `.ps-button`, `Feedback` i `useResource`. Przerywana ramka oznacza miejsce upuszczenia pojedynczego pliku; natywny input pozostaje alternatywą klawiaturową. Podgląd CAD jest monochromatycznym rzutem 2D w kolorach tokenów aplikacji, bez nowego motywu lub surowego SVG z pliku.
 Pan Stolarz 2.0: strona klienta i panel właściciela/pracownika. Użytkownik wybrał wariant 2 z oryginalnym brandingiem marki. Kontekst zatwierdzonego kierunku: grafitowa nawigacja, zielone zaznaczenia, jasny obszar projektu, lista po lewej i szczegóły po prawej. Dotychczasowy kalkulator i projektant zachowują logikę, dostają wspólne tokeny marki. UI po polsku; PLN, milimetry i Europe/Warsaw.
 
+### Czytelny rzut kuchni - 20.11.2026
+
+Rzut pozostaje w istniejącym podglądzie i korzysta z obecnych tokenów. Wspólny KitchenPlanSymbol dodaje schematyczne oznaczenia płyty, zlewu, zmywarki, lodówki i okapu; tekst jest poziomy niezależnie od ściany. Czytelność rzutu ma krótki pasek natywnych checkboxów nad rysunkiem: oznaczenia oraz podkład, gdy istnieje. Przejście równoległych ciągów ma jedną linię wymiarową i wartość w cm. Brak nowych paneli, palety lub modalnych kroków; wyłączenie warstwy nie zmienia kadru. Fokus szafki ma mocniejszy obrys; Enter/Spacja prowadzą do istniejącego edytora i właściwej ściany.
+
 ## Colors
+
 Marka pochodzi z oryginalnego `src/export/assets/pan-stolarz.png`: #1C2B30, #A5B859, #435058. W v2 źródłem nadpisania tokenów jest `web/src/v2/styles.css`, importowany po bazowym arkuszu. Oryginalny asset jest używany bezpośrednio jako logo; wygenerowana wizualizacja kuchni to jawnie oznaczona inspiracja, nie zdjęcie realizacji. Paleta v2 nadpisuje stary brązowy akcent. Na zieleni tekst grafitowy; główne przyciski grafitowe z białą etykietą. V2 obecnie ma jasne powierzchnie zgodne z wybranym obrazem; starszy automatyczny motyw ciemny nie jest aktywny w nowej warstwie.
 Źródłem tokenów jest `web/src/styles.css`, selektor `:root` i wariant ciemny `prefers-color-scheme`. Powyższe wartości dokumentują tryb jasny, nie stanowią osobnego generatora kolorów. Kalkulator używa wspólnych klas paneli, pól i tabel; scrollbar korzysta z istniejących tokenów linii i panelu.
 

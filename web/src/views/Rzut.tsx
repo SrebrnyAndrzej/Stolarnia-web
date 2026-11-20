@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { KitchenPlanSymbol, kitchenPlanLabel } from "./KitchenPlanSymbol";
+import type { KitchenPassage } from "../../../src/core/kitchen-passage";
 import {
   imageReferenceSize,
   type ArchitectImage,
@@ -33,6 +35,10 @@ interface Props {
   architectImages?: ArchitectImage[];
   roomFootprint?: { width: number; depth: number };
   collisionIds?: string[];
+  showFunctions?: boolean;
+  showWorktops?: boolean;
+  passage?: KitchenPassage | null;
+  showUnderlay?: boolean;
 }
 
 /** Rzut pomieszczenia z góry: lica ścian, szafki dolne pełne, wiszące kreskowane. */
@@ -49,6 +55,10 @@ export function Rzut({
   architectImages = [],
   roomFootprint,
   collisionIds = [],
+  showFunctions = false,
+  showWorktops = false,
+  passage,
+  showUnderlay = true,
 }: Props) {
   const p = analiza.projekt;
   const pom =
@@ -63,7 +73,7 @@ export function Rzut({
       .filter(
         (e) =>
           e.kod.startsWith("OSLONA-") ||
-          (wall.sciana.wirtualna && e.rola === "worktop"),
+          ((wall.sciana.wirtualna || showWorktops) && e.rola === "worktop"),
       )
       .flatMap((e) => {
         const a = m.pozycjaXMM + e.x,
@@ -123,6 +133,8 @@ export function Rzut({
   return (
     <svg
       className="elev"
+      role="group"
+      aria-label="Rzut pomieszczenia z góry"
       viewBox={`${g.x} ${g.y} ${g.w} ${g.h}`}
       onPointerDown={(e) => e.target === e.currentTarget && onWybierz(null)}
     >
@@ -134,7 +146,12 @@ export function Rzut({
         fill="transparent"
         onPointerDown={() => onWybierz(null)}
       />
-      <g data-architect-underlay pointerEvents="none" opacity="0.45">
+      <g
+        data-architect-underlay
+        pointerEvents="none"
+        opacity="0.45"
+        visibility={showUnderlay ? undefined : "hidden"}
+      >
         {architectImages.map(({ url, reference: r }) => {
           const w = r.crop.width * r.mmPerPixel,
             h = r.crop.height * r.mmPerPixel;
@@ -258,7 +275,8 @@ export function Rzut({
       })}
       {analiza.zbudowane.flatMap(({ modul: m, elementy }) => {
         const wall = sciany.find(
-          (w) => w.sciana.id === m.scianaId && w.sciana.wirtualna,
+          (w) =>
+            w.sciana.id === m.scianaId && (w.sciana.wirtualna || showWorktops),
         );
         if (!wall) return [];
         return elementy
@@ -276,7 +294,8 @@ export function Rzut({
             ];
             return (
               <polygon
-                data-island-worktop
+                data-island-worktop={wall.sciana.wirtualna ? true : undefined}
+                data-kitchen-worktop
                 key={`${m.id}-${e.kod}`}
                 points={points.map((p) => p.join(",")).join(" ")}
                 fill="#b58c5e"
@@ -286,7 +305,8 @@ export function Rzut({
                 pointerEvents="none"
               >
                 <title>
-                  Blat wyspy · {e.szer} × {e.gl} mm
+                  {wall.sciana.wirtualna ? "Blat wyspy" : "Blat"} · {e.szer} ×{" "}
+                  {e.gl} mm
                 </title>
               </polygon>
             );
@@ -302,6 +322,12 @@ export function Rzut({
             matMap.get(pom.materialFrontuId)?.kolorHEX) ||
           "#c9b28f";
         const sel = m.id === wybrany;
+        const label = showFunctions ? kitchenPlanLabel(m) : undefined;
+        const symbolScale = Math.min(
+          wiszacy ? 0.5 : 1,
+          m.glebokoscMM / 560,
+          m.szerokoscMM / 450,
+        );
         // Linia frontu (krawędź od strony pomieszczenia)
         const [f1, f2] = [pts[3], pts[2]];
         const cx = pts.reduce((s, q) => s + q[0], 0) / 4;
@@ -309,6 +335,10 @@ export function Rzut({
         return (
           <g
             key={m.id}
+            role="button"
+            tabIndex={0}
+            aria-label={`${label ? `${label} ` : ""}${mm(m.szerokoscMM)} · ${m.nazwa} · ${m.scianaId === "island" ? "wyspa" : `ściana ${m.scianaId.toUpperCase()}`} · szerokość w mm`}
+            aria-pressed={sel}
             data-kitchen-cabinet={m.id}
             data-kitchen-collision={
               collisionIds.includes(m.id) ? "true" : undefined
@@ -316,6 +346,13 @@ export function Rzut({
             onClick={(e) => {
               e.stopPropagation();
               onWybierz(m.id);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onWybierz(m.id);
+              }
             }}
             style={{ cursor: "pointer" }}
           >
@@ -377,7 +414,44 @@ export function Rzut({
                 strokeWidth={22}
               />
             )}
-            {!wiszacy && m.szerokoscMM >= 300 && (
+            {label && (
+              <g
+                data-kitchen-plan-function={m.konstrukcja}
+                pointerEvents="none"
+                aria-hidden="true"
+              >
+                <KitchenPlanSymbol
+                  kind={m.konstrukcja}
+                  x={cx}
+                  y={cy - 45 * symbolScale}
+                  scale={symbolScale}
+                  angle={(Math.atan2(w.dy, w.dx) * 180) / Math.PI}
+                />
+                <text
+                  x={cx}
+                  y={cy + 120 * symbolScale}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={95 * symbolScale}
+                  fill="var(--text)"
+                  stroke="var(--panel)"
+                  strokeWidth={18}
+                  paintOrder="stroke"
+                  fontWeight={700}
+                >
+                  {label}{" "}
+                  <tspan
+                    x={cx}
+                    dy={100 * symbolScale}
+                    fontSize={85 * symbolScale}
+                    fontWeight={400}
+                  >
+                    {mm(m.szerokoscMM)}
+                  </tspan>
+                </text>
+              </g>
+            )}
+            {!label && !wiszacy && m.szerokoscMM >= 300 && (
               <text
                 x={cx}
                 y={cy}
@@ -393,6 +467,47 @@ export function Rzut({
           </g>
         );
       })}
+      {passage && (
+        <g
+          data-kitchen-passage={passage.distanceMM}
+          pointerEvents="none"
+          aria-label={`Przejście między zamkniętymi zabudowami: ${passage.distanceMM / 10} cm`}
+        >
+          <line
+            x1={passage.x}
+            y1={passage.y1}
+            x2={passage.x}
+            y2={passage.y2}
+            stroke="var(--text)"
+            strokeWidth={8}
+          />
+          {[passage.y1, passage.y2].map((y, i) => (
+            <line
+              key={i}
+              x1={passage.x - 55}
+              x2={passage.x + 55}
+              y1={y}
+              y2={y}
+              stroke="var(--text)"
+              strokeWidth={8}
+            />
+          ))}
+          <text
+            x={passage.x + 70}
+            y={(passage.y1 + passage.y2) / 2}
+            dominantBaseline="middle"
+            fontSize={95}
+            fill="var(--text)"
+            stroke="var(--panel)"
+            strokeWidth={35}
+            paintOrder="stroke"
+          >
+            {passage.distanceMM >= 0
+              ? `${(passage.distanceMM / 10).toLocaleString("pl-PL")} cm`
+              : "Kolizja"}
+          </text>
+        </g>
+      )}
     </svg>
   );
 }

@@ -70,7 +70,7 @@ export const kitchenOptions = {
     fluted: "MDF ryflowany lakierowany",
   },
   worktop: { laminate: "Blat laminowany", compact: "Blat kompaktowy HPL" },
-  drawers: { amix: "Amix + zawiasy Hettich", blum: "Blum + zawiasy Hettich" },
+  drawers: { amix: "AMIX + zawiasy Häfele", blum: "Blum + zawiasy Häfele" },
 } as const;
 export const kitchenFinishes = {
   white: "Biel matowa",

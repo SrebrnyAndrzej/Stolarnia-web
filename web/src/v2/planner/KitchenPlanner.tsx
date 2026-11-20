@@ -54,8 +54,9 @@ import { KitchenIslandTools } from "./KitchenIslandTools";
 import { KitchenArchitectFiles } from "./KitchenArchitectFiles";
 import { useArchitectReferences } from "./useArchitectReferences";
 import { kitchenCollisions } from "../../../../src/core/kitchen-collisions";
+import { kitchenParallelPassage } from "../../../../src/core/kitchen-passage";
 import { kitchenLayoutName } from "../../../../src/core/kitchen-layout";
-import { fillKitchenGap } from "../../../../src/core/kitchen-runs";
+import { kitchenAdditionFits, planKitchenAddition } from "./catalog-placement";
 import { isKitchenUpper } from "../../../../src/core/kitchen-configuration";
 import { KitchenDrawerFronts } from "./KitchenDrawerFronts";
 import { KitchenRunTools } from "./KitchenRunTools";
@@ -155,6 +156,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const [wall, setWall] = useState<"a" | "b" | "c">(
     returnItem?.wall ?? initial.draft.items[0]?.wall ?? "a",
   );
+  const [fitRequest, setFitRequest] = useState(0);
   const [view, setView] = useState<"front" | "plan" | "3d">("front");
   const [selected, setSelected] = useState<string | null>(
     returnItem?.id ?? null,
@@ -198,6 +200,8 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const variantModel = useKitchenVariants();
   const pending = editorDirty || roomDirty || islandDirty || architectDirty;
   const references = useArchitectReferences(draft.architectFiles);
+  const [showPlanFunctions, setShowPlanFunctions] = useState(true);
+  const [showPlanUnderlay, setShowPlanUnderlay] = useState(true);
   const [quoteDownload, setQuoteDownload] = useState<QuoteDownloadState>({
     key: "",
     ready: false,
@@ -258,7 +262,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
       }
       return;
     }
-    if (targetWall) setWall(targetWall);
+    const selectedWall =
+      targetWall ?? draft.items.find((item) => item.id === id)?.wall;
+    if (selectedWall) setWall(selectedWall);
     setSelected(id);
     if (id) setGapId("");
     if (id) focusEditor();
@@ -294,6 +300,10 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const resetDialog = useRef<HTMLDialogElement>(null);
   const resetTrigger = useRef<HTMLButtonElement>(null);
   const analysis = useMemo(() => toAnalysis(draft), [draft]);
+  const passage = useMemo(
+    () => kitchenParallelPassage(draft, analysis.zbudowane),
+    [draft, analysis],
+  );
   const collisions = useMemo(
     () => kitchenCollisions(draft, analysis.projekt.moduly),
     [draft, analysis],
@@ -352,49 +362,13 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
       document.getElementById("kp-catalog-title")?.focus(),
     );
   };
-  const gapPlan = (catalogId: string, id: () => string) => {
-    if (!activeGap)
-      throw new Error("Luka zmieniła się. Wybierz aktualne wolne miejsce.");
-    const entry = catalog.find((m) => m.id === catalogId)!;
-    const tier = isKitchenUpper(entry)
-      ? "wall"
-      : entry.category === "tall" || entry.construction === "refrigerator"
-        ? "tall"
-        : "base";
-    const current = kitchenFreeGaps(draft, wall, tier).find(
-      (g) => g.start === activeGap.start && g.end === activeGap.end,
-    );
-    if (!current) throw new Error("Ta szafka nie pasuje do wskazanego rzędu.");
-    return fillKitchenGap(
-      draft,
-      wall,
-      tier,
-      current.id,
-      id,
-      "storage",
-      catalogId,
-    );
-  };
-  const gapFits = (catalogId: string) => {
-    if (!gapId) return true;
-    try {
-      let n = 999999;
-      const id = () => {
-        while (
-          draft.items.some(
-            (i) =>
-              i.id === `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`,
-          )
-        )
-          n--;
-        return `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-      };
-      gapPlan(catalogId, id);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  const availableCatalog = useMemo(
+    () =>
+      catalog.filter((entry) =>
+        kitchenAdditionFits(draft, wall, entry.id, gapId),
+      ),
+    [draft, wall, gapId],
+  );
   const matMap = useMemo(
     () => new Map(analysis.materialy.map((m) => [m.id, m])),
     [analysis],
@@ -453,6 +427,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
     }
     setStep(next);
     setNotice("");
+    setError("");
     requestAnimationFrame(() => heading.current?.focus());
   };
   const undo = () => {
@@ -468,25 +443,11 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const add = (catalogId: string) => {
     if (editorBlocked()) return;
     setNotice("");
-    if (draft.items.length >= 24) {
-      setError("Szkic może zawierać do 24 elementów: szafek i blend.");
-      return;
-    }
-    let next = {
-      ...draft,
-      items: [...draft.items, { id: randomId(), catalogId, wall }],
-    };
-    if (gapId) {
-      try {
-        next = { ...draft, items: gapPlan(catalogId, randomId) };
-      } catch (e) {
-        setError((e as Error).message);
-        return;
-      }
-    }
-    const problems = layoutIssues(next);
-    if (problems.length) {
-      setError(problems[0]);
+    let next: Draft;
+    try {
+      next = planKitchenAddition(draft, wall, catalogId, gapId, randomId);
+    } catch (problem) {
+      setError((problem as Error).message);
       return;
     }
     change(next);
@@ -561,8 +522,82 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
     (m) => m.scianaId === wall,
   );
   const length = wallLength(draft, wall);
+  const visibleCatalog = availableCatalog.filter((m) =>
+    group === "drawers"
+      ? m.construction === "drawers"
+      : group === "base"
+        ? m.category === "base" && m.construction === "shelves"
+        : group === "tall"
+          ? m.category === "tall" && m.construction !== "filler"
+          : group === "water"
+            ? ["sink", "dishwasherFront"].includes(m.construction)
+            : group === "cooking"
+              ? ["oven", "hood"].includes(m.construction)
+              : group === "cooling"
+                ? m.construction === "refrigerator"
+                : group === "fillers"
+                  ? m.construction === "filler"
+                  : m.category === "wall" && m.construction !== "filler",
+  );
+  const cabinetEditor =
+    selected &&
+    draft.items.some((i) => i.id === selected) &&
+    (() => {
+      const item = draft.items.find((i) => i.id === selected)!;
+      const module = analysis.projekt.moduly.find((m) => m.id === selected)!;
+      const built = analysis.zbudowane.find((b) => b.modul.id === selected)!;
+      return (
+        <>
+          <KitchenCabinetEditor
+            key={`editor-${JSON.stringify(item)}`}
+            draft={draft}
+            item={item}
+            module={module}
+            defaultUnit={cabinetUnit ?? (staff ? "mm" : unit)}
+            onUnitChange={setCabinetUnit}
+            onApply={(next) => {
+              change(next);
+              setNotice(
+                "Zmieniono szafkę. Projekt i wycena uwzględnią nowe wyposażenie oraz wymiary. Możesz cofnąć tę zmianę.",
+              );
+              focusEditor();
+            }}
+            onClose={() => {
+              if (editorBlocked()) return;
+              setSelected(null);
+              requestAnimationFrame(() =>
+                document
+                  .querySelector<HTMLButtonElement>(
+                    ".kp-preview-toolbar button",
+                  )
+                  ?.focus(),
+              );
+            }}
+            disabled={conflict !== null || roomDirty}
+            onDirtyChange={setEditorDirty}
+          />
+          {staff && (
+            <KitchenDrawerFronts
+              key={`drawers-${JSON.stringify(item)}`}
+              draft={draft}
+              built={built}
+              initialCode={
+                selected === returnSource?.cabinet
+                  ? returnSource.front
+                  : undefined
+              }
+            />
+          )}
+        </>
+      );
+    })();
   const catalogPanel = (
-    <aside key="kitchen-catalog" className="kp-panel kp-catalog">
+    <aside
+      key="kitchen-catalog"
+      className="kp-panel kp-catalog"
+      aria-label={step === 1 ? "Szafki i wyposażenie" : "Wycena kuchni"}
+    >
+      {step === 1 && cabinetEditor}
       <h2 id="kp-catalog-title" tabIndex={-1}>
         {step === 1 ? "Dodaj szafki" : "Podsumowanie"}
       </h2>
@@ -672,45 +707,57 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
               <option value="fillers">Blendy</option>
             </select>
           </label>
-          <div className="kp-catalog-items">
-            {catalog
-              .filter((m) =>
-                group === "drawers"
-                  ? m.construction === "drawers"
-                  : group === "base"
-                    ? m.category === "base" && m.construction === "shelves"
-                    : group === "tall"
-                      ? m.category === "tall" && m.construction !== "filler"
-                      : group === "water"
-                        ? ["sink", "dishwasherFront"].includes(m.construction)
-                        : group === "cooking"
-                          ? ["oven", "hood"].includes(m.construction)
-                          : group === "cooling"
-                            ? m.construction === "refrigerator"
-                            : group === "fillers"
-                              ? m.construction === "filler"
-                              : m.category === "wall" &&
-                                m.construction !== "filler",
-              )
-              .filter((m) => gapFits(m.id))
-              .map((m) => (
-                <button key={m.id} onClick={() => add(m.id)}>
-                  <span
-                    className={`kp-cabinet-icon ${m.construction}`}
-                    aria-hidden="true"
-                  />
-                  <span>
-                    <strong>Dodaj: {m.name}</strong>
-                    <small>
-                      {m.widthMM} × {m.heightMM}
-                      {m.construction === "filler"
-                        ? " mm · płyta frontowa"
-                        : ` × ${m.depthMM} mm`}
-                    </small>
-                  </span>
-                  <IconPlus size={18} />
+          {!visibleCatalog.length && (
+            <div className="kp-catalog-empty" role="status">
+              <strong>Brak pasujących szafek tego rodzaju.</strong>
+              <p>
+                Kliknij szafkę na rysunku, aby zmienić jej szerokość lub
+                wyposażenie. Możesz też wybrać inną ścianę albo wolną lukę.
+              </p>
+              {activeModules.length > 0 && (
+                <button
+                  className="ps-button secondary"
+                  disabled={conflict !== null}
+                  onClick={() =>
+                    chooseCabinet(
+                      (
+                        activeModules.find(
+                          (m) =>
+                            m.kategoria === "base" &&
+                            ["shelves", "drawers"].includes(m.konstrukcja),
+                        ) ?? activeModules[0]
+                      ).id,
+                    )
+                  }
+                >
+                  Wybierz szafkę do zmiany
                 </button>
-              ))}
+              )}
+            </div>
+          )}
+          <div className="kp-catalog-items">
+            {visibleCatalog.map((m) => (
+              <button
+                key={m.id}
+                disabled={conflict !== null}
+                onClick={() => add(m.id)}
+              >
+                <span
+                  className={`kp-cabinet-icon ${m.construction}`}
+                  aria-hidden="true"
+                />
+                <span>
+                  <strong>Dodaj: {m.name}</strong>
+                  <small>
+                    {m.widthMM} × {m.heightMM}
+                    {m.construction === "filler"
+                      ? " mm · płyta frontowa"
+                      : ` × ${m.depthMM} mm`}
+                  </small>
+                </span>
+                <IconPlus size={18} />
+              </button>
+            ))}
           </div>
           <p className="kp-muted">
             {activeGap
@@ -727,6 +774,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
             onDownloadState={setQuoteDownload}
             disabled={!!issues.length || conflict !== null || pending}
           />
+          {cabinetEditor}
           <details className="kp-quote-parameters">
             <summary>Parametry szkicu</summary>
             <dl className="kp-summary">
@@ -1098,174 +1146,245 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 className="kp-preview-area"
                 aria-label="Podgląd kuchni"
               >
-                <div className="kp-preview-toolbar">
-                  <div role="group" aria-label="Widok projektu">
-                    {(
-                      [
-                        ["front", "Od przodu"],
-                        ["plan", "Rzut z góry"],
-                        ["3d", "3D"],
-                      ] as const
-                    ).map(([id, label]) => (
-                      <button
-                        key={id}
-                        aria-pressed={view === id}
-                        onClick={() => setView(id)}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    className="ps-text-button"
-                    disabled={!history.length}
-                    onClick={undo}
-                  >
-                    <IconArrowBackUp size={18} />
-                    Cofnij
-                  </button>
-                </div>
-                {step === 1 && (
-                  <div
-                    className="kp-live-price"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
-                    <span>Cena orientacyjna brutto</span>
-                    <strong>
-                      {pending
-                        ? "Zastosuj zmiany"
-                        : issues.length
-                          ? "Popraw układ"
-                          : !draft.items.length && !draft.island?.items.length
-                            ? "Dodaj szafki"
-                            : estimate.error
-                              ? "Cena niedostępna"
-                              : estimate.data?.gross != null
-                                ? kitchenMoney(estimate.data.gross)
-                                : estimate.data?.status === "blocked"
-                                  ? "Sprawdź projekt"
-                                  : "Obliczamy…"}
-                    </strong>
-                    {estimate.delta != null &&
-                      estimate.delta !== 0 &&
-                      !pending &&
-                      estimate.data?.gross != null && (
-                        <small>
-                          Ostatnia zmiana: {estimate.delta > 0 ? "+" : "−"}
-                          {kitchenMoney(Math.abs(estimate.delta))}
-                        </small>
-                      )}
-                    {estimate.error && (
+                <div className="kp-preview-stage">
+                  <div className="kp-preview-toolbar">
+                    <div role="group" aria-label="Widok projektu">
+                      {(
+                        [
+                          ["front", "Od przodu"],
+                          ["plan", "Rzut z góry"],
+                          ["3d", "3D"],
+                        ] as const
+                      ).map(([id, label]) => (
+                        <button
+                          key={id}
+                          aria-pressed={view === id}
+                          onClick={() => setView(id)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {view === "3d" && (
                       <button
                         className="ps-text-button"
-                        onClick={estimate.retry}
+                        onClick={() => setFitRequest((n) => n + 1)}
                       >
-                        Ponów wycenę
+                        Pokaż całość
                       </button>
                     )}
-                    <small>Stawki modelowe · potwierdzimy po pomiarze</small>
+                    <button
+                      className="ps-text-button"
+                      disabled={!history.length}
+                      onClick={undo}
+                    >
+                      <IconArrowBackUp size={18} />
+                      Cofnij
+                    </button>
                   </div>
-                )}
-                <div className="kp-canvas">
-                  {view === "front" ? (
-                    <Elewacja
-                      collisionIds={collisionIds}
-                      showFunctions
-                      analiza={analysis}
-                      scianaId={wall}
-                      dlugosc={length}
-                      wysokosc={draft.height}
-                      matMap={matMap}
-                      wybrany={selected}
-                      onWybierz={chooseCabinet}
-                      readOnly
-                      roomFeatures={draft.features}
-                      kitchenGaps={step === 1 ? gaps : []}
-                      onKitchenGap={(id) => chooseGap(wall, id)}
-                    />
-                  ) : view === "plan" ? (
-                    <Rzut
-                      collisionIds={collisionIds}
-                      roomFootprint={
-                        draft.island ||
-                        references.paths.length ||
-                        references.images.length
-                          ? { width: draft.width, depth: draft.depth }
-                          : undefined
-                      }
-                      architectPaths={references.paths}
-                      architectImages={references.images}
-                      roomFeatures={draft.features}
-                      analiza={analysis}
-                      pomieszczenieId="kitchen"
-                      scianaId={wall}
-                      wybrany={selected}
-                      matMap={matMap}
-                      onSciana={(id) =>
-                        chooseCabinet(null, id as "a" | "b" | "c")
-                      }
-                      onWybierz={chooseCabinet}
-                    />
-                  ) : (
-                    <PreviewBoundary key={view}>
-                      <Suspense
-                        fallback={<p role="status">Wczytywanie podglądu 3D…</p>}
-                      >
-                        <View3D
-                          roomFeatures={draft.features}
-                          klient
-                          key={wall}
-                          fitContainer
-                          analiza={analysis}
-                          pomieszczenieId="kitchen"
-                          scianaId={wall}
-                          wybrany={selected}
-                          matMap={matMap}
-                          onWybierz={chooseCabinet}
-                        />
-                      </Suspense>
-                    </PreviewBoundary>
-                  )}
-                  {!draft.items.length && !draft.island?.items.length && (
-                    <div className="kp-canvas-empty">
-                      <strong>Tu powstanie Twoja kuchnia</strong>
-                      <span>Dodaj pierwszą szafkę z katalogu.</span>
+                  {step === 1 && (
+                    <div
+                      className="kp-live-price"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
+                      <span>Cena orientacyjna brutto</span>
+                      <strong>
+                        {pending
+                          ? "Zastosuj zmiany"
+                          : issues.length
+                            ? "Popraw układ"
+                            : !draft.items.length && !draft.island?.items.length
+                              ? "Dodaj szafki"
+                              : estimate.error
+                                ? "Cena niedostępna"
+                                : estimate.data?.gross != null
+                                  ? kitchenMoney(estimate.data.gross)
+                                  : estimate.data?.status === "blocked"
+                                    ? "Sprawdź projekt"
+                                    : "Obliczamy…"}
+                      </strong>
+                      {estimate.delta != null &&
+                        estimate.delta !== 0 &&
+                        !pending &&
+                        estimate.data?.gross != null && (
+                          <small>
+                            Ostatnia zmiana: {estimate.delta > 0 ? "+" : "−"}
+                            {kitchenMoney(Math.abs(estimate.delta))}
+                          </small>
+                        )}
+                      {estimate.error && (
+                        <button
+                          className="ps-text-button"
+                          onClick={estimate.retry}
+                        >
+                          Ponów wycenę
+                        </button>
+                      )}
+                      <small>Stawki modelowe · potwierdzimy po pomiarze</small>
                     </div>
                   )}
-                </div>
-                {collisions.length > 0 && (
-                  <div className="kp-collision-summary">
-                    <Feedback>
-                      <strong>Kolizja lub zablokowane otwieranie</strong>
-                      <p>{collisions[0].message}</p>
-                      <div className="kp-actions">
-                        {collisions[0].ids.map((id) => {
-                          const m = analysis.projekt.moduly.find(
-                            (m) => m.id === id,
-                          )!;
-                          return (
-                            <button
-                              key={id}
-                              className="ps-button secondary"
-                              onClick={() =>
-                                chooseCabinet(id, m.scianaId as "a" | "b" | "c")
-                              }
-                            >
-                              Popraw: {m.nazwa} · {m.scianaId.toUpperCase()}
-                            </button>
-                          );
-                        })}
+                  {view === "plan" && (
+                    <div
+                      className="kp-plan-tools"
+                      role="group"
+                      aria-label="Czytelność rzutu"
+                    >
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={showPlanFunctions}
+                          onChange={(e) =>
+                            setShowPlanFunctions(e.target.checked)
+                          }
+                        />{" "}
+                        Oznaczenia AGD i zlewu
+                      </label>
+                      {(references.paths.length > 0 ||
+                        references.images.length > 0) && (
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={showPlanUnderlay}
+                            onChange={(e) =>
+                              setShowPlanUnderlay(e.target.checked)
+                            }
+                          />{" "}
+                          Podkład rzutu
+                        </label>
+                      )}
+                      {passage && (
+                        <span data-passage-summary>
+                          {passage.distanceMM >= 0
+                            ? `Przejście: ${(passage.distanceMM / 10).toLocaleString("pl-PL")} cm`
+                            : `Nakładanie zabudowy: ${Math.abs(passage.distanceMM / 10).toLocaleString("pl-PL")} cm`}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <div className="kp-canvas">
+                    {view === "front" ? (
+                      <Elewacja
+                        collisionIds={collisionIds}
+                        showFunctions
+                        analiza={analysis}
+                        scianaId={wall}
+                        dlugosc={length}
+                        wysokosc={draft.height}
+                        matMap={matMap}
+                        wybrany={selected}
+                        onWybierz={chooseCabinet}
+                        readOnly
+                        roomFeatures={draft.features}
+                        kitchenGaps={step === 1 ? gaps : []}
+                        onKitchenGap={(id) => chooseGap(wall, id)}
+                      />
+                    ) : view === "plan" ? (
+                      <Rzut
+                        showWorktops
+                        showFunctions={showPlanFunctions}
+                        showUnderlay={showPlanUnderlay}
+                        passage={passage}
+                        collisionIds={collisionIds}
+                        roomFootprint={
+                          draft.island ||
+                          references.paths.length ||
+                          references.images.length
+                            ? { width: draft.width, depth: draft.depth }
+                            : undefined
+                        }
+                        architectPaths={references.paths}
+                        architectImages={references.images}
+                        roomFeatures={draft.features}
+                        analiza={analysis}
+                        pomieszczenieId="kitchen"
+                        scianaId={wall}
+                        wybrany={selected}
+                        matMap={matMap}
+                        onSciana={(id) =>
+                          chooseCabinet(null, id as "a" | "b" | "c")
+                        }
+                        onWybierz={chooseCabinet}
+                      />
+                    ) : (
+                      <PreviewBoundary key={view}>
+                        <Suspense
+                          fallback={
+                            <p role="status">Wczytywanie podglądu 3D…</p>
+                          }
+                        >
+                          <View3D
+                            roomFeatures={draft.features}
+                            fitRequest={fitRequest}
+                            klient
+                            key={wall}
+                            fitContainer
+                            analiza={analysis}
+                            pomieszczenieId="kitchen"
+                            scianaId={wall}
+                            wybrany={selected}
+                            matMap={matMap}
+                            onWybierz={chooseCabinet}
+                          />
+                        </Suspense>
+                      </PreviewBoundary>
+                    )}
+                    {!draft.items.length && !draft.island?.items.length && (
+                      <div className="kp-canvas-empty">
+                        <strong>Tu powstanie Twoja kuchnia</strong>
+                        <span>Dodaj pierwszą szafkę z katalogu.</span>
                       </div>
-                    </Feedback>
+                    )}
                   </div>
-                )}
-                <p className="kp-preview-caption">
-                  {view === "3d"
-                    ? "Przeciągnij, aby obrócić. Przybliżaj kółkiem myszy lub gestem."
-                    : `Ściana ${wall.toUpperCase()} · ${length} mm · kliknij szafkę na rysunku lub wybierz ją z listy.`}{" "}
-                  Kolory są poglądowe.
-                </p>
+                  {collisions.length > 0 && (
+                    <div className="kp-collision-summary">
+                      <Feedback>
+                        <strong>Kolizja lub zablokowane otwieranie</strong>
+                        <p>{collisions[0].message}</p>
+                        <div className="kp-actions">
+                          {collisions[0].ids.map((id) => {
+                            const m = analysis.projekt.moduly.find(
+                              (m) => m.id === id,
+                            )!;
+                            return (
+                              <button
+                                key={id}
+                                className="ps-button secondary"
+                                onClick={() =>
+                                  chooseCabinet(
+                                    id,
+                                    m.scianaId as "a" | "b" | "c",
+                                  )
+                                }
+                              >
+                                Popraw: {m.nazwa} · {m.scianaId.toUpperCase()}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </Feedback>
+                    </div>
+                  )}
+                  <p className="kp-preview-caption">
+                    {view === "3d"
+                      ? "Przeciągnij, aby obrócić. Przybliżaj kółkiem myszy lub gestem."
+                      : view === "plan"
+                        ? "Kliknij szafkę na rzucie lub wybierz ją z listy, aby ją zmienić."
+                        : `Ściana ${wall.toUpperCase()} · ${length} mm · kliknij szafkę na rysunku lub wybierz ją z listy.`}{" "}
+                    Kolory są poglądowe.
+                    {view === "plan" &&
+                      passage &&
+                      " Przejście mierzymy przy zamkniętych szafkach; otwieranie sprawdzamy osobno."}
+                    {view === "plan" &&
+                      showPlanFunctions &&
+                      " Oznaczenia AGD są schematyczne."}
+                  </p>
+                </div>
+              </section>
+              <section
+                className="kp-design-tools"
+                aria-label="Narzędzia projektu i lista szafek"
+              >
                 {references.errors.map((message, n) => (
                   <Feedback key={n}>{message}</Feedback>
                 ))}
@@ -1381,61 +1500,6 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                     setGapId("");
                   }}
                 />
-                {selected &&
-                  draft.items.some((i) => i.id === selected) &&
-                  (() => {
-                    const item = draft.items.find((i) => i.id === selected)!;
-                    const module = analysis.projekt.moduly.find(
-                      (m) => m.id === selected,
-                    )!;
-                    const built = analysis.zbudowane.find(
-                      (b) => b.modul.id === selected,
-                    )!;
-                    return (
-                      <>
-                        <KitchenCabinetEditor
-                          key={`editor-${JSON.stringify(item)}`}
-                          draft={draft}
-                          item={item}
-                          module={module}
-                          defaultUnit={cabinetUnit ?? (staff ? "mm" : unit)}
-                          onUnitChange={setCabinetUnit}
-                          onApply={(next) => {
-                            change(next);
-                            setNotice(
-                              "Zmieniono szafkę. Projekt i wycena uwzględnią nowe wyposażenie oraz wymiary. Możesz cofnąć tę zmianę.",
-                            );
-                            focusEditor();
-                          }}
-                          onClose={() => {
-                            if (editorBlocked()) return;
-                            setSelected(null);
-                            requestAnimationFrame(() =>
-                              document
-                                .querySelector<HTMLButtonElement>(
-                                  ".kp-preview-toolbar button",
-                                )
-                                ?.focus(),
-                            );
-                          }}
-                          disabled={conflict !== null || roomDirty}
-                          onDirtyChange={setEditorDirty}
-                        />
-                        {staff && (
-                          <KitchenDrawerFronts
-                            key={`drawers-${JSON.stringify(item)}`}
-                            draft={draft}
-                            built={built}
-                            initialCode={
-                              selected === returnSource?.cabinet
-                                ? returnSource.front
-                                : undefined
-                            }
-                          />
-                        )}
-                      </>
-                    );
-                  })()}
                 {issues.length > 0 && (
                   <Feedback>
                     {issues.map((i) => (

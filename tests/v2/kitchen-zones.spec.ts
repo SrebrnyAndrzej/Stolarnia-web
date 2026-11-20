@@ -68,7 +68,10 @@ for (const phone of [false, true])
       .selectOption("cooking");
     await expect(
       page.getByRole("button", { name: /Dodaj: Szafka wisząca pod okap 600/ }),
-    ).toBeVisible();
+    ).toHaveCount(0);
+    await expect(page.locator(".kp-catalog-empty")).toContainText(
+      "Brak pasujących szafek tego rodzaju",
+    );
     await expect(
       page.getByRole("button", { name: /Dodaj: Szafka pod zlew/ }),
     ).toHaveCount(0);

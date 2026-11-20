@@ -266,7 +266,7 @@ test("multiple originals persist, DXF underlays combine and a complete project p
   ).toHaveCount(2);
   const context = await browser.newContext();
   const other = await context.newPage();
-  await other.goto("http://127.0.0.1:4201/#/kreator-kuchni");
+  await other.goto(page.url());
   await other.locator(".kp-architect-tools summary").click();
   await other
     .getByLabel("Wczytaj paczkę projektu", { exact: true })

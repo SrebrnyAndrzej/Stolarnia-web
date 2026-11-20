@@ -36,7 +36,9 @@ export function calculateKitchenEstimate(raw: unknown) {
     },
   ];
   const fittings: Okucie[] = [
-    ...OKUCIA_STARTOWE,
+    ...OKUCIA_STARTOWE.filter(
+      (o) => o.typ !== "noga" || o.id === "hafele.axilo",
+    ),
     {
       ...OKUCIA_STARTOWE.find((o) => o.id === "amix.fgv.drawbox")!,
       id: "customer-amix",
@@ -45,10 +47,13 @@ export function calculateKitchenEstimate(raw: unknown) {
     },
     {
       ...OKUCIA_STARTOWE.find((o) => o.typ === "zawias")!,
-      id: "customer-hettich",
-      producent: "Hettich",
-      nazwa: "Hettich Sensys z prowadnikiem",
-      cenaNetto: 14.88 / 1.23,
+      id: "customer-hafele-reserve",
+      profilID: "customer-hafele-reserve",
+      producent: "Häfele",
+      system: "Rezerwa modelowa",
+      nazwa: "Zawiasy Häfele z prowadnikami — rezerwa modelowa",
+      // Existing generic budgeting allowance, not a price or selection of a manufacturer SKU.
+      cenaNetto: 24,
       rabatProcent: 0,
     },
   ];
@@ -102,7 +107,7 @@ export function calculateKitchenEstimate(raw: unknown) {
     {
       systemSzuflad:
         opts.drawers === "amix" ? "customer-amix" : "blum.tandembox.antaro",
-      zawiasy: "customer-hettich",
+      zawiasy: "customer-hafele-reserve",
     },
   );
   const issues = kitchenIssues(input);
@@ -113,6 +118,7 @@ export function calculateKitchenEstimate(raw: unknown) {
     );
   const notes = [
     "Cena orientacyjna na stawkach modelowych, do potwierdzenia po pomiarze i wyborze dekorów. Nie jest potwierdzonym cennikiem zakładu.",
+    "Standard: nóżki Häfele AXILO i zawiasy Häfele; domyślne szuflady AMIX. Koszt zawiasów z prowadnikami jest rezerwą modelową, nie ceną konkretnego produktu. Modele, ilości i ceny okuć potwierdzamy po doborze.",
     "Bez zakupu AGD, zlewu, baterii, podłączeń i przebudowy instalacji. Transport przyjęto jako lokalny; adres i warunki wniesienia do potwierdzenia.",
     input.items.some((i) => i.catalogId === "base-blind-corner-1100")
       ? "Wybrane szafki narożne ślepe są w cenie. Systemy wysuwane i otwieranie wymagają osobnego doboru; sąsiednia ściana zachowuje odsunięcie 650 mm."

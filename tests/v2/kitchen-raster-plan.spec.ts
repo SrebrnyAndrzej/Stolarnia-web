@@ -201,7 +201,7 @@ test("two-point calibration, rotation, cancel, undo and transfer preserve origin
   expect(bundle.files[0].data.length).toBeGreaterThan(100);
   const context = await browser.newContext();
   const other = await context.newPage();
-  await other.goto("http://127.0.0.1:4201/#/kreator-kuchni");
+  await other.goto(page.url());
   await other.locator(".kp-architect-tools summary").click();
   await other
     .getByLabel("Wczytaj paczkę projektu", { exact: true })
@@ -217,7 +217,9 @@ test("two-point calibration, rotation, cancel, undo and transfer preserve origin
     original.architectFiles[0].id,
   );
   await context.close();
-  await page.getByRole("button", {name: "Przejdź do szafek", exact: false}).click();
+  await page
+    .getByRole("button", { name: "Przejdź do szafek", exact: false })
+    .click();
   await page.locator(".kp-architect-tools summary").click();
   await page
     .getByRole("button", { name: "Usuń z projektu parter.jpg", exact: true })

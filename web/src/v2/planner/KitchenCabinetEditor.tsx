@@ -286,6 +286,96 @@ export function KitchenCabinetEditor({
       >
         <fieldset disabled={disabled}>
           <legend>Wymiary i wnętrze</legend>
+          {canChangeStorage && (
+            <div
+              className="kp-storage-presets"
+              role="group"
+              aria-label="Gotowe wyposażenie szafki"
+            >
+              {(
+                [
+                  {
+                    id: "shelves",
+                    name: "Drzwi i półki",
+                    count: 2,
+                    mode: "standard",
+                  },
+                  {
+                    id: "drawers",
+                    name: "Trzy równe szuflady",
+                    count: 3,
+                    mode: "equal",
+                  },
+                  {
+                    id: "drawers",
+                    name: "Sztućce i garnki",
+                    count: 3,
+                    mode: "graduated",
+                  },
+                  {
+                    id: "drawers",
+                    name: "Dwie wysokie szuflady",
+                    count: 2,
+                    mode: "equal",
+                  },
+                ] as const
+              ).map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  aria-pressed={
+                    entry.construction === preset.id &&
+                    (preset.id === "shelves"
+                      ? Number(form.shelves) === preset.count
+                      : Number(form.drawers) === preset.count &&
+                        layout === preset.mode)
+                  }
+                  onClick={() => {
+                    setForm((old) => ({
+                      ...old,
+                      catalogId: `base-${preset.id}-600`,
+                      ...(preset.id === "shelves"
+                        ? { shelves: String(preset.count) }
+                        : { drawers: String(preset.count) }),
+                    }));
+                    setLayout(preset.mode);
+                    setHeights(Array(preset.count).fill(""));
+                    setError("");
+                  }}
+                >
+                  <svg viewBox="0 0 56 54" aria-hidden="true">
+                    <rect x="9" y="3" width="38" height="48" rx="1" />
+                    {preset.id === "shelves" ? (
+                      <>
+                        <path d="M28 3v48" />
+                        <path d="M31 25h3" />
+                      </>
+                    ) : preset.count === 2 ? (
+                      <>
+                        <path d="M9 27h38" />
+                        <path d="M25 15h6M25 39h6" />
+                      </>
+                    ) : preset.mode === "graduated" ? (
+                      <>
+                        <path d="M9 15h38M9 33h38" />
+                        <path d="M25 9h6M25 24h6M25 42h6" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M9 19h38M9 35h38" />
+                        <path d="M25 11h6M25 27h6M25 43h6" />
+                      </>
+                    )}
+                  </svg>
+                  <span>{preset.name}</span>
+                </button>
+              ))}
+              <p>
+                Wybierz układ i zastosuj go do szafki. Szczegóły możesz zmienić
+                poniżej.
+              </p>
+            </div>
+          )}
           <label className="kp-editor-unit">
             Jednostka edycji
             <select

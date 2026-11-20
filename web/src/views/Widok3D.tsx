@@ -14,6 +14,8 @@ import type {
 } from "../../../src/server/technical";
 
 interface Props {
+  /** Explicit fit request; camera changes never alter the kitchen draft. */
+  fitRequest?: number;
   roomFeatures?: import("../../../src/core/kitchen-room").KitchenFeature[];
   fitContainer?: boolean;
   analiza: Pick<TechnicalAnalysis, "projekt" | "zbudowane">;
@@ -87,6 +89,7 @@ const M = 1 / 1000; // mm → m
  * Moduł stoi tyłem do lica ściany; elementy z buildera (boki, półki, fronty, blat) jako bryły.
  */
 export function Widok3D({
+  fitRequest = 0,
   analiza,
   pomieszczenieId,
   scianaId,
@@ -100,6 +103,7 @@ export function Widok3D({
   roomFeatures,
 }: Props) {
   const host = useRef<HTMLDivElement>(null);
+  const previousFit = useRef(fitRequest);
   const captureReady = useRef(onCaptureReady);
   captureReady.current = onCaptureReady;
   const stan = useRef<{
@@ -819,7 +823,7 @@ export function Widok3D({
     }
 
     // Kamera — ustaw raz na pomieszczenie, potem zostaw użytkownikowi
-    if (s.kamUstawiona !== pom.id) {
+    if (s.kamUstawiona !== pom.id || previousFit.current !== fitRequest) {
       const cx = (g.x + g.w / 2) * M;
       const cz = (g.y + g.h / 2) * M;
       const aktywna = rzut.find((q) => q.sciana.id === scianaId) ?? rzut[0];
@@ -838,7 +842,7 @@ export function Widok3D({
       );
       s.camera.position.set(kx, Math.max(1.9, najwyzej + 0.7), kz);
       s.controls.target.set(aktywna ? ax * M : cx, 1.0, aktywna ? az * M : cz);
-      if (klient && rzut.some((w) => w.sciana.wirtualna)) {
+      if (klient) {
         const bounds = new THREE.Box3();
         for (const { modul: m, elementy } of analiza.zbudowane) {
           const wall = rzut.find((w) => w.sciana.id === m.scianaId);
@@ -875,6 +879,7 @@ export function Widok3D({
       }
       s.controls.update();
       s.kamUstawiona = pom.id;
+      previousFit.current = fitRequest;
     }
     s.renderer.render(s.scene, s.camera);
     captureReady.current?.(true);
@@ -886,6 +891,7 @@ export function Widok3D({
     matMap,
     klient,
     roomFeatures,
+    fitRequest,
   ]);
 
   return (
