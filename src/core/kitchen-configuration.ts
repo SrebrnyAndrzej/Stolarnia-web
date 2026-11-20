@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { kitchenNeedsSchema } from "./kitchen-needs-schema.js";
 import { KATALOG_MODULOW, domyslnaKonfiguracja } from "./catalog/modules.js";
 import type { Modul, ModulKatalogowy } from "./types.js";
 import { islandIssues } from "./kitchen-island.js";
@@ -234,6 +235,7 @@ export const kitchenInputSchema = z
       .optional(),
     items: z.array(kitchenItemSchema).max(24),
     planning: kitchenPlanningSchema.optional(),
+    needs: kitchenNeedsSchema.optional(),
     features: z.array(kitchenFeatureSchema).max(20).optional(),
     island: kitchenIslandSchema.optional(),
     architectFiles: architectFilesSchema.optional(),

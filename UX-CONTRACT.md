@@ -2,6 +2,13 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Potrzeby domowników — 20.11.2026
+- Właściciel danych: core/kitchen-needs-schema, opcjonalne needs w kitchenInputSchema i szkicu wersji 1. Stare szkice bez needs zachowują zachowanie. Potrzeby przechodzą przez import/eksport, lokalny zapis, A/B i opis zapytania; nie tworzą konta ani wysyłki danych.
+- KitchenNeeds używa natywnych pól i bufora odpowiedzi. Dalej/Wstecz przenoszą fokus do nagłówka pytania. Dopiero Zapisz potrzeby zatwierdza jedną zmianę historii; anulowanie odtwarza poprzednie odpowiedzi. Dirty blokuje zastąpienie kuchni, import, cofanie i opuszczenie etapu; beforeunload obejmuje odpowiedzi. Zapis preferencji nie regeneruje szafek ani nie zmienia wybranych materiałów.
+- suggestKitchen pozostaje jedynym właścicielem propozycji. Adaptacja wnętrz w kitchen-needs zmienia wyłącznie nowo generowane szafki, zachowuje gabaryty i istniejące ID podczas uzupełniania. Priorytet blatu próbuje strefy 900 mm i wraca do 600 mm, jeśli szerszy wariant nie spełnia istniejącej walidacji. Każda propozycja przechodzi dotychczasowe kitchenIssues i przegląd funkcjonalny; brak miejsca nie usuwa urządzeń.
+- reviewKitchenNeeds wylicza propozycje przeznaczenia z bieżącej geometrii po każdej edycji. Pokaż szafkę korzysta z chooseCabinet i istniejącej ochrony edycji. Brak osobnej szafki, wymiary małego AGD i kosz segregacyjny są do doprecyzowania; wybór potrzeby nie oznacza dodania akcesorium lub potwierdzenia pojemności. Cena nadal pochodzi z istniejącego silnika, bez fikcyjnego rabatu dla priorytetu ekonomicznego. Dwustronicowa oferta zachowuje format.
+- Dowody: src/core/kitchen-needs.test.ts, tests/v2/kitchen-needs.spec.ts oraz dotychczasowe testy układów, edytora i wyceny.
+
 ## Dobór i inspektor kuchni klienta — 20.11.2026
 - planner/catalog-placement jest wspólnym właścicielem podglądu dostępności i dodania katalogowego: ta sama geometria kitchenIssues i wstawianie w luce fillKitchenGap. Niepasujące szafki nie są oferowane; pusty wynik wskazuje zmianę istniejącej szafki lub miejsca. Kontrola dostępności nie zmienia szkicu ani identyfikatorów istniejących elementów. API nadal niezależnie waliduje projekt.
 - KitchenCabinetEditor pozostaje właścicielem niezatwierdzonych pól. Cztery wizualne zestawy wyposażenia używają istniejących konfiguracji półek i podziału frontów, zachowując pozycję, gabaryty, obudowy i ID. Dopiero Zastosuj zatwierdza wynik istniejącym schematem; Anuluj i Cofnij pozostają dostępne. Zestaw opisuje przeznaczenie, nie dołącza fizycznego organizera ani zatwierdzonego okucia.

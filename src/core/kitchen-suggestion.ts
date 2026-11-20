@@ -12,6 +12,7 @@ import { kitchenFunctionalReview } from "./kitchen-functions.js";
 import { trimKitchenStorage } from "./kitchen-room-layout.js";
 import { kitchenPlanningEnd } from "./kitchen-collisions.js";
 import { kitchenWallStart } from "./kitchen-layout.js";
+import { adaptKitchenStorage } from "./kitchen-needs.js";
 
 type Wall = KitchenItem["wall"];
 type Slot = { catalogId: string; width: number; gapBefore?: number };
@@ -37,10 +38,11 @@ const storage = (width: number): Slot[] => {
 };
 
 /** Deterministic functional groups; these planning allowances are not installation clearances. */
-export function suggestKitchen(
+function findKitchenSuggestion(
   d: Omit<KitchenInput, "quote">,
   id: () => string,
   preserve = false,
+  preparationWidth = 600,
 ): KitchenItem[] {
   const waterPoint = d.features?.find((f) => f.kind === "water");
   const p = kitchenPlanningSchema.parse({
@@ -137,7 +139,7 @@ export function suggestKitchen(
           ...(!oldSink ? [{ catalogId: "base-sink-600", width: 600 }] : []),
         ];
         const cook: Slot[] = [
-          { catalogId: "base-drawers-600", width: 600 },
+          { catalogId: "base-drawers-600", width: preparationWidth },
           { catalogId: "base-oven-600", width: 600 },
           { catalogId: "base-shelves-600", width: 300 },
         ];
@@ -365,6 +367,11 @@ export function suggestKitchen(
             candidate,
             new Set(existingItems.map((i) => i.id)),
           );
+          candidate = adaptKitchenStorage(
+            candidate,
+            d.needs,
+            new Set(existingItems.map((i) => i.id)),
+          );
           if (candidate.length > 24) continue;
           if (
             candidate.some((i) => !kitchenItemSchema.safeParse(i).success) ||
@@ -401,4 +408,19 @@ export function suggestKitchen(
   throw new Error(
     "Nie mieści się spójny układ z lodówką, zlewem, wybraną zmywarką, strefą przygotowania 600 mm oraz piekarnikiem z płytą i okapem. Zmień wymiary, ścianę lub środek zlewu, wybierz zmywarkę 450 mm albo bez zmywarki. Dotychczasowy projekt pozostaje bez zmian.",
   );
+}
+
+export function suggestKitchen(
+  d: Omit<KitchenInput, "quote">,
+  id: () => string,
+  preserve = false,
+): KitchenItem[] {
+  if (d.needs?.priority === "worktop" && !preserve) {
+    try {
+      return findKitchenSuggestion(d, id, preserve, 900);
+    } catch {
+      /* A larger work cabinet is a preference, not permission to violate room constraints. */
+    }
+  }
+  return findKitchenSuggestion(d, id, preserve);
 }

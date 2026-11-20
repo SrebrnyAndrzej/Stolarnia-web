@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  kitchenNeedsSchema,
+  kitchenNeedsBrief,
+} from "../../../../src/core/kitchen-needs-schema";
+import {
   architectFilesSchema,
   architectRoles,
 } from "../../../../src/core/architect-files";
@@ -63,6 +67,7 @@ export const draftSchema = z
       .optional(),
     items: z.array(kitchenItemSchema).max(24),
     planning: kitchenPlanningSchema.optional(),
+    needs: kitchenNeedsSchema.optional(),
     features: z.array(kitchenFeatureSchema).max(20).optional(),
     island: kitchenIslandSchema.optional(),
     architectFiles: architectFilesSchema.optional(),
@@ -163,6 +168,7 @@ export function brief(d: Draft): string {
   const analysis = toAnalysis(d);
   const lines = [
     "Szkic z kreatora Pan Stolarz (do weryfikacji pomiarem).",
+    ...(d.needs ? [`Potrzeby domowników: ${kitchenNeedsBrief(d.needs)}`] : []),
     `Układ: ${kitchenLayoutName(d.layout)}. Ściana A: ${d.width} mm${d.layout === "parallel" ? `, C: ${d.width} mm, odległość między ścianami: ${d.depth} mm` : d.layout !== "straight" ? `, B: ${d.depth} mm` : ""}${d.layout === "u" ? `, C: ${d.returnLength} mm` : ""}. Wysokość: ${d.height} mm.`,
     d.decor
       ? `Wybrany dekor frontów: ${d.decor.manufacturer} ${d.decor.id} — ${d.decor.name}. Do potwierdzenia na próbce.`

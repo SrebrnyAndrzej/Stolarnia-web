@@ -14,6 +14,9 @@ rounded:
 
 ## Overview
 
+### Kuchnia według potrzeb domowników — 20.11.2026
+Pierwszy etap zachowuje układ i wymiary, a obok pokazuje KitchenNeeds: trzy krótkie pytania o domowników, przechowywanie i priorytet z wyborem zmywarki. Na telefonie potrzeby poprzedzają wymiary; można je pominąć. Natywne selecty, checkboxy i radio korzystają ze wspólnych tokenów grafitu/oliwki, bez nowej palety. Na komputerze karty układów i pola wymiarowe są zwarte. Krótki nagłówek kp-editing obowiązuje od początku procesu. Jeden przycisk Dalej, widoczny postęp 1/3 i Wstecz ograniczają długość ankiety. Zapisane potrzeby mają krótkie podsumowanie i jawne Zmień potrzeby. Lista proponowanych miejsc pod podglądem łączy potrzeby z rzeczywistymi szafkami i wybiera je w istniejącym inspektorze; braki pozostają jawne.
+
 ### Kreator klienta po researchu — 20.11.2026
 Na komputerze model jest po lewej, a katalog i istniejący KitchenCabinetEditor po prawej. Krótki nagłówek odzyskuje miejsce dla podglądu. Inspektor ma własne przewijanie; dodatkowe narzędzia i lista szafek pozostają w naturalnie przewijanej części poniżej, bez blokady wysokości całej strony. Na telefonie kolejność to podgląd, katalog z edytorem, narzędzia; w wycenie karta ceny pozostaje pierwsza. Graficzne zestawy wyposażenia są natywnymi przyciskami w palecie marki, bez nowych tokenów. Wybór tylko uzupełnia formularz; Zastosuj i Cofnij zachowują swoje znaczenie. Widok 3D ma jawne Pokaż całość, poza szkicem i ceną.
 

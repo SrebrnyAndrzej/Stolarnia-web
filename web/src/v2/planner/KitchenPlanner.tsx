@@ -20,7 +20,6 @@ import {
   IconArrowDown,
   IconArrowBackUp,
   IconUpload,
-  IconRulerMeasure,
 } from "@tabler/icons-react";
 import { Logo, Feedback } from "../ui";
 import { Rzut } from "../../views/Rzut";
@@ -63,6 +62,7 @@ import { KitchenRunTools } from "./KitchenRunTools";
 import { kitchenFreeGaps } from "../../../../src/core/kitchen-runs";
 import { KitchenPlanningTools } from "./KitchenPlanningTools";
 import { KitchenZones } from "./KitchenZones";
+import { KitchenNeeds, KitchenNeedsReview } from "./KitchenNeeds";
 import { kitchenFunction } from "../../../../src/core/kitchen-functions";
 import { drawerSourceSchema } from "../calculators/model";
 import {
@@ -196,9 +196,11 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const [roomDirty, setRoomDirty] = useState(false);
   const [islandDirty, setIslandDirty] = useState(false);
   const [architectDirty, setArchitectDirty] = useState(false);
+  const [needsDirty, setNeedsDirty] = useState(false);
   const [roomFormRevision, setRoomFormRevision] = useState(0);
   const variantModel = useKitchenVariants();
-  const pending = editorDirty || roomDirty || islandDirty || architectDirty;
+  const pending =
+    editorDirty || roomDirty || islandDirty || architectDirty || needsDirty;
   const references = useArchitectReferences(draft.architectFiles);
   const [showPlanFunctions, setShowPlanFunctions] = useState(true);
   const [showPlanUnderlay, setShowPlanUnderlay] = useState(true);
@@ -210,15 +212,21 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
   const editorBlocked = () => {
     if (!pending) return false;
     setError(
-      islandDirty
-        ? "Zastosuj wyspę albo anuluj jej zmiany."
-        : architectDirty
-          ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
-          : roomDirty
-            ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
-            : UNAPPLIED,
+      needsDirty
+        ? "Zapisz potrzeby domowników albo anuluj odpowiedzi."
+        : islandDirty
+          ? "Zastosuj wyspę albo anuluj jej zmiany."
+          : architectDirty
+            ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
+            : roomDirty
+              ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
+              : UNAPPLIED,
     );
     requestAnimationFrame(() => {
+      if (needsDirty) {
+        document.querySelector<HTMLButtonElement>("[data-save-needs]")?.focus();
+        return;
+      }
       if (islandDirty || architectDirty) {
         const tools = document.querySelector<HTMLDetailsElement>(
           islandDirty ? ".kp-island-tools" : ".kp-architect-tools",
@@ -273,6 +281,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
     if (!pending)
       setError((old) =>
         old === UNAPPLIED ||
+        old === "Zapisz potrzeby domowników albo anuluj odpowiedzi." ||
         old === "Zastosuj wyspę albo anuluj jej zmiany." ||
         old ===
           "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików." ||
@@ -838,7 +847,7 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
     </aside>
   );
   return (
-    <div className={`kp-page ${step > 0 ? "kp-editing" : ""}`}>
+    <div className="kp-page kp-editing">
       <header className="ps-public-header">
         <a href="#/">
           <Logo />
@@ -864,9 +873,11 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
             {conflict !== null
               ? "Zmiana w innej karcie"
               : pending
-                ? roomDirty
-                  ? "Zmiany pomieszczenia czekają na zapisanie"
-                  : "Zmiany szafki czekają na zastosowanie"
+                ? needsDirty
+                  ? "Potrzeby domowników czekają na zapisanie"
+                  : roomDirty
+                    ? "Zmiany pomieszczenia czekają na zapisanie"
+                    : "Zmiany szafki czekają na zastosowanie"
                 : saved
                   ? "Szkic zapisany na tym urządzeniu"
                   : storageFailed
@@ -1088,20 +1099,28 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 className="ps-text-button kp-manual-start"
               >
                 Przejdź do szafek <IconArrowRight size={18} />
-                <small>Samodzielnie dodam szafki od zera</small>
+                <small>
+                  {draft.items.length
+                    ? "Zachowaj obecny układ i przejdź do edycji"
+                    : "Samodzielnie dodam szafki od zera"}
+                </small>
               </button>
               <KitchenRoomTools
                 key={roomFormRevision}
                 onDirtyChange={setRoomDirty}
                 draft={draft}
-                disabled={conflict !== null}
+                disabled={conflict !== null || needsDirty}
                 onApply={change}
               />
               <KitchenArchitectFiles
                 key={roomFormRevision}
                 draft={draft}
                 disabled={
-                  conflict !== null || editorDirty || roomDirty || islandDirty
+                  conflict !== null ||
+                  editorDirty ||
+                  roomDirty ||
+                  islandDirty ||
+                  needsDirty
                 }
                 onDirtyChange={setArchitectDirty}
                 onApply={(next) => {
@@ -1110,13 +1129,34 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 }}
               />
             </div>
-            <aside className="kp-measure">
-              <IconRulerMeasure size={44} stroke={1.2} />
-              <h2>Gotowa kuchnia na start</h2>
-              <p>
-                Podaj wymiary obok. Ułożymy AGD, strefę zmywania, blat roboczy i
-                szafki. Potem zmienisz wybrane elementy.
-              </p>
+            <aside className="kp-panel kp-needs-setup">
+              <KitchenNeeds
+                key={JSON.stringify([
+                  draft.needs,
+                  draft.planning,
+                  roomFormRevision,
+                ])}
+                draft={draft}
+                disabled={
+                  conflict !== null ||
+                  editorDirty ||
+                  roomDirty ||
+                  islandDirty ||
+                  architectDirty
+                }
+                onDirtyChange={setNeedsDirty}
+                onApply={(next) => {
+                  change(next);
+                  setNotice(
+                    next.items.length
+                      ? "Potrzeby zapisane. Szafki pozostają bez zmian. Nowe odpowiedzi wykorzystamy przy układaniu nowej propozycji."
+                      : "Potrzeby zapisane. Podaj wymiary i wybierz Ułóż całą kuchnię.",
+                  );
+                  requestAnimationFrame(() =>
+                    document.getElementById("kp-width")?.focus(),
+                  );
+                }}
+              />
               {(draft.layout === "l" || draft.layout === "u") && (
                 <p>
                   W propozycji zostawiamy po 65 cm na obu ramionach każdego
@@ -1125,7 +1165,9 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                   szafka narożna.
                 </p>
               )}
-              <strong>Szkic nie zastępuje pomiaru w Twoim domu.</strong>
+              <p className="kp-muted">
+                Szkic nie zastępuje pomiaru w Twoim domu.
+              </p>
               <div className="kp-actions">
                 <button
                   className="ps-button secondary"
@@ -1385,6 +1427,11 @@ export function KitchenPlanner({ staff = false }: { staff?: boolean } = {}) {
                 className="kp-design-tools"
                 aria-label="Narzędzia projektu i lista szafek"
               >
+                <KitchenNeedsReview
+                  draft={draft}
+                  onSelect={chooseCabinet}
+                  onEdit={() => go(0)}
+                />
                 {references.errors.map((message, n) => (
                   <Feedback key={n}>{message}</Feedback>
                 ))}
