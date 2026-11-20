@@ -118,7 +118,6 @@ export function calculateKitchenEstimate(raw: unknown) {
     );
   const notes = [
     "Cena orientacyjna na stawkach modelowych, do potwierdzenia po pomiarze i wyborze dekorów. Nie jest potwierdzonym cennikiem zakładu.",
-    "Standard: nóżki Häfele AXILO i zawiasy Häfele; domyślne szuflady AMIX. Koszt zawiasów z prowadnikami jest rezerwą modelową, nie ceną konkretnego produktu. Modele, ilości i ceny okuć potwierdzamy po doborze.",
     "Bez zakupu AGD, zlewu, baterii, podłączeń i przebudowy instalacji. Transport przyjęto jako lokalny; adres i warunki wniesienia do potwierdzenia.",
     input.items.some((i) => i.catalogId === "base-blind-corner-1100")
       ? "Wybrane szafki narożne ślepe są w cenie. Systemy wysuwane i otwieranie wymagają osobnego doboru; sąsiednia ściana zachowuje odsunięcie 650 mm."
@@ -181,7 +180,7 @@ export function calculateKitchenEstimate(raw: unknown) {
       },
       {
         label: "Okucia",
-        description: `${kitchenOptions.drawers[opts.drawers]}, ${quantities.liczbaSzuflad} szuflad. Uchwyty standardowe. Liczba zawiasów i model prowadnic do weryfikacji.`,
+        description: `${kitchenOptions.drawers[opts.drawers]}, ${quantities.liczbaSzuflad} szuflad; nóżki Häfele AXILO. Zawiasy z prowadnikami: rezerwa modelowa. Dobór do potwierdzenia.`,
       },
       {
         label: "Blat",

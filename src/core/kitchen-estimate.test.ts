@@ -28,7 +28,10 @@ test("server calculates sale-only groups and quantities from actual cabinet geom
     e.gross,
   );
   assert.equal(modules.length, 3);
-  assert.match(e.notes.join(" "), /Häfele AXILO/);
+  assert.match(
+    e.scope.find((s) => s.label === "Okucia")!.description,
+    /Häfele AXILO/,
+  );
   assert.match(
     e.scope.find((s) => s.label === "Okucia")!.description,
     /AMIX \+ zawiasy Häfele/,
@@ -51,6 +54,27 @@ test("front finish, drawer brand and installation change the same full estimate"
   assert.ok(calc({ drawers: "blum" }) > base);
   assert.ok(calc({ installation: false }) < base);
   assert.ok(calc({ worktop: "compact" }) > base);
+});
+
+test("standard hardware description keeps the preliminary kitchen offer on two physical PDF pages", async () => {
+  const { standardOfferPdf } = await import("../export/offer-standard.js");
+  const { estimate: e, modules, built } = calculateKitchenEstimate(draft());
+  const bytes = await standardOfferPdf({
+    title: "Kuchnia dopasowana do Państwa wnętrza.",
+    date: new Date("2026-11-20T12:00:00Z"),
+    reference: e.version,
+    gross: e.gross!,
+    groups: e.groups,
+    scope: e.scope,
+    notes: e.notes,
+    modules,
+    built,
+    preliminary: true,
+    frontColor: "#d8cfc1",
+    worktopColor: "#b58c5e",
+  });
+  // PDFKit writes one uncompressed page dictionary per physical sheet.
+  assert.equal(bytes.toString("latin1").match(/\/Type \/Page\b/g)?.length, 2);
 });
 test("empty, overflowing and colliding layouts have no amount or PDF-ready groups", () => {
   for (const d of [
