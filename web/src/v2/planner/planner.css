@@ -1455,8 +1455,13 @@
     margin-bottom: 12px;
   }
   .kp-preview-heading .kp-preview-toolbar {
-    flex: 1;
+    flex: 1 0 320px;
+    min-width: min(100%, 320px);
     margin: 0;
+  }
+  .kp-preview-toolbar button {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .kp-preview-heading .kp-live-price {
     flex: 0 1 310px;
