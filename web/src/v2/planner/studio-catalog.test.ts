@@ -28,6 +28,11 @@ test("search accepts Polish letters, multiple terms, group purpose and centimetr
   assert.equal(studioMatches(base, "lodówka"), false);
   assert.equal(studioMatches(base, "nieistniejąca-szafka"), false);
   assert.equal(studioMatches(base, ""), true);
+  assert.equal(studioMatches(base, "polki 60 cm"), true);
+  const drawers = catalog.find((m) => m.id === "base-drawers-600")!;
+  assert.equal(studioMatches(drawers, "szuflady"), true);
+  assert.equal(studioMatches(drawers, "szuflady 60 cm"), true);
+  assert.equal(studioMatches(base, "szuflady"), false);
 });
 
 test("Studio search cannot admit a variant rejected by placement and does not change a full draft", () => {

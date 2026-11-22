@@ -79,7 +79,7 @@ const normalize = (value: string) =>
 export function studioMatches(m: ModulKatalogowy, query: string): boolean {
   const group = studioGroups.find((g) => g.id === studioGroup(m))!;
   const text = normalize(
-    `${m.name} ${group.name} ${group.hint} ${group.section} ${m.widthMM / 10} cm`,
+    `${m.name} ${m.tags.join(" ")} ${group.name} ${group.hint} ${group.section} ${m.widthMM / 10} cm`,
   );
   return normalize(query)
     .trim()
