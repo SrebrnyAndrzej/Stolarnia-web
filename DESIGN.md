@@ -14,6 +14,10 @@ rounded:
 
 ## Overview
 
+### Klient wybiera i przestawia szafkę przy projekcie — 22.11.2026
+KitchenSelection używa natywnego selecta z jednoznaczną etykietą, bieżących nazw i wymiarów w cm oraz istniejących przycisków ścian. Zamiana kolejności jest dostępna przy wyborze, niezależnie od myszy i rysunku; pełna lista pozostaje w details. Inspektor pokazuje wyłącznie wybraną szafkę, a katalog wraca po zamknięciu edycji. Zastosuj/Anuluj mają wspólny pasek w formularzu; na komputerze pasek pozostaje przy dolnej krawędzi przewijanego inspektora. Podsumowanie zamyka edycję, a wybór szafki z podsumowania wraca do etapu szafek.
+Nagłówek projektu i zapis online współdzielą rząd na komputerze; cena i przełącznik widoku współdzielą nagłówek podglądu. useKitchenViewport dopasowuje tylko podgląd i inspektor do rzeczywistego położenia dolnego paska; strona i pomocnicze formularze zachowują naturalne przewijanie. Na telefonie układ płynie pionowo, bez wewnętrznego scrolla edytora. Dodatkowe pomiary/pliki na starcie są rozwijane, a zapisany szkic pozwala przejść bezpośrednio do szafek. Dotychczasowa paleta, typografia, warstwa cen i domenowy model pozostają właścicielami swoich reguł.
+
 ### Porównanie propozycji kuchni — 20.11.2026
 KitchenPlanningTools rozszerza istniejącą akcję układania o opcjonalne Porównaj propozycje kuchni. Natywny dialog kp-dialog ma biznesowy wariant kp-proposals-dialog, z maksymalnie trzema kartami obok siebie na komputerze. Karty pokazują priorytet, rzeczywistą orientacyjną cenę, liczbę szuflad, szafek półkowych i szerokość szafki roboczej. Na telefonie przyciski wyboru pokazują jedną kartę naraz, bez szerokiej tabeli i poziomego przewijania. Kolory i kontrolki dziedziczą istniejące tokeny. Powrót nie zmienia szkicu; wybranie kuchni wraca do normalnego podglądu. To porównanie projektów klienta, nie nowy ekran kalkulatora technicznego.
 

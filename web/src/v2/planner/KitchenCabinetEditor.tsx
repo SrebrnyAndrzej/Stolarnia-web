@@ -562,11 +562,6 @@ export function KitchenCabinetEditor({
                 </select>
               </label>
             )}
-            <button className="ps-button" type="submit" data-apply-cabinet>
-              {entry.construction === "filler"
-                ? "Zastosuj do blendy"
-                : "Zastosuj do szafki"}
-            </button>
           </div>
           {canChangeStorage && (
             <p id="kp-storage-help">
@@ -580,23 +575,6 @@ export function KitchenCabinetEditor({
                 Masz niezastosowane zmiany. Zastosuj je, aby zaktualizować
                 projekt i wycenę.
               </p>
-              <button
-                type="button"
-                className="ps-text-button"
-                onClick={() => {
-                  const old = JSON.parse(baseline);
-                  setForm({
-                    ...old.form,
-                    width: display(old.form.width),
-                    gapBefore: display(old.form.gapBefore),
-                  });
-                  setLayout(old.layout);
-                  setHeights(old.heights);
-                  setError("");
-                }}
-              >
-                Anuluj zmiany
-              </button>
             </div>
           )}
           <details className="kp-placement">
@@ -732,6 +710,38 @@ export function KitchenCabinetEditor({
             {error}
           </p>
         )}
+        <div className="kp-editor-commit">
+          <button
+            className="ps-button"
+            type="submit"
+            data-apply-cabinet
+            disabled={disabled || item.locked}
+          >
+            {entry.construction === "filler"
+              ? "Zastosuj do blendy"
+              : "Zastosuj do szafki"}
+          </button>
+          {dirty && (
+            <button
+              type="button"
+              className="ps-text-button"
+              disabled={disabled || item.locked}
+              onClick={() => {
+                const old = JSON.parse(baseline);
+                setForm({
+                  ...old.form,
+                  width: display(old.form.width),
+                  gapBefore: display(old.form.gapBefore),
+                });
+                setLayout(old.layout);
+                setHeights(old.heights);
+                setError("");
+              }}
+            >
+              Anuluj zmiany
+            </button>
+          )}
+        </div>
       </form>
       {clearHeight !== null && (
         <p>
