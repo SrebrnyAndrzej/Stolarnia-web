@@ -1,0 +1,1 @@
+const o=["szkic","wycena","zaakceptowany","wZamowieniu","produkcja","gotoweDoMontazu","zakonczony"],a={szkic:"Szkic",wycena:"Wycena",zaakceptowany:"Zaakceptowany",wZamowieniu:"W zamówieniu",produkcja:"Produkcja",gotoweDoMontazu:"Gotowe do montażu",zakonczony:"Zakończony"};export{a as N,o as S};
