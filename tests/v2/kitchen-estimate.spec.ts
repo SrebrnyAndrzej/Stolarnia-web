@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { showKitchenCatalog } from "./kitchen-ui";
 test("customer configures kitchen, gets server price, PDF and persistent selections", async ({
   page,
   request,
@@ -12,13 +13,16 @@ test("customer configures kitchen, gets server price, PDF and persistent selecti
       exact: false,
     })
     .click();
-  for (let i = 0; i < 2; i++)
+  await showKitchenCatalog(page);
+  for (let i = 0; i < 2; i++) {
     await page
       .getByRole("button", {
         name: "Dodaj: Szafka dolna z półkami 600",
         exact: false,
       })
       .click();
+    await showKitchenCatalog(page);
+  }
   await page
     .getByRole("combobox", { name: "Rodzaj szafek", exact: true })
     .selectOption("drawers");
@@ -28,25 +32,30 @@ test("customer configures kitchen, gets server price, PDF and persistent selecti
       exact: false,
     })
     .click();
+  await showKitchenCatalog(page);
   await page
     .getByRole("combobox", { name: "Rodzaj szafek", exact: true })
     .selectOption("water");
   await page
     .getByRole("button", { name: "Dodaj: Szafka pod zlew 600", exact: false })
     .click();
+  await showKitchenCatalog(page);
   await page
     .getByRole("button", { name: "Dodaj: Zabudowa zmywarki 600", exact: false })
     .click();
+  await showKitchenCatalog(page);
   await page
     .getByRole("combobox", { name: "Rodzaj szafek", exact: true })
     .selectOption("wall");
-  for (let i = 0; i < 6; i++)
+  for (let i = 0; i < 6; i++) {
     await page
       .getByRole("button", {
         name: "Dodaj: Szafka wisząca z półkami 600",
         exact: false,
       })
       .click();
+    await showKitchenCatalog(page);
+  }
   await page.getByRole("button", { name: "Kaszmir", exact: true }).click();
   await page.getByRole("button", { name: "Zobacz podsumowanie" }).click();
   const price = page.locator(".kp-quote-price strong");

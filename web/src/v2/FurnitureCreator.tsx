@@ -70,7 +70,10 @@ import { DeskStorage } from "./DeskStorage";
 import { FurnitureCompartments } from "./FurnitureCompartments";
 import { FurnitureTools } from "./FurnitureTools";
 import { FurnitureSharing } from "./FurnitureSharing";
-import { snapFurniturePlate } from "../../../src/core/furniture-snap";
+import {
+  furniturePlateSnap,
+  type FurnitureSnapGuide,
+} from "../../../src/core/furniture-snap";
 import {
   compartmentBoxes,
   rebuildCompartments,
@@ -177,13 +180,13 @@ export function FurnitureCreator({
     sheetOpener.current = document.activeElement as HTMLElement | null;
     setSheet(kind);
   };
-  const selectPlate = (partId: string) => {
+  const selectPlate = (partId: string, revealInspector = true) => {
     setHighlighted([]);
     setSelected(partId);
     if (partId) {
       setInspectorMode("plate");
       setPlatePanel("geometry");
-      setMobilePane("inspector");
+      if (revealInspector) setMobilePane("inspector");
     }
   };
   const selectCompartment = (nodeId: string) => {
@@ -208,6 +211,13 @@ export function FurnitureCreator({
   const [view, setView] = useState<"2d" | "3d">("2d");
   const [snap, setSnap] = useState(true),
     [dimensions, setDimensions] = useState(false);
+  const [snapPreview, setSnapPreview] = useState<{
+    plateId: string;
+    x: number;
+    y: number;
+    guides: FurnitureSnapGuide[];
+    free: boolean;
+  } | null>(null);
   const [selectedCompartment, setSelectedCompartment] = useState("");
   const [dimensionTarget, setDimensionTarget] =
     useState<DimensionTarget | null>(null);
@@ -226,8 +236,31 @@ export function FurnitureCreator({
     y: number;
     startX: number;
     startY: number;
+    screenX: number;
+    screenY: number;
+    moved: boolean;
+    pointerId: number;
   } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
+  const endDrag = (revealTap = false, pointerId?: number) => {
+    if (pointerId !== undefined && drag.current?.pointerId !== pointerId)
+      return;
+    if (revealTap && drag.current && !drag.current.moved)
+      setMobilePane("inspector");
+    drag.current = null;
+    setSnapPreview(null);
+  };
+  const activeSnap =
+    view === "2d" &&
+    drag.current &&
+    model.plates.some(
+      (p) =>
+        p.id === snapPreview?.plateId &&
+        p.x === snapPreview.x &&
+        p.y === snapPreview.y,
+    )
+      ? snapPreview
+      : null;
   const specificationPanel = useRef<HTMLDivElement>(null);
   const inspectorPanel = useRef<HTMLElement>(null);
   const plate = model.plates.find((p) => p.id === selected);
@@ -610,23 +643,66 @@ export function FurnitureCreator({
     return [converted.x, model.height - converted.y];
   };
   const beginDrag = (e: PointerEvent<SVGPolygonElement>, p: FurniturePlate) => {
-    selectPlate(p.id);
+    if (e.button !== 0 || !e.isPrimary || drag.current) return;
+    const canDrag =
+      view === "2d" &&
+      p.kind !== "cap" &&
+      p.anchor !== "back" &&
+      !busy &&
+      !p.layoutSlot?.startsWith("compartment/");
+    selectPlate(p.id, !canDrag);
     if (p.layoutSlot?.startsWith("compartment/")) {
       setSelectedCompartment(p.layoutSlot.split("/")[1]);
       return;
     }
-    if (view !== "2d" || p.kind === "cap" || p.anchor === "back" || busy)
-      return;
+    if (!canDrag) return;
     const [x, y] = point(e);
-    setHistory((h) => [...h.slice(-39), structuredClone(model)]);
-    setFuture([]);
-    drag.current = { id: p.id, x, y, startX: p.x, startY: p.y };
+    setSnapPreview(null);
+    drag.current = {
+      id: p.id,
+      x,
+      y,
+      startX: p.x,
+      startY: p.y,
+      screenX: e.clientX,
+      screenY: e.clientY,
+      moved: false,
+      pointerId: e.pointerId,
+    };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const move = (e: PointerEvent) => {
     const d = drag.current;
-    if (!d) return;
+    if (!d || e.pointerId !== d.pointerId) return;
+    if (!d.moved) {
+      if (Math.hypot(e.clientX - d.screenX, e.clientY - d.screenY) <= 3) return;
+      d.moved = true;
+      setHistory((h) => [...h.slice(-39), structuredClone(model)]);
+      setFuture([]);
+    }
     const [x, y] = point(e);
+    const moving = model.plates.find((p) => p.id === d.id);
+    if (!moving || busy) {
+      endDrag();
+      return;
+    }
+    const rawX = d.startX + x - d.x;
+    const rawY = d.startY + y - d.y;
+    const free = !snap || e.shiftKey;
+    const placement = free
+      ? {
+          x: Math.max(
+            0,
+            Math.min(model.width - moving.width, Math.round(rawX)),
+          ),
+          y: Math.max(
+            0,
+            Math.min(model.height - moving.height, Math.round(rawY)),
+          ),
+          guides: [],
+        }
+      : furniturePlateSnap(model, moving, rawX, rawY);
+    setSnapPreview({ ...placement, plateId: d.id, free });
     update((m) => ({
       ...m,
       ...(m.plates.find((p) => p.id === d.id)?.kind === "drawer"
@@ -639,22 +715,8 @@ export function FurnitureCreator({
               ...p,
               anchor: undefined,
               ...(p.layoutSlot ? { layoutCustomized: true } : {}),
-              x: Math.max(
-                0,
-                Math.min(m.width - p.width, Math.round(d.startX + x - d.x)),
-              ),
-              y: Math.max(
-                0,
-                Math.min(m.height - p.height, Math.round(d.startY + y - d.y)),
-              ),
-              ...(snap
-                ? snapFurniturePlate(
-                    m,
-                    p,
-                    d.startX + x - d.x,
-                    d.startY + y - d.y,
-                  )
-                : {}),
+              x: placement.x,
+              y: placement.y,
             },
       ),
     }));
@@ -734,6 +796,7 @@ export function FurnitureCreator({
           <input
             type="checkbox"
             aria-label="Przyciąganie do krawędzi i siatki 10 mm"
+            title="Przyciąganie do krawędzi i siatki 10 mm. Przytrzymaj Shift podczas przesuwania, aby wyłączyć je na chwilę."
             checked={snap}
             onChange={(e) => setSnap(e.target.checked)}
           />
@@ -804,12 +867,9 @@ export function FurnitureCreator({
             aria-label="Mebel: wybierz płytę; w widoku 2D przeciągnij lub użyj pól pozycji"
             viewBox={`-60 -60 ${model.width + 120} ${model.height + 120}`}
             onPointerMove={move}
-            onPointerUp={() => {
-              drag.current = null;
-            }}
-            onPointerCancel={() => {
-              drag.current = null;
-            }}
+            onPointerUp={(e) => endDrag(true, e.pointerId)}
+            onPointerCancel={(e) => endDrag(false, e.pointerId)}
+            onLostPointerCapture={(e) => endDrag(false, e.pointerId)}
           >
             <polygon
               points={points(furnitureOutline(model))}
@@ -941,6 +1001,32 @@ export function FurnitureCreator({
                   </g>
                 );
               })}
+            {activeSnap && activeSnap.guides.length > 0 && (
+              <g
+                className="fc-snap-guides"
+                role="img"
+                aria-label="Prowadnice przyciągania"
+              >
+                {activeSnap.guides.map((g) => (
+                  <g key={g.axis}>
+                    <title>
+                      {g.axis.toUpperCase()}: {g.targetName}
+                    </title>
+                    <line
+                      data-snap-axis={g.axis}
+                      x1={g.axis === "x" ? g.position : 0}
+                      x2={g.axis === "x" ? g.position : model.width}
+                      y1={g.axis === "y" ? model.height - g.position : 0}
+                      y2={
+                        g.axis === "y"
+                          ? model.height - g.position
+                          : model.height
+                      }
+                    />
+                  </g>
+                ))}
+              </g>
+            )}
             {plate &&
               !dimensions &&
               platePanel === "hardware" &&
@@ -1054,6 +1140,36 @@ export function FurnitureCreator({
             )}
           </svg>
         )}
+        <div
+          className="fc-snap-status"
+          role="status"
+          aria-atomic="false"
+          hidden={!activeSnap}
+        >
+          {activeSnap && (
+            <>
+              <strong>
+                {activeSnap.guides.length
+                  ? "Wyrównanie"
+                  : activeSnap.free
+                    ? "Ruch swobodny"
+                    : "Pozycja płyty"}
+              </strong>
+              {activeSnap.guides.map((g) => (
+                <span key={g.axis}>
+                  {g.axis.toUpperCase()}: {g.targetName}
+                </span>
+              ))}
+              <span className="num" aria-live="off">
+                X: {activeSnap.x.toLocaleString("pl-PL")} · Y:{" "}
+                {activeSnap.y.toLocaleString("pl-PL")} mm
+              </span>
+              {snap && !activeSnap.free && (
+                <small>Shift: ruch bez przyciągania</small>
+              )}
+            </>
+          )}
+        </div>
       </div>
       {dimensions && (
         <p className="fc-scene-hint">
@@ -1633,7 +1749,7 @@ export function FurnitureCreator({
       {plate ? (
         <fieldset disabled={busy}>
           <legend>Parametry płyty</legend>
-          <button onClick={() => setPlatePanel("material")}>
+          <button onClick={() => revealPart(plate.id, "material")}>
             Materiał i obrzeża tej płyty
           </button>
           <label>

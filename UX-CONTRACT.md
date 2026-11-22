@@ -2,6 +2,18 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Powtarzalna regresja wydania — 22.11.2026
+Domyślne test:v2:browser buduje aplikację i uruchamia scripts/qa-browser.mts przez konfigurację Playwright. Serwer nasłuchuje wyłącznie na 127.0.0.1, używa własnego katalogu tymczasowego i wymaga jawnej flagi dla testowych cookies ról. Skrypt nie jest importowany przez aplikację ani funkcję Vercela. Każdy inny prywatny endpoint wymaga jawnej atrapy w danym teście; nie ma dostępu do prawdziwej bazy. Dane kosztów właściciela w teście UI pochodzą z fairKitchenSource, a rzeczywiste uprawnienia API sprawdza osobna macierz HTTP. Testy nie przywracają anonimowych podglądów ani publicznych kalkulatorów. Listy i panele są otwierane przez istniejące przyciski, bez wymuszania widoczności.
+
+Wspólny v2/api.request zachowuje anulowanie także podczas odczytu treści JSON/PDF. Przerwany odczyt i błędny JSON przy odpowiedzi 2xx nie stają się poprawnym pustym obiektem. Błąd HTTP bez JSON zachowuje numer statusu. Metadane sesji i dotychczasowe wylogowanie po 401 pozostają we wspólnym właścicielu. Skrót materiału w FurnitureCreator używa revealPart, tak samo jak pozostałe wejścia do inspektora, i skupia pierwsze pole.
+
+## Prowadnice przyciągania płyt — 22.11.2026
+- Właściciel pozycji i metadanych: core/furniture-snap.furniturePlateSnap. Zachowuje dotychczasową kolejność kandydatów, próg 12 mm, siatkę 10 mm, zakres korpusu i warunek wspólnej głębokości. snapFurniturePlate nadal zwraca tylko X/Y. Metadane prowadnic są przejściowym stanem UI i nigdy nie trafiają do płyty, zapisu biblioteki ani produkcji.
+- FurnitureCreator rysuje linię na rzeczywistej wspólnej krawędzi (także przy dosuwaniu dalszej krawędzi przesuwanej płyty), a opis wskazuje oś, cel i pozycję w mm. Siatka lub ograniczenie zakresu nie udają kontaktu z sąsiednią płytą. Wskazówki nie stanowią potwierdzenia braku kolizji lub poprawności konstrukcyjnej. Nie zmieniają reguł okuć, materiałów, wyceny ani przygotowania produkcji.
+- Shift chwilowo pomija przyciąganie i siatkę, pozostawiając dotychczasowy ruch z dokładnością 1 mm w zakresie korpusu. Checkbox zachowuje swoje znaczenie po zwolnieniu Shift. Zakończenie, anulowanie zdarzenia wskaźnika lub utrata przechwycenia czyści prowadnice. Stan nie przechodzi do 3D ani pełnego ekranu.
+- Ruch zaczyna się po przekroczeniu 3 px; historia otrzymuje jeden stan przed całym gestem. Stuknięcie bez przesunięcia nie zmienia modelu ani historii. Na telefonie przeciąganie pozostaje w projekcie; stuknięcie otwiera inspektor. Pola X/Y i istniejące Cofnij pozostają alternatywą. Anulowanie wskaźnika kończy gest z ostatnią pozycją, możliwą do cofnięcia.
+- Dowody: src/furniture-snap.test.ts oraz tests/v2/furniture-snap-guides.spec.ts. Źródłem inspiracji jest przegląd Panelizer; implementacja rozszerza własny mechanizm, bez przenoszenia zewnętrznych wzorów okuć lub cen.
+
 ## Propozycje przed zastosowaniem — 20.11.2026
 - core/kitchen-proposals jest właścicielem przygotowania alternatyw: każdy kandydat przechodzi istniejący suggestKitchen i jego walidację. Pierwszy odpowiada zapisanym potrzebom. Te same zestawy szafek bez względu na ID są scalane; brak dopuszczalnego rozwiązania pokazuje powód, nie fikcyjny trzeci wariant. Materiały, pliki i wyspa są dziedziczone z bieżącego szkicu.
 - KitchenPlanningTools używa tego samego parsera wymiarów/założeń dla układania i porównania. Podgląd nie zapisuje szkicu, historii ani A/B. Dopiero Wybierz tę kuchnię zatwierdza dokładnie pokazany kandydat jako jeden krok historii. Cofnij odtwarza poprzedni projekt i potrzeby.

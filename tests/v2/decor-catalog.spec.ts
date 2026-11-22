@@ -1,16 +1,7 @@
 import { test, expect } from "@playwright/test";
 test("catalog selection persists in planner, supports search and phone layout", async ({
   page,
-  request,
 }) => {
-  await page.route("**/api/**", async (route) => {
-    const u = new URL(route.request().url());
-    await route.fulfill({
-      response: await request.get(
-        "http://127.0.0.1:3219" + u.pathname + u.search,
-      ),
-    });
-  });
   await page.goto("/#/katalog-dekorow");
   await expect(
     page.getByRole("heading", { name: "Katalog dekorów", exact: true }),

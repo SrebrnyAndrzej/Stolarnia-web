@@ -147,7 +147,7 @@ test("employee gets technical data only, with mobile navigation and 403 screen",
   expect(financialRequests).toEqual([]);
   await page.getByRole("button", { name: "Otwórz menu" }).click();
   await expect(
-    page.getByRole("link", { name: "Kalkulator szuflad", exact: true }),
+    page.getByRole("link", { name: "Kalkulatory stolarza", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Pracownicy", exact: true }),
@@ -179,15 +179,17 @@ test("client account gets assigned projects without workshop tools or internal c
   ).toHaveCount(0);
 });
 
-test("demo supports 3D and 2D and is explicitly not a login", async ({
+test("authenticated owner supports 3D and 2D through a legacy URL", async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await signedIn(page, "owner");
   await page.goto("/#/podglad/owner");
+  await expect(page).toHaveURL(/#\/panel\/projekty$/);
   await expect(
     page.getByText("Podgląd · dane przykładowe", { exact: false }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "3D", exact: true }).click();
   await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15000 });
   await page.getByRole("button", { name: "Rzut 2D", exact: true }).click();
@@ -267,6 +269,7 @@ test("employee project link and production filter survive refresh with a recover
 });
 
 test("employee loads 3D only when requested", async ({ page }) => {
+  await signedIn(page, "employee");
   const rendererRequests: string[] = [];
   page.on("request", (request) => {
     if (/\/assets\/Widok3D-/.test(request.url()))
@@ -306,10 +309,27 @@ test("login validation focuses a malformed email and keeps password visibility a
   expect(sent).toBe(0);
 });
 
-test("owner can search enquiries and switch demonstration roles on a phone", async ({
+test("owner can search enquiries on a phone without a demonstration role switcher", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await signedIn(page, "owner");
+  await page.route("**/api/v2/requests", (r) =>
+    r.fulfill(
+      json([
+        {
+          id: "test-request",
+          name: "Zapytanie pokazowe",
+          email: "klient@example.test",
+          kind: "kuchnia",
+          city: "Miejscowość przykładowa",
+          created_at: "2026-11-22T09:00:00Z",
+          description: "Testowe zapytanie o kuchnię",
+          status: "nowe",
+        },
+      ]),
+    ),
+  );
   await page.goto("/#/podglad/owner/zapytania");
   await expect(
     page.getByRole("heading", { name: "Zapytania klientów", exact: true }),
@@ -338,13 +358,9 @@ test("owner can search enquiries and switch demonstration roles on a phone", asy
   await expect(
     page.getByLabel("Rodzaj zapytania", { exact: true }),
   ).toHaveValue("all");
-  await page
-    .getByRole("navigation", { name: "Przełącz widok demonstracyjny" })
-    .getByRole("link", { name: "Pracownik", exact: true })
-    .click();
   await expect(
-    page.getByRole("heading", { name: "Panel pracownika", exact: true }),
-  ).toBeVisible();
+    page.getByRole("navigation", { name: "Przełącz widok demonstracyjny" }),
+  ).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

@@ -155,6 +155,8 @@ async function mockSaved(page: import("@playwright/test").Page) {
         okucia: null,
       };
     else if (path === "/api/dekory") body = [decor];
+    else if (path === "/api/dekory-stolarni")
+      body = { zrodlo: "brak", klucze: [] };
     else if (path.endsWith("/okucia-projektu/opcje"))
       body = {
         systemySzuflad: [],

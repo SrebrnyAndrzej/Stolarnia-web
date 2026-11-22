@@ -55,8 +55,12 @@ for (const role of ["owner", "employee"]) {
         .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+    await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
     await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
     await select.selectOption(id);
+    await page
+      .getByRole("button", { name: "Dokumentacja", exact: true })
+      .click();
     const downloadEvent = page.waitForEvent("download");
     await page
       .getByRole("button", {
@@ -92,11 +96,20 @@ test("changing the local frame clears edge decisions, undo restores them on mobi
   await staffApi(page);
   await page.goto("/#/panel/meble");
   await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Narzędzia", exact: true })
+    .click();
+  await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
   await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Inspektor", exact: true })
+    .click();
+  await page
     .getByLabel("Wybierz płytę", { exact: true })
     .selectOption({ label: "1. Bok lewy" });
+  await page.getByRole("tab", { name: "Materiał", exact: true }).click();
   await page
     .getByLabel("Płaszczyzna płyty", { exact: true })
     .selectOption("yz");

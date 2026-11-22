@@ -196,20 +196,21 @@ test("employee without a release cannot print live documentation", async ({
     }),
   ).toHaveCount(0);
 });
-test("demo provides a real sample PDF without accessing private project documentation", async ({
+test("an anonymous legacy preview cannot open private technical documentation", async ({
   page,
 }) => {
   const urls: string[] = [];
   page.on("request", (r) => urls.push(r.url()));
   await page.goto("/#/podglad/employee/projekty");
-  await page
-    .getByRole("button", { name: "Dokumentacja techniczna", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Przygotuj karty techniczne", exact: true })
-    .click();
+  await expect(page).toHaveURL(/#\/panel\/projekty$/);
+  await expect(
+    page.getByRole("button", { name: "Zaloguj się", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Dokumentacja techniczna", exact: true }),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Pobierz PDF", exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   expect(urls.some((u) => u.includes("/api/v2/projects/"))).toBe(false);
 });

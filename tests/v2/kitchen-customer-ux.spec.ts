@@ -1,3 +1,4 @@
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -27,7 +28,9 @@ test("customer measures in cm, can switch units without changing the room, and c
   await page
     .getByRole("button", { name: "Ułóż całą kuchnię", exact: true })
     .click();
-  await expect(page.locator(".kp-arrangement li").first()).toBeVisible();
+  await expect(
+    page.getByLabel("Wybierz szafkę", { exact: true }),
+  ).toBeVisible();
   expect(
     await page.evaluate(
       () => JSON.parse(localStorage.getItem("pan-stolarz.kuchnia.v1")!).width,
@@ -87,6 +90,7 @@ test("unapplied cabinet changes cannot silently reach the price or get lost by s
   await page
     .getByRole("button", { name: "Ułóż całą kuchnię", exact: true })
     .click();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami" })
@@ -100,6 +104,7 @@ test("unapplied cabinet changes cannot silently reach the price or get lost by s
   await expect(
     page.getByRole("button", { name: "Zastosuj do szafki", exact: true }),
   ).toBeFocused();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka pod zlew" })
@@ -133,6 +138,7 @@ test("editing from the quote immediately hides the price and PDF until applied o
   await page
     .getByRole("button", { name: "Ułóż całą kuchnię", exact: true })
     .click();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami" })
@@ -141,22 +147,38 @@ test("editing from the quote immediately hides the price and PDF until applied o
   const price = page.locator(".kp-quote-price strong");
   await expect(price).toHaveText(/\d.*zł/);
   const before = await price.innerText();
+  await openKitchenList(page);
+  await page
+    .locator(".kp-item-name")
+    .filter({ hasText: "Szafka dolna z szufladami" })
+    .click();
   await page.getByLabel("Jednostka edycji", { exact: true }).selectOption("mm");
   await page.getByLabel("Szerokość szafki", { exact: true }).fill("500");
-  await expect(price).toHaveText("Popraw układ");
+  await expect(price).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Pobierz wycenę PDF", exact: true }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Pobierz PDF", exact: true }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "Anuluj zmiany", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "Zobacz podsumowanie", exact: true })
+    .click();
   await expect(price).toHaveText(before);
+  await openKitchenList(page);
+  await page
+    .locator(".kp-item-name")
+    .filter({ hasText: "Szafka dolna z szufladami" })
+    .click();
   await page.getByLabel("Szerokość szafki", { exact: true }).fill("500");
   await page
     .getByRole("button", { name: "Zastosuj do szafki", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Zobacz podsumowanie", exact: true })
     .click();
   await expect(price).toHaveText(/\d.*zł/);
   await expect(price).not.toHaveText(before);
@@ -172,6 +194,7 @@ test("an explicit new-kitchen confirmation can discard a pending cabinet edit", 
   await page
     .getByRole("button", { name: "Ułóż całą kuchnię", exact: true })
     .click();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami" })

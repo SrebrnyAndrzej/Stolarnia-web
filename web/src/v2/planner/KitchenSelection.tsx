@@ -113,7 +113,7 @@ export function KitchenSelection({
                 className="ps-button secondary"
                 disabled={disabled || item.locked || position <= 0}
                 onClick={() => onMove(item.id, -1)}
-                aria-label="Zamień z poprzednią szafką"
+                aria-label="Wcześniej — zamień z poprzednią szafką"
               >
                 <IconArrowLeft size={18} />
                 <span>Wcześniej</span>
@@ -125,7 +125,7 @@ export function KitchenSelection({
                   disabled || item.locked || position >= peers.length - 1
                 }
                 onClick={() => onMove(item.id, 1)}
-                aria-label="Zamień z następną szafką"
+                aria-label="Później — zamień z następną szafką"
               >
                 <span>Później</span>
                 <IconArrowRight size={18} />

@@ -30,6 +30,7 @@ test("desk preset applies researched dimensions and persists an editable desk", 
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
   await expect(page.getByLabel("Układ startowy", { exact: true })).toHaveValue(
     "desk",
@@ -46,6 +47,10 @@ test("compact desk preset and undo work on a narrow screen", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Narzędzia", exact: true })
+    .click();
   await page.getByLabel("Układ startowy", { exact: true }).selectOption("desk");
   await page
     .getByRole("button", { name: "Biurko kompaktowe 120 × 80 cm", exact: true })

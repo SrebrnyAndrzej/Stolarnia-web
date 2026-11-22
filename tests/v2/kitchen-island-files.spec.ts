@@ -1,3 +1,4 @@
+import { openArchitectFiles } from "./kitchen-ui";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
@@ -155,7 +156,7 @@ test("multiple originals persist, DXF underlays combine and a complete project p
   browser,
 }) => {
   await seed(page);
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   await page
     .getByLabel("Dodaj pliki architekta", { exact: true })
     .setInputFiles(uploadFiles);
@@ -267,7 +268,7 @@ test("multiple originals persist, DXF underlays combine and a complete project p
   const context = await browser.newContext();
   const other = await context.newPage();
   await other.goto(page.url());
-  await other.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(other);
   await other
     .getByLabel("Wczytaj paczkę projektu", { exact: true })
     .setInputFiles(path);
@@ -286,7 +287,7 @@ test("unavailable storage gives a recoverable error without losing the draft", a
 }) => {
   await seed(page);
   const before = await saved(page);
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   await page.evaluate(() => {
     Object.defineProperty(window, "indexedDB", {
       configurable: true,
@@ -326,7 +327,7 @@ test("a missing original is explicit and an oversized DXF remains downloadable w
   await page.reload();
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await expect(page.getByText(/brak.dxf: brak oryginału/)).toBeVisible();
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   await page
     .getByLabel("Dodaj pliki architekta", { exact: true })
     .setInputFiles({ ...uploadFiles[0], name: "brak.dxf" });

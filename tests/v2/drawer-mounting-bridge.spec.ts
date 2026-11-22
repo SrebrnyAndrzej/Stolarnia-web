@@ -21,6 +21,7 @@ for (const mobile of [false, true])
             u.pathname.replace("/api/", "/api/demo/") + u.search,
             baseURL,
           ).toString(),
+          { headers: { Cookie: "pan_stolarz_qa_staff=employee" } },
         );
         await r.fulfill({ response });
       },

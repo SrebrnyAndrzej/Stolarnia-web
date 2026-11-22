@@ -14,11 +14,6 @@ export function useKitchenViewport(step: number, revision: string) {
     const measure = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        if (!desktop.matches) {
-          element.style.removeProperty("--kp-available-height");
-          inspector?.style.removeProperty("--kp-inspector-height");
-          return;
-        }
         const footer =
           document.querySelector<HTMLElement>(".kp-bottom-actions");
         const caption = element.parentElement?.querySelector<HTMLElement>(
@@ -33,9 +28,11 @@ export function useKitchenViewport(step: number, revision: string) {
         );
         element.style.setProperty(
           "--kp-available-height",
-          `${Math.max(120, Math.min(560, available))}px`,
+          `${Math.max(120, Math.min(desktop.matches ? 560 : 300, available))}px`,
         );
-        if (inspector)
+        if (!desktop.matches)
+          inspector?.style.removeProperty("--kp-inspector-height");
+        else if (inspector)
           inspector.style.setProperty(
             "--kp-inspector-height",
             `${Math.max(160, Math.floor(bottom - inspector.getBoundingClientRect().top - 12))}px`,

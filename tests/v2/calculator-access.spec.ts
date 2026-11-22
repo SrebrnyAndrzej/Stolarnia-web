@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { openKitchenList } from "./kitchen-ui";
 
 test("a customer can design and price a kitchen without seeing workshop calculators", async ({
   page,
@@ -16,6 +17,7 @@ test("a customer can design and price a kitchen without seeing workshop calculat
   await page
     .getByRole("button", { name: "Ułóż całą kuchnię", exact: true })
     .click();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami" })

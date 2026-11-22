@@ -2560,7 +2560,10 @@
 }
 @media (max-width: 600px) {
   .kp-editing .kp-canvas {
-    height: clamp(160px, calc(100dvh - 600px), 300px);
+    height: var(
+      --kp-available-height,
+      clamp(160px, calc(100dvh - 600px), 300px)
+    );
   }
   .kp-online {
     margin: 0 0 6px;

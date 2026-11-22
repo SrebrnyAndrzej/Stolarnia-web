@@ -1,3 +1,4 @@
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const uuid = (n: number) =>
@@ -210,6 +211,7 @@ for (const phone of [false, true])
         exact: true,
       })
       .click();
+    await openKitchenList(page);
     await page
       .locator(".kp-item-name")
       .filter({ hasText: "Szafka dolna z szufladami" })

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { openKitchenList, showKitchenCatalog } from "./kitchen-ui";
 
 test("public planner persists, reorders, undoes, exports and hands off a kitchen", async ({
   page,
@@ -20,13 +21,16 @@ test("public planner persists, reorders, undoes, exports and hands off a kitchen
       exact: false,
     })
     .click();
+  await showKitchenCatalog(page);
   await page
     .getByRole("button", {
       name: "Dodaj: Szafka dolna z półkami 800",
       exact: false,
     })
     .click();
+  await showKitchenCatalog(page);
   await expect(page.getByText("2200 mm wolne")).toBeVisible();
+  await openKitchenList(page);
   await page
     .getByRole("button", {
       name: "Przesuń wcześniej: Szafka dolna z półkami 800",
@@ -86,10 +90,13 @@ test("dimensions and capacity prevent invalid handoff; narrow viewport is usable
     exact: false,
   });
   await add.click();
+  await showKitchenCatalog(page);
   await add.click();
-  await add.click();
+  await showKitchenCatalog(page);
+  // The catalog now prevents adding a cabinet that cannot fit.
+  await expect(add).toHaveCount(0);
   await expect(
-    page.getByText("Szafki wychodzą poza ścianę A.", { exact: false }),
+    page.getByText("Brak pasujących szafek tego rodzaju.", { exact: true }),
   ).toBeVisible();
   await expect(page.locator(".kp-arrangement li")).toHaveCount(2);
   expect(
@@ -120,6 +127,7 @@ test("L layout reserves the corner and import validation preserves the draft", a
       exact: false,
     })
     .click();
+  await openKitchenList(page);
   await expect(page.getByText("od 650 mm", { exact: false })).toBeVisible();
   await page.getByLabel("Plik szkicu kuchni", { exact: true }).setInputFiles({
     name: "bad.json",
@@ -260,16 +268,14 @@ test("U kitchen supports wall C, safe layout changes, restore and handoff", asyn
       exact: false,
     })
     .click();
+  await showKitchenCatalog(page);
   await expect(page.getByText("550 mm wolne")).toBeVisible();
-  await page
-    .getByRole("button", {
+  await expect(
+    page.getByRole("button", {
       name: "Dodaj: Szafka dolna z półkami 600",
       exact: false,
-    })
-    .click();
-  await expect(
-    page.getByText("Szafki wychodzą poza ścianę C.", { exact: false }),
-  ).toBeVisible();
+    }),
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "Wymiary pomieszczenia", exact: false })
     .click();

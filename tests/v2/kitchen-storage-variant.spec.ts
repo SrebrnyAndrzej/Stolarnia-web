@@ -1,3 +1,4 @@
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -203,6 +204,7 @@ test("replacing custom drawers removes drawer-only parameters and undo restores 
 }) => {
   await fixture(page, true);
   const before = await read(page);
+  await openKitchenList(page);
   await page.locator(".kp-item-name").first().click();
   await page
     .getByLabel("Wyposażenie szafki", { exact: true })
@@ -218,6 +220,7 @@ test("replacing custom drawers removes drawer-only parameters and undo restores 
   expect(after.items[0]).not.toHaveProperty("drawers");
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   expect(await read(page)).toEqual(before);
+  await openKitchenList(page);
   await page.locator(".kp-item-name").nth(1).click();
   await expect(
     page.getByLabel("Wyposażenie szafki", { exact: true }),

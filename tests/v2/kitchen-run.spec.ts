@@ -1,3 +1,4 @@
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -46,6 +47,7 @@ for (const phone of [false, true])
       .selectOption("mm");
     await page.getByLabel("Długość ściany A").fill("3700");
     await page.getByRole("button", { name: "Przejdź do szafek" }).click();
+    await openKitchenList(page);
     await page
       .locator(".kp-item-name")
       .filter({ hasText: "Szafka dolna z szufladami" })
@@ -86,6 +88,7 @@ for (const phone of [false, true])
       .selectOption("wall");
     await page.getByRole("button", { name: "Dopełnij ten rząd" }).click();
     await expect(page.locator(".kp-arrangement li")).toHaveCount(14);
+    await openKitchenList(page);
     await page
       .locator(".kp-item-name")
       .filter({ hasText: "Blenda wisząca 100" })
@@ -156,6 +159,7 @@ test("run autofill adds custom shelf sizes and refuses a completed or blocked ro
   await expect(
     page.getByLabel("Rząd do dopełnienia", { exact: true }),
   ).toBeFocused();
+  await openKitchenList(page);
   await page.locator(".kp-item-name").first().click();
   await page.locator(".kp-placement summary").click();
   await page

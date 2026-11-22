@@ -1,3 +1,5 @@
+import { openArchitectFiles } from "./kitchen-ui";
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { randomUUID } from "node:crypto";
@@ -34,7 +36,7 @@ test("original architect file larger than one Vercel-safe chunk survives save an
   browser,
 }) => {
   await page.goto("/#/kreator-kuchni");
-  await page.locator(".kp-architect-tools > summary").click();
+  await openArchitectFiles(page);
   const bytes = Buffer.alloc(2 * 1024 * 1024 + 80, 32);
   bytes.write("%PDF-1.4\n");
   bytes.write("%%EOF", bytes.length - 5);
@@ -193,6 +195,7 @@ test("measurement checks, real storage dimensions, budget and cabinet locks are 
   const shelfIndex = (await current(page)).items.findIndex(
     (i: { catalogId: string }) => i.catalogId === "base-shelves-600",
   );
+  await openKitchenList(page);
   await page.locator(".kp-item-name").nth(shelfIndex).click();
   const lock = page.getByLabel(
     "Zachowaj tę szafkę i jej położenie przy automatycznym układaniu",

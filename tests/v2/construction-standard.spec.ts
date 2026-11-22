@@ -8,6 +8,7 @@ test("employee applies a reusable standard, sizes the back and saves the resulti
   await page
     .getByLabel("Układ startowy", { exact: true })
     .selectOption("empty");
+  await page.getByRole("button", { name: "Materiały", exact: true }).click();
   await page.getByLabel("Plecy", { exact: true }).selectOption("applied");
   await page.getByLabel("Materiał korpusu", { exact: true }).fill("Laminat");
   await page.getByLabel("Dekor korpusu", { exact: true }).fill("Biały");
@@ -19,6 +20,9 @@ test("employee applies a reusable standard, sizes the back and saves the resulti
     .selectOption("finished");
   await page
     .getByRole("button", { name: "Uzupełnij brakujące opisy", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
     .click();
   if (process.env.PAN_STOLARZ_QA_SCREENSHOT) {
     await page
@@ -33,14 +37,19 @@ test("employee applies a reusable standard, sizes the back and saves the resulti
   await expect(page.getByLabel("Głębokość płyty", { exact: true })).toHaveValue(
     "557",
   );
+  await page.getByRole("tab", { name: "Materiał", exact: true }).click();
   await expect(page.getByLabel("Materiał płyty", { exact: true })).toHaveValue(
     "Laminat",
   );
   await page
     .getByLabel("Kierunek usłojenia", { exact: true })
     .selectOption("none");
+  await page.getByRole("button", { name: "Dokumentacja", exact: true }).click();
   await page.getByText("Zestawienie części · 5", { exact: true }).click();
   await expect(page.getByRole("table")).toContainText("556 × 2");
+  await page
+    .getByRole("button", { name: "Zamknij panel", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
@@ -50,7 +59,9 @@ test("employee applies a reusable standard, sizes the back and saves the resulti
       .filter({ hasText: "Zapisano we wspólnej bibliotece" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
+  await page.getByRole("button", { name: "Materiały", exact: true }).click();
   await expect(page.getByLabel("Plecy", { exact: true })).toHaveValue(
     "applied",
   );

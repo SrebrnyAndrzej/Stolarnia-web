@@ -14,6 +14,11 @@ rounded:
 
 ## Overview
 
+### Prowadnice przesuwania płyt — 22.11.2026
+Istniejący rzut 2D w FurnitureCreator pokazuje przerywane prowadnice i kompaktowy opis krawędzi wyłącznie podczas przesuwania. Linie używają --text, opis --panel/--text i istniejącego --radius; brak nowych kolorów i paneli. Opis jest nakładką bez przechwytywania wskaźnika i bez zmiany wysokości rysunku. Pola pozycji pozostają alternatywą bez przeciągania. Na telefonie przesuwanie zachowuje widoczny projekt, zwykłe stuknięcie otwiera dotychczasowy inspektor.
+
+Na telefonie wysokość podglądu kuchni korzysta z tego samego pomiaru dostępnego miejsca co komputer (useKitchenViewport). Ograniczenie dotyczy wyłącznie rysunku; inspektor i formularze zachowują naturalne przewijanie. Dolny pasek i opis podglądu są uwzględnione w pomiarze. Minimalne 120 px chroni użyteczność rysunku przy małym oknie.
+
 ### Studio: eksperymentalny katalog kuchni — 22.11.2026
 Publiczny adres `#/kreator-kuchni?ui=studio` włącza wariant istniejącego kreatora. App jest właścicielem flagi adresu; nie powstaje osobny projekt ani kopia szkicu. Nagłówek jawnie oznacza test i pozwala wrócić do standardowego adresu przez tę samą ochronę oczekujących zmian. Domyślne wejście pozostaje bez eksperymentu. KitchenStudioCatalog ma natywne pole search i przyciski disclosure z aria-expanded/controls; grupy Meble / AGD i hydraulika / Wykończenia używają istniejących ikon i tokenów. Wyszukiwanie jest lokalne, więc nie ma wyścigu odpowiedzi. Dopasowanie miejsca nadal należy do catalog-placement, nie do wyszukiwarki. KitchenRunStrip jest wariantem istniejącego KitchenSelection: rozwijany wybór z przełączanym rzędem górnym lub dolnym/wysokim i przyciskami szafek, bez udawania skali, zmiany geometrii ani nowego gestu przeciągania. Natywna lista zostaje w standardowym trybie; Studio zapewnia wybór klawiaturą przez przyciski. Automatyczne układanie jest w rozwijanej sekcji, a wybór ściany nie dubluje się w katalogu. Na telefonie rząd przewija się we własnym obszarze z widoczną systemową belką; nie rozszerza strony. Edytor, cofanie, walidacja i API ceny są współdzielone. Źródła i rozróżnienie demo/prezentacji: docs/RESEARCH-ROZRYS-STUDIO-2026-11-22.md.
 

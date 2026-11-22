@@ -1,3 +1,4 @@
+import { openArchitectFiles } from "./kitchen-ui";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
@@ -39,7 +40,7 @@ const close = (page: Page) =>
     })
     .click();
 const upload = async (page: Page, name = "parter.jpg") => {
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   const buffer = await fixture(page);
   await page
     .getByLabel("Dodaj pliki architekta", { exact: true })
@@ -202,7 +203,7 @@ test("two-point calibration, rotation, cancel, undo and transfer preserve origin
   const context = await browser.newContext();
   const other = await context.newPage();
   await other.goto(page.url());
-  await other.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(other);
   await other
     .getByLabel("Wczytaj paczkę projektu", { exact: true })
     .setInputFiles(path);
@@ -220,7 +221,7 @@ test("two-point calibration, rotation, cancel, undo and transfer preserve origin
   await page
     .getByRole("button", { name: "Przejdź do szafek", exact: false })
     .click();
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   await page
     .getByRole("button", { name: "Usuń z projektu parter.jpg", exact: true })
     .click();
@@ -232,7 +233,7 @@ test("invalid image and unknown scale never change dimensions or discard valid P
   page,
 }) => {
   await page.goto("/#/kreator-kuchni");
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   const png = await fixture(page, "image/png");
   await page
     .getByLabel("Dodaj pliki architekta", { exact: true })

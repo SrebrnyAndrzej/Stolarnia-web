@@ -30,10 +30,12 @@ test("new models suggest an editable interior and manual positions survive resiz
     .getByRole("button", { name: "Zapisz w bibliotece", exact: true })
     .click();
   await page.getByRole("button", { name: "Nowy mebel", exact: true }).click();
+  await page.getByRole("tab", { name: "Biblioteka", exact: true }).click();
   await page.getByRole("button", { name: /Nowy mebel.*Wersja 1/ }).click();
   await expect(
     selector.locator("option").filter({ hasText: "Półka sugerowana 1.1" }),
   ).toHaveCount(0);
+  await page.getByRole("tab", { name: "Układ", exact: true }).click();
   await page
     .getByRole("button", { name: "Przywróć sugerowany układ", exact: true })
     .click();
@@ -47,6 +49,10 @@ test("every shape gets automatic contents and variant switches can be undone on 
   await page.setViewportSize({ width: 390, height: 844 });
   await staffApi(page);
   await page.goto("/#/panel/meble");
+  await page
+    .getByRole("group", { name: "Obszar kreatora" })
+    .getByRole("button", { name: "Narzędzia", exact: true })
+    .click();
   await page.getByLabel("Obrys", { exact: true }).selectOption("slope");
   const select = page.getByLabel("Wybierz płytę", { exact: true });
   await expect(

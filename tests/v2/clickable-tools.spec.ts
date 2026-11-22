@@ -1,5 +1,6 @@
 import { test, expect } from "./staff-fixture";
 import AxeBuilder from "@axe-core/playwright";
+import { openKitchenList } from "./kitchen-ui";
 
 test("shelf cabinet can be edited on a phone with visible shelf clearances", async ({
   page,
@@ -44,6 +45,7 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page.getByRole("button", { name: "Wstaw proponowany układ" }).click();
   await expect(page.locator(".kp-arrangement li")).toHaveCount(11);
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami 600" })
@@ -102,6 +104,7 @@ test("suggested kitchen can be edited, undone and transferred to the drawer calc
   await expect(page.locator(".drawer-cut").first()).toBeVisible();
   await page.getByRole("link", { name: "Wróć do kreatora kuchni" }).click();
   await expect(page.locator(".kp-cabinet-editor")).toBeVisible();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami 500" })

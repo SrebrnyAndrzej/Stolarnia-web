@@ -40,12 +40,26 @@ export async function request<T>(
       cache: "no-store",
       headers: { "Content-Type": "application/json", ...options.headers },
     });
+    signal.throwIfAborted();
     if (r.ok && format === "pdf") {
       if (!r.headers.get("content-type")?.includes("application/pdf"))
         throw new Error("Serwer nie zwrócił pliku PDF. Spróbuj ponownie.");
-      return (await r.blob()) as T;
+      const blob = await r.blob();
+      signal.throwIfAborted();
+      return blob as T;
     }
-    const body = await r.json().catch(() => ({}));
+    let body;
+    try {
+      body = await r.json();
+    } catch {
+      signal.throwIfAborted();
+      if (r.ok)
+        throw new Error(
+          "Serwer zwrócił nieprawidłową odpowiedź. Spróbuj ponownie.",
+        );
+      body = {};
+    }
+    signal.throwIfAborted();
     if (!r.ok) {
       if (
         r.status === 401 &&

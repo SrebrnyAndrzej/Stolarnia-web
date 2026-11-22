@@ -1,3 +1,4 @@
+import { openKitchenList } from "./kitchen-ui";
 import { test, expect } from "./staff-fixture";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -69,6 +70,7 @@ for (const phone of [false, true])
     await expect(page.getByLabel("Front do przeliczenia")).toHaveValue(
       "FRONT-SZ03",
     );
+    await openKitchenList(page);
     await page
       .locator(".kp-item-name")
       .filter({ hasText: "Szafka dolna z szufladami" })
@@ -118,6 +120,7 @@ test("fit selected cabinet respects row, applies explicitly and undoes in one st
   await page.getByLabel("Długość ściany A").fill("3650");
   await page.getByRole("button", { name: "Przejdź do szafek" }).click();
   await page.getByRole("button", { name: "Wstaw proponowany układ" }).click();
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Szafka dolna z szufladami" })
@@ -142,6 +145,7 @@ test("fit selected cabinet respects row, applies explicitly and undoes in one st
   await expect(width).toHaveValue("600");
   await page.getByRole("button", { name: "Cofnij", exact: true }).click();
   await expect(width).toHaveValue("500");
+  await openKitchenList(page);
   await page
     .locator(".kp-item-name")
     .filter({ hasText: "Zabudowa zmywarki" })

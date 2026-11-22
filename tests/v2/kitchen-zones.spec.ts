@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { showKitchenCatalog } from "./kitchen-ui";
 
 for (const phone of [false, true])
   test(`functional kitchen proposal has visible water and appliance zones (${phone ? "phone" : "desktop"})`, async ({
@@ -130,6 +131,7 @@ test("measured water zone on wall B persists and zone buttons select the actual 
   const before = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("pan-stolarz.kuchnia.v1")!),
   );
+  await showKitchenCatalog(page);
   expect(before.planning).toEqual({
     waterWall: "b",
     sinkCenter: 1550,
@@ -160,6 +162,7 @@ test("an impossible full kitchen preserves the manually entered project and show
   await page
     .getByRole("button", { name: /Dodaj: Szafka dolna z półkami 600/ })
     .click();
+  await showKitchenCatalog(page);
   const before = await page.evaluate(() =>
     localStorage.getItem("pan-stolarz.kuchnia.v1"),
   );

@@ -1,3 +1,4 @@
+import { openArchitectFiles } from "./kitchen-ui";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 const id = (n: number) =>
@@ -142,7 +143,7 @@ test("hiding an architect underlay preserves its framing, original and project d
   await page
     .getByRole("button", { name: "Wymiary pomieszczenia", exact: true })
     .click();
-  await page.locator(".kp-architect-tools summary").click();
+  await openArchitectFiles(page);
   const dxf = Buffer.from(
     "0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n0\nLWPOLYLINE\n8\nROOM\n90\n4\n70\n1\n10\n0\n20\n0\n10\n3600\n20\n0\n10\n3600\n20\n2400\n10\n0\n20\n2400\n0\nENDSEC\n0\nEOF\n",
   );
