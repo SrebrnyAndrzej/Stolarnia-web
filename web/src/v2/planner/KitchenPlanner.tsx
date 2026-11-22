@@ -58,6 +58,7 @@ import { kitchenLayoutName } from "../../../../src/core/kitchen-layout";
 import { kitchenAdditionFits, planKitchenAddition } from "./catalog-placement";
 import { planKitchenMove } from "./catalog-movement";
 import { KitchenSelection } from "./KitchenSelection";
+import { KitchenStudioCatalog } from "./KitchenStudioCatalog";
 import { useKitchenViewport } from "./useKitchenViewport";
 import { isKitchenUpper } from "../../../../src/core/kitchen-configuration";
 import { KitchenDrawerFronts } from "./KitchenDrawerFronts";
@@ -126,7 +127,8 @@ function initialDraft() {
 export function KitchenPlanner({
   staff = false,
   owner = false,
-}: { staff?: boolean; owner?: boolean } = {}) {
+  studio = false,
+}: { staff?: boolean; owner?: boolean; studio?: boolean } = {}) {
   const [initial] = useState(initialDraft);
   const [returnSource] = useState(() => {
     const q = new URLSearchParams(location.hash.split("?")[1] ?? "");
@@ -175,7 +177,8 @@ export function KitchenPlanner({
   const [selected, setSelected] = useState<string | null>(
     returnItem?.id ?? null,
   );
-  const [group, setGroup] = useState("base");
+  const [group, setGroup] = useState(studio ? "" : "base");
+  const [studioSearch, setStudioSearch] = useState("");
   const [gapId, setGapId] = useState("");
   const [notice, setNotice] = useState(
     returnSource && !returnItem
@@ -653,6 +656,20 @@ export function KitchenPlanner({
         </>
       );
     })();
+  const planningTools = (
+    <KitchenPlanningTools
+      key={JSON.stringify([draft.planning, draft.layout])}
+      draft={draft}
+      disabled={conflict !== null || pending}
+      onApply={(next) => {
+        change(next);
+        setSelected(null);
+        setNotice(
+          "Ułożono strefy: hydraulika, przygotowanie, gotowanie i chłodzenie. Zmywarka sąsiaduje ze zlewem, okap jest nad płytą. Możesz edytować szafki lub cofnąć cały układ. Przyłącza i narożniki wymagają opracowania.",
+        );
+      }}
+    />
+  );
   const catalogPanel = (
     <aside
       key="kitchen-catalog"
@@ -668,53 +685,71 @@ export function KitchenPlanner({
       {step === 1 ? (
         !cabinetEditor && (
           <>
-            <KitchenPlanningTools
-              key={JSON.stringify([draft.planning, draft.layout])}
-              draft={draft}
-              disabled={conflict !== null || pending}
-              onApply={(next) => {
-                change(next);
-                setSelected(null);
-                setNotice(
-                  "Ułożono strefy: hydraulika, przygotowanie, gotowanie i chłodzenie. Zmywarka sąsiaduje ze zlewem, okap jest nad płytą. Możesz edytować szafki lub cofnąć cały układ. Przyłącza i narożniki wymagają opracowania.",
-                );
-              }}
-            />
-            <div
-              className="kp-wall-buttons"
-              role="group"
-              aria-label="Wybierz ścianę"
-            >
-              {wallIds(draft).map((w) => (
-                <button
-                  key={w}
-                  aria-pressed={wall === w}
-                  onClick={() => {
-                    chooseCabinet(null, w as "a" | "b" | "c");
-                  }}
-                >
-                  Ściana {w.toUpperCase()}
-                </button>
-              ))}
-            </div>
-            <p className="kp-capacity">
-              Dolna i wysoka zabudowa:{" "}
-              <strong>
-                {kitchenFreeGaps(draft, wall, "base").reduce(
-                  (sum, g) => sum + g.width,
-                  0,
-                )}{" "}
-                mm wolne
-              </strong>
-              <small>
-                Górne:{" "}
-                {kitchenFreeGaps(draft, wall, "wall").reduce(
-                  (sum, g) => sum + g.width,
-                  0,
-                )}{" "}
-                mm do wykorzystania
-              </small>
-            </p>
+            {studio ? (
+              <details className="kp-studio-auto">
+                <summary>Ułóż kuchnię automatycznie</summary>
+                {planningTools}
+              </details>
+            ) : (
+              planningTools
+            )}
+            {!studio && (
+              <div
+                className="kp-wall-buttons"
+                role="group"
+                aria-label="Wybierz ścianę"
+              >
+                {wallIds(draft).map((w) => (
+                  <button
+                    key={w}
+                    aria-pressed={wall === w}
+                    onClick={() => {
+                      chooseCabinet(null, w as "a" | "b" | "c");
+                    }}
+                  >
+                    Ściana {w.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+            {studio ? (
+              <p className="kp-studio-capacity">
+                Ściana {wall.toUpperCase()} · wolne: dół{" "}
+                {(
+                  kitchenFreeGaps(draft, wall, "base").reduce(
+                    (sum, g) => sum + g.width,
+                    0,
+                  ) / 10
+                ).toLocaleString("pl-PL")}{" "}
+                cm · góra{" "}
+                {(
+                  kitchenFreeGaps(draft, wall, "wall").reduce(
+                    (sum, g) => sum + g.width,
+                    0,
+                  ) / 10
+                ).toLocaleString("pl-PL")}{" "}
+                cm
+              </p>
+            ) : (
+              <p className="kp-capacity">
+                Dolna i wysoka zabudowa:{" "}
+                <strong>
+                  {kitchenFreeGaps(draft, wall, "base").reduce(
+                    (sum, g) => sum + g.width,
+                    0,
+                  )}{" "}
+                  mm wolne
+                </strong>
+                <small>
+                  Górne:{" "}
+                  {kitchenFreeGaps(draft, wall, "wall").reduce(
+                    (sum, g) => sum + g.width,
+                    0,
+                  )}{" "}
+                  mm do wykorzystania
+                </small>
+              </p>
+            )}
             <label className="kp-select-label">
               Miejsce dodawania
               <select
@@ -755,75 +790,93 @@ export function KitchenPlanner({
                 </button>
               </p>
             )}
-            <label className="kp-select-label">
-              Rodzaj szafek
-              <select
-                aria-label="Rodzaj szafek"
-                value={group}
-                onChange={(e) => setGroup(e.target.value)}
-              >
-                <option value="base">Dolne z drzwiami</option>
-                <option value="drawers">Z szufladami</option>
-                <option value="wall">Wiszące</option>
-                <option value="tall">Słupki</option>
-                <option value="water">Hydraulika · zlew i zmywarka</option>
-                <option value="cooking">AGD · gotowanie i okap</option>
-                <option value="cooling">AGD · lodówka</option>
-                <option value="fillers">Blendy</option>
-              </select>
-            </label>
-            {!visibleCatalog.length && (
-              <div className="kp-catalog-empty" role="status">
-                <strong>Brak pasujących szafek tego rodzaju.</strong>
-                <p>
-                  Kliknij szafkę na rysunku, aby zmienić jej szerokość lub
-                  wyposażenie. Możesz też wybrać inną ścianę albo wolną lukę.
-                </p>
-                {activeModules.length > 0 && (
-                  <button
-                    className="ps-button secondary"
-                    disabled={conflict !== null}
-                    onClick={() =>
-                      chooseCabinet(
-                        (
-                          activeModules.find(
-                            (m) =>
-                              m.kategoria === "base" &&
-                              ["shelves", "drawers"].includes(m.konstrukcja),
-                          ) ?? activeModules[0]
-                        ).id,
-                      )
-                    }
+            {studio ? (
+              <KitchenStudioCatalog
+                catalog={catalog}
+                available={availableCatalog}
+                group={group}
+                query={studioSearch}
+                onQuery={setStudioSearch}
+                onGroup={setGroup}
+                onAdd={add}
+                disabled={conflict !== null}
+              />
+            ) : (
+              <>
+                <label className="kp-select-label">
+                  Rodzaj szafek
+                  <select
+                    aria-label="Rodzaj szafek"
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
                   >
-                    Wybierz szafkę do zmiany
-                  </button>
+                    <option value="base">Dolne z drzwiami</option>
+                    <option value="drawers">Z szufladami</option>
+                    <option value="wall">Wiszące</option>
+                    <option value="tall">Słupki</option>
+                    <option value="water">Hydraulika · zlew i zmywarka</option>
+                    <option value="cooking">AGD · gotowanie i okap</option>
+                    <option value="cooling">AGD · lodówka</option>
+                    <option value="fillers">Blendy</option>
+                  </select>
+                </label>
+                {!visibleCatalog.length && (
+                  <div className="kp-catalog-empty" role="status">
+                    <strong>Brak pasujących szafek tego rodzaju.</strong>
+                    <p>
+                      Kliknij szafkę na rysunku, aby zmienić jej szerokość lub
+                      wyposażenie. Możesz też wybrać inną ścianę albo wolną
+                      lukę.
+                    </p>
+                    {activeModules.length > 0 && (
+                      <button
+                        className="ps-button secondary"
+                        disabled={conflict !== null}
+                        onClick={() =>
+                          chooseCabinet(
+                            (
+                              activeModules.find(
+                                (m) =>
+                                  m.kategoria === "base" &&
+                                  ["shelves", "drawers"].includes(
+                                    m.konstrukcja,
+                                  ),
+                              ) ?? activeModules[0]
+                            ).id,
+                          )
+                        }
+                      >
+                        Wybierz szafkę do zmiany
+                      </button>
+                    )}
+                  </div>
                 )}
-              </div>
+                <div className="kp-catalog-items">
+                  {visibleCatalog.map((m) => (
+                    <button
+                      key={m.id}
+                      disabled={conflict !== null}
+                      onClick={() => add(m.id)}
+                    >
+                      <span
+                        className={`kp-cabinet-icon ${m.construction}`}
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <strong>Dodaj: {m.name}</strong>
+                        <small>
+                          {m.widthMM} × {m.heightMM}
+                          {m.construction === "filler"
+                            ? " mm · płyta frontowa"
+                            : ` × ${m.depthMM} mm`}
+                        </small>
+                      </span>
+                      <IconPlus size={18} />
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
-            <div className="kp-catalog-items">
-              {visibleCatalog.map((m) => (
-                <button
-                  key={m.id}
-                  disabled={conflict !== null}
-                  onClick={() => add(m.id)}
-                >
-                  <span
-                    className={`kp-cabinet-icon ${m.construction}`}
-                    aria-hidden="true"
-                  />
-                  <span>
-                    <strong>Dodaj: {m.name}</strong>
-                    <small>
-                      {m.widthMM} × {m.heightMM}
-                      {m.construction === "filler"
-                        ? " mm · płyta frontowa"
-                        : ` × ${m.depthMM} mm`}
-                    </small>
-                  </span>
-                  <IconPlus size={18} />
-                </button>
-              ))}
-            </div>
             <p className="kp-muted">
               {activeGap
                 ? "Dodamy w wybranej luce bez przesuwania pozostałych szafek."
@@ -906,16 +959,37 @@ export function KitchenPlanner({
     </aside>
   );
   return (
-    <div className="kp-page kp-editing">
+    <div className={`kp-page kp-editing${studio ? " kp-studio" : ""}`}>
       <header className="ps-public-header">
         <a href="#/">
           <Logo />
         </a>
-        <span className="kp-header-label">Kreator kuchni</span>
+        <span className="kp-header-label">
+          {studio ? "Studio · wersja testowa" : "Kreator kuchni"}
+        </span>
         {staff && <a href="#/panel/szuflady">Kalkulatory stolarza</a>}
         <a className="ps-text-button" href="#/">
           Strona główna <IconArrowLeft size={18} />
         </a>
+        {studio && (
+          <button
+            type="button"
+            className="ps-text-button"
+            onClick={() => {
+              if (editorBlocked()) return;
+              const query = new URLSearchParams(
+                location.hash.split("?")[1] ?? "",
+              );
+              query.delete("ui");
+              const suffix = query.toString();
+              location.hash = `#/kreator-kuchni${suffix ? `?${suffix}` : ""}`;
+              if (!group || group === "corner") setGroup("base");
+              requestAnimationFrame(() => heading.current?.focus());
+            }}
+          >
+            Wróć do zwykłego kreatora
+          </button>
+        )}
       </header>
       <main className="kp-main">
         <div className="kp-project-bar">
@@ -1434,6 +1508,7 @@ export function KitchenPlanner({
                       modules={activeModules}
                       selected={selected}
                       disabled={pending || conflict !== null}
+                      visual={studio}
                       onSelect={chooseCabinet}
                       onMove={move}
                     />
@@ -1941,6 +2016,7 @@ export function KitchenPlanner({
             <button
               className="ps-text-button"
               ref={resetTrigger}
+              disabled={cloudBusy || conflict !== null}
               onClick={() => resetDialog.current?.showModal()}
             >
               Zacznij od nowa
@@ -1980,11 +2056,13 @@ export function KitchenPlanner({
             </button>
             <button
               className="ps-button"
+              disabled={cloudBusy || conflict !== null}
               onClick={() => {
-                change(newDraft());
+                const next = newDraft();
+                change(next, true);
                 setRoomFormRevision((n) => n + 1);
                 setRoomDirty(false);
-                syncDimensions(newDraft());
+                syncDimensions(next);
                 setWall("a");
                 setSelected(null);
                 go(0, true);

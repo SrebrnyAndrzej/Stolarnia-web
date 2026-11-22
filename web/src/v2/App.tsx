@@ -16,7 +16,9 @@ import {
 } from "@tabler/icons-react";
 import { request, roles, type Principal } from "./api";
 import { Landing } from "./Landing";
-const PrivacyPolicy = lazy(() => import("./PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })));
+const PrivacyPolicy = lazy(() =>
+  import("./PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy })),
+);
 import { HOME_TITLE, HOME_DESCRIPTION } from "./landing-content";
 import { Login } from "./Login";
 import { ActivateAccount } from "./StaffAccounts";
@@ -60,7 +62,11 @@ const KitchenPlanner = lazy(() =>
 const Calculators = lazy(() =>
   import("./calculators/Calculators").then((m) => ({ default: m.Calculators })),
 );
-const FairQuoteCalculator=lazy(()=>import("./calculators/FairQuoteCalculator").then(m=>({default:m.FairQuoteCalculator})));
+const FairQuoteCalculator = lazy(() =>
+  import("./calculators/FairQuoteCalculator").then((m) => ({
+    default: m.FairQuoteCalculator,
+  })),
+);
 
 export function App() {
   const [hash, setHash] = useState(location.hash || "#/");
@@ -200,12 +206,24 @@ export function App() {
           </main>
         }
       >
-        <KitchenPlanner staff={staff} owner={person?.role === "owner"} />
+        <KitchenPlanner
+          staff={staff}
+          owner={person?.role === "owner"}
+          studio={
+            new URLSearchParams(hash.split("?")[1] ?? "").get("ui") === "studio"
+          }
+        />
       </Suspense>
     );
   if (privacyRoute)
     return (
-      <Suspense fallback={<main className="ps-empty" role="status">Wczytywanie…</main>}>
+      <Suspense
+        fallback={
+          <main className="ps-empty" role="status">
+            Wczytywanie…
+          </main>
+        }
+      >
         <PrivacyPolicy />
       </Suspense>
     );
@@ -300,7 +318,7 @@ export function App() {
       : []),
     ...(owner
       ? [
-          {id:"wycena",label:"Wyceniarka i zarobek",icon:IconCalculator},
+          { id: "wycena", label: "Wyceniarka i zarobek", icon: IconCalculator },
           { id: "zamowienia", label: "Zamówienia Mussi", icon: IconStack2 },
           { id: "marketing", label: "Marketing", icon: IconMail },
           { id: "zapytania", label: "Zapytania klientów", icon: IconMail },
@@ -472,7 +490,11 @@ export function App() {
               <a href={href("projekty")} className="ps-back-link">
                 <IconArrowLeft size={16} /> Nowy widok projektów
               </a>
-              <LegacyApp pracownik={employee && profile !== "wlasciciel" ? profile : undefined} />
+              <LegacyApp
+                pracownik={
+                  employee && profile !== "wlasciciel" ? profile : undefined
+                }
+              />
             </div>
           ) : section === "marketing" && owner ? (
             <Marketing />
