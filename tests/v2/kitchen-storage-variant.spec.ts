@@ -71,7 +71,11 @@ for (const phone of [false, true])
     const firstPrice = await (
       await request.post("/api/public/kitchen-estimate", { data: before })
     ).json();
-    await expect(page.getByText("50 mm wolne", { exact: true })).toBeVisible();
+    await expect(
+      page
+        .locator('[data-kitchen-space="base"]')
+        .getByText("5 cm wolne", { exact: true }),
+    ).toBeVisible();
     // A click in the drawing reveals and focuses the actual editor, including on a phone.
     await page
       .locator(`[data-kitchen-cabinet="${id(1)}"]`)

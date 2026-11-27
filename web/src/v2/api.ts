@@ -25,7 +25,7 @@ export interface CustomerRequest {
 export async function request<T>(
   url: string,
   options: RequestInit = {},
-  format: "json" | "pdf" = "json",
+  format: "json" | "pdf" | "csv" = "json",
 ): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 20000);
@@ -41,6 +41,13 @@ export async function request<T>(
       headers: { "Content-Type": "application/json", ...options.headers },
     });
     signal.throwIfAborted();
+    if (r.ok && format === "csv") {
+      if (!r.headers.get("content-type")?.includes("text/csv"))
+        throw new Error("Serwer nie zwrócił pliku CSV. Spróbuj ponownie.");
+      const blob = await r.blob();
+      signal.throwIfAborted();
+      return blob as T;
+    }
     if (r.ok && format === "pdf") {
       if (!r.headers.get("content-type")?.includes("application/pdf"))
         throw new Error("Serwer nie zwrócił pliku PDF. Spróbuj ponownie.");

@@ -28,7 +28,7 @@ export function useKitchenViewport(step: number, revision: string) {
         );
         element.style.setProperty(
           "--kp-available-height",
-          `${Math.max(120, Math.min(desktop.matches ? 560 : 300, available))}px`,
+          `${Math.max(desktop.matches ? 340 : 280, Math.min(desktop.matches ? 560 : 360, available))}px`,
         );
         if (!desktop.matches)
           inspector?.style.removeProperty("--kp-inspector-height");

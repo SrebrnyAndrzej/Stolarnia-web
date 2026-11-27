@@ -21,6 +21,7 @@ import {
 } from "../core/kitchen-project-details.js";
 import { reviewKitchenObjects } from "../core/kitchen-storage-check.js";
 import { kitchenFunctionalReview } from "../core/kitchen-functions.js";
+import { kitchenApplianceFit } from "../core/kitchen-appliance-fit.js";
 import {
   DOMYSLNY_KORPUS,
   DOMYSLNY_FRONT,
@@ -253,7 +254,7 @@ export function kitchenWorkshopPacket(draft: SavedDraft, revision: number) {
     for (const p of list)
       rows.push([
         label,
-        `${p.nazwaModulu} · ${p.etykieta}`,
+        `${p.nazwaModulu} · ${p.kodElementu} · ${p.etykieta}`,
         String(p.dlugoscMM),
         String(p.szerokoscMM),
         String(p.gruboscMM),
@@ -283,6 +284,10 @@ export function kitchenWorkshopPacket(draft: SavedDraft, revision: number) {
         wall: m.scianaId,
         width: m.szerokoscMM,
         x: m.pozycjaXMM,
+        ...(() => {
+          const card = input.items.find((i) => i.id === m.id)?.appliance;
+          return card ? { card, fit: kitchenApplianceFit(m, card) } : {};
+        })(),
       })),
     unresolved: [
       ...Object.entries(kitchenMeasurementLabels)
@@ -295,6 +300,7 @@ export function kitchenWorkshopPacket(draft: SavedDraft, revision: number) {
         .map((o) => `Przechowywanie: ${o.name}`),
       "Potwierdź modele AGD, syfon, dekory na próbce, okucia, stronę zawiasów i krawędzie widoczne. Reguły oklejenia z modelu wymagają zatwierdzenia przez stolarza.",
     ],
+    standards: input.standards,
     hardware: built.map((b) => ({ cabinet: b.modul.nazwa, items: b.okucia })),
     partsByMaterial: [...groups].map(([material, parts]) => ({
       material,

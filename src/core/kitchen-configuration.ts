@@ -14,6 +14,13 @@ import {
 } from "./kitchen-layout.js";
 import { drawerStackHeights } from "./drawer-front-layout.js";
 import { USTAWIENIA_DOMYSLNE } from "./settings.js";
+import { mebelZModulu } from "./silnik/adapter.js";
+import { dodajUkrytaSzuflade } from "./silnik/polecenia.js";
+import {
+  kitchenApplianceSchema,
+  kitchenApplianceFit,
+} from "./kitchen-appliance-fit.js";
+import { kitchenStandardsSchema, isStandardBase } from "./kitchen-standards.js";
 import {
   kitchenFeatureSchema,
   featureRoomIssues,
@@ -93,7 +100,9 @@ export const kitchenItemSchema = z
     height: z.number().int().min(300).max(2600).optional(),
     depth: z.number().int().min(250).max(800).optional(),
     shelves: z.number().int().min(0).max(8).optional(),
-    drawers: z.number().int().min(2).max(6).optional(),
+    drawers: z.number().int().min(1).max(6).optional(),
+    innerDrawers: z.number().int().min(0).max(3).optional(),
+    appliance: kitchenApplianceSchema.optional(),
     gapBefore: z.number().int().min(0).max(4000).optional(),
     surround: z
       .object({
@@ -109,7 +118,7 @@ export const kitchenItemSchema = z
         mode: z.enum(["equal", "graduated", "custom"]),
         heightsFromTop: z
           .array(z.number().min(60).max(2600).nullable())
-          .min(2)
+          .min(1)
           .max(6)
           .optional(),
       })
@@ -162,8 +171,21 @@ export const kitchenItemSchema = z
       fail("depth", "Wybierz głębokość dostępną dla tej szafki.");
     if (i.shelves !== undefined && m.construction !== "shelves")
       fail("shelves", "Półki można ustawiać w szafce półkowej.");
+    if (i.appliance && m.category !== "appliance")
+      fail("appliance", "Kartę urządzenia przypisz do zabudowy AGD.");
     if (i.drawers !== undefined && m.construction !== "drawers")
       fail("drawers", "Liczbę szuflad można ustawiać w szafce szufladowej.");
+    if (
+      i.innerDrawers &&
+      (m.construction !== "drawers" ||
+        i.drawers !== 1 ||
+        (i.height ?? m.heightMM) < 600 ||
+        (i.depth ?? m.depthMM) < 560)
+    )
+      fail(
+        "innerDrawers",
+        "Szuflady ukryte: wybierz jeden wspólny front, korpus wysokości co najmniej 600 mm i głębokości co najmniej 560 mm.",
+      );
     if (i.drawerFronts !== undefined) {
       if (m.construction !== "drawers")
         fail("drawerFronts", "Podział frontów dotyczy szafki szufladowej.");
@@ -243,6 +265,7 @@ export const kitchenInputSchema = z
     island: kitchenIslandSchema.optional(),
     architectFiles: architectFilesSchema.optional(),
     quote: kitchenOptionsSchema.default({}),
+    standards: kitchenStandardsSchema.optional(),
   })
   .superRefine((d, ctx) => {
     for (const message of featureRoomIssues(d, kitchenWalls(d)))
@@ -300,7 +323,11 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
       (i.gapBefore ?? 0) +
       (i.surround?.left ? thickness : 0);
     const width = i.width ?? m.widthMM,
-      height = i.height ?? m.heightMM,
+      height =
+        i.height ??
+        (d.standards && isStandardBase(m)
+          ? d.standards.baseHeight
+          : m.heightMM),
       depth = i.depth ?? m.depthMM;
     const config = domyslnaKonfiguracja({
       ...m,
@@ -311,6 +338,13 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
     if (i.drawers !== undefined) config.liczbaSzuflad = i.drawers;
     if (i.drawerFronts !== undefined)
       config.podzialFrontowSzuflad = i.drawerFronts;
+    if (i.innerDrawers) {
+      config.szufladySystemowe = true;
+      config.profilSzuflad =
+        d.quote?.drawers === "blum"
+          ? "blum-legrabox-m-wood"
+          : "amix-elite-standard";
+    }
     if (m.construction === "blindCorner") {
       config.stronaDrzwiNaroznika = "lewa";
       config.szerokoscDrzwiNaroznikaMM = 450;
@@ -325,7 +359,7 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
         gruboscMM: thickness,
       };
     ends[key] = x + width + (i.surround?.right ? thickness : 0);
-    return {
+    const module: Modul = {
       id: i.id,
       katalogId: m.id,
       nazwa: m.name.replace(/\s+\d+$/, ` ${width}`),
@@ -333,13 +367,26 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
       kategoria: m.category,
       konstrukcja: m.construction,
       pozycjaXMM: x,
-      pozycjaYMM: isKitchenUpper(m) ? m.bottomOffsetMM : 100,
+      pozycjaYMM: isKitchenUpper(m)
+        ? (d.standards?.upperBottom ?? m.bottomOffsetMM)
+        : (d.standards?.plinth ?? 100),
       szerokoscMM: width,
       wysokoscMM: height,
       glebokoscMM: depth,
       konfiguracja: config,
       materialFrontuId: d.finish,
     };
+    if (i.innerDrawers) {
+      // One common external front; the engine lays out every hidden runner and box.
+      config.podzialFrontowSzuflad = { mode: "equal" };
+      let tree = mebelZModulu(module, USTAWIENIA_DOMYSLNE.konstrukcja);
+      for (let n = 0; n < i.innerDrawers; n++)
+        tree = dodajUkrytaSzuflade(tree, USTAWIENIA_DOMYSLNE.konstrukcja, {
+          sprzezona: false,
+        }).mebel;
+      module.drzewo = tree;
+    }
+    return module;
   });
   if (d.island) {
     const islandModules = kitchenModules({
@@ -347,6 +394,7 @@ export function kitchenModules(d: KitchenGeometryInput): Modul[] {
       island: undefined,
       layout: "straight",
       items: d.island.items,
+      standards: d.standards ? { ...d.standards, baseHeight: 720 } : undefined,
     });
     const thickness = kitchenPanelThickness(d);
     islandModules.forEach((m, n) => {
@@ -379,6 +427,30 @@ export function kitchenIssues(d: KitchenGeometryInput): string[] {
   issues.push(...featureRoomIssues(d, kitchenWalls(d)));
   issues.push(...islandIssues(d, modules));
   issues.push(...kitchenCollisions(d, modules).map((c) => c.message));
+  for (const m of modules) {
+    const catalog = customerKitchenCatalog.find((c) => c.id === m.katalogId)!;
+    if (
+      ![catalog.heightMM, ...catalog.availableHeightsMM].includes(m.wysokoscMM)
+    )
+      issues.push(
+        `${m.nazwa}: wysokość ciągu nie jest dostępna dla tego modelu.`,
+      );
+    if (
+      m.konfiguracja.blat &&
+      m.pozycjaYMM + m.wysokoscMM + (d.quote?.worktop === "compact" ? 12 : 38) >
+        d.height
+    )
+      issues.push(`${m.nazwa}: blat przekracza wysokość pomieszczenia.`);
+  }
+  for (const item of d.items) {
+    if (!item.appliance) continue;
+    const module = modules.find((m) => m.id === item.id)!;
+    issues.push(
+      ...kitchenApplianceFit(module, item.appliance).issues.map(
+        (message) => `${module.nazwa}: ${message}`,
+      ),
+    );
+  }
   for (const m of modules)
     for (const f of d.features ?? [])
       if (openingOverlaps(m, f, d.quote?.worktop === "compact" ? 12 : 38))

@@ -3,6 +3,7 @@ import { dobierzNL, dobierzNLWewnetrznej, profilSzuflady, wariantWewnetrznej, wy
 import { USTAWIENIA_DOMYSLNE } from "../settings.js";
 import type { Element, Modul, OkucieModulu, UstawieniaKonstrukcyjne, UstawieniaTechnologii, ZbudowanyModul } from "../types.js";
 import type { Mebel, PoleFrontu, Rozmiar, StrefaWnetrza } from "./model.js";
+import { hiddenDrawerFloor } from "./hidden-drawer-layout.js";
 
 // Silnik konstrukcji: jeden model mebla (korpus + drzewo przestrzeni + siatka frontów + wysuwy) → elementy, okucia, ostrzeżenia.
 // Wynik ma ten sam format co dotychczasowy builder, więc dokumentacja, rozkrój, wycena i 3D działają bez zmian.
@@ -169,6 +170,7 @@ export function zbudujMebel(
   const ukryte = m.wysuwy.filter((w) => w.powiazanie === "ukrytaZaFrontem" || w.powiazanie === "zZabierakiem");
   // Szuflada ukryta za wysokim frontem: górna część strefy za frontem; skrzynka główna dostaje miejsce pod nią.
   const miejsceGlownej = new Map<string, number>(); // pole frontu → wysokość dostępna dla skrzynki głównej
+  const sufityUkrytych = new Map<string, number>();
   if (ukryte.length && zKorpusem) {
     const idProfilu = m.profilSzuflad ?? tech.profilSzuflad;
     const profil = m.szufladySystemowe ? profilSzuflady(idProfilu) : undefined;
@@ -199,24 +201,22 @@ export function zbudujMebel(
       const podloga0 = s.y;
       const podlogaFrontu = (f: Element) => podloga0 + (f.y - f0.y);
       const f = frontySz[i].f;
-      const sufit = i + 1 < frontySz.length ? podlogaFrontu(frontySz[i + 1].f) : s.y + s.h;
-      const a = rm.axis_above_panel_min_mm;
-      const kotwica = podloga0 + a;
-      const osMax = sufit - komora + a;
-      const os = kotwica + Math.floor((osMax - kotwica) / tech.rastrMM + 1e-6) * tech.rastrMM; // w dół do rastra 32
-      const podloga = os - a;
-      const miejsce = podloga - podlogaFrontu(f);
+      const sufit = sufityUkrytych.get(w.poleFrontuId) ?? (i + 1 < frontySz.length ? podlogaFrontu(frontySz[i + 1].f) : s.y + s.h);
       const najnizsze = Math.min(...Object.values(profil.back.height_by_variant_mm));
-      if (miejsce < najnizsze + 40) {
-        ostrzezenia.push(`Szuflada ukryta ${w.kod}: za frontem ${f.kod} zostaje ${Math.round(miejsce)} mm na skrzynkę główną — za mało (front za niski).`);
+      let podloga: number;
+      try {
+        podloga = hiddenDrawerFloor(podloga0, sufit, komora, tech.rastrMM, podlogaFrontu(f) - podloga0 + najnizsze + 40);
+      } catch {
+        ostrzezenia.push(`Szuflada ukryta ${w.kod}: za frontem ${f.kod} za mało miejsca na skrzynki i prowadnice — nie zbudowano.`);
         continue;
       }
-      miejsceGlownej.set(w.poleFrontuId, miejsce);
       const NL = dobierzNLWewnetrznej(profil, uzytkowa);
       if (!NL) {
         ostrzezenia.push(`Szuflada ukryta ${w.kod}: głębokość użytkowa ${uzytkowa} mm za mała.`);
         continue;
       }
+      sufityUkrytych.set(w.poleFrontuId, podloga);
+      miejsceGlownej.set(w.poleFrontuId, podloga - podlogaFrontu(f));
       const LW = s.w;
       const wy = wymiarySzuflady(profil, LW, NL, komora, wariant);
       el.push(p(`${w.kod}-DNO`, "drawerBottom", s.x + (LW - wy.dnoSzer) / 2, podloga + 20, 0, wy.dnoSzer, wy.grubosc, wy.dnoGl, "szuflada"));

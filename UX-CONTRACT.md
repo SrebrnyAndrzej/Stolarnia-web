@@ -2,6 +2,15 @@
 
 # Pan Stolarz 2.0 — kontrakt interfejsu
 
+## Edycja kuchni i spójność wydania — 27.11.2026
+- KitchenCabinetEditor pozostaje jedynym właścicielem formularza szafki. Wymiar na Elewacji oraz dotykowy przycisk wybierają szafkę i skupiają istniejące pole szerokości, z ochroną niezastosowanych zmian i blokady szafki. Zbliżenie jest stanem widoku, nie geometrią projektu.
+- Różnica ceny przed Zastosuj pochodzi z dwóch odpowiedzi useKitchenEstimate dla zapisanego i poprawnego proponowanego szkicu. Zmiana klucza natychmiast ukrywa starą odpowiedź; anulowanie, błąd i blokada nie pokazują poprzedniej ceny jako bieżącej. Błąd pozwala ponowić porównanie i zachowuje formularz.
+- kitchenItemSchema obsługuje jeden wspólny front z 1–3 ukrytymi szufladami. kitchenModules tworzy jawne drzewo, a buildKitchenModule jest wspólną ścieżką podglądu, ceny i pakietu warsztatowego. Każda szuflada ma własne formatki, komplet okuć i położenie w rastrze. Zabierak nadal obsługuje jeden wysuw. Brak miejsca jest odrzucany atomowo.
+- kitchenApplianceFit porównuje minimalną niszę modelu z rzeczywistym światłem. Zgodność minimum nie potwierdza maksymalnych zakresów, wentylacji, podłączeń ani otwierania. Model i karta przechodzą do zapisu oraz pakietu warsztatowego; nie pobieramy automatycznie danych z dowolnych URL.
+- kitchenStandardsSchema jest współdzielony przez klienta, API i zapis szkicu. Zastosowanie wspólnych wymiarów waliduje blokady, kolizje, dostępne wysokości i sufit przed jednym krokiem historii. Stare szkice zachowują dotychczasowe położenia. Wyspa zachowuje korpus 720 mm; cokół podąża za wspólnym poziomem.
+- Nowe wydanie zamraża również formatki CSV oraz pozycje zakupów dla każdego wariantu. Późniejsza zmiana katalogu nie przebudowuje tego koszyka. Starsze migawki zachowują jawny komunikat o bieżącym katalogu, a CSV starszego wydania bez formatek nie jest pozorowany z nowego projektu. Pobranie CSV nie oznacza wysłania zamówienia do hurtowni ani uzgodnienia z wcześniej wysłanym plikiem dostawcy.
+- Dowody domeny: src/core/kitchen-editor-upgrades.test.ts, src/przelicznik-szuflad.test.ts, src/wydania.test.ts. Scenariusze UI: tests/v2/kitchen-editor-upgrades.spec.ts; przed publikacją przeszły wszystkie 16 testów przeglądarkowych wybranego zestawu i 19 testów dostępu/HTTP. Propozycja półki używa core/kitchen-storage-variants.kitchenShelfAlternative i usuwa również innerDrawers; przekształcenie w blendę usuwa parametry szuflad i kartę AGD.
+
 ## Powtarzalna regresja wydania — 22.11.2026
 Domyślne test:v2:browser buduje aplikację i uruchamia scripts/qa-browser.mts przez konfigurację Playwright. Serwer nasłuchuje wyłącznie na 127.0.0.1, używa własnego katalogu tymczasowego i wymaga jawnej flagi dla testowych cookies ról. Skrypt nie jest importowany przez aplikację ani funkcję Vercela. Każdy inny prywatny endpoint wymaga jawnej atrapy w danym teście; nie ma dostępu do prawdziwej bazy. Dane kosztów właściciela w teście UI pochodzą z fairKitchenSource, a rzeczywiste uprawnienia API sprawdza osobna macierz HTTP. Testy nie przywracają anonimowych podglądów ani publicznych kalkulatorów. Listy i panele są otwierane przez istniejące przyciski, bez wymuszania widoczności.
 
@@ -433,3 +442,9 @@ Właściciel: core/furniture-measure + FurnitureMeasure; źródłem geometrii je
 - Kontrolki, fokus, komunikaty i przewijanie dziedziczą właścicieli z DESIGN.md. Nie ma nowej palety, dialogu, osobnego modelu ceny ani innej polityki zapisu. Testy: studio-catalog.test.ts oraz istniejące placement/movement/collisions; dodatkowo ręczne przejście trybów, wyszukiwania, dodania i ochrony edycji.
 
 - Regresja rozpoczęcia nowej kuchni: po jawnym potwierdzeniu reset zastępuje cały projekt (`change(next, true)`), zamiast próbować usuwać zablokowane szafki jak przy automatycznym układaniu. Wymiary i szkic pochodzą z tego samego next; odczyt/zapis online i konflikt blokują reset. Poprzedni projekt pozostaje w historii Cofnij.
+
+## Wymiary katalogu klienta — 23.11.2026
+- kitchenAdditionPreview korzysta z planKitchenAddition i kitchenModules. Podgląd karty oraz dodanie mają te same ograniczenia wymiarów, AGD, kolizji i aktualności luki. Podgląd nie zapisuje projektu, historii ani identyfikatorów. Kliknięcie ponownie waliduje bieżący szkic.
+- KitchenCatalogCard jest wspólnym właścicielem kart standardowych i Studio. Pokazuje rzeczywiste wymiary w jednostce pomieszczenia; różnica względem wariantu katalogowego jest jawna. uniqueKitchenAdditionPreviews usuwa wyłącznie powtórzone konfiguracje po dopasowaniu, zachowując rozłączne możliwości późniejszej edycji.
+- Miejsca dla dolnych/wysokich oraz wiszących pozostają oddzielne. Największa luka i suma wielu luk nie są zamienne. Wyszukiwanie Studio używa wymiaru podglądu; czyszczenie jest natychmiastowe i przywraca fokus do pola.
+- Testy geometrii: catalog-placement.test.ts. Nowe scenariusze UI: kitchen-catalog-clarity.spec.ts; oczekują na uruchomienie po odblokowaniu przeglądarki. Nie oznacza to zakończonego audytu wizualnego.

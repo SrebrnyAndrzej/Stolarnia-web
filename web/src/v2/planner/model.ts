@@ -21,7 +21,8 @@ import {
   featureRoomIssues,
   featureName,
 } from "../../../../src/core/kitchen-room";
-import { zbudujModul } from "../../../../src/core/builder";
+import { buildKitchenModule } from "../../../../src/core/kitchen-build";
+import { kitchenStandardsSchema } from "../../../../src/core/kitchen-standards";
 import { USTAWIENIA_DOMYSLNE } from "../../../../src/core/settings";
 import type { TechnicalAnalysis } from "../api";
 import {
@@ -57,6 +58,7 @@ export const draftSchema = z
     height: z.number().int().min(2300).max(3500),
     finish: z.enum(["white", "oak", "sage", "graphite", "cashmere"]),
     quote: kitchenOptionsSchema.default({}),
+    standards: kitchenStandardsSchema.optional(),
     decor: z
       .object({
         key: z.string().max(160),
@@ -146,7 +148,7 @@ export function toAnalysis(d: Draft): TechnicalAnalysis {
       ],
     },
     zbudowane: moduly.map((m) => {
-      const b = zbudujModul(m, {
+      const b = buildKitchenModule(m, {
         ...USTAWIENIA_DOMYSLNE.konstrukcja,
         gruboscFrontuMM: d.quote.front === "lacquer" ? 19 : 18,
         gruboscBlatuMM: d.quote.worktop === "compact" ? 12 : 38,
@@ -195,6 +197,23 @@ export function brief(d: Draft): string {
         ]
       : []),
     `Standard: ${kitchenOptions.front[d.quote.front]}; ${kitchenOptions.worktop[d.quote.worktop]}; ${kitchenOptions.drawers[d.quote.drawers]}; ${d.quote.installation ? "z montażem" : "bez montażu"}.`,
+    ...(d.standards
+      ? [
+          `Wspólne wymiary: cokół ${d.standards.plinth} mm, korpus dolny ${d.standards.baseHeight} mm, spód wiszących ${d.standards.upperBottom} mm od podłogi.`,
+        ]
+      : []),
+    ...[...d.items, ...(d.island?.items ?? [])].flatMap((i) => [
+      ...(i.innerDrawers
+        ? [
+            `${i.wall.toUpperCase()} | ${i.id}: ${i.innerDrawers} szuflady ukryte, niezależne, za jednym frontem.`,
+          ]
+        : []),
+      ...(i.appliance
+        ? [
+            `AGD ${i.wall.toUpperCase()} | ${i.catalogId}: ${i.appliance.model}; minimalna nisza ${i.appliance.width} × ${i.appliance.height} × ${i.appliance.depth} mm; wentylacja ${i.appliance.ventilationChecked ? "sprawdzona przez użytkownika" : "do potwierdzenia"}${i.appliance.source ? `; karta ${i.appliance.source}` : ""}.`,
+          ]
+        : []),
+    ]),
     ...analysis.projekt.moduly.map((m) => {
       const fronts = analysis.zbudowane
         .find((b) => b.modul.id === m.id)!

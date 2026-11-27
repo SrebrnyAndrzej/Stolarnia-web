@@ -1,4 +1,7 @@
-import type { UstawieniaKonstrukcyjne } from "../types.js";
+import type { UstawieniaKonstrukcyjne, UstawieniaTechnologii } from "../types.js";
+import { USTAWIENIA_DOMYSLNE } from "../settings.js";
+import { profilSzuflady, dobierzNLWewnetrznej } from "../catalog/drawers.js";
+import { hiddenDrawerFloor } from "./hidden-drawer-layout.js";
 import { ukladFrontow, ukladWnetrza } from "./budowa.js";
 import type { Mebel, PoleFrontu, StrefaWnetrza } from "./model.js";
 
@@ -185,7 +188,7 @@ export function dodajSzufladyZaDrzwiami(
  * osobno po otwarciu frontu; sprzężona — zabierak łączy ją z frontem (tylko systemy z danymi zabieraka). Położenie i wymiary
  * wyznacza silnik z profilu systemu (górna część strefy za frontem, prowadnica w rastrze 32).
  */
-export function dodajUkrytaSzuflade(wejscie: Mebel, k: UstawieniaKonstrukcyjne, opcje: { sprzezona: boolean; poleId?: string }): WynikPolecenia {
+export function dodajUkrytaSzuflade(wejscie: Mebel, k: UstawieniaKonstrukcyjne, opcje: { sprzezona: boolean; poleId?: string }, tech: UstawieniaTechnologii = USTAWIENIA_DOMYSLNE.technologia): WynikPolecenia {
   if (wejscie.korpus.rodzaj !== "korpus") throw new BladPolecenia("Szuflady wymagają korpusu.");
   const mebel: Mebel = structuredClone(wejscie);
   const uklad = ukladFrontow(mebel.fronty, mebel.szerokoscMM, mebel.wysokoscMM, k.szczelinaFrontowMM);
@@ -197,8 +200,31 @@ export function dodajUkrytaSzuflade(wejscie: Mebel, k: UstawieniaKonstrukcyjne, 
   if (!cel) throw new BladPolecenia(`Pole „${opcje.poleId}” nie jest frontem szuflady.`);
   const front = uklad.get(cel.poleFrontuId)!.front;
   if (front.h < 200) throw new BladPolecenia(`Front ${Math.round(front.h)} mm jest za niski na szufladę ukrytą (min. 200 mm).`);
-  if (mebel.wysuwy.some((w) => w.poleFrontuId === cel.poleFrontuId && w.powiazanie !== "zFrontem")) throw new BladPolecenia("Za tym frontem jest już szuflada ukryta.");
-  const nr = mebel.wysuwy.filter((w) => w.kod.startsWith("SU")).length + 1;
+  const obecne = mebel.wysuwy.filter((w) => w.poleFrontuId === cel.poleFrontuId && w.powiazanie !== "zFrontem");
+  if (obecne.length && (opcje.sprzezona || obecne.some((w) => w.powiazanie === "zZabierakiem")))
+    throw new BladPolecenia("Za tym frontem jest już szuflada ukryta. Zabierak obsługuje jedną szufladę; kilka wymaga niezależnego otwierania.");
+  if (obecne.length >= 3) throw new BladPolecenia("Za jednym frontem można umieścić do 3 niezależnych szuflad ukrytych.");
+  const profil = mebel.szufladySystemowe ? profilSzuflady(mebel.profilSzuflad ?? tech.profilSzuflad) : undefined;
+  const dane = opcje.sprzezona ? profil?.inner_drawer?.coupler?.min_opening_by_variant_mm : profil?.inner_drawer?.min_opening_by_variant_mm;
+  if (profil && dane) {
+    const s = ukladWnetrza(mebel.wnetrze, mebel.szerokoscMM, mebel.wysokoscMM, k.gruboscPlytyKorpusuMM).get(cel.strefaId);
+    const fronty = zFrontem.filter((w) => w.strefaId === cel.strefaId).map((w) => uklad.get(w.poleFrontuId)!.front).sort((a, b) => a.y - b.y);
+    if (!s) throw new BladPolecenia("Brak strefy szuflady ukrytej.");
+    const floor = s.y + front.y - fronty[0].y;
+    const next = fronty.find((f) => f.y > front.y);
+    let ceiling = next ? s.y + next.y - fronty[0].y : s.y + s.h;
+    const opening = Math.min(...Object.values(dane));
+    try {
+      for (let i = 0; i <= obecne.length; i++) {
+        // Anchor every level to the original runner raster, including front offsets.
+        const anchor = s.y;
+        ceiling = hiddenDrawerFloor(anchor, ceiling, opening, tech.rastrMM, floor - anchor + Math.min(...Object.values(profil.back.height_by_variant_mm)) + 40);
+      }
+    } catch (error) { throw new BladPolecenia((error as Error).message); }
+    const usable = mebel.glebokoscMM - (mebel.korpus.plecy ? k.odsunieciePlecMM + k.gruboscPlecHDFMM : 0);
+    if (!dobierzNLWewnetrznej(profil, usable)) throw new BladPolecenia("Korpus jest za płytki na szuflady ukryte tego systemu.");
+  } else if (obecne.length) throw new BladPolecenia("Wybierz system z danymi montażu szuflad ukrytych.");
+  const nr = Math.max(0, ...mebel.wysuwy.map((w) => /^SU\d+$/.test(w.kod) ? Number(w.kod.slice(2)) : 0)) + 1;
   const kod = `SU${pad(nr)}`;
   mebel.wysuwy.push({ id: `wysuw-${kod.toLowerCase()}`, kod, poleFrontuId: cel.poleFrontuId, strefaId: cel.strefaId, powiazanie: opcje.sprzezona ? "zZabierakiem" : "ukrytaZaFrontem" });
   const uwagi = [`Dodano szufladę ukrytą ${kod} za frontem ${Math.round(front.h)} mm (${opcje.sprzezona ? "sprzężoną zabierakiem" : "wysuwaną osobno"}).`];

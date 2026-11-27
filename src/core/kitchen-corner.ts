@@ -66,6 +66,8 @@ export function addKitchenBlindCorner(
             catalogId: "base-filler-50",
             drawers: undefined,
             drawerFronts: undefined,
+            innerDrawers: undefined,
+            appliance: undefined,
             shelves: undefined,
           }
         : {}),

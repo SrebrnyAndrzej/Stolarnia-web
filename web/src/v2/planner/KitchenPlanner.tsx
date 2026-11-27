@@ -14,7 +14,6 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconDownload,
-  IconPlus,
   IconTrash,
   IconArrowUp,
   IconArrowDown,
@@ -55,7 +54,12 @@ import { useArchitectReferences } from "./useArchitectReferences";
 import { kitchenCollisions } from "../../../../src/core/kitchen-collisions";
 import { kitchenParallelPassage } from "../../../../src/core/kitchen-passage";
 import { kitchenLayoutName } from "../../../../src/core/kitchen-layout";
-import { kitchenAdditionFits, planKitchenAddition } from "./catalog-placement";
+import {
+  kitchenAdditionPreview,
+  planKitchenAddition,
+  uniqueKitchenAdditionPreviews,
+} from "./catalog-placement";
+import { KitchenCatalogCard, catalogMeasure } from "./KitchenCatalogCard";
 import { planKitchenMove } from "./catalog-movement";
 import { KitchenSelection } from "./KitchenSelection";
 import { KitchenStudioCatalog } from "./KitchenStudioCatalog";
@@ -63,6 +67,7 @@ import { useKitchenViewport } from "./useKitchenViewport";
 import { isKitchenUpper } from "../../../../src/core/kitchen-configuration";
 import { KitchenDrawerFronts } from "./KitchenDrawerFronts";
 import { KitchenRunTools } from "./KitchenRunTools";
+import { KitchenStandardsTools } from "./KitchenStandardsTools";
 import { kitchenFreeGaps } from "../../../../src/core/kitchen-runs";
 import { KitchenPlanningTools } from "./KitchenPlanningTools";
 import { KitchenZones } from "./KitchenZones";
@@ -173,6 +178,7 @@ export function KitchenPlanner({
     returnItem?.wall ?? initial.draft.items[0]?.wall ?? "a",
   );
   const [fitRequest, setFitRequest] = useState(0);
+  const [frontFocus, setFrontFocus] = useState(false);
   const [view, setView] = useState<"front" | "plan" | "3d">("front");
   const [selected, setSelected] = useState<string | null>(
     returnItem?.id ?? null,
@@ -219,6 +225,7 @@ export function KitchenPlanner({
   const [architectDirty, setArchitectDirty] = useState(false);
   const [needsDirty, setNeedsDirty] = useState(false);
   const [detailsDirty, setDetailsDirty] = useState(false);
+  const [standardsDirty, setStandardsDirty] = useState(false);
   const [cloudBusy, setCloudBusy] = useState(false);
   const [roomFormRevision, setRoomFormRevision] = useState(0);
   const variantModel = useKitchenVariants();
@@ -229,6 +236,7 @@ export function KitchenPlanner({
     architectDirty ||
     needsDirty ||
     detailsDirty ||
+    standardsDirty ||
     cloudBusy;
   const dimensionsPending = roomKeys(draft.layout).some(
     (key) => roomMillimetres(dims[key], unit) !== draft[key],
@@ -246,19 +254,31 @@ export function KitchenPlanner({
     setError(
       cloudBusy
         ? "Trwa zapis lub odczyt projektu online. Poczekaj na jego zakończenie."
-        : detailsDirty
-          ? "Zapisz budżet lub przedmiot albo anuluj te zmiany."
-          : needsDirty
-            ? "Zapisz potrzeby domowników albo anuluj odpowiedzi."
-            : islandDirty
-              ? "Zastosuj wyspę albo anuluj jej zmiany."
-              : architectDirty
-                ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
-                : roomDirty
-                  ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
-                  : UNAPPLIED,
+        : standardsDirty
+          ? "Zastosuj wspólne wymiary kuchni albo anuluj ich zmiany."
+          : detailsDirty
+            ? "Zapisz budżet lub przedmiot albo anuluj te zmiany."
+            : needsDirty
+              ? "Zapisz potrzeby domowników albo anuluj odpowiedzi."
+              : islandDirty
+                ? "Zastosuj wyspę albo anuluj jej zmiany."
+                : architectDirty
+                  ? "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików."
+                  : roomDirty
+                    ? "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
+                    : UNAPPLIED,
     );
     requestAnimationFrame(() => {
+      if (standardsDirty) {
+        const tools = document.querySelector<HTMLDetailsElement>(
+          ".kp-standards-tools",
+        );
+        if (tools) tools.open = true;
+        document
+          .querySelector<HTMLButtonElement>("[data-apply-standards]")
+          ?.focus();
+        return;
+      }
       if (needsDirty) {
         document.querySelector<HTMLButtonElement>("[data-save-needs]")?.focus();
         return;
@@ -314,12 +334,28 @@ export function KitchenPlanner({
     if (id) setGapId("");
     if (id) focusEditor();
   };
+  const editCabinetWidth = (id: string) => {
+    if (conflict !== null || draft.items.find((i) => i.id === id)?.locked)
+      return;
+    if ((id !== selected || roomDirty) && editorBlocked()) return;
+    chooseCabinet(id);
+    requestAnimationFrame(() => {
+      const field = document.querySelector<HTMLInputElement>(
+        "[data-cabinet-width]",
+      );
+      if (field && !field.disabled) {
+        field.focus();
+        field.select();
+      }
+    });
+  };
   useEffect(() => {
     if (!pending)
       setError((old) =>
         old === UNAPPLIED ||
         old === "Zapisz potrzeby domowników albo anuluj odpowiedzi." ||
         old === "Zastosuj wyspę albo anuluj jej zmiany." ||
+        old === "Zastosuj wspólne wymiary kuchni albo anuluj ich zmiany." ||
         old ===
           "Zapisz ustawienia pliku lub zamknij jego edycję. Poczekaj na zakończenie odczytu plików." ||
         old === "Zapisz oznaczenie pomieszczenia albo anuluj jego edycję."
@@ -410,9 +446,10 @@ export function KitchenPlanner({
   };
   const availableCatalog = useMemo(
     () =>
-      catalog.filter((entry) =>
-        kitchenAdditionFits(draft, wall, entry.id, gapId),
-      ),
+      catalog.flatMap((entry) => {
+        const preview = kitchenAdditionPreview(draft, wall, entry.id, gapId);
+        return preview ? [preview] : [];
+      }),
     [draft, wall, gapId],
   );
   const matMap = useMemo(
@@ -585,22 +622,24 @@ export function KitchenPlanner({
     (m) => m.scianaId === wall,
   );
   const length = wallLength(draft, wall);
-  const visibleCatalog = availableCatalog.filter((m) =>
-    group === "drawers"
-      ? m.construction === "drawers"
-      : group === "base"
-        ? m.category === "base" && m.construction === "shelves"
-        : group === "tall"
-          ? m.category === "tall" && m.construction !== "filler"
-          : group === "water"
-            ? ["sink", "dishwasherFront"].includes(m.construction)
-            : group === "cooking"
-              ? ["oven", "hood"].includes(m.construction)
-              : group === "cooling"
-                ? m.construction === "refrigerator"
-                : group === "fillers"
-                  ? m.construction === "filler"
-                  : m.category === "wall" && m.construction !== "filler",
+  const visibleCatalog = uniqueKitchenAdditionPreviews(
+    availableCatalog.filter((m) =>
+      group === "drawers"
+        ? m.construction === "drawers"
+        : group === "base"
+          ? m.category === "base" && m.construction === "shelves"
+          : group === "tall"
+            ? m.category === "tall" && m.construction !== "filler"
+            : group === "water"
+              ? ["sink", "dishwasherFront"].includes(m.construction)
+              : group === "cooking"
+                ? ["oven", "hood"].includes(m.construction)
+                : group === "cooling"
+                  ? m.construction === "refrigerator"
+                  : group === "fillers"
+                    ? m.construction === "filler"
+                    : m.category === "wall" && m.construction !== "filler",
+    ),
   );
   const cabinetEditor =
     selected &&
@@ -637,7 +676,11 @@ export function KitchenPlanner({
               );
             }}
             disabled={
-              conflict !== null || roomDirty || detailsDirty || cloudBusy
+              conflict !== null ||
+              roomDirty ||
+              detailsDirty ||
+              cloudBusy ||
+              standardsDirty
             }
             onDirtyChange={setEditorDirty}
           />
@@ -712,44 +755,28 @@ export function KitchenPlanner({
                 ))}
               </div>
             )}
-            {studio ? (
-              <p className="kp-studio-capacity">
-                Ściana {wall.toUpperCase()} · wolne: dół{" "}
-                {(
-                  kitchenFreeGaps(draft, wall, "base").reduce(
-                    (sum, g) => sum + g.width,
-                    0,
-                  ) / 10
-                ).toLocaleString("pl-PL")}{" "}
-                cm · góra{" "}
-                {(
-                  kitchenFreeGaps(draft, wall, "wall").reduce(
-                    (sum, g) => sum + g.width,
-                    0,
-                  ) / 10
-                ).toLocaleString("pl-PL")}{" "}
-                cm
-              </p>
-            ) : (
-              <p className="kp-capacity">
-                Dolna i wysoka zabudowa:{" "}
-                <strong>
-                  {kitchenFreeGaps(draft, wall, "base").reduce(
-                    (sum, g) => sum + g.width,
-                    0,
-                  )}{" "}
-                  mm wolne
-                </strong>
-                <small>
-                  Górne:{" "}
-                  {kitchenFreeGaps(draft, wall, "wall").reduce(
-                    (sum, g) => sum + g.width,
-                    0,
-                  )}{" "}
-                  mm do wykorzystania
-                </small>
-              </p>
-            )}
+            <div className="kp-capacity" aria-label="Wolne miejsce na ścianie">
+              {(["base", "wall"] as const).map((tier) => {
+                const spaces = gaps.filter((g) => g.tier === tier);
+                const largest = Math.max(0, ...spaces.map((g) => g.width));
+                const total = spaces.reduce((sum, g) => sum + g.width, 0);
+                return (
+                  <p key={tier} data-kitchen-space={tier}>
+                    {tier === "base" ? "Dół i słupki" : "Szafki wiszące"}
+                    <strong>
+                      {catalogMeasure(largest, unit)} {unit} wolne
+                    </strong>
+                    <small>
+                      {spaces.length > 1
+                        ? `Największa luka · łącznie ${catalogMeasure(total, unit)} ${unit} w ${spaces.length} miejscach`
+                        : spaces.length
+                          ? "W jednym miejscu"
+                          : "Brak wolnej luki"}
+                    </small>
+                  </p>
+                );
+              })}
+            </div>
             <label className="kp-select-label">
               Miejsce dodawania
               <select
@@ -799,6 +826,7 @@ export function KitchenPlanner({
                 onQuery={setStudioSearch}
                 onGroup={setGroup}
                 onAdd={add}
+                unit={unit}
                 disabled={conflict !== null}
               />
             ) : (
@@ -853,26 +881,14 @@ export function KitchenPlanner({
                 )}
                 <div className="kp-catalog-items">
                   {visibleCatalog.map((m) => (
-                    <button
+                    <KitchenCatalogCard
                       key={m.id}
+                      entry={m}
+                      nominal={catalog.find((entry) => entry.id === m.id)!}
+                      unit={unit}
                       disabled={conflict !== null}
-                      onClick={() => add(m.id)}
-                    >
-                      <span
-                        className={`kp-cabinet-icon ${m.construction}`}
-                        aria-hidden="true"
-                      />
-                      <span>
-                        <strong>Dodaj: {m.name}</strong>
-                        <small>
-                          {m.widthMM} × {m.heightMM}
-                          {m.construction === "filler"
-                            ? " mm · płyta frontowa"
-                            : ` × ${m.depthMM} mm`}
-                        </small>
-                      </span>
-                      <IconPlus size={18} />
-                    </button>
+                      onAdd={add}
+                    />
                   ))}
                 </div>
               </>
@@ -1408,6 +1424,18 @@ export function KitchenPlanner({
                           Pokaż całość
                         </button>
                       )}
+                      {view === "front" && (
+                        <button
+                          className="ps-text-button"
+                          disabled={!selected}
+                          aria-pressed={frontFocus}
+                          onClick={() => setFrontFocus((v) => !v)}
+                        >
+                          {frontFocus
+                            ? "Pokaż całą ścianę"
+                            : "Zbliż wybraną szafkę"}
+                        </button>
+                      )}
                       <button
                         className="ps-text-button"
                         disabled={!history.length}
@@ -1501,18 +1529,6 @@ export function KitchenPlanner({
                       )}
                     </div>
                   )}
-                  {step === 1 && (
-                    <KitchenSelection
-                      draft={draft}
-                      wall={wall}
-                      modules={activeModules}
-                      selected={selected}
-                      disabled={pending || conflict !== null}
-                      visual={studio}
-                      onSelect={chooseCabinet}
-                      onMove={move}
-                    />
-                  )}
                   <div className="kp-canvas" ref={canvas}>
                     {view === "front" ? (
                       <Elewacja
@@ -1525,6 +1541,17 @@ export function KitchenPlanner({
                         matMap={matMap}
                         wybrany={selected}
                         onWybierz={chooseCabinet}
+                        focusSelected={frontFocus}
+                        canEditWidth={(id) =>
+                          !conflict &&
+                          !pending &&
+                          !draft.items.find((i) => i.id === id)?.locked
+                        }
+                        onEditWidth={
+                          step === 1 && conflict === null
+                            ? editCabinetWidth
+                            : undefined
+                        }
                         readOnly
                         roomFeatures={draft.features}
                         kitchenGaps={step === 1 ? gaps : []}
@@ -1586,7 +1613,46 @@ export function KitchenPlanner({
                         <span>Dodaj pierwszą szafkę z katalogu.</span>
                       </div>
                     )}
+                    {view === "front" &&
+                      step === 1 &&
+                      selected &&
+                      activeModules.some(
+                        (m) =>
+                          m.id === selected &&
+                          m.kategoria !== "appliance" &&
+                          m.kategoria !== "corner",
+                      ) && (
+                        <button
+                          className="ps-button secondary kp-dimension-shortcut"
+                          type="button"
+                          disabled={
+                            conflict !== null ||
+                            !!draft.items.find((i) => i.id === selected)?.locked
+                          }
+                          onClick={() => editCabinetWidth(selected)}
+                        >
+                          Edytuj szerokość ·{" "}
+                          {catalogMeasure(
+                            activeModules.find((m) => m.id === selected)!
+                              .szerokoscMM,
+                            unit,
+                          )}{" "}
+                          {unit}
+                        </button>
+                      )}
                   </div>
+                  {step === 1 && (
+                    <KitchenSelection
+                      draft={draft}
+                      wall={wall}
+                      modules={activeModules}
+                      selected={selected}
+                      disabled={pending || conflict !== null}
+                      visual={studio}
+                      onSelect={chooseCabinet}
+                      onMove={move}
+                    />
+                  )}
                   {collisions.length > 0 && (
                     <div className="kp-collision-summary">
                       <Feedback>
@@ -1636,6 +1702,18 @@ export function KitchenPlanner({
                 className="kp-design-tools"
                 aria-label="Narzędzia projektu i lista szafek"
               >
+                <KitchenStandardsTools
+                  key={JSON.stringify(draft.standards)}
+                  draft={draft}
+                  disabled={conflict !== null || (pending && !standardsDirty)}
+                  onDirtyChange={setStandardsDirty}
+                  onApply={(next) => {
+                    change(next);
+                    setNotice(
+                      "Wyrównano wymiary ciągów. Możesz cofnąć cały zestaw zmian.",
+                    );
+                  }}
+                />
                 <KitchenNeedsReview
                   draft={draft}
                   onSelect={chooseCabinet}
@@ -1673,6 +1751,7 @@ export function KitchenPlanner({
                         roomDirty ||
                         architectDirty ||
                         detailsDirty ||
+                        standardsDirty ||
                         cloudBusy
                       }
                       onDirtyChange={setIslandDirty}
@@ -1691,6 +1770,7 @@ export function KitchenPlanner({
                         roomDirty ||
                         islandDirty ||
                         detailsDirty ||
+                        standardsDirty ||
                         cloudBusy
                       }
                       onDirtyChange={setArchitectDirty}
@@ -1750,6 +1830,7 @@ export function KitchenPlanner({
                         architectDirty ||
                         conflict !== null ||
                         detailsDirty ||
+                        standardsDirty ||
                         cloudBusy
                       }
                       onApply={(next) => {

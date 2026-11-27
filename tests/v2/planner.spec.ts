@@ -29,7 +29,9 @@ test("public planner persists, reorders, undoes, exports and hands off a kitchen
     })
     .click();
   await showKitchenCatalog(page);
-  await expect(page.getByText("2200 mm wolne")).toBeVisible();
+  await expect(
+    page.locator('[data-kitchen-space="base"]').getByText("2200 mm wolne"),
+  ).toBeVisible();
   await openKitchenList(page);
   await page
     .getByRole("button", {
@@ -120,7 +122,9 @@ test("L layout reserves the corner and import validation preserves the draft", a
     .getByRole("button", { name: "Ściana B", exact: true })
     .first()
     .click();
-  await expect(page.getByText("1750 mm wolne")).toBeVisible();
+  await expect(
+    page.locator('[data-kitchen-space="base"]').getByText("1750 mm wolne"),
+  ).toBeVisible();
   await page
     .getByRole("button", {
       name: "Dodaj: Szafka dolna z półkami 600",
@@ -261,7 +265,9 @@ test("U kitchen supports wall C, safe layout changes, restore and handoff", asyn
     .getByRole("button", { name: "Ściana C", exact: true })
     .first()
     .click();
-  await expect(page.getByText("1150 mm wolne")).toBeVisible();
+  await expect(
+    page.locator('[data-kitchen-space="base"]').getByText("1150 mm wolne"),
+  ).toBeVisible();
   await page
     .getByRole("button", {
       name: "Dodaj: Szafka dolna z półkami 600",
@@ -269,7 +275,9 @@ test("U kitchen supports wall C, safe layout changes, restore and handoff", asyn
     })
     .click();
   await showKitchenCatalog(page);
-  await expect(page.getByText("550 mm wolne")).toBeVisible();
+  await expect(
+    page.locator('[data-kitchen-space="base"]').getByText("550 mm wolne"),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", {
       name: "Dodaj: Szafka dolna z półkami 600",

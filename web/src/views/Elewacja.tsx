@@ -19,6 +19,9 @@ interface ElewacjaProps {
   blatId?: string;
   wybrany: string | null;
   onWybierz: (id: string | null) => void;
+  onEditWidth?: (id: string) => void;
+  canEditWidth?: (id: string) => boolean;
+  focusSelected?: boolean;
   readOnly?: boolean;
   showFunctions?: boolean;
   onPrzesun?: (id: string, x: number) => void;
@@ -65,6 +68,9 @@ export function Elewacja({
   blatId,
   wybrany,
   onWybierz,
+  onEditWidth,
+  canEditWidth,
+  focusSelected = false,
   onPrzesun,
   onUpusc,
   onLuka,
@@ -126,6 +132,21 @@ export function Elewacja({
 
   const kolorMat = (id?: string, fallback = "#ddd") =>
     (id && matMap.get(id)?.kolorHEX) || fallback;
+  const focused = focusSelected
+    ? zbudowane.find((z) => z.modul.id === wybrany)?.modul
+    : undefined;
+  const focusedTop = focused
+    ? Y(focused.pozycjaYMM + focused.wysokoscMM) - M * 1.6
+    : 0;
+  const focusedBottom = focused
+    ? Math.max(
+        Y(focused.pozycjaYMM) + M,
+        focused.pozycjaYMM < 1000 ? wysokosc + 200 : 0,
+      )
+    : 0;
+  const frame = focused
+    ? `${focused.pozycjaXMM - M} ${focusedTop} ${focused.szerokoscMM + 2 * M} ${focusedBottom - focusedTop}`
+    : `${-M} ${-M * 1.6} ${dlugosc + 2 * M} ${wysokosc + M * 2.6}`;
 
   return (
     <svg
@@ -133,7 +154,8 @@ export function Elewacja({
       className="elev"
       role={
         readOnly
-          ? onKitchenGap && kitchenGaps.some((g) => g.width >= 20)
+          ? onEditWidth ||
+            (onKitchenGap && kitchenGaps.some((g) => g.width >= 20))
             ? "group"
             : "img"
           : undefined
@@ -141,7 +163,7 @@ export function Elewacja({
       aria-label={
         readOnly ? "Widok ściany z wymiarami modułów w milimetrach" : undefined
       }
-      viewBox={`${-M} ${-M * 1.6} ${dlugosc + 2 * M} ${wysokosc + M * 2.6}`}
+      viewBox={frame}
       onPointerMove={(e) => {
         if (readOnly || !drag) return;
         const z = zbudowane.find((q) => q.modul.id === drag.id)!;
@@ -718,6 +740,14 @@ export function Elewacja({
               x2={x + m.szerokoscMM}
               y={wiszacy ? Y(m.pozycjaYMM + m.wysokoscMM) - 60 : wysokosc + 110}
               tekst={mm(m.szerokoscMM)}
+              onEdit={
+                onEditWidth &&
+                (!canEditWidth || canEditWidth(m.id)) &&
+                m.kategoria !== "appliance" &&
+                m.kategoria !== "corner"
+                  ? () => onEditWidth(m.id)
+                  : undefined
+              }
             />
           </g>
         );
@@ -732,16 +762,55 @@ function Wymiar({
   y,
   tekst,
   gruby,
+  onEdit,
 }: {
   x1: number;
   x2: number;
   y: number;
   tekst: string;
   gruby?: boolean;
+  onEdit?: () => void;
 }) {
   const s = gruby ? 5 : 3;
   return (
-    <g stroke="var(--muted)" fill="var(--muted)" pointerEvents="none">
+    <g
+      stroke={onEdit ? "var(--accent)" : "var(--muted)"}
+      fill={onEdit ? "var(--accent)" : "var(--muted)"}
+      pointerEvents={onEdit ? "auto" : "none"}
+      role={onEdit ? "button" : undefined}
+      tabIndex={onEdit ? 0 : undefined}
+      aria-label={onEdit ? `Edytuj szerokość ${tekst}` : undefined}
+      onClick={
+        onEdit
+          ? (e) => {
+              e.stopPropagation();
+              onEdit();
+            }
+          : undefined
+      }
+      onKeyDown={
+        onEdit
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit();
+              }
+            }
+          : undefined
+      }
+      style={onEdit ? { cursor: "pointer" } : undefined}
+    >
+      {onEdit && (
+        <rect
+          x={x1}
+          y={y - 150}
+          width={x2 - x1}
+          height={200}
+          fill="transparent"
+          stroke="none"
+        />
+      )}
       <line x1={x1} x2={x2} y1={y} y2={y} strokeWidth={s} />
       <line x1={x1} x2={x1} y1={y - 25} y2={y + 25} strokeWidth={s} />
       <line x1={x2} x2={x2} y1={y - 25} y2={y + 25} strokeWidth={s} />

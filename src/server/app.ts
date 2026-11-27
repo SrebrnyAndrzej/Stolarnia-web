@@ -579,7 +579,7 @@ app.post("/api/projekty/:id/oferta.pdf", (req, res, next) => {
 });
 app.get("/api/projekty/:id/formatki.csv", (req, res, next) => {
   try {
-    const csv = s.formatkiCSV(p(req, "id"));
+    const csv = s.formatkiCSV(p(req, "id"), typeof req.query.wydanie === "string" ? req.query.wydanie : undefined);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="formatki-${p(req, "id")}.csv"`);
     res.send(csv);

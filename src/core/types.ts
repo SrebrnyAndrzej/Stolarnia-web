@@ -464,7 +464,7 @@ export interface WydanieProdukcyjne {
   podsumowanie: DokumentacjaProjektu["podsumowanie"];
   /** SHA-256 nieskompresowanego JSON migawki — kontrola integralności. */
   skrot: string;
-  /** Migawka { projekt, zbudowane, dokumentacja, firma } jako gzip + base64. */
+  /** Migawka projektu, geometrii, dokumentacji, formatek i list zakupów (starsze wydania bez dwóch ostatnich) jako gzip + base64. */
   dane: string;
 }
 

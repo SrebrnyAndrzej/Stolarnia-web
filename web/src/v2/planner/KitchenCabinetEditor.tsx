@@ -16,6 +16,9 @@ import {
 } from "../../../../src/core/drawer-front-layout";
 import type { Draft } from "./model";
 import { roomMillimetres, type RoomUnit } from "./room-dimensions";
+import { kitchenMoney, useKitchenEstimate } from "./useKitchenEstimate";
+import { kitchenApplianceFit } from "../../../../src/core/kitchen-appliance-fit";
+import { kitchenModules } from "../../../../src/core/kitchen-configuration";
 
 export function drawerCalculatorLink(
   draft: Draft,
@@ -91,6 +94,13 @@ export function KitchenCabinetEditor({
           ).liczbaSzuflad,
     ),
     gapBefore: display(item.gapBefore ?? 0),
+    innerDrawers: String(item.innerDrawers ?? 0),
+    applianceModel: item.appliance?.model ?? "",
+    applianceWidth: item.appliance ? String(item.appliance.width) : "",
+    applianceHeight: item.appliance ? String(item.appliance.height) : "",
+    applianceDepth: item.appliance ? String(item.appliance.depth) : "",
+    applianceSource: item.appliance?.source ?? "",
+    ventilation: item.appliance?.ventilationChecked ?? false,
   });
   const entry = customerKitchenCatalog.find((m) => m.id === form.catalogId)!;
   const canChangeStorage =
@@ -135,6 +145,58 @@ export function KitchenCabinetEditor({
               }
             : {}),
         };
+  const candidateItem = () => ({
+    ...item,
+    catalogId: form.catalogId,
+    width: roomMillimetres(form.width, unit),
+    height: Number(form.height),
+    depth: Number(form.depth),
+    gapBefore: roomMillimetres(form.gapBefore, unit),
+    shelves:
+      entry.construction === "shelves" ? Number(form.shelves) : undefined,
+    drawers:
+      entry.construction === "drawers" ? Number(form.drawers) : undefined,
+    innerDrawers:
+      entry.construction === "drawers" ? Number(form.innerDrawers) : undefined,
+    drawerFronts: entry.construction === "drawers" ? frontPlan() : undefined,
+    appliance:
+      entry.category === "appliance" &&
+      [
+        form.applianceModel,
+        form.applianceWidth,
+        form.applianceHeight,
+        form.applianceDepth,
+        form.applianceSource,
+      ].some((v) => v.trim())
+        ? {
+            model: form.applianceModel,
+            width: Number(form.applianceWidth),
+            height: Number(form.applianceHeight),
+            depth: Number(form.applianceDepth),
+            source: form.applianceSource.trim() || undefined,
+            ventilationChecked: form.ventilation,
+          }
+        : undefined,
+  });
+  let priceDraft: Draft | null = null;
+  try {
+    const parsed = kitchenItemSchema.safeParse(candidateItem());
+    if (parsed.success) {
+      const next = {
+        ...draft,
+        items: draft.items.map((i) => (i.id === item.id ? parsed.data : i)),
+      };
+      if (!kitchenIssues(next).length) priceDraft = next;
+    }
+  } catch {
+    /* An unfinished input never produces a stale quote. */
+  }
+  const beforePrice = useKitchenEstimate(draft, disabled || !dirty);
+  const afterPrice = useKitchenEstimate(priceDraft, disabled || !dirty);
+  const priceDelta =
+    beforePrice.data?.gross != null && afterPrice.data?.gross != null
+      ? afterPrice.data.gross - beforePrice.data.gross
+      : null;
   let plannedHeights: number[] | undefined;
   try {
     const plan = frontPlan();
@@ -148,7 +210,10 @@ export function KitchenCabinetEditor({
   } catch {
     /* Invalid uncommitted inputs are reported on Apply. */
   }
-  const field = (key: keyof typeof form, value: string) => {
+  const field = <K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K],
+  ) => {
     setForm((f) => ({ ...f, [key]: value }));
     setError("");
   };
@@ -261,30 +326,23 @@ export function KitchenCabinetEditor({
               return;
             }
           }
-          const candidate = {
-            ...item,
-            catalogId: form.catalogId,
-            width: roomMillimetres(form.width, unit),
-            height: Number(form.height),
-            depth: Number(form.depth),
-            gapBefore: roomMillimetres(form.gapBefore, unit),
-            shelves:
-              entry.construction === "shelves"
-                ? Number(form.shelves)
-                : undefined,
-            drawers:
-              entry.construction === "drawers"
-                ? Number(form.drawers)
-                : undefined,
-            drawerFronts: entry.construction === "drawers" ? plan : undefined,
-          };
+          const candidate = candidateItem();
           const parsed = kitchenItemSchema.safeParse(candidate);
           if (!parsed.success) {
             setError(parsed.error.issues[0].message);
             const selector =
               parsed.error.issues[0].path[0] === "drawerFronts"
                 ? "[data-front-height]"
-                : "input";
+                : parsed.error.issues[0].path[0] === "appliance"
+                  ? "[data-appliance-model]"
+                  : "input";
+            if (parsed.error.issues[0].path[0] === "appliance") {
+              const card =
+                e.currentTarget.querySelector<HTMLDetailsElement>(
+                  ".kp-appliance-card",
+                );
+              if (card) card.open = true;
+            }
             (
               e.currentTarget.querySelector<HTMLInputElement>(selector) ??
               e.currentTarget.querySelector<HTMLInputElement>("input")
@@ -298,7 +356,18 @@ export function KitchenCabinetEditor({
           const issues = kitchenIssues(next);
           if (issues.length) {
             setError(issues[0]);
-            e.currentTarget.querySelector<HTMLInputElement>("input")?.focus();
+            const card =
+              e.currentTarget.querySelector<HTMLDetailsElement>(
+                ".kp-appliance-card",
+              );
+            if (candidate.appliance && card) card.open = true;
+            e.currentTarget
+              .querySelector<HTMLInputElement>(
+                candidate.appliance
+                  ? "[data-appliance-model]"
+                  : "input:not(:disabled)",
+              )
+              ?.focus();
             return;
           }
           onApply(next);
@@ -359,6 +428,7 @@ export function KitchenCabinetEditor({
                       ...(preset.id === "shelves"
                         ? { shelves: String(preset.count) }
                         : { drawers: String(preset.count) }),
+                      innerDrawers: "0",
                     }));
                     setLayout(preset.mode);
                     setHeights(Array(preset.count).fill(""));
@@ -454,6 +524,7 @@ export function KitchenCabinetEditor({
                 ? "Szerokość blendy"
                 : "Szerokość szafki"}
               <input
+                data-cabinet-width
                 inputMode="decimal"
                 aria-invalid={!!error}
                 aria-describedby={error ? "kp-editor-error" : undefined}
@@ -528,6 +599,7 @@ export function KitchenCabinetEditor({
                   value={form.drawers}
                   onChange={(e) => {
                     field("drawers", e.target.value);
+                    if (Number(e.target.value) > 1) field("innerDrawers", "0");
                     setHeights((old) =>
                       Array.from(
                         { length: Number(e.target.value) },
@@ -536,12 +608,40 @@ export function KitchenCabinetEditor({
                     );
                   }}
                 >
-                  {[2, 3, 4, 5, 6].map((n) => (
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
                     <option key={n} value={n}>
-                      {n}
+                      {n === 1 ? "1 wspólny front" : n}
                     </option>
                   ))}
                 </select>
+              </label>
+            )}
+            {entry.construction === "drawers" && (
+              <label>
+                Szuflady ukryte za wspólnym frontem
+                <select
+                  value={form.innerDrawers}
+                  onChange={(e) => {
+                    field("innerDrawers", e.target.value);
+                    if (Number(e.target.value)) {
+                      field("drawers", "1");
+                      setLayout("equal");
+                      setHeights([""]);
+                    }
+                  }}
+                >
+                  {[0, 1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      {n
+                        ? `${n} niezależne ${n === 1 ? "wysunięcie" : "wysunięcia"}`
+                        : "Bez szuflad ukrytych"}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  Wysunięcia wewnętrzne nad skrzynką główną, otwierane po
+                  wysunięciu wspólnego frontu.
+                </small>
               </label>
             )}
             {entry.construction === "drawers" && (
@@ -563,6 +663,115 @@ export function KitchenCabinetEditor({
               </label>
             )}
           </div>
+          {entry.category === "appliance" && (
+            <details
+              className="kp-appliance-card"
+              open={item.appliance ? true : undefined}
+            >
+              <summary>Model AGD i sprawdzenie niszy</summary>
+              <p>
+                Przepisz minimalne wymiary niszy z instrukcji urządzenia (mm).
+                To wymiary otworu, nie obudowy AGD.
+              </p>
+              <label>
+                Model urządzenia
+                <input
+                  data-appliance-model
+                  value={form.applianceModel}
+                  onChange={(e) => field("applianceModel", e.target.value)}
+                  maxLength={160}
+                />
+              </label>
+              <div className="kp-module-fields">
+                {(
+                  [
+                    ["applianceWidth", "Min. szerokość niszy"],
+                    ["applianceHeight", "Min. wysokość niszy"],
+                    ["applianceDepth", "Min. głębokość niszy"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <label key={key}>
+                    {label} (mm)
+                    <input
+                      inputMode="numeric"
+                      value={form[key]}
+                      onChange={(e) => field(key, e.target.value)}
+                    />
+                  </label>
+                ))}
+              </div>
+              <label>
+                Link do instrukcji (opcjonalnie)
+                <input
+                  type="url"
+                  value={form.applianceSource}
+                  onChange={(e) => field("applianceSource", e.target.value)}
+                  placeholder="https://"
+                  maxLength={500}
+                />
+              </label>
+              <label className="kp-check">
+                <input
+                  type="checkbox"
+                  checked={form.ventilation}
+                  onChange={(e) => field("ventilation", e.target.checked)}
+                />
+                Sprawdzono wymagania wentylacji w instrukcji
+              </label>
+              {(() => {
+                const parsed = kitchenItemSchema.safeParse(candidateItem());
+                if (!parsed.success || !parsed.data.appliance)
+                  return (
+                    <p>
+                      Bez pełnej karty modelu dopasowanie AGD pozostaje
+                      niepotwierdzone.
+                    </p>
+                  );
+                const m = kitchenModules({
+                  ...draft,
+                  items: [parsed.data],
+                  island: undefined,
+                })[0];
+                const fit = kitchenApplianceFit(m, parsed.data.appliance);
+                return (
+                  <div role="status">
+                    <p>
+                      Światło zabudowy: {fit.available.width} ×{" "}
+                      {fit.available.height} × {fit.available.depth} mm (szer. ×
+                      wys. × gł.).
+                    </p>
+                    {fit.issues.length ? (
+                      <p className="kp-error">{fit.issues.join(" ")}</p>
+                    ) : (
+                      <p>
+                        Minimalne wymiary mieszczą się.
+                        {fit.status === "ventilation-needed"
+                          ? " Sprawdź jeszcze wentylację."
+                          : " Zakresy maksymalne, mocowanie i otwieranie potwierdzimy z instrukcją przed produkcją."}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+              <button
+                className="ps-text-button"
+                type="button"
+                onClick={() =>
+                  setForm((old) => ({
+                    ...old,
+                    applianceModel: "",
+                    applianceWidth: "",
+                    applianceHeight: "",
+                    applianceDepth: "",
+                    applianceSource: "",
+                    ventilation: false,
+                  }))
+                }
+              >
+                Usuń kartę urządzenia
+              </button>
+            </details>
+          )}
           {canChangeStorage && (
             <p id="kp-storage-help">
               Sama zamiana wyposażenia zachowuje miejsce i wymiary szafki.
@@ -711,6 +920,44 @@ export function KitchenCabinetEditor({
           </p>
         )}
         <div className="kp-editor-commit">
+          {dirty && (
+            <div className="kp-price-preview" role="status">
+              {!priceDraft ? (
+                "Uzupełnij poprawne wymiary, aby porównać cenę."
+              ) : afterPrice.error || beforePrice.error ? (
+                <>
+                  <span>Porównanie ceny jest chwilowo niedostępne.</span>
+                  <button
+                    type="button"
+                    className="ps-text-button"
+                    onClick={() => {
+                      beforePrice.retry();
+                      afterPrice.retry();
+                    }}
+                  >
+                    Ponów porównanie
+                  </button>
+                </>
+              ) : priceDelta !== null ? (
+                <>
+                  <strong>
+                    Po zmianie: {kitchenMoney(afterPrice.data!.gross!)}
+                  </strong>
+                  <span>
+                    {priceDelta === 0
+                      ? "Cena bez zmian"
+                      : `Różnica: ${priceDelta > 0 ? "+" : "−"}${kitchenMoney(Math.abs(priceDelta))}`}{" "}
+                    · brutto, orientacyjnie
+                  </span>
+                </>
+              ) : afterPrice.data?.status === "blocked" ||
+                beforePrice.data?.status === "blocked" ? (
+                "Ten wariant wymaga sprawdzenia przed wyceną."
+              ) : (
+                "Porównujemy cenę przed zastosowaniem…"
+              )}
+            </div>
+          )}
           <button
             className="ps-button"
             type="submit"

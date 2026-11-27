@@ -38,6 +38,7 @@ import type {
   WykonczeniePowierzchni,
   ZbudowanyModul,
   DokumentacjaProjektu,
+  Formatka,
 } from "./core/types.js";
 import { walidujProjekt } from "./core/validation.js";
 import { scianyNaRzucie } from "./core/geometry.js";
@@ -1089,7 +1090,7 @@ export class Stolarnia {
             : polecenie.typ === "dodajSzufladyZaDrzwiami"
               ? dodajSzufladyZaDrzwiami(wymiary, k, polecenie)
               : polecenie.typ === "dodajUkrytaSzuflade"
-                ? dodajUkrytaSzuflade(wymiary, k, polecenie)
+                ? dodajUkrytaSzuflade(wymiary, k, polecenie, p.okucia?.profilSzuflad ? { ...b.ustawienia.technologia, profilSzuflad: p.okucia.profilSzuflad } : b.ustawienia.technologia)
                 : polecenie.typ === "podzielWnetrze"
                   ? podzielWnetrze(wymiary, k, polecenie)
                   : polecenie.typ === "podzielFront"
@@ -1296,7 +1297,13 @@ export class Stolarnia {
     const dokumentacja = dokumentacjaProjektu({ projekt: a.projekt, zbudowane: a.zbudowane, formatki: a.formatki, ustawienia: a.ustawienia, walidacja: a.walidacja });
     if (dane.tylkoKompletne && !dokumentacja.gotowaDoProdukcji) throw new BladUslugi("Dokumentacja ma braki danych lub reguły robocze — wydanie produkcyjne wstrzymane (tylkoKompletne).");
     const { wydania: _w, umovy: _u, ...projekt } = a.projekt;
-    const json = JSON.stringify({ projekt, zbudowane: a.zbudowane, dokumentacja, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined });
+    const baza = this.magazyn.odczytaj();
+    const zakupy = Object.fromEntries(a.warianty.map((w) => [w.wariant, zestawienieZamowienia({
+      rozkroj: a.rozkroj, obrzeza: a.obrzeza, pozycjeWyceny: w.pozycje,
+      materialy: new Map(baza.materialy.map((m) => [m.id, m])), okucia: baza.okucia,
+      blat: { materialId: a.projektWyceny.blatMaterialId, metryBiezace: a.projektWyceny.metryBiezaceBlatu },
+    })]));
+    const json = JSON.stringify({ projekt, zbudowane: a.zbudowane, dokumentacja, formatki: a.formatki, zakupy, firma: a.ustawienia.daneFirmy.nazwaFirmy || undefined });
     let wynik!: WydanieProdukcyjne;
     this.edytujTemat(projektId, (p) => {
       if (p.rewizja !== a.projekt.rewizja) throw new BladUslugi("Projekt zmienił się w trakcie tworzenia wydania — spróbuj ponownie.");
@@ -1330,7 +1337,7 @@ export class Stolarnia {
     if (!w) throw new BladUslugi(`Nie ma wydania „${wydanieId}”.`);
     const json = gunzipSync(Buffer.from(w.dane, "base64")).toString("utf8");
     if (createHash("sha256").update(json).digest("hex") !== w.skrot) throw new BladUslugi(`Wydanie ${w.numer}: suma kontrolna się nie zgadza — dane uszkodzone.`);
-    return { wydanie: w, ...(JSON.parse(json) as { projekt: Projekt; zbudowane: ZbudowanyModul[]; dokumentacja: DokumentacjaProjektu; firma?: string }) };
+    return { wydanie: w, ...(JSON.parse(json) as { projekt: Projekt; zbudowane: ZbudowanyModul[]; dokumentacja: DokumentacjaProjektu; firma?: string; formatki?: Formatka[]; zakupy?: Partial<Record<WariantWyceny, ReturnType<typeof zestawienieZamowienia>>> }) };
   }
 
   wydanieDokumentacja(projektId: string, wydanieId: string): DokumentacjaProjektu {
@@ -1415,15 +1422,20 @@ export class Stolarnia {
     return { projekt: a.projekt.nazwa, ilosci: a.projektWyceny, warianty, uwagi: a.walidacja };
   }
 
-  formatkiCSV(projektId: string): string {
+  formatkiCSV(projektId: string, wydanieId?: string): string {
+    if (wydanieId && wydanieId !== "biezaca") {
+      const m = this.migawkaWydania(projektId, wydanieId);
+      if (!m.formatki) throw new BladUslugi("To starsze wydanie nie zawiera zamrożonych formatek CSV. Utwórz nowe wydanie po sprawdzeniu zamówienia.");
+      return "﻿" + formatkiCSV(m.formatki);
+    }
     return "﻿" + formatkiCSV(this.analiza(projektId).formatki);
   }
   // ---------- Lista zamówienia dla dostawcy (ST-APP-003) ----------
 
   /**
-   * Zestawienie zamówienia: z wydania (geometria zamrożona w migawce, katalogi i ustawienia bieżące) albo z bieżącej
+   * Zestawienie zamówienia: zamrożone pozycje z nowego wydania albo z bieżącej
    * rewizji. Domyślnie ostatnie wydanie, a bez wydań bieżąca rewizja. Okucia z kosztorysu wariantu (domyślnie Standard).
-   * Te same funkcje co analiza projektu: listaFormatek → zapotrzebowanieObrzeza → rozkroj → wycena wariantu.
+   * Starsze wydania bez koszyka korzystają z bieżącego katalogu i jawnego ostrzeżenia.
    */
   private zestawienie(projektId: string, opcje: OpcjeZamowienia = {}) {
     const b = this.magazyn.odczytaj();
@@ -1438,6 +1450,11 @@ export class Stolarnia {
     let zbudowane: ZbudowanyModul[];
     if (wybor) {
       const m = this.migawkaWydania(projektId, wybor);
+      if (m.zakupy?.[wariant]) {
+        if (m.wydanie.rewizja !== biezacy.rewizja) ostrzezenia.push(`Projekt zmienił się po wydaniu ${m.wydanie.numer}; zestawienie pozostaje zgodne z jego rewizją ${m.wydanie.rewizja}.`);
+        if (!m.wydanie.gotowaDoProdukcji) ostrzezenia.push(`Wydanie ${m.wydanie.numer} jest robocze — sprawdź braki przed zamówieniem.`);
+        return { biezacy, zrodlo: { rodzaj: "wydanie" as const, rewizja: m.wydanie.rewizja, numer: m.wydanie.numer, wydanieId: m.wydanie.id, utworzono: m.wydanie.utworzono }, wariant, pozycje: m.zakupy[wariant]!, ostrzezenia };
+      }
       ostrzezenia.push("Geometria pochodzi z wydania; katalog materiałów, okucia i ustawienia są bieżące. To nie jest zamrożony koszyk zakupowy wydania.");
       projekt = m.projekt;
       zbudowane = m.zbudowane;

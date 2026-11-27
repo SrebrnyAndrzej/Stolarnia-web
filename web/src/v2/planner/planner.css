@@ -1140,8 +1140,19 @@
   border-color: var(--text);
 }
 .kp-capacity {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   font-size: 13px;
   line-height: 1.6;
+}
+.kp-capacity p {
+  margin: 0;
+}
+.kp-capacity small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
 }
 .kp-capacity strong {
   display: block;
@@ -1400,7 +1411,7 @@
   font-weight: 600;
 }
 .kp-studio-search > span:last-child {
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1417,6 +1428,12 @@
   font: inherit;
   color: var(--text);
   background: var(--panel);
+}
+.kp-studio-search button {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
 }
 .kp-studio-catalog h3 {
   margin: 16px 0 6px;
@@ -1811,6 +1828,72 @@
 .kp-canvas-empty span {
   font-size: 14px;
   color: var(--muted);
+}
+.kp-dimension-shortcut {
+  position: absolute;
+  inset-inline-start: 12px;
+  bottom: 10px;
+  max-width: calc(100% - 24px);
+  min-height: 44px;
+  background: var(--panel);
+  font-size: 12px;
+}
+.kp-price-preview {
+  flex-basis: 100%;
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-block: 1px solid var(--line);
+  font-size: 12px;
+}
+.kp-price-preview strong {
+  color: var(--text);
+}
+.kp-appliance-card {
+  margin-block: 12px;
+}
+.kp-appliance-card summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 600;
+}
+.kp-appliance-card label {
+  display: grid;
+  gap: 6px;
+  margin-block: 10px;
+  font-size: 12px;
+}
+.kp-appliance-card .kp-check {
+  display: flex;
+}
+.kp-appliance-card input:not([type="checkbox"]),
+.kp-standards-tools input,
+.kp-standards-tools select {
+  min-height: 44px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--panel);
+  color: var(--text);
+  padding: 8px 10px;
+  font: inherit;
+}
+.kp-standards-tools label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+.kp-selection {
+  margin-top: 10px;
+}
+.elev [role="button"] {
+  cursor: pointer;
+}
+.elev [role="button"]:focus-visible {
+  outline: 5px solid var(--accent);
+  outline-offset: 10px;
 }
 .kp-preview-caption {
   font-size: 12px;

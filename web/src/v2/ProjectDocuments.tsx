@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IconFileDescription, IconPrinter, IconX } from "@tabler/icons-react";
 import type { TechnicalDocuments } from "../../../src/server/documents";
-import { date, requestPdf } from "./api";
+import { date, requestPdf, request } from "./api";
 import { useResource } from "./useResource";
 import { Feedback } from "./ui";
 
@@ -22,6 +22,7 @@ export function ProjectDocuments({
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [pdf, setPdf] = useState<{ url: string; kind: string } | null>(null);
+  const [csv, setCsv] = useState<string | null>(null);
   const operation = useRef<AbortController | null>(null);
   const base = `/api/v2/projects/${encodeURIComponent(id)}/documents`;
   const resource = useResource<TechnicalDocuments>(
@@ -41,11 +42,18 @@ export function ProjectDocuments({
     operation.current?.abort();
     setBusy("");
     setPdf(null);
+    setCsv(null);
     setError("");
     setModule("");
     resource.retry();
   };
   useEffect(() => () => operation.current?.abort(), []);
+  useEffect(
+    () => () => {
+      if (csv) URL.revokeObjectURL(csv);
+    },
+    [csv],
+  );
   useEffect(
     () => () => {
       if (pdf) URL.revokeObjectURL(pdf.url);
@@ -59,6 +67,29 @@ export function ProjectDocuments({
     setBusy("");
     setModule("");
   }, [release]);
+  useEffect(() => {
+    setCsv(null);
+  }, [release]);
+  const generateCsv = async () => {
+    if (busy || !resource.data?.selectedRelease) return;
+    const controller = new AbortController();
+    operation.current = controller;
+    setBusy("csv");
+    setError("");
+    setCsv(null);
+    try {
+      const blob = await request<Blob>(
+        `/api/projekty/${encodeURIComponent(id)}/formatki.csv?wydanie=${encodeURIComponent(resource.data.selectedRelease)}`,
+        { signal: controller.signal },
+        "csv",
+      );
+      if (!controller.signal.aborted) setCsv(URL.createObjectURL(blob));
+    } catch (e) {
+      if (!controller.signal.aborted) setError((e as Error).message);
+    } finally {
+      if (!controller.signal.aborted) setBusy("");
+    }
+  };
   const generate = async (kind: "techniczne" | "montazowe") => {
     if (busy) return;
     const controller = new AbortController();
@@ -236,6 +267,26 @@ export function ProjectDocuments({
       )}
       {(demo || (!!d && !resource.busy && !resource.error && d.parts > 0)) && (
         <div className="ps-document-actions">
+          {owner && !demo && resource.data?.selectedRelease && (
+            <button
+              className="ps-button secondary"
+              disabled={!!busy}
+              onClick={generateCsv}
+            >
+              {busy === "csv"
+                ? "Przygotowywanie CSV…"
+                : "Formatki CSV z tego wydania"}
+            </button>
+          )}
+          {csv && (
+            <a
+              className="ps-button secondary"
+              href={csv}
+              download={`formatki-wydanie-${resource.data?.selectedRelease}.csv`}
+            >
+              Pobierz zgodny CSV
+            </a>
+          )}
           <button
             className="ps-button"
             disabled={!!busy}

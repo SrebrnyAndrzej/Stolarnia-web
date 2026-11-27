@@ -13,6 +13,7 @@ import {
 import { reviewKitchenObjects } from "../../../../src/core/kitchen-storage-check";
 import { kitchenRepairOptions } from "../../../../src/core/kitchen-repairs";
 import { kitchenLockProblem } from "../../../../src/core/kitchen-locks";
+import { kitchenShelfAlternative } from "../../../../src/core/kitchen-storage-variants";
 import { Rzut } from "../../views/Rzut";
 import { type Draft, toAnalysis } from "./model";
 import {
@@ -360,13 +361,10 @@ export function KitchenBudgetAdvice({
     (i) => i.catalogId === "base-drawers-600" && !i.locked,
   );
   if (item) {
-    const { drawers: _drawers, drawerFronts: _fronts, ...shelf } = item;
     const candidate = {
       ...draft,
       items: draft.items.map((i) =>
-        i.id === item.id
-          ? { ...shelf, catalogId: "base-shelves-600", shelves: 1 }
-          : i,
+        i.id === item.id ? kitchenShelfAlternative(i) : i,
       ),
     };
     if (

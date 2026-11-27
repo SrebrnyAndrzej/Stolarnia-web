@@ -1,6 +1,10 @@
-import { IconChevronDown, IconPlus, IconSearch } from "@tabler/icons-react";
+import { useRef } from "react";
+import { IconChevronDown, IconSearch, IconX } from "@tabler/icons-react";
 import type { ModulKatalogowy } from "../../../../src/core/types";
 import { studioGroup, studioGroups, studioMatches } from "./studio-catalog";
+import { KitchenCatalogCard } from "./KitchenCatalogCard";
+import type { RoomUnit } from "./room-dimensions";
+import { uniqueKitchenAdditionPreviews } from "./catalog-placement";
 
 export function KitchenStudioCatalog({
   catalog,
@@ -11,6 +15,7 @@ export function KitchenStudioCatalog({
   onGroup,
   onAdd,
   disabled,
+  unit,
 }: {
   catalog: ModulKatalogowy[];
   available: ModulKatalogowy[];
@@ -20,31 +25,51 @@ export function KitchenStudioCatalog({
   onGroup: (group: string) => void;
   onAdd: (id: string) => void;
   disabled: boolean;
+  unit: RoomUnit;
 }) {
+  const searchInput = useRef<HTMLInputElement>(null);
   const searching = !!query.trim();
-  const matches = catalog.filter((m) => studioMatches(m, query));
-  const fits = new Set(available.map((m) => m.id));
+  const fits = new Map(available.map((m) => [m.id, m]));
+  const matches = catalog.filter((m) =>
+    studioMatches(fits.get(m.id) ?? m, query),
+  );
+  const clearSearch = () => {
+    onQuery("");
+    searchInput.current?.focus();
+  };
   return (
     <div className="kp-studio-catalog">
-      <label className="kp-studio-search">
-        <span>Szukaj szafki lub wyposażenia</span>
+      <div className="kp-studio-search">
+        <label htmlFor="kp-studio-search">Szukaj szafki lub wyposażenia</label>
         <span>
           <IconSearch size={18} aria-hidden="true" />
           <input
+            id="kp-studio-search"
+            ref={searchInput}
             type="search"
             value={query}
             onChange={(e) => onQuery(e.target.value)}
             placeholder="Np. szuflady, lodówka, 60 cm"
           />
+          {query && (
+            <button
+              type="button"
+              className="ps-text-button"
+              aria-label="Wyczyść wyszukiwanie szafek"
+              onClick={clearSearch}
+            >
+              <IconX size={18} aria-hidden="true" />
+            </button>
+          )}
         </span>
-      </label>
+      </div>
       <p className="kp-muted">
         Wybierz grupę, a następnie wariant. Po dodaniu ustawisz jego wymiary.
       </p>
       {!matches.length && (
         <p role="status">
           Nie znaleziono wariantu. Zmień hasło lub{" "}
-          <button className="ps-text-button" onClick={() => onQuery("")}>
+          <button className="ps-text-button" onClick={clearSearch}>
             wyczyść wyszukiwanie
           </button>
           .
@@ -62,14 +87,17 @@ export function KitchenStudioCatalog({
               <h3>{section}</h3>
               {groups.map((g) => {
                 const variants = matches.filter((m) => studioGroup(m) === g.id);
-                const fitting = variants.filter((m) => fits.has(m.id));
+                const fitting = uniqueKitchenAdditionPreviews(
+                  variants.flatMap((m) => {
+                    const preview = fits.get(m.id);
+                    return preview ? [preview] : [];
+                  }),
+                );
                 const expanded = searching || group === g.id;
                 const title = (
                   <span>
                     <strong>{g.name}</strong>
-                    <small>
-                      Pasujące warianty: {fitting.length} z {variants.length}
-                    </small>
+                    <small>Pasujące warianty: {fitting.length}</small>
                   </span>
                 );
                 return (
@@ -106,27 +134,16 @@ export function KitchenStudioCatalog({
                       {fitting.length ? (
                         <div className="kp-catalog-items">
                           {fitting.map((m) => (
-                            <button
+                            <KitchenCatalogCard
                               key={m.id}
-                              type="button"
+                              entry={m}
+                              nominal={catalog.find(
+                                (entry) => entry.id === m.id,
+                              )!}
+                              unit={unit}
                               disabled={disabled}
-                              onClick={() => onAdd(m.id)}
-                            >
-                              <span
-                                className={`kp-cabinet-icon ${m.construction}`}
-                                aria-hidden="true"
-                              />
-                              <span>
-                                <strong>Dodaj: {m.name}</strong>
-                                <small>
-                                  {m.widthMM / 10} × {m.heightMM / 10}
-                                  {m.construction === "filler"
-                                    ? " cm · blenda"
-                                    : ` × ${m.depthMM / 10} cm`}
-                                </small>
-                              </span>
-                              <IconPlus size={18} aria-hidden="true" />
-                            </button>
+                              onAdd={onAdd}
+                            />
                           ))}
                         </div>
                       ) : (

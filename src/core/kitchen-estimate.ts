@@ -7,7 +7,7 @@ import {
   kitchenFinishes,
   type KitchenEstimate,
 } from "./kitchen-configuration.js";
-import { zbudujModul } from "./builder.js";
+import { buildKitchenModule } from "./kitchen-build.js";
 import { USTAWIENIA_DOMYSLNE } from "./settings.js";
 import {
   MATERIALY_STARTOWE,
@@ -70,7 +70,7 @@ export function calculateKitchenEstimate(raw: unknown) {
   settings.konstrukcja.gruboscBlatuMM = opts.worktop === "compact" ? 12 : 38;
   const modules = kitchenModules(input);
   const island = islandSize(input);
-  const built = modules.map((m) => zbudujModul(m, settings.konstrukcja));
+  const built = modules.map((m) => buildKitchenModule(m, settings.konstrukcja));
   const mapped = built.map((zm) => ({
     zm,
     materialy: {

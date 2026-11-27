@@ -66,6 +66,8 @@ export function trimKitchenStorage(
                     shelves: undefined,
                     drawers: undefined,
                     drawerFronts: undefined,
+                    innerDrawers: undefined,
+                    appliance: undefined,
                   }
                 : {}),
             },

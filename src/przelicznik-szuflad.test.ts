@@ -193,3 +193,23 @@ test("szuflada ukryta za frontem: LEGRABOX z zabierakiem ZI7.0M07, Amix osobno; 
   z2 = s.analiza(p.id).zbudowane.find((q) => q.modul.id === m2.id)!;
   assert.equal(z2.elementy.find((e) => e.kod === "SU01-TYL")!.wys, 84); // najniższa komora Amix H84 (112)
 });
+
+test("kilka szuflad ukrytych: kontrola miejsca atomowa, osobne prowadnice i formatki", () => {
+  const s = new Stolarnia(new Magazyn(mkdtempSync(join(tmpdir(), "ukryte-stos-"))));
+  const p = s.utworzProjekt({ nazwa: "Stack", sciany: [{ dlugoscMM: 3000 }] });
+  const m = s.dodajModul(p.id, { katalogId: "base-drawers-600", konfiguracja: { liczbaSzuflad: 1, szufladySystemowe: true, profilSzuflad: "amix-elite-standard" } });
+  for (let i = 0; i < 3; i++) s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajUkrytaSzuflade", sprzezona: false });
+  const before = JSON.stringify(s.projekt(p.id));
+  assert.throws(() => s.polecenieKonstrukcji(p.id, m.id, { typ: "dodajUkrytaSzuflade", sprzezona: false }), /do 3/);
+  assert.equal(JSON.stringify(s.projekt(p.id)), before);
+  const d = s.dokumentacja(p.id);
+  const inner = d.prowadnice.filter((q) => q.modulId === m.id && q.szuflada.startsWith("SU"));
+  assert.equal(inner.length, 3);
+  assert.equal(new Set(inner.map((q) => q.osOdDoluBokuMM)).size, 3);
+  assert.match(s.formatkiCSV(p.id), /SU03/);
+  const small = s.dodajModul(p.id, { katalogId: "base-drawers-600", konfiguracja: { liczbaSzuflad: 3, szufladySystemowe: true, profilSzuflad: "amix-elite-standard" } });
+  s.polecenieKonstrukcji(p.id, small.id, { typ: "dodajUkrytaSzuflade", sprzezona: false });
+  const revision = s.projekt(p.id).rewizja;
+  assert.throws(() => s.polecenieKonstrukcji(p.id, small.id, { typ: "dodajUkrytaSzuflade", sprzezona: false }), /Za mało miejsca/);
+  assert.equal(s.projekt(p.id).rewizja, revision);
+});
